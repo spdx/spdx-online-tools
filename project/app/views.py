@@ -11,3 +11,27 @@ from django.template import RequestContext
 def index(request):
 	context_dict={}
 	return render(request, 'app/index.html',context_dict)
+	
+def about(request):
+	context_dict={}
+	return render(request, 'app/about.html',context_dict)
+	
+def validate(request):
+	context_dict={}
+	return render(request, 'app/validate.html',context_dict)
+
+def compare(request):
+	context_dict={}
+	return render(request, 'app/compare.html',context_dict)
+	
+def convert(request):
+	context_dict={}
+	return render(request, 'app/convert.html',context_dict)
+	
+def search(request):
+	context_dict={}
+	return render(request, 'app/search.html',context_dict)
+	
+def login(request):
+	context_dict={}
+	return render(request, 'app/login.html',context_dict)

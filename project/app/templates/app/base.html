@@ -31,13 +31,12 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li><a href="#contact">Validate</a></li>
-            <li><a href="#contact">Compare</a></li>
-            <li><a href="#contact">Convert</a></li>
-						<li><a href="#contact">Search</a></li>
-						<li><a href="#contact">Login</a></li>
+            <li><a href="/app/about/">About</a></li>
+            <li><a href="/app/validate/">Validate</a></li>
+            <li><a href="/app/compare/">Compare</a></li>
+            <li><a href="/app/convert/">Convert</a></li>
+						<li><a href="/app/search/">Search</a></li>
+						<li><a href="/app/login/">Login</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -47,15 +46,16 @@
 
       <div class="starter-template">
         <h1>Online Validation Tool</h1>
-        <p class="lead">This is the index page</p>
+        {% block body1 %}{% endblock %}
       </div>
 
     </div><!-- /.container -->
-
+		{% block body2 %}{% endblock %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
+    {% block script_block %}{% endblock %}
   </body>
 </html>
