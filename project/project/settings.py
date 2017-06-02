@@ -14,7 +14,9 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+APP_DIR = os.path.join(BASE_DIR,'app')
+TEMPLATE_DIR = os.path.join(APP_DIR, 'templates')
+STATIC_PATH = os.path.join(APP_DIR,'static')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -37,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'app',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -100,3 +103,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+	STATIC_PATH,
+]
+
+
+MEDIA_ROOT = os.path.join(APP_DIR,'media')
+MEDIA_URL = '/media/'
