@@ -18,15 +18,39 @@ def about(request):
 	
 def validate(request):
 	context_dict={}
+	if request.method == 'POST':
+		try :
+			if request.FILES["file"]:
+				return HttpResponse("File Uploaded Successfully")
+			else :
+				return HttpResponse("File Not Uploaded")
+		except:
+			return HttpResponse("Error")
 	return render(request, 'app/validate.html',context_dict)
 
 def compare(request):
 	context_dict={}
-	return render(request, 'app/compare.html',context_dict)
+	if request.method == 'POST':
+		try :
+			if request.FILES["file"]:
+				return HttpResponse("File Uploaded Successfully")
+			else :
+				return HttpResponse("File Not Uploaded")
+		except:
+			return HttpResponse("Error")
+	return render(request, 'app/validate.html',context_dict)
 	
 def convert(request):
 	context_dict={}
-	return render(request, 'app/convert.html',context_dict)
+	if request.method == 'POST':
+		try :
+			if request.FILES["file"]:
+				return HttpResponse("File Uploaded Successfully")
+			else :
+				return HttpResponse("File Not Uploaded")
+		except:
+			return HttpResponse("Error")
+	return render(request, 'app/validate.html',context_dict)
 	
 def search(request):
 	context_dict={}

@@ -3,4 +3,16 @@
 {% load staticfiles %}
 {% block body1 %}
 <p class="lead">This is the convert page</p>
+<form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+		{% csrf_token %}
+			<div class = "form-group">
+			<div class="col-sm-12">
+			<label class="control-label col-sm-3" >SPDX Document</label>
+				<div class="col-sm-3"> 
+				  <input type="file" id="file" placeholder="" name = "file"  >
+				</div>
+			</div>	
+		</div>
+		<input class=" btn btn-md btn-info" type="submit" value="Upload">
+</form>
 {% endblock %}
