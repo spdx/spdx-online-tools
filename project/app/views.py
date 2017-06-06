@@ -7,6 +7,9 @@ from django import forms
 from django.template import RequestContext
 # Create your views here.
 
+from app.models import UserID
+from app.forms import UserRegisterForm,UserProfileForm
+
 
 def index(request):
 	context_dict={}
@@ -63,4 +66,27 @@ def login(request):
 	
 def register(request):
 	context_dict={}
-	return render(request, 'app/register.html',context_dict)
+	if request.method == 'POST':
+		user_form = UserRegisterForm(data=request.POST)
+		profile_form = UserProfileForm(data=request.POST)
+		if user_form.is_valid() and profile_form.is_valid():
+			user = user_form.save(commit=False)
+			user.set_password(user.password)
+			user.is_staff=True
+			profile = profile_form.save(commit=False)
+			profile.status="Active"
+			profile.date=datetime.now()
+			profile.reg_by=str(request.user)
+			user.save()
+			profile.user = user
+			profile.save()
+			registered = True
+		else:
+			print user_form.errors
+			print profile_form.errors
+	else:
+		user_form = UserRegisterForm()
+		profile_form = UserProfileForm()
+		context_dict["user_form"]=user_form
+		context_dict["profile_form"]=profile_form
+	return render(request,'app/register.html',context_dict)

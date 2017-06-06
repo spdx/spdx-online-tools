@@ -20,7 +20,7 @@ class UserRegisterForm(forms.ModelForm):
 		return self.cleaned_data
 	class Meta:
 		model = User
-		fields = ('username','first_name','last_name','password','confirm_password','email')
+		fields = ('first_name','last_name','email','username','password','confirm_password')
 
 class UserProfileForm(forms.ModelForm):
 	class Meta:
