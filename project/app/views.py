@@ -74,13 +74,11 @@ def register(request):
 			user.set_password(user.password)
 			user.is_staff=True
 			profile = profile_form.save(commit=False)
-			profile.status="Active"
-			profile.date=datetime.now()
-			profile.reg_by=str(request.user)
 			user.save()
 			profile.user = user
 			profile.save()
 			registered = True
+			return HttpResponseRedirect('/app/login/')
 		else:
 			print user_form.errors
 			print profile_form.errors
