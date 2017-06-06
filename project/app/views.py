@@ -59,3 +59,8 @@ def search(request):
 def login(request):
 	context_dict={}
 	return render(request, 'app/login.html',context_dict)
+	
+	
+def register(request):
+	context_dict={}
+	return render(request, 'app/register.html',context_dict)

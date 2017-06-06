@@ -8,4 +8,5 @@ urlpatterns = [
 	url(r'^compare/$', views.compare, name='compare'),
 	url(r'^search/$', views.search, name='search'),
 	url(r'^login/$', views.login, name='login'),
+	url(r'^register/$', views.register, name='register'),
 ]	

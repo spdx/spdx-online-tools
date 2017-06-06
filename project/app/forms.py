@@ -21,4 +21,9 @@ class UserRegisterForm(forms.ModelForm):
 	class Meta:
 		model = User
 		fields = ('username','first_name','last_name','password','confirm_password','email')
+
+class UserProfileForm(forms.ModelForm):
+	class Meta:
+		model = UserID
+		fields = ('organisation',)
 		
