@@ -11,10 +11,11 @@
 # limitations under the License.
 
 from django.db import models
-import os
 from datetime import datetime
 from django import forms
 from django.contrib.auth.models import User
+
+import os
 
 
 class UserID(models.Model):

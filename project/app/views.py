@@ -17,7 +17,6 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django import forms
 from django.template import RequestContext
-# Create your views here.
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm
@@ -71,9 +70,24 @@ def search(request):
 	context_dict={}
 	return render(request, 'app/search.html',context_dict)
 	
-def login(request):
+def loginuser(request):
 	context_dict={}
-	return render(request, 'app/login.html',context_dict)
+	if request.method == 'POST':
+		username = request.POST.get('username')
+		password = request.POST.get('password')
+		user = authenticate(username=username, password=password)
+		if user and user.is_staff and not user.is_superuser:
+			if user.is_active:                                                 #add status  choice here
+				login(request, user)
+				return HttpResponseRedirect('/app/')
+			else:
+				return HttpResponse("Your account is disabled.")	
+		else:
+			context_dict['invalid']="Invalid login details supplied."
+			print "Invalid login details: {0}, {1}".format(username, password)
+			return render(request, 'app/login.html',context_dict)
+	else:
+		return render(request, 'app/login.html',context_dict)
 	
 	
 def register(request):
