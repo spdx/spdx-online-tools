@@ -36,8 +36,12 @@
             <li><a href="/app/compare/">Compare</a></li>
             <li><a href="/app/convert/">Convert</a></li>
 						<li><a href="/app/search/">Search</a></li>
+						 {% if user.is_authenticated %}
+						 <li><a href="/app/logout/">Logout</a></li>
+						 {% else %}
 						<li><a href="/app/login/">Login</a></li>
 						<li><a href="/app/register/">Register</a></li>
+						{% endif %}
           </ul>
         </div><!--/.nav-collapse -->
       </div>

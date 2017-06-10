@@ -114,3 +114,7 @@ def register(request):
 		context_dict["user_form"]=user_form
 		context_dict["profile_form"]=profile_form
 	return render(request,'app/register.html',context_dict)
+
+def logoutuser(request):
+	logout(request)
+	return HttpResponseRedirect("/app/")
