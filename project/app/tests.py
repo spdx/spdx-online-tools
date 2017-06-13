@@ -40,8 +40,12 @@ class LoginViewsTestCase(TestCase):
 	def setUp(self):
 		self.credentials = {'username':'testuser','password':'testpass' }
 		user = User.objects.create_user(**self.credentials)
-		user.is_staff = True
+		user.is_staff = True					#A staff user
 		user.save()
+		self.credentials2 = {'username':'testuser2','password':'testpass2' }
+		user2 = User.objects.create_user(**self.credentials2)			#An anonymous user
+		#user.is_staff = True	
+		#user.save()
 		
 	def test_login(self):
 		resp = self.client.get('/app/login/')
@@ -50,6 +54,9 @@ class LoginViewsTestCase(TestCase):
 	def test_postlogin(self):
 		resp = self.client.post('/app/login/',self.credentials,follow=True)
 		self.assertTrue(resp.context['user'].is_active)
+		self.client.get('/app/logout/')
+		resp = self.client.post('/app/login/',self.credentials2,follow=True)
+		self.assertFalse(resp.context['user'].is_active)
 
 class RegisterViewsTestCase(TestCase):
 	def test_register(self):
@@ -57,6 +64,16 @@ class RegisterViewsTestCase(TestCase):
 		self.assertEqual(resp.status_code,200)
 		self.assertTrue('user_form' in resp.context)
 		self.assertTrue('profile_form' in resp.context)
+	
+	def test_formregister(self):
+		self.data = {"first_name": "test","last_name" : "test" ,
+			"email" : "test@spdx.org","username":"testuser3",
+			"password":"testpass3","confirm_password":"testpass3","organisation":"spdx"}
+		resp = self.client.post('/app/register/',self.data,follow=True)
+		self.assertEqual(resp.status_code,200)
+		resp = self.client.post('/app/login/',{'username':'testuser3','password':'testpass3'},follow=True)
+		self.assertTrue(resp.context['user'].is_active)
+		
 		
 class LogoutViewsTestCase(TestCase):
 	def test_logout(self):
