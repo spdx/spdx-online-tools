@@ -49,7 +49,6 @@ class LoginViewsTestCase(TestCase):
 		
 	def test_postlogin(self):
 		resp = self.client.post('/app/login/',self.credentials,follow=True)
-		print resp.context['user']
 		self.assertTrue(resp.context['user'].is_active)
 
 class RegisterViewsTestCase(TestCase):
@@ -58,3 +57,13 @@ class RegisterViewsTestCase(TestCase):
 		self.assertEqual(resp.status_code,200)
 		self.assertTrue('user_form' in resp.context)
 		self.assertTrue('profile_form' in resp.context)
+		
+class LogoutViewsTestCase(TestCase):
+	def test_logout(self):
+		resp = self.client.get('/app/logout/')
+		self.assertEqual(resp.status_code,302)				# For Url Redirection to index after logout
+		
+class RootViewsTestCase(TestCase):
+	def test_logout(self):
+		resp = self.client.get('/')
+		self.assertEqual(resp.status_code,302)				# For View Redirection to index
