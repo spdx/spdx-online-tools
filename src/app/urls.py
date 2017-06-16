@@ -19,13 +19,13 @@ from app import views
 
 
 urlpatterns = [
-	url(r'^$', views.index, name='index'),
-	url(r'^validate/$', views.validate, name='index'),
-	url(r'^about/$', views.about, name='about'),
-	url(r'^convert/$', views.convert, name='convert'),
-	url(r'^compare/$', views.compare, name='compare'),
-	url(r'^search/$', views.search, name='search'),
-	url(r'^login/$', views.loginuser, name='login'),
-	url(r'^register/$', views.register, name='register'),
-	url(r'^logout/$', views.logoutuser, name='logout'), 
-]	
+    url(r'^$', views.index, name='index'),
+    url(r'^validate/$', views.validate, name='index'),
+    url(r'^about/$', views.about, name='about'),
+    url(r'^convert/$', views.convert, name='convert'),
+    url(r'^compare/$', views.compare, name='compare'),
+    url(r'^search/$', views.search, name='search'),
+    url(r'^login/$', views.loginuser, name='login'),
+    url(r'^register/$', views.register, name='register'),
+    url(r'^logout/$', views.logoutuser, name='logout'), 
+]
