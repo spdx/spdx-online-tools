@@ -80,7 +80,8 @@ def loginuser(request):
         password = request.POST.get('password')
         user = authenticate(username=username, password=password)
         if user and user.is_staff and not user.is_superuser:
-            if user.is_active:                                                 #add status  choice here
+            #add status  choice here
+            if user.is_active:
                 login(request, user)
                 return HttpResponseRedirect('/app/')
             else:

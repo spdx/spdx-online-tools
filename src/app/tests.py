@@ -40,10 +40,12 @@ class LoginViewsTestCase(TestCase):
     def setUp(self):
         self.credentials = {'username':'testuser','password':'testpass' }
         user = User.objects.create_user(**self.credentials)
-        user.is_staff = True					#A staff user
+        #A staff user
+        user.is_staff = True
         user.save()
         self.credentials2 = {'username':'testuser2','password':'testpass2' }
-        user2 = User.objects.create_user(**self.credentials2)			#An anonymous user
+        #An anonymous user
+        user2 = User.objects.create_user(**self.credentials2)
 
     def test_login(self):
         resp = self.client.get('/app/login/')
@@ -76,9 +78,11 @@ class RegisterViewsTestCase(TestCase):
 class LogoutViewsTestCase(TestCase):
     def test_logout(self):
         resp = self.client.get('/app/logout/')
-        self.assertEqual(resp.status_code,302)				# For Url Redirection to index after logout
+        # For Url Redirection to index after logout
+        self.assertEqual(resp.status_code,302)
 
 class RootViewsTestCase(TestCase):
     def test_logout(self):
         resp = self.client.get('/')
-        self.assertEqual(resp.status_code,302)				# For View Redirection to index
+        # For View Redirection to index
+        self.assertEqual(resp.status_code,302)
