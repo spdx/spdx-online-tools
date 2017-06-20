@@ -24,6 +24,7 @@ from django.template import RequestContext
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm
 
+from py4j.java_gateway import JavaGateway 
 
 def index(request):
     context_dict={}
