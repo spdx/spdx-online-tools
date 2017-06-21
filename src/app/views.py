@@ -24,19 +24,20 @@ from django.template import RequestContext
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm
 
-from py4j.java_gateway import JavaGateway 
+import jpype
 
 def index(request):
     context_dict={}
     return render(request, 'app/index.html',context_dict)
-	
+
 def about(request):
     context_dict={}
     return render(request, 'app/about.html',context_dict)
-	
+
 def validate(request):
     context_dict={}
     if request.method == 'POST':
+        jpype.startJVM(jpype.getDefaultJVMPath())
         try :
             if request.FILES["file"]:
                 return HttpResponse("File Uploaded Successfully")
@@ -49,6 +50,7 @@ def validate(request):
 def compare(request):
     context_dict={}
     if request.method == 'POST':
+        jpype.startJVM(jpype.getDefaultJVMPath())
         try :
             if request.FILES["file"]:
                 return HttpResponse("File Uploaded Successfully")
@@ -61,6 +63,7 @@ def compare(request):
 def convert(request):
     context_dict={}
     if request.method == 'POST':
+        jpype.startJVM(jpype.getDefaultJVMPath())
         try :
             if request.FILES["file"]:
                 return HttpResponse("File Uploaded Successfully")
