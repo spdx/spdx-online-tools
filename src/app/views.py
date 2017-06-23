@@ -91,6 +91,19 @@ def validate(request):
 def compare(request):
     context_dict={}
     if request.method == 'POST':
+        jpype.startJVM(jpype.getDefaultJVMPath())
+        try :
+            if request.FILES["file"]:
+                return HttpResponse("File Uploaded Successfully")
+            else :
+                return HttpResponse("File Not Uploaded")
+        except:
+            return HttpResponse("Error")
+    return render(request, 'app/compare.html',context_dict)
+
+def convert(request):
+    context_dict={}
+    if request.method == 'POST':
         if (jpype.isJVMStarted()):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
@@ -101,9 +114,10 @@ def compare(request):
                     fs = FileSystemStorage()
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
-                    mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,"test.rdf"])
+                    mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+filename.split(".")[0]+"_test.rdf"])
+                    print settings.MEDIA_ROOT+"/"+filename.split(".")[0]+"_test.rdf"
                     jpype.detachThreadFromJVM()
-                    return HttpResponse("This SPDX Document is valid.")
+                    return HttpResponseRedirect("/media/" + filename.split(".")[0]+"_test.rdf")
                 else :
                     return HttpResponse("File Not Uploaded")
             except jpype.JavaException :
@@ -125,9 +139,11 @@ def compare(request):
                         fs = FileSystemStorage()
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename)
-                        mainclass.main(["Verify",settings.APP_DIR+uploaded_file_url])
+                        print filename
+                        mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+filename.split(".")[0]+"_test.rdf"])
+                        print settings.MEDIA_ROOT+"/"+filename.split(".")[0]+"_test.rdf"
                         jpype.detachThreadFromJVM()
-                        return HttpResponse("This SPDX Document is valid.")
+                        return HttpResponseRedirect("/media/" + filename.split(".")[0]+"_test.rdf")
                     else :
                         return HttpResponse("File Not Uploaded")
                 except jpype.JavaException :
@@ -137,21 +153,7 @@ def compare(request):
                     context_dict["error"] = "This SPDX Document is not valid"
                     return render(request, 'app/validate.html',context_dict)
     else :
-        return render(request, 'app/compare.html',context_dict)
-
-def convert(request):
-    context_dict={}
-    if request.method == 'POST':
-        jpype.startJVM(jpype.getDefaultJVMPath())
-        try :
-            if request.FILES["file"]:
-                return HttpResponse("File Uploaded Successfully")
-            else :
-                return HttpResponse("File Not Uploaded")
-        except:
-            return HttpResponse("Error")
-    return render(request, 'app/convert.html',context_dict)
-
+        return render(request, 'app/convert.html',context_dict)
 def search(request):
     context_dict={}
     return render(request, 'app/search.html',context_dict)
