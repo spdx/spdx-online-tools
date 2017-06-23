@@ -43,17 +43,23 @@ def validate(request):
             package = jpype.JPackage("org.spdx.tools")
             print "here"
             mainclass = package.Main
+            print "here"
             try :
                 if request.FILES["file"]:
+                    print "here"
                     mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.rdf"])
+                    jpype.shutdownJVM()
                     return HttpResponse("File Uploaded Successfully")
                 else :
+                    jpype.shutdownJVM()
                     return HttpResponse("File Not Uploaded")
             except TypeError :
                 traceback.print_exc()
+                jpype.shutdownJVM()
                 return HttpResponse("Error")
             except :
                 traceback.print_exc()
+                jpype.shutdownJVM()
                 return HttpResponse("Error2")
         else :
             classpath =os.path.abspath(".")+"/tool.jar"
@@ -70,11 +76,14 @@ def validate(request):
                         print mainclass
                         print mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.rdf"])
                         print "here2"
+                        jpype.shutdownJVM()
                         return HttpResponse("File Uploaded Successfully")
                     else :
+                        jpype.shutdownJVM()
                         return HttpResponse("File Not Uploaded")
                 except TypeError:
                     traceback.print_exc()
+                    jpype.shutdownJVM()
                     return HttpResponse("Error")
 
     return render(request, 'app/validate.html',context_dict)
