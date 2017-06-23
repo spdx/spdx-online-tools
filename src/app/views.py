@@ -37,14 +37,39 @@ def about(request):
 def validate(request):
     context_dict={}
     if request.method == 'POST':
-        jpype.startJVM(jpype.getDefaultJVMPath())
-        try :
-            if request.FILES["file"]:
-                return HttpResponse("File Uploaded Successfully")
-            else :
-                return HttpResponse("File Not Uploaded")
-        except:
-            return HttpResponse("Error")
+        if (jpype.isJVMStarted()):
+            package = jpype.JPackage("org.spdx.tools")
+            print "here"
+            mainclass = package.Main
+            try :
+                if request.FILES["file"]:
+                    mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.rdf"])
+                    return HttpResponse("File Uploaded Successfully")
+                else :
+                    return HttpResponse("File Not Uploaded")
+            except TypeError :
+                return HttpResponse("Error")
+            except :
+                return HttpResponse("Error2")
+        else :
+            classpath ="./tool.jar"
+            jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
+            print "here2"
+            if (jpype.isJVMStarted()):
+                package = jpype.JPackage("org.spdx.tools")
+                print "here2"
+                mainclass = package.Main
+                try :
+                    if request.FILES["file"]:
+                        print "here2"
+                        print mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.rdf"])
+                        print "here2"
+                        return HttpResponse("File Uploaded Successfully")
+                    else :
+                        return HttpResponse("File Not Uploaded")
+                except TypeError:
+                    return HttpResponse("Error")
+
     return render(request, 'app/validate.html',context_dict)
 
 def compare(request):
