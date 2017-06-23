@@ -40,16 +40,19 @@ def about(request):
 def validate(request):
     context_dict={}
     if request.method == 'POST':
+        """ If JVM already started, attach a Thread and start processing the request """
         if (jpype.isJVMStarted()):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             mainclass = package.Main
             try :
                 if request.FILES["file"]:
+                    """ Saving file to the media directory """
                     myfile = request.FILES['file']
                     fs = FileSystemStorage()
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
+                    """ Call the java function with parameters as list"""
                     mainclass.main(["Verify",settings.APP_DIR+uploaded_file_url])
                     jpype.detachThreadFromJVM()
                     return HttpResponse("This SPDX Document is valid.")
@@ -61,6 +64,7 @@ def validate(request):
             except :
                 context_dict["error"] = "This SPDX Document is not valid"
                 return render(request, 'app/validate.html',context_dict)
+        """ If JVM not already started, start it, attach a Thread and start processing the request """
         else :
             classpath =os.path.abspath(".")+"/tool.jar"
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
@@ -70,10 +74,12 @@ def validate(request):
                 mainclass = package.Main
                 try :
                     if request.FILES["file"]:
+                        """ Saving file to the media directory """
                         myfile = request.FILES['file']
                         fs = FileSystemStorage()
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename)
+                        """ Call the java function with parameters as list"""
                         mainclass.main(["Verify",settings.APP_DIR+uploaded_file_url])
                         jpype.detachThreadFromJVM()
                         return HttpResponse("This SPDX Document is valid.")
@@ -104,18 +110,20 @@ def compare(request):
 def convert(request):
     context_dict={}
     if request.method == 'POST':
+        """ If JVM already started, attach a Thread and start processing the request """
         if (jpype.isJVMStarted()):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             mainclass = package.Main
             try :
                 if request.FILES["file"]:
+                    """ Saving file to the media directory """
                     myfile = request.FILES['file']
                     fs = FileSystemStorage()
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
+                    """ Call the java function with parameters as list"""
                     mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"])
-                    print settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"
                     jpype.detachThreadFromJVM()
                     return HttpResponseRedirect("/media/" + ''.join(filename.split(".")[:-1])+"_test.rdf")
                 else :
@@ -126,6 +134,7 @@ def convert(request):
             except :
                 context_dict["error"] = "This SPDX Document is not valid"
                 return render(request, 'app/validate.html',context_dict)
+        """ If JVM not already started, start it, attach a Thread and start processing the request """
         else :
             classpath =os.path.abspath(".")+"/tool.jar"
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
@@ -135,13 +144,13 @@ def convert(request):
                 mainclass = package.Main
                 try :
                     if request.FILES["file"]:
+                        """ Saving file to the media directory """
                         myfile = request.FILES['file']
                         fs = FileSystemStorage()
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename)
-                        print filename
+                        """ Call the java function with parameters as list"""
                         mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"])
-                        print settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"
                         jpype.detachThreadFromJVM()
                         return HttpResponseRedirect("/media/" + ''.join(filename.split(".")[:-1])+"_test.rdf")
                     else :
