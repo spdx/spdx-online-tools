@@ -25,6 +25,8 @@ from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm
 
 import jpype
+import traceback
+import os
 
 def index(request):
     context_dict={}
@@ -48,11 +50,14 @@ def validate(request):
                 else :
                     return HttpResponse("File Not Uploaded")
             except TypeError :
+                traceback.print_exc()
                 return HttpResponse("Error")
             except :
+                traceback.print_exc()
                 return HttpResponse("Error2")
         else :
-            classpath ="./tool.jar"
+            classpath =os.path.abspath(".")+"/tool.jar"
+            print classpath
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             print "here2"
             if (jpype.isJVMStarted()):
@@ -62,12 +67,14 @@ def validate(request):
                 try :
                     if request.FILES["file"]:
                         print "here2"
+                        print mainclass
                         print mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.rdf"])
                         print "here2"
                         return HttpResponse("File Uploaded Successfully")
                     else :
                         return HttpResponse("File Not Uploaded")
                 except TypeError:
+                    traceback.print_exc()
                     return HttpResponse("Error")
 
     return render(request, 'app/validate.html',context_dict)
