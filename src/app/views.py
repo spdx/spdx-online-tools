@@ -39,7 +39,7 @@ def about(request):
 def validate(request):
     context_dict={}
     if request.method == 'POST':
-        if (jpype.jpype.isThreadAttachedToJVM()):
+        if (jpype.isJVMStarted()):
             package = jpype.JPackage("org.spdx.tools")
             print "here"
             mainclass = package.Main
@@ -48,7 +48,7 @@ def validate(request):
                 if request.FILES["file"]:
                     print "here"
                     jpype.attachThreadToJVM()
-                    mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.rdf"])
+                    mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag2.rdf"])
                     #jpype.shutdownJVM()
                     jpype.detachThreadFromJVM()
                     return HttpResponse("File Uploaded Successfully")
@@ -77,7 +77,7 @@ def validate(request):
                     if request.FILES["file"]:
                         print "here2"
                         print mainclass
-                        print mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.rdf"])
+                        print mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag2.rdf"])
                         print "here2"
                         #jpype.shutdownJVM()
                         jpype.detachThreadFromJVM()
