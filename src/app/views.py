@@ -51,11 +51,11 @@ def validate(request):
                 else :
                     return HttpResponse("File Not Uploaded")
             except TypeError :
-                traceback.print_exc()
-                return HttpResponse("TypeError")
+                context_dict["error"] = traceback.print_exc()
+                return render(request, 'app/validate.html',context_dict)
             except :
-                traceback.print_exc()
-                return HttpResponse("Error")
+                context_dict["error"] = traceback.print_exc()
+                return render(request, 'app/validate.html',context_dict)
         else :
             classpath =os.path.abspath(".")+"/tool.jar"
             print classpath
@@ -72,12 +72,12 @@ def validate(request):
                         return HttpResponse("File Uploaded Successfully")
                     else :
                         return HttpResponse("File Not Uploaded")
-                except TypeError:
-                    traceback.print_exc()
-                    return HttpResponse("TypeError")
+                except TypeError :
+                    context_dict["error"] = traceback.print_exc()
+                    return render(request, 'app/validate.html',context_dict)
                 except :
-                    traceback.print_exc()
-                    return HttpResponse("Error")
+                    context_dict["error"] = traceback.print_exc()
+                    return render(request, 'app/validate.html',context_dict)
     else :
         return render(request, 'app/validate.html',context_dict)
 
