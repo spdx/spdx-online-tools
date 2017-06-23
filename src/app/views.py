@@ -20,6 +20,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django import forms
 from django.template import RequestContext
+from django.core.files.storage import FileSystemStorage
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm
@@ -45,7 +46,14 @@ def validate(request):
             mainclass = package.Main
             try :
                 if request.FILES["file"]:
-                    mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag2.rdf"])
+                    myfile = request.FILES['file']
+                    fs = FileSystemStorage(location = settings.MEDIA_ROOT + "/"+ request.user.username)
+                    print request.user.username
+                    filename = fs.save(myfile.name, myfile)
+                    uploaded_file_url = fs.url(filename)
+                    print uploaded_file_url
+                    return HttpResponseRedirect(uploaded_file_url)
+                    mainclass.main(["Verify","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx"])
                     jpype.detachThreadFromJVM()
                     return HttpResponse("File Uploaded Successfully")
                 else :
@@ -66,7 +74,14 @@ def validate(request):
                 mainclass = package.Main
                 try :
                     if request.FILES["file"]:
-                        print mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag2.rdf"])
+                        myfile = request.FILES['file']
+                        fs = FileSystemStorage(location = settings.MEDIA_ROOT + "/"+ request.user.username)
+                        print request.user.username
+                        filename = fs.save(myfile.name, myfile)
+                        uploaded_file_url = fs.url(filename)
+                        print uploaded_file_url
+                        return HttpResponseRedirect (uploaded_file_url)
+                        mainclass.main(["Verify","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx"])
                         jpype.detachThreadFromJVM()
                         return HttpResponse("File Uploaded Successfully")
                     else :
