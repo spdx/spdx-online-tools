@@ -62,10 +62,11 @@ def validate(request):
                 context_dict["error"] = jpype.JavaException.message()
                 return render(request, 'app/validate.html',context_dict)
             except :
+                traceback.print_exc()
                 context_dict["error"] = "This SPDX Document is not valid"
                 return render(request, 'app/validate.html',context_dict)
-        """ If JVM not already started, start it, attach a Thread and start processing the request """
         else :
+            """ If JVM not already started, start it, attach a Thread and start processing the request """
             classpath =os.path.abspath(".")+"/tool.jar"
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             if (jpype.isJVMStarted()):
@@ -89,6 +90,7 @@ def validate(request):
                     context_dict["error"] = jpype.JavaException.message()
                     return render(request, 'app/validate.html',context_dict)
                 except :
+                    traceback.print_exc()
                     context_dict["error"] = "This SPDX Document is not valid"
                     return render(request, 'app/validate.html',context_dict)
     else :
@@ -132,10 +134,11 @@ def convert(request):
                 context_dict["error"] = jpype.JavaException.message()
                 return render(request, 'app/validate.html',context_dict)
             except :
+                traceback.print_exc()
                 context_dict["error"] = "This SPDX Document is not valid"
                 return render(request, 'app/validate.html',context_dict)
-        """ If JVM not already started, start it, attach a Thread and start processing the request """
         else :
+            """ If JVM not already started, start it, attach a Thread and start processing the request """
             classpath =os.path.abspath(".")+"/tool.jar"
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             if (jpype.isJVMStarted()):
@@ -159,6 +162,7 @@ def convert(request):
                     context_dict["error"] = jpype.JavaException.message()
                     return render(request, 'app/validate.html',context_dict)
                 except :
+                    traceback.print_exc()
                     context_dict["error"] = "This SPDX Document is not valid"
                     return render(request, 'app/validate.html',context_dict)
     else :
