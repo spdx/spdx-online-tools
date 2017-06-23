@@ -50,8 +50,8 @@ def validate(request):
                     return HttpResponse("File Uploaded Successfully")
                 else :
                     return HttpResponse("File Not Uploaded")
-            except TypeError :
-                context_dict["error"] = traceback.print_exc()
+            except jpype.JavaException :
+                context_dict["error"] = jpype.JavaException.message()
                 return render(request, 'app/validate.html',context_dict)
             except :
                 context_dict["error"] = traceback.print_exc()
@@ -66,14 +66,13 @@ def validate(request):
                 mainclass = package.Main
                 try :
                     if request.FILES["file"]:
-                        print mainclass
                         print mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag2.rdf"])
                         jpype.detachThreadFromJVM()
                         return HttpResponse("File Uploaded Successfully")
                     else :
                         return HttpResponse("File Not Uploaded")
-                except TypeError :
-                    context_dict["error"] = traceback.print_exc()
+                except jpype.JavaException :
+                    context_dict["error"] = jpype.JavaException.message()
                     return render(request, 'app/validate.html',context_dict)
                 except :
                     context_dict["error"] = traceback.print_exc()
