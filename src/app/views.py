@@ -39,7 +39,7 @@ def about(request):
 def validate(request):
     context_dict={}
     if request.method == 'POST':
-        if (jpype.isJVMStarted()):
+        if (jpype.jpype.isThreadAttachedToJVM()):
             package = jpype.JPackage("org.spdx.tools")
             print "here"
             mainclass = package.Main
@@ -47,19 +47,21 @@ def validate(request):
             try :
                 if request.FILES["file"]:
                     print "here"
+                    jpype.attachThreadToJVM()
                     mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.rdf"])
-                    jpype.shutdownJVM()
+                    #jpype.shutdownJVM()
+                    jpype.detachThreadFromJVM()
                     return HttpResponse("File Uploaded Successfully")
                 else :
-                    jpype.shutdownJVM()
+                    #jpype.shutdownJVM()
                     return HttpResponse("File Not Uploaded")
             except TypeError :
                 traceback.print_exc()
-                jpype.shutdownJVM()
+                #jpype.shutdownJVM()
                 return HttpResponse("Error")
             except :
                 traceback.print_exc()
-                jpype.shutdownJVM()
+                #jpype.shutdownJVM()
                 return HttpResponse("Error2")
         else :
             classpath =os.path.abspath(".")+"/tool.jar"
@@ -67,6 +69,7 @@ def validate(request):
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             print "here2"
             if (jpype.isJVMStarted()):
+                jpype.attachThreadToJVM()
                 package = jpype.JPackage("org.spdx.tools")
                 print "here2"
                 mainclass = package.Main
@@ -76,14 +79,15 @@ def validate(request):
                         print mainclass
                         print mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.rdf"])
                         print "here2"
-                        jpype.shutdownJVM()
+                        #jpype.shutdownJVM()
+                        jpype.detachThreadFromJVM()
                         return HttpResponse("File Uploaded Successfully")
                     else :
-                        jpype.shutdownJVM()
+                        #jpype.shutdownJVM()
                         return HttpResponse("File Not Uploaded")
                 except TypeError:
                     traceback.print_exc()
-                    jpype.shutdownJVM()
+                    #jpype.shutdownJVM()
                     return HttpResponse("Error")
 
     return render(request, 'app/validate.html',context_dict)
