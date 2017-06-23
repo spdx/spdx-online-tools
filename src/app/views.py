@@ -47,26 +47,22 @@ def validate(request):
             try :
                 if request.FILES["file"]:
                     myfile = request.FILES['file']
-                    fs = FileSystemStorage(location = settings.MEDIA_ROOT + "/"+ request.user.username)
-                    print request.user.username
+                    fs = FileSystemStorage()
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
-                    print uploaded_file_url
-                    return HttpResponseRedirect(uploaded_file_url)
-                    mainclass.main(["Verify","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx"])
+                    mainclass.main(["Verify",settings.APP_DIR+uploaded_file_url])
                     jpype.detachThreadFromJVM()
-                    return HttpResponse("File Uploaded Successfully")
+                    return HttpResponse("This SPDX Document is valid.")
                 else :
                     return HttpResponse("File Not Uploaded")
             except jpype.JavaException :
                 context_dict["error"] = jpype.JavaException.message()
                 return render(request, 'app/validate.html',context_dict)
             except :
-                context_dict["error"] = traceback.print_exc()
+                context_dict["error"] = "This SPDX Document is not valid"
                 return render(request, 'app/validate.html',context_dict)
         else :
             classpath =os.path.abspath(".")+"/tool.jar"
-            print classpath
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             if (jpype.isJVMStarted()):
                 jpype.attachThreadToJVM()
@@ -75,22 +71,19 @@ def validate(request):
                 try :
                     if request.FILES["file"]:
                         myfile = request.FILES['file']
-                        fs = FileSystemStorage(location = settings.MEDIA_ROOT + "/"+ request.user.username)
-                        print request.user.username
+                        fs = FileSystemStorage()
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename)
-                        print uploaded_file_url
-                        return HttpResponseRedirect (uploaded_file_url)
-                        mainclass.main(["Verify","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx"])
+                        mainclass.main(["Verify",settings.APP_DIR+uploaded_file_url])
                         jpype.detachThreadFromJVM()
-                        return HttpResponse("File Uploaded Successfully")
+                        return HttpResponse("This SPDX Document is valid.")
                     else :
                         return HttpResponse("File Not Uploaded")
                 except jpype.JavaException :
                     context_dict["error"] = jpype.JavaException.message()
                     return render(request, 'app/validate.html',context_dict)
                 except :
-                    context_dict["error"] = traceback.print_exc()
+                    context_dict["error"] = "This SPDX Document is not valid"
                     return render(request, 'app/validate.html',context_dict)
     else :
         return render(request, 'app/validate.html',context_dict)
