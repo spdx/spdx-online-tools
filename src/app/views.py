@@ -40,57 +40,46 @@ def validate(request):
     context_dict={}
     if request.method == 'POST':
         if (jpype.isJVMStarted()):
+            jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
-            print "here"
             mainclass = package.Main
-            print "here"
             try :
                 if request.FILES["file"]:
-                    print "here"
-                    jpype.attachThreadToJVM()
                     mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag2.rdf"])
-                    #jpype.shutdownJVM()
                     jpype.detachThreadFromJVM()
                     return HttpResponse("File Uploaded Successfully")
                 else :
-                    #jpype.shutdownJVM()
                     return HttpResponse("File Not Uploaded")
             except TypeError :
                 traceback.print_exc()
-                #jpype.shutdownJVM()
-                return HttpResponse("Error")
+                return HttpResponse("TypeError")
             except :
                 traceback.print_exc()
-                #jpype.shutdownJVM()
-                return HttpResponse("Error2")
+                return HttpResponse("Error")
         else :
             classpath =os.path.abspath(".")+"/tool.jar"
             print classpath
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            print "here2"
             if (jpype.isJVMStarted()):
                 jpype.attachThreadToJVM()
                 package = jpype.JPackage("org.spdx.tools")
-                print "here2"
                 mainclass = package.Main
                 try :
                     if request.FILES["file"]:
-                        print "here2"
                         print mainclass
                         print mainclass.main(["TagToRdf","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag.spdx","/home/rtg/for_spdx/tools/src/org/spdx/tools/tag2.rdf"])
-                        print "here2"
-                        #jpype.shutdownJVM()
                         jpype.detachThreadFromJVM()
                         return HttpResponse("File Uploaded Successfully")
                     else :
-                        #jpype.shutdownJVM()
                         return HttpResponse("File Not Uploaded")
                 except TypeError:
                     traceback.print_exc()
-                    #jpype.shutdownJVM()
+                    return HttpResponse("TypeError")
+                except :
+                    traceback.print_exc()
                     return HttpResponse("Error")
-
-    return render(request, 'app/validate.html',context_dict)
+    else :
+        return render(request, 'app/validate.html',context_dict)
 
 def compare(request):
     context_dict={}
