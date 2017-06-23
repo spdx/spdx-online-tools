@@ -2,17 +2,21 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
-<p class="lead">This is the convert page</p>
+<p class ="lead"> {{ error }}</p>
+<div class="panel panel-default">
+<div class="panel-heading"> <p class="lead"> Tag/Value to RDF</p> </div>
+<div class="panel-body">
 <form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
 			<div class = "form-group">
 			<div class="col-sm-12">
-			<label class="control-label col-sm-3" >SPDX Document</label>
+			<label class="control-label col-sm-3" >Tag/Value Document</label>
 				<div class="col-sm-3"> 
 				  <input type="file" id="file" placeholder="" name = "file"  >
 				</div>
 			</div>	
 		</div>
-		<input class=" btn btn-md btn-info" type="submit" value="Upload">
+		<input class=" btn btn-md btn-info" type="submit" value="Convert">
 </form>
+</div>
 {% endblock %}

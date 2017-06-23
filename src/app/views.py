@@ -114,10 +114,10 @@ def convert(request):
                     fs = FileSystemStorage()
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
-                    mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+filename.split(".")[0]+"_test.rdf"])
-                    print settings.MEDIA_ROOT+"/"+filename.split(".")[0]+"_test.rdf"
+                    mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"])
+                    print settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"
                     jpype.detachThreadFromJVM()
-                    return HttpResponseRedirect("/media/" + filename.split(".")[0]+"_test.rdf")
+                    return HttpResponseRedirect("/media/" + ''.join(filename.split(".")[:-1])+"_test.rdf")
                 else :
                     return HttpResponse("File Not Uploaded")
             except jpype.JavaException :
@@ -140,10 +140,10 @@ def convert(request):
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename)
                         print filename
-                        mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+filename.split(".")[0]+"_test.rdf"])
-                        print settings.MEDIA_ROOT+"/"+filename.split(".")[0]+"_test.rdf"
+                        mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"])
+                        print settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"
                         jpype.detachThreadFromJVM()
-                        return HttpResponseRedirect("/media/" + filename.split(".")[0]+"_test.rdf")
+                        return HttpResponseRedirect("/media/" + ''.join(filename.split(".")[:-1])+"_test.rdf")
                     else :
                         return HttpResponse("File Not Uploaded")
                 except jpype.JavaException :
