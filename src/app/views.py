@@ -64,7 +64,7 @@ def validate(request):
                 return HttpResponse("File Not Uploaded")
         except jpype.JavaException,ex :
             """ Error raised by verifyclass.verify without exiting the application"""
-            context_dict["error"] = "This SPDX Document is not valid. Not a recognized RDF/XML or tag/value format" # jpype.JavaException.message(ex)
+            context_dict["error"] = "This SPDX Document is not a recognized RDF/XML or tag/value format" # jpype.JavaException.message(ex)
             jpype.detachThreadFromJVM()
             return render(request, 'app/validate.html',context_dict)
         except :
@@ -96,58 +96,29 @@ def convert(request):
             classpath =os.path.abspath(".")+"/tool.jar"
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
         """ If JVM started, attach a Thread and start processing the request """
-
-            jpype.attachThreadToJVM()
-            package = jpype.JPackage("org.spdx.tools")
-            mainclass = package.Main
-            try :
-                if request.FILES["file"]:
-                    """ Saving file to the media directory """
-                    myfile = request.FILES['file']
-                    fs = FileSystemStorage()
-                    filename = fs.save(myfile.name, myfile)
-                    uploaded_file_url = fs.url(filename)
-                    """ Call the java function with parameters as list"""
-                    mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"])
-                    jpype.detachThreadFromJVM()
-                    return HttpResponseRedirect("/media/" + ''.join(filename.split(".")[:-1])+"_test.rdf")
-                else :
-                    return HttpResponse("File Not Uploaded")
-            except jpype.JavaException :
-                context_dict["error"] = jpype.JavaException.message()
-                return render(request, 'app/convert.html',context_dict)
-            except :
-                traceback.print_exc()
-                context_dict["error"] = "This SPDX Document is not valid"
-                return render(request, 'app/convert.html',context_dict)
-        else :
-            """ If JVM not already started, start it, attach a Thread and start processing the request """
-            classpath =os.path.abspath(".")+"/tool.jar"
-            jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            if (jpype.isJVMStarted()):
-                jpype.attachThreadToJVM()
-                package = jpype.JPackage("org.spdx.tools")
-                mainclass = package.Main
-                try :
-                    if request.FILES["file"]:
-                        """ Saving file to the media directory """
-                        myfile = request.FILES['file']
-                        fs = FileSystemStorage()
-                        filename = fs.save(myfile.name, myfile)
-                        uploaded_file_url = fs.url(filename)
-                        """ Call the java function with parameters as list"""
-                        mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"])
-                        jpype.detachThreadFromJVM()
-                        return HttpResponseRedirect("/media/" + ''.join(filename.split(".")[:-1])+"_test.rdf")
-                    else :
-                        return HttpResponse("File Not Uploaded")
-                except jpype.JavaException :
-                    context_dict["error"] = jpype.JavaException.message()
-                    return render(request, 'app/convert.html',context_dict)
-                except :
-                    traceback.print_exc()
-                    context_dict["error"] = "This SPDX Document is not valid"
-                    return render(request, 'app/convert.html',context_dict)
+        jpype.attachThreadToJVM()
+        package = jpype.JPackage("org.spdx.tools")
+        mainclass = package.Main
+        try :
+            if request.FILES["file"]:
+                """ Saving file to the media directory """
+                myfile = request.FILES['file']
+                fs = FileSystemStorage()
+                filename = fs.save(myfile.name, myfile)
+                uploaded_file_url = fs.url(filename)
+                """ Call the java function with parameters as list"""
+                mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"])
+                jpype.detachThreadFromJVM()
+                return HttpResponseRedirect("/media/" + ''.join(filename.split(".")[:-1])+"_test.rdf")
+            else :
+                return HttpResponse("File Not Uploaded")
+        except jpype.JavaException :
+            context_dict["error"] = jpype.JavaException.message()
+            return render(request, 'app/convert.html',context_dict)
+        except :
+            traceback.print_exc()
+            context_dict["error"] = "This SPDX Document is not valid"
+            return render(request, 'app/convert.html',context_dict)
     else :
         return render(request, 'app/convert.html',context_dict)
 def search(request):
