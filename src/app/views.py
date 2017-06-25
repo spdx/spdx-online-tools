@@ -60,11 +60,11 @@ def validate(request):
                 else :
                     return HttpResponse("File Not Uploaded")
             except jpype.JavaException,ex :
-                context_dict["error"] = jpype.JavaException.message(ex)
+                context_dict["error"] = "This SPDX Document is not valid. Not a recognized RDF/XML or tag/value format" # jpype.JavaException.message(ex)
                 return render(request, 'app/validate.html',context_dict)
             except :
                 traceback.print_exc()
-                context_dict["error"] = "This SPDX Document is not valid"
+                context_dict["error"] = "This SPDX Document is not valid. Not a recognized RDF/XML or tag/value format" 
                 return render(request, 'app/validate.html',context_dict)
         else :
             """ If JVM not already started, start it, attach a Thread and start processing the request """
