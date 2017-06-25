@@ -64,7 +64,7 @@ def validate(request):
                 return HttpResponse("File Not Uploaded")
         except jpype.JavaException,ex :
             """ Error raised by verifyclass.verify without exiting the application"""
-            context_dict["error"] = "This SPDX Document is not a recognized RDF/XML or tag/value format" # jpype.JavaException.message(ex)
+            context_dict["error"] = "This SPDX Document is not a valid RDF/XML or tag/value format" # jpype.JavaException.message(ex)
             jpype.detachThreadFromJVM()
             return render(request, 'app/validate.html',context_dict)
         except :
@@ -112,8 +112,8 @@ def convert(request):
                 return HttpResponseRedirect("/media/" + ''.join(filename.split(".")[:-1])+"_test.rdf")
             else :
                 return HttpResponse("File Not Uploaded")
-        except jpype.JavaException :
-            context_dict["error"] = jpype.JavaException.message()
+        except jpype.JavaException,ex :
+            context_dict["error"] = jpype.JavaException.message(ex)
             return render(request, 'app/convert.html',context_dict)
         except :
             traceback.print_exc()
