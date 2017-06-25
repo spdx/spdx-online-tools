@@ -41,60 +41,34 @@ def validate(request):
     context_dict={}
     if request.method == 'POST':
         """ If JVM already started, attach a Thread and start processing the request """
-        if (jpype.isJVMStarted()):
-            jpype.attachThreadToJVM()
-            package = jpype.JPackage("org.spdx.tools")
-            verifyclass = package.Verify
-            try :
-                if request.FILES["file"]:
-                    """ Saving file to the media directory """
-                    myfile = request.FILES['file']
-                    fs = FileSystemStorage()
-                    filename = fs.save(myfile.name, myfile)
-                    uploaded_file_url = fs.url(filename)
-                    """ Call the java function with parameters as list"""
-                    verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-                    verifyclass.main([settings.APP_DIR+uploaded_file_url])
-                    jpype.detachThreadFromJVM()
-                    return HttpResponse("This SPDX Document is valid.")
-                else :
-                    return HttpResponse("File Not Uploaded")
-            except jpype.JavaException,ex :
-                context_dict["error"] = "This SPDX Document is not valid. Not a recognized RDF/XML or tag/value format" # jpype.JavaException.message(ex)
-                return render(request, 'app/validate.html',context_dict)
-            except :
-                traceback.print_exc()
-                context_dict["error"] = "This SPDX Document is not valid. Not a recognized RDF/XML or tag/value format" 
-                return render(request, 'app/validate.html',context_dict)
-        else :
+        if (jpype.isJVMStarted()==0):
             """ If JVM not already started, start it, attach a Thread and start processing the request """
             classpath =os.path.abspath(".")+"/tool.jar"
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            if (jpype.isJVMStarted()):
-                jpype.attachThreadToJVM()
-                package = jpype.JPackage("org.spdx.tools")
-                verifyclass = package.Verify
-                try :
-                    if request.FILES["file"]:
-                        """ Saving file to the media directory """
-                        myfile = request.FILES['file']
-                        fs = FileSystemStorage()
-                        filename = fs.save(myfile.name, myfile)
-                        uploaded_file_url = fs.url(filename)
-                        """ Call the java function with parameters as list"""
-                        verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-                        verifyclass.main([settings.APP_DIR+uploaded_file_url])
-                        jpype.detachThreadFromJVM()
-                        return HttpResponse("This SPDX Document is valid.")
-                    else :
-                        return HttpResponse("File Not Uploaded")
-                except jpype.JavaException,ex :
-                    context_dict["error"] = jpype.JavaException.message(ex)
-                    return render(request, 'app/validate.html',context_dict)
-                except :
-                    traceback.print_exc()
-                    context_dict["error"] = "This SPDX Document is not valid"
-                    return render(request, 'app/validate.html',context_dict)
+        jpype.attachThreadToJVM()
+        package = jpype.JPackage("org.spdx.tools")
+        verifyclass = package.Verify
+        try :
+            if request.FILES["file"]:
+                """ Saving file to the media directory """
+                myfile = request.FILES['file']
+                fs = FileSystemStorage()
+                filename = fs.save(myfile.name, myfile)
+                uploaded_file_url = fs.url(filename)
+                """ Call the java function with parameters as list"""
+                verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                verifyclass.main([settings.APP_DIR+uploaded_file_url])
+                jpype.detachThreadFromJVM()
+                return HttpResponse("This SPDX Document is valid.")
+            else :
+                return HttpResponse("File Not Uploaded")
+        except jpype.JavaException,ex :
+            context_dict["error"] = "This SPDX Document is not valid. Not a recognized RDF/XML or tag/value format" # jpype.JavaException.message(ex)
+            return render(request, 'app/validate.html',context_dict)
+        except :
+            traceback.print_exc()
+            context_dict["error"] = "This SPDX Document is not valid. Not a recognized RDF/XML or tag/value format" 
+            return render(request, 'app/validate.html',context_dict)
     else :
         return render(request, 'app/validate.html',context_dict)
 
