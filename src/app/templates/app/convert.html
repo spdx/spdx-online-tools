@@ -4,10 +4,28 @@
 {% block body1 %}
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead"> Tag/Value to RDF</p> </div>
+<div class="panel-heading"> <p class="lead"> Convert to other SPDX format</p> </div>
 <div class="panel-body">
 <form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
+			 <select name="select1" id="select1">
+				  <option value="1">Fruit</option>
+				  <option value="2">Animal</option>
+				  <option value="3">Bird</option>
+				  <option value="4">Car</option>
+			</select>
+			&nbsp To
+			<select name="select2" id="select2">
+				  <option value="1">Banana</option>
+				  <option value="1">Apple</option>
+				  <option value="1">Orange</option>
+				  <option value="2">Wolf</option>
+				  <option value="2">Fox</option>
+				  <option value="2">Bear</option>
+				  <option value="3">Eagle</option>
+				  <option value="3">Hawk</option>
+				  <option value="4">BWM<option>
+			</select>
 			<div class = "form-group">
 			<div class="col-sm-12">
 			<label class="control-label col-sm-3" >Tag/Value Document</label>
