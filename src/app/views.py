@@ -107,6 +107,9 @@ def convert(request):
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
                 convertfile = request.POST["cfilename"]
+                option1 = request.POST["from_format"]
+                return HttpResponse(option1)
+                option2 = request.POST["to_format"]
                 """ Call the java function with parameters as list"""
                 mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                 jpype.detachThreadFromJVM()
