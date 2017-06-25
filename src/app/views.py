@@ -65,10 +65,12 @@ def validate(request):
         except jpype.JavaException,ex :
             """ Error raised by verifyclass.verify without exiting the application"""
             context_dict["error"] = "This SPDX Document is not valid. Not a recognized RDF/XML or tag/value format" # jpype.JavaException.message(ex)
+            jpype.detachThreadFromJVM()
             return render(request, 'app/validate.html',context_dict)
         except :
             traceback.print_exc()
             context_dict["error"] = "Other Exception Raised." 
+            jpype.detachThreadFromJVM()
             return render(request, 'app/validate.html',context_dict)
     else :
         return render(request, 'app/validate.html',context_dict)
@@ -89,8 +91,12 @@ def compare(request):
 def convert(request):
     context_dict={}
     if request.method == 'POST':
-        """ If JVM already started, attach a Thread and start processing the request """
-        if (jpype.isJVMStarted()):
+        if (jpype.isJVMStarted()==0):
+            """ If JVM not already started, start it, attach a Thread and start processing the request """
+            classpath =os.path.abspath(".")+"/tool.jar"
+            jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
+        """ If JVM started, attach a Thread and start processing the request """
+
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             mainclass = package.Main
