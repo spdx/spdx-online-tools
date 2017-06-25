@@ -8,27 +8,29 @@
 <div class="panel-body">
 <form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
+		<div class = "form-group">
+		&nbsp; From &nbsp;
 			 <select name="select1" id="select1">
-				  <option value="1">Fruit</option>
-				  <option value="2">Animal</option>
-				  <option value="3">Bird</option>
-				  <option value="4">Car</option>
+			 	  <option value="0"selected="">-</option>
+				  <option value="1">Tag</option>
+				  <option value="2">RDF</option>
+				  <option value="3">Spreadsheet</option>
 			</select>
-			&nbsp To
+			&nbsp; To &nbsp;
 			<select name="select2" id="select2">
-				  <option value="1">Banana</option>
-				  <option value="1">Apple</option>
-				  <option value="1">Orange</option>
-				  <option value="2">Wolf</option>
-				  <option value="2">Fox</option>
-				  <option value="2">Bear</option>
-				  <option value="3">Eagle</option>
-				  <option value="3">Hawk</option>
-				  <option value="4">BWM<option>
+				  <option value="0" data-value="0" selected="">-</option>
+				  <option value="1" data-value="1" >Spreadsheet</option>
+				  <option value="2" data-value="1" >RDF</option>
+				  <option value="3" data-value="2">Tag</option>
+				  <option value="4" data-value="2">HTML</option>
+				  <option value="5" data-value="2">Spreadsheet</option>
+				  <option value="6" data-value="3">Tag</option>
+				  <option value="7" data-value="3">RDF</option>
 			</select>
+		</div>
 			<div class = "form-group">
 			<div class="col-sm-12">
-			<label class="control-label col-sm-3" >Tag/Value Document</label>
+			<label class="control-label col-sm-3" >SPDX Document</label>
 				<div class="col-sm-3"> 
 				  <input type="file" id="file" placeholder="" name = "file"  >
 				</div>
@@ -37,4 +39,19 @@
 		<input class=" btn btn-md btn-info" type="submit" value="Convert">
 </form>
 </div>
+{% endblock %}
+{% block script_block %}
+<script type="text/javascript">
+$(document).ready(function () {
+	$("#select1").change(function() {
+	  if ($(this).data('options') === undefined) {
+	    /*Taking an array of all options-2 and kind of embedding it on the select1*/
+	    $(this).data('options', $('#select2 option').clone());
+	  }
+	  var id = $(this).val();
+	  var options = $(this).data('options').filter('[data-value=' + id + ']');
+	  $('#select2').html(options);
+	});
+})
+</script>
 {% endblock %}
