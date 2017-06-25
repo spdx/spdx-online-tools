@@ -106,10 +106,11 @@ def convert(request):
                 fs = FileSystemStorage()
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
+                convertfile = request.POST["cfilename"]
                 """ Call the java function with parameters as list"""
-                mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+''.join(filename.split(".")[:-1])+"_test.rdf"])
+                mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                 jpype.detachThreadFromJVM()
-                return HttpResponseRedirect("/media/" + ''.join(filename.split(".")[:-1])+"_test.rdf")
+                return HttpResponseRedirect("/media/" + convertfile)
             else :
                 return HttpResponse("File Not Uploaded")
         except jpype.JavaException,ex :
