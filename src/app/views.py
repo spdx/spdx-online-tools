@@ -108,20 +108,22 @@ def convert(request):
                 uploaded_file_url = fs.url(filename)
                 convertfile = request.POST["cfilename"]
                 option1 = request.POST["from_format"]
-                return HttpResponse(option1)
                 option2 = request.POST["to_format"]
+                functiontocall = option1 + "To" + option2
                 """ Call the java function with parameters as list"""
-                mainclass.main(["TagToRDF",settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                mainclass.main([functiontocall,settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                 jpype.detachThreadFromJVM()
                 return HttpResponseRedirect("/media/" + convertfile)
             else :
                 return HttpResponse("File Not Uploaded")
         except jpype.JavaException,ex :
             context_dict["error"] = jpype.JavaException.message(ex)
+            jpype.detachThreadFromJVM()
             return render(request, 'app/convert.html',context_dict)
         except :
             traceback.print_exc()
-            context_dict["error"] = "This SPDX Document is not valid"
+            context_dict["error"] = "Other Exception Raised."
+            jpype.detachThreadFromJVM()
             return render(request, 'app/convert.html',context_dict)
     else :
         return render(request, 'app/convert.html',context_dict)
