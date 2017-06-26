@@ -30,7 +30,7 @@
 		</div>
 		<div class = "form-group">
 			<div class="col-sm-12">
-			<label class="control-label col-sm-3" >SPDX Document</label>
+			<label class="control-label col-sm-3" id="doclabel" >SPDX Document</label>
 				<div class="col-sm-3"> 
 				  <input type="file" id="file" placeholder="" name = "file"  >
 				</div>
@@ -59,7 +59,14 @@ $(document).ready(function () {
 	  var id = $(this).val();
 	  var options = $(this).data('options').filter('[data-value=' + id + ']');
 	  $('#to_format').html(options);
+	  if (id!="0"){
+	  	$('#doclabel').text("SPDX " +id + " Document");
+	  }
+	  else{
+	  	$('#doclabel').text("SPDX Document");
+	  }
 	});
+	
 })
 </script>
 {% endblock %}
