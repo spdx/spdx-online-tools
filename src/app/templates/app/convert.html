@@ -66,6 +66,22 @@ $(document).ready(function () {
 	  else{
 	  	$('#doclabel').text("SPDX Document");
 	  }
+	  var id2 = $('#to_format').val();
+	  if (id2=="Spreadsheet"){
+	  	$('#convertdoclabel').text(".xlsx");
+	  }
+	  else if (id2=="RDF"){
+	  	$('#convertdoclabel').text(".rdf");
+	  }
+	  else if (id2=="Tag"){
+	  	$('#convertdoclabel').text(".spdx");
+	  }
+	  else if (id2=="HTML"){
+	  	$('#convertdoclabel').text(".html");
+	  }
+	  else{
+	  	$('#convertdoclabel').text();
+	  }
 	});
 	$("#to_format").change(function() {
 	  var id = $(this).val();
