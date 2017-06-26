@@ -41,6 +41,7 @@
 			<label class="control-label col-sm-3" >Converted File Name</label>
 				<div class="col-sm-3"> 
 				  <input type="text" id="cfilename" placeholder="" name = "cfilename"  >
+				  <label class="control-label" id="convertdoclabel" ></label>
 				</div>
 			</div>	
 		</div>
@@ -66,7 +67,24 @@ $(document).ready(function () {
 	  	$('#doclabel').text("SPDX Document");
 	  }
 	});
-	
+	$("#to_format").change(function() {
+	  var id = $(this).val();
+	  if (id=="Spreadsheet"){
+	  	$('#convertdoclabel').text(".xlsx");
+	  }
+	  else if (id=="RDF"){
+	  	$('#convertdoclabel').text(".rdf");
+	  }
+	  else if (id=="Tag"){
+	  	$('#convertdoclabel').text(".spdx");
+	  }
+	  else if (id=="HTML"){
+	  	$('#convertdoclabel').text(".html");
+	  }
+	  else{
+	  	$('#convertdoclabel').text();
+	  }
+	});
 })
 </script>
 {% endblock %}
