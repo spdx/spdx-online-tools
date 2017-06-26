@@ -114,6 +114,9 @@ def convert(request):
                 option1 = request.POST["from_format"]
                 option2 = request.POST["to_format"]
                 functiontocall = option1 + "To" + option2
+                if (option1=="Tag" or option1=="RDF"):
+                    verifyclass = package.Verify
+                    verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                 """ Call the java function with parameters as list"""
                 mainclass.main([functiontocall,settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                 jpype.detachThreadFromJVM()
