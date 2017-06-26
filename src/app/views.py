@@ -110,11 +110,12 @@ def convert(request):
                 fs = FileSystemStorage()
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
-                convertfile = request.POST["cfilename"]
+                convertfile = request.POST["cfilename"]+request.POST["cfileformat"]
                 option1 = request.POST["from_format"]
                 option2 = request.POST["to_format"]
                 functiontocall = option1 + "To" + option2
                 if (option1=="Tag" or option1=="RDF"):
+                    print ("Verifing for Tag/Value or RDF Document")
                     verifyclass = package.Verify
                     verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                 """ Call the java function with parameters as list"""

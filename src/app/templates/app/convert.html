@@ -45,6 +45,7 @@
 				</div>
 			</div>	
 		</div>
+		<input type="hidden" id="cfileformat" name="cfileformat" value="">
 		<input class=" btn btn-md btn-info" type="submit" value="Convert">
 </form>
 </div>
@@ -69,36 +70,46 @@ $(document).ready(function () {
 	  var id2 = $('#to_format').val();
 	  if (id2=="Spreadsheet"){
 	  	$('#convertdoclabel').text(".xlsx");
+	  	$('#cfileformat').val(".xlsx");
 	  }
 	  else if (id2=="RDF"){
 	  	$('#convertdoclabel').text(".rdf");
+	  	$('#cfileformat').val(".rdf");
 	  }
 	  else if (id2=="Tag"){
 	  	$('#convertdoclabel').text(".spdx");
+	  	$('#cfileformat').val(".spdx");
 	  }
 	  else if (id2=="HTML"){
 	  	$('#convertdoclabel').text(".html");
+	  	$('#cfileformat').val(".html");
 	  }
 	  else{
 	  	$('#convertdoclabel').text();
+	  	$('#cfileformat').val("");
 	  }
 	});
 	$("#to_format").change(function() {
-	  var id = $(this).val();
-	  if (id=="Spreadsheet"){
+	  var id2 = $('#to_format').val();
+	  if (id2=="Spreadsheet"){
 	  	$('#convertdoclabel').text(".xlsx");
+	  	$('#cfileformat').val(".xlsx");
 	  }
-	  else if (id=="RDF"){
+	  else if (id2=="RDF"){
 	  	$('#convertdoclabel').text(".rdf");
+	  	$('#cfileformat').val(".rdf");
 	  }
-	  else if (id=="Tag"){
+	  else if (id2=="Tag"){
 	  	$('#convertdoclabel').text(".spdx");
+	  	$('#cfileformat').val(".spdx");
 	  }
-	  else if (id=="HTML"){
+	  else if (id2=="HTML"){
 	  	$('#convertdoclabel').text(".html");
+	  	$('#cfileformat').val(".html");
 	  }
 	  else{
 	  	$('#convertdoclabel').text();
+	  	$('#cfileformat').val("");
 	  }
 	});
 })
