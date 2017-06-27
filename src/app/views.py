@@ -86,6 +86,7 @@ def compare(request):
         jpype.attachThreadToJVM()
         package = jpype.JPackage("org.spdx.tools")
         verifyclass = package.Verify
+        mainclass = package.Main
         try :
             if request.FILES["file"]:
                 """ Saving file to the media directory """
@@ -93,11 +94,16 @@ def compare(request):
                 fs = FileSystemStorage()
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
+                myfile2 = request.FILES['file2']
+                fs2 = FileSystemStorage()
+                filename2 = fs2.save(myfile2.name, myfile2)
+                uploaded_file_url2 = fs2.url(filename2)
                 """ Call the java function with parameters as list"""
                 verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-                verifyclass.main([settings.APP_DIR+uploaded_file_url])
+                verifyclass.verify(settings.APP_DIR+uploaded_file_url2)
+                mainclass.main(["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+"output.xls",settings.APP_DIR+uploaded_file_url,settings.APP_DIR+uploaded_file_url2])
                 jpype.detachThreadFromJVM()
-                return HttpResponse("This SPDX Document is valid.")
+                return HttpResponseRedirect("/media/output.xls")
             else :
                 return HttpResponse("File Not Uploaded")
         except jpype.JavaException,ex :
