@@ -2,7 +2,10 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
-<p class="lead">This is the Compare page</p>
+<p class ="lead"> {{ error }}</p>
+<div class="panel panel-default">
+<div class="panel-heading"> <p class="lead">Compare RDF Document</p> </div>
+<div class="panel-body">
 <form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
 			<div class = "form-group">
@@ -13,6 +16,7 @@
 				</div>
 			</div>	
 		</div>
-		<input class=" btn btn-md btn-info" type="submit" value="Upload">
+		<input class=" btn btn-md btn-info" type="submit" value="Validate">
 </form>
+</div>
 {% endblock %}
