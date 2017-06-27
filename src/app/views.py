@@ -98,12 +98,13 @@ def compare(request):
                 fs2 = FileSystemStorage()
                 filename2 = fs2.save(myfile2.name, myfile2)
                 uploaded_file_url2 = fs2.url(filename2)
+                rfilename = request.POST["rfilename"]+".xlsx"
                 """ Call the java function with parameters as list"""
                 verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                 verifyclass.verify(settings.APP_DIR+uploaded_file_url2)
-                mainclass.main(["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+"output.xls",settings.APP_DIR+uploaded_file_url,settings.APP_DIR+uploaded_file_url2])
+                mainclass.main(["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename,settings.APP_DIR+uploaded_file_url,settings.APP_DIR+uploaded_file_url2])
                 jpype.detachThreadFromJVM()
-                return HttpResponseRedirect("/media/output.xls")
+                return HttpResponseRedirect("/media/"+rfilename)
             else :
                 return HttpResponse("File Not Uploaded")
         except jpype.JavaException,ex :
@@ -137,7 +138,7 @@ def convert(request):
                 fs = FileSystemStorage()
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
-                convertfile = request.POST["cfilename"]+request.POST["cfileformat"]
+                convertfile =  request.POST["cfilename"]+request.POST["cfileformat"]
                 option1 = request.POST["from_format"]
                 option2 = request.POST["to_format"]
                 functiontocall = option1 + "To" + option2
