@@ -56,13 +56,9 @@ def validate(request):
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
                 """ Call the java function with parameters as list"""
-                print ("here")
                 verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-                print ("here")
                 verifyclass.main([settings.APP_DIR+uploaded_file_url])
-                print ("here")
                 jpype.detachThreadFromJVM()
-                print ("here")
                 return HttpResponse("This SPDX Document is valid.")
             else :
                 return HttpResponse("File Not Uploaded")
@@ -98,13 +94,9 @@ def compare(request):
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
                 """ Call the java function with parameters as list"""
-                print ("here")
                 verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-                print ("here")
                 verifyclass.main([settings.APP_DIR+uploaded_file_url])
-                print ("here")
                 jpype.detachThreadFromJVM()
-                print ("here")
                 return HttpResponse("This SPDX Document is valid.")
             else :
                 return HttpResponse("File Not Uploaded")
