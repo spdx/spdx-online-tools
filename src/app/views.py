@@ -88,13 +88,20 @@ def compare(request):
         verifyclass = package.Verify
         mainclass = package.Main
         try :
-            if request.FILES["file"]:
-                nofile = request.POST["nofile"]
+            if request.FILES["file1"]:
+                nofile = int(request.POST["nofile"])
                 rfilename = request.POST["rfilename"]+".xlsx"
                 callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
-                for i in range(0,nofile):
+                for i in range(1,nofile+1):
                     """ Saving file to the media directory """
-                    myfile = request.FILES['file'+str(i)]
+                    try:
+                        a = 'file'+str(i)
+                        print (a)
+                        myfile = request.FILES['file'+str(i)]
+                    except:
+                        traceback.print_exc()
+                        print ("File "+ str(i) +" does not exist")
+                        return HttpResponse("File does not exist")
                     fs = FileSystemStorage()
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
