@@ -89,20 +89,19 @@ def compare(request):
         mainclass = package.Main
         try :
             if request.FILES["file"]:
-                """ Saving file to the media directory """
-                myfile = request.FILES['file']
-                fs = FileSystemStorage()
-                filename = fs.save(myfile.name, myfile)
-                uploaded_file_url = fs.url(filename)
-                myfile2 = request.FILES['file2']
-                fs2 = FileSystemStorage()
-                filename2 = fs2.save(myfile2.name, myfile2)
-                uploaded_file_url2 = fs2.url(filename2)
+                nofile = request.POST["nofile"]
                 rfilename = request.POST["rfilename"]+".xlsx"
+                callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
+                for i in range(0,nofile):
+                    """ Saving file to the media directory """
+                    myfile = request.FILES['file'+str(i)]
+                    fs = FileSystemStorage()
+                    filename = fs.save(myfile.name, myfile)
+                    uploaded_file_url = fs.url(filename)
+                    verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                    callfunc.append(settings.APP_DIR+uploaded_file_url)
                 """ Call the java function with parameters as list"""
-                verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-                verifyclass.verify(settings.APP_DIR+uploaded_file_url2)
-                mainclass.main(["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename,settings.APP_DIR+uploaded_file_url,settings.APP_DIR+uploaded_file_url2])
+                mainclass.main(callfunc)
                 jpype.detachThreadFromJVM()
                 return HttpResponseRedirect("/media/"+rfilename)
             else :
