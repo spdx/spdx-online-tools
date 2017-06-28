@@ -24,18 +24,29 @@
 					</div>
 				</div>	
 			</div>
-			<button class="btn-lg btn-success"> Add more files </button>
-			<div class = "form-group">
-				<div class="col-sm-12">
-				<label class="control-label col-sm-3" >Result File Name</label>
-					<div class="col-sm-3"> 
-					  <input type="text" id="rfilename" placeholder="" name = "rfilename"  >
-					  <label class="control-label" id="convertdoclabel" >.xlsx</label>
-					</div>
-				</div>	
+			<div id="morefiles">
 			</div>
-
+			<label id="addmore" class="btn-lg btn-success"> Add more files </label>
+		<input type="hidden" id="nofile" name="nofile" value="2">
 		<input class=" btn btn-md btn-info" type="submit" value="Compare">
 </form>
 </div>
+{% endblock %}
+{% block script_block %}
+<script type="text/javascript">
+$(document).ready(function () {
+	$("#nofile").val("2");
+	$("#addmore").click(function(){
+		var no = parseInt($("#nofile").val());
+		console.log(no);
+		$("#nofile").val(no+1);
+		console.log("here");
+		$("#morefiles").append('<div class = "form-group"><div class="col-sm-12"><label class="control-label col-sm-3" >SPDX Document '
+		 + (no+1)
+		 + '</label><div class="col-sm-3"> <input type="file" id="file'+  (no+1) +'" placeholder="" name = "file'+ (no+1) + '"  ></div></div>	</div>');
+		
+	});
+
+})
+</script>
 {% endblock %}
