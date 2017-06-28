@@ -15,7 +15,7 @@ The tool would provide an an easy all-in-one website to upload, parse, validate,
     virtualenv venv
     source venv/bin/activate
     ```
-3. Install required python libraries giving in the requirements.txt file.
+3. Install the required python libraries given in the requirements.txt file.
     ```bash
     pip install -r requirements.txt
     ```
