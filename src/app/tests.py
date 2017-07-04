@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from django.contrib.auth.models import User
 
+import jpype
 # Create your tests here.
 
 class IndexViewsTestCase(TestCase):
@@ -30,23 +31,25 @@ class ValidateViewsTestCase(TestCase):
 
     def test_upload_tv(self):
         resp = self.client.post('/app/validate/',{'file' : self.tv_file},follow=True)
-        print resp.status_code['error']
+        self.assertFalse(resp.context['error'])
+        self.assertEqual(resp.content,"This SPDX Document is valid.")
     
     def test_upload_rdf(self):
         resp = self.client.post('/app/validate/',{'file' : self.rdf_file},follow=True)
-        print resp.context['error']
+        self.assertFalse(resp.context['error'])
+        self.assertEqual(resp.content,"This SPDX Document is valid.")
     
     def test_upload_other(self):
         resp = self.client.post('/app/validate/',{'file' : self.other_file},follow=True)
-        print resp.context['error']
+        self.assertTrue(resp.context['error'])
 
     def test_upload_inv_tv(self):
         resp = self.client.post('/app/validate/',{'file' : self.invalid_tv_file},follow=True)
-        print resp.status_code
+        self.assertTrue(resp.context['error'])
 
     def test_upload_inv_rdf(self):
         resp = self.client.post('/app/validate/',{'file' : self.invalid_rdf_file},follow=True)
-        print resp.context['error']
+        self.assertTrue(resp.context['error'])
 
 
 class CompareViewsTestCase(TestCase):
