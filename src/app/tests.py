@@ -51,10 +51,22 @@ class ValidateViewsTestCase(TestCase):
 
 
 class CompareViewsTestCase(TestCase):
+    def setUp(self):
+        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        self.rdf_file2 = open("examples/SPDXRdfExample2-v2.0.rdf")
+        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+
     def test_compare(self):
         resp = self.client.get('/app/compare/')
         self.assertEqual(resp.status_code,200)
 
+    def test_compare_two_rdf(self):
+        resp = self.client.post('/app/validate/',{'nofile': "2" ,'rfilename': "test",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True)
+        print "here"
+        print resp
+        print resp.status_code
+    
+    
 class ConvertViewsTestCase(TestCase):
     def test_convert(self):
         resp = self.client.get('/app/convert/')
