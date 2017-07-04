@@ -17,9 +17,36 @@ class AboutViewsTestCase(TestCase):
         self.assertEqual(resp.status_code,200)
 
 class ValidateViewsTestCase(TestCase):
+    def setUp(self):
+        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        self.invalid_tv_file = open("examples/SPDXTagExample-v2.0_invalid.spdx")
+        self.invalid_rdf_file = open("examples/SPDXRdfExample-v2.0_invalid.rdf")
+        self.other_file = open("examples/Other.txt")
+    
     def test_validate(self):
         resp = self.client.get('/app/validate/')
         self.assertEqual(resp.status_code,200)
+
+    def test_upload_tv(self):
+        resp = self.client.post('/app/validate/',{'file' : self.tv_file},follow=True)
+        print resp.context['error']
+    
+    def test_upload_rdf(self):
+        resp = self.client.post('/app/validate/',{'file' : self.rdf_file},follow=True)
+        print resp.context['error']
+    
+    def test_upload_other(self):
+        resp = self.client.post('/app/validate/',{'file' : self.other_file},follow=True)
+        print resp.context['error']
+
+    def test_upload_inv_tv(self):
+        resp = self.client.post('/app/validate/',{'file' : self.invalid_tv_file},follow=True)
+        print resp.context['error']
+    def test_upload_inv_rdf(self):
+        resp = self.client.post('/app/validate/',{'file' : self.invalid_rdf_file},follow=True)
+        print resp.context['error']
+
 
 class CompareViewsTestCase(TestCase):
     def test_compare(self):
