@@ -30,7 +30,7 @@ class ValidateViewsTestCase(TestCase):
 
     def test_upload_tv(self):
         resp = self.client.post('/app/validate/',{'file' : self.tv_file},follow=True)
-        print resp.context['error']
+        print resp.status_code['error']
     
     def test_upload_rdf(self):
         resp = self.client.post('/app/validate/',{'file' : self.rdf_file},follow=True)
@@ -42,7 +42,8 @@ class ValidateViewsTestCase(TestCase):
 
     def test_upload_inv_tv(self):
         resp = self.client.post('/app/validate/',{'file' : self.invalid_tv_file},follow=True)
-        print resp.context['error']
+        print resp.status_code
+
     def test_upload_inv_rdf(self):
         resp = self.client.post('/app/validate/',{'file' : self.invalid_rdf_file},follow=True)
         print resp.context['error']
