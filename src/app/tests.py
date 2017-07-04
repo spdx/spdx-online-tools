@@ -62,14 +62,20 @@ class CompareViewsTestCase(TestCase):
 
     def test_compare_two_rdf(self):
         resp = self.client.post('/app/compare/',{'nofile': "2" ,'rfilename': "test",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True)
-        print "here"
-        print resp
-        print resp.status_code
+        self.assertEqual(resp.status_code,200)
     
     
 class ConvertViewsTestCase(TestCase):
+    def setUp(self):
+        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+
     def test_convert(self):
         resp = self.client.get('/app/convert/')
+        self.assertEqual(resp.status_code,200)
+
+    def test_convert_tagtordf(self):
+        resp = self.client.post('/app/compare/',{'nofile': "2" ,'rfilename': "test",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True)
         self.assertEqual(resp.status_code,200)
 
 class SearchViewsTestCase(TestCase):
