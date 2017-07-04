@@ -31,12 +31,10 @@ class ValidateViewsTestCase(TestCase):
 
     def test_upload_tv(self):
         resp = self.client.post('/app/validate/',{'file' : self.tv_file},follow=True)
-        self.assertFalse(resp.context['error'])
         self.assertEqual(resp.content,"This SPDX Document is valid.")
     
     def test_upload_rdf(self):
         resp = self.client.post('/app/validate/',{'file' : self.rdf_file},follow=True)
-        self.assertFalse(resp.context['error'])
         self.assertEqual(resp.content,"This SPDX Document is valid.")
     
     def test_upload_other(self):
