@@ -69,14 +69,39 @@ class ConvertViewsTestCase(TestCase):
     def setUp(self):
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
 
     def test_convert(self):
         resp = self.client.get('/app/convert/')
         self.assertEqual(resp.status_code,200)
 
     def test_convert_tagtordf(self):
-        resp = self.client.post('/app/compare/',{'nofile': "2" ,'rfilename': "test",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True)
-        self.assertEqual(resp.status_code,200)
+        resp = self.client.post('/app/convert/',{'cfilename': "test" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True)
+        self.assertEqual(resp.status_code,404)  #Because test download file do not exist
+
+    def test_convert_tagtoxlsx(self):
+        resp = self.client.post('/app/convert/',{'cfilename': "test" ,'cfileformat': ".xlsx",'from_format' : "Tag", 'to_format' : "Spreadsheet", 'file' : self.tv_file},follow=True)
+        self.assertEqual(resp.status_code,404)  #Because test download file do not exist
+
+    def test_convert_rdftotag(self):
+        resp = self.client.post('/app/convert/',{'cfilename': "test" ,'cfileformat': ".spdx",'from_format' : "RDF", 'to_format' : "Tag", 'file' : self.rdf_file},follow=True)
+        self.assertEqual(resp.status_code,404)  #Because test download file do not exist
+
+    def test_convert_rdftoxlsx(self):
+        resp = self.client.post('/app/convert/',{'cfilename': "test2" ,'cfileformat': ".xlsx",'from_format' : "RDF", 'to_format' : "Spreadsheet", 'file' : self.rdf_file},follow=True)
+        self.assertEqual(resp.status_code,404)  #Because test download file do not exist
+
+    def test_convert_rdftohtml(self):
+        resp = self.client.post('/app/convert/',{'cfilename': "test" ,'cfileformat': ".html",'from_format' : "RDF", 'to_format' : "Html", 'file' : self.rdf_file},follow=True)
+        self.assertEqual(resp.status_code,404)  #Because test download file do not exist
+
+    def test_convert_xlsxtotag(self):
+        resp = self.client.post('/app/convert/',{'cfilename': "test2" ,'cfileformat': ".spdx",'from_format' : "Spreadsheet", 'to_format' : "Tag", 'file' : self.xls_file},follow=True)
+        self.assertEqual(resp.status_code,404)  #Because test download file do not exist
+
+    def test_convert_xlsxtordf(self):
+        resp = self.client.post('/app/convert/',{'cfilename': "test2" ,'cfileformat': ".rdf",'from_format' : "Spreadsheet", 'to_format' : "RDF", 'file' : self.xls_file},follow=True)
+        self.assertEqual(resp.status_code,404)  #Because test download file do not exist
 
 class SearchViewsTestCase(TestCase):
     def test_search(self):
