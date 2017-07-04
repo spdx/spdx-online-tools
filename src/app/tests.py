@@ -61,7 +61,7 @@ class CompareViewsTestCase(TestCase):
         self.assertEqual(resp.status_code,200)
 
     def test_compare_two_rdf(self):
-        resp = self.client.post('/app/validate/',{'nofile': "2" ,'rfilename': "test",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True)
+        resp = self.client.post('/app/compare/',{'nofile': "2" ,'rfilename': "test",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True)
         print "here"
         print resp
         print resp.status_code

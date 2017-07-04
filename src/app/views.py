@@ -96,11 +96,9 @@ def compare(request):
                     """ Saving file to the media directory """
                     try:
                         a = 'file'+str(i)
-                        print (a)
                         myfile = request.FILES['file'+str(i)]
                     except:
                         traceback.print_exc()
-                        print ("File "+ str(i) +" does not exist")
                         return HttpResponse("File does not exist")
                     fs = FileSystemStorage()
                     filename = fs.save(myfile.name, myfile)
