@@ -81,8 +81,10 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_tagtordf(self):
         resp = self.client.post('/app/convert/',{'cfilename': "test" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True)
         self.assertEqual(resp.status_code,404)  #Because test download file do not exist
-        print "here"
-        print resp
+        global_media_root = settings.MEDIA_ROOT
+        with temporary_media_root():
+        	self.assertNotEqual(global_media_root,settings.MEDIA_ROOT)
+        self.assertEqual(global_media_root,settings.MEDIA_ROOT)
 
     def test_convert_tagtoxlsx(self):
         resp = self.client.post('/app/convert/',{'cfilename': "test" ,'cfileformat': ".xlsx",'from_format' : "Tag", 'to_format' : "Spreadsheet", 'file' : self.tv_file},follow=True)
