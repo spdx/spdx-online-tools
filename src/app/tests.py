@@ -3,6 +3,9 @@ from __future__ import unicode_literals
 
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.conf import settings
+
+from django_downloadview.test import temporary_media_root
 
 import jpype
 # Create your tests here.
