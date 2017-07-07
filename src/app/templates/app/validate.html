@@ -55,7 +55,7 @@
     function makeDroppable(ele, callback) {
       var input = document.createElement('input');
       input.setAttribute('type', 'file');
-      input.setAttribute('multiple', true);
+      input.setAttribute('multiple', false);
       input.style.display = 'none';
       input.addEventListener('change', function(e) {
         triggerCallback(e, callback);
