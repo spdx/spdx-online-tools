@@ -108,7 +108,7 @@ def compare(request):
                 """ Call the java function with parameters as list"""
                 mainclass.main(callfunc)
                 jpype.detachThreadFromJVM()
-                context_dict["Content-Type"] = "attachment"
+                context_dict['Content-Disposition'] = 'attachment; filename='+filename
                 return HttpResponseRedirect("/media/"+rfilename)
             else :
                 return HttpResponse("File Not Uploaded")
@@ -154,7 +154,7 @@ def convert(request):
                 """ Call the java function with parameters as list"""
                 mainclass.main([functiontocall,settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                 jpype.detachThreadFromJVM()
-                context_dict["Content-Type"] = "attachment"
+                context_dict['Content-Disposition'] = 'attachment; filename='+filename
                 return HttpResponseRedirect("/media/" + convertfile)
             else :
                 return HttpResponse("File Not Uploaded")
