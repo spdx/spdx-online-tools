@@ -2,6 +2,8 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
+<p class="lead" style="color:blue;">Registration</p>
+<hr>
 <p class="lead">Join the community</p>
        <form id="register_form" role="form"  class="form-horizontal"  method="post" action="/app/register/" enctype="multipart/form-data">
         {% csrf_token %}

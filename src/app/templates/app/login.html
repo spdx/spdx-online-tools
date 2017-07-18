@@ -2,6 +2,8 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
+<p class="lead" style="color:blue;">Login</p>
+<hr>
 <p class="lead">{{ invalid }}</p>
 <form id="login_form" role="form"  class="form-horizontal"  method="post" action="/app/login/" enctype="multipart/form-data">
   {% csrf_token %}
