@@ -2,6 +2,7 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
+<!--
 <style type="text/css">
   .demo-droppable {
     background: #08c;
@@ -13,6 +14,7 @@
     background: #00CC71;
   }
 </style>
+-->
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead"> Convert to other SPDX format</p> </div>
@@ -43,7 +45,7 @@
 			<div class="col-sm-12">
 			<label class="control-label col-sm-3" id="doclabel" >SPDX Document</label>
 				<div class="col-sm-3"> 
-				  <input class="demo-droppable" type="file" id="file" placeholder="" name = "file"  >
+				  <input type="file" id="file" placeholder="" name = "file"  >
 				</div>
 			</div>	
 		</div>
@@ -125,6 +127,7 @@ $(document).ready(function () {
 	});
 })
 </script>
+<!--
 <script type="text/javascript">
   (function(window) {
     function triggerCallback(e, callback) {
@@ -247,4 +250,5 @@ $(document).ready(function () {
     });
   })(this);
 </script>
+-->
 {% endblock %}

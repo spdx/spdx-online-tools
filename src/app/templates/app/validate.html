@@ -2,6 +2,7 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
+<!--
 <style type="text/css">
   .demo-droppable {
     background: #08c;
@@ -13,7 +14,7 @@
     background: #00CC71;
   }
 </style>
-
+-->
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead"> Tag-Value, RDF and XML SPDX Document</p> </div>
@@ -24,7 +25,7 @@
 			<div class="col-sm-12">
 			<label class="control-label col-sm-3" >SPDX Document</label>
 				<div class="col-sm-6"> 
-				  <input class="demo-droppable" type="file" id="file" placeholder="" name = "file"  style="width: 100%;">
+				  <input type="file" id="file" placeholder="" name = "file"  style="width: 100%;">
 				  Drag and drop
 				</div>
 			</div>	
@@ -36,7 +37,7 @@
 </div>
 </div>
 {% endblock %}
-
+<!--
 {% block script_block %}
 <script type="text/javascript">
   (function(window) {
@@ -100,3 +101,4 @@
   })(this);
 </script>
 {% endblock %}
+-->
