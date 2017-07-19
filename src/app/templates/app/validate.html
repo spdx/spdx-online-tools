@@ -15,6 +15,18 @@
   }
 </style>
 -->
+<style type="text/css">
+  #drop_zone {
+  border: 2px dashed #bbb;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  padding: 25px;
+  text-align: center;
+  font: 20pt bold 'Vollkorn';
+  color: #bbb;
+}
+</style>
 <p class="lead" style="color:blue;">Validate</p>
 <hr>
 <p class ="lead"> {{ error }}</p>
@@ -31,8 +43,14 @@
 				</div>
 			</div>	
 		</div>
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <div id="drop_zone">or drop files here</div>
+      </div>
+    </div>
 		<input class=" btn btn-md btn-info" type="submit" value="Validate">
 </form>
+<output id="list"></output>
 </div>
 {% endblock %}
 {% block script_block %}
