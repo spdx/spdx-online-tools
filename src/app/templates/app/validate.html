@@ -60,7 +60,10 @@
     evt.preventDefault();
 
     var files = evt.dataTransfer.files; // FileList object.
-
+    console.log(evt.dataTransfer)
+    console.log(document.getElementById('file'))
+    document.getElementById('file').files = evt.dataTransfer.files;
+    console.log(document.getElementById('file').files)
     // files is a FileList of File objects. List some properties.
     var output = [];
     for (var i = 0, f; f = files[i]; i++) {
@@ -86,7 +89,6 @@
 <script>
   function handleFileSelect(evt) {
     var files = evt.target.files; // FileList object
-    console.log(files);
     // files is a FileList of File objects. List some properties.
     var output = [];
     for (var i = 0, f; f = files[i]; i++) {
@@ -103,7 +105,6 @@
 <script>
 if (window.File && window.FileReader && window.FileList && window.Blob) {
   // Great success! All the File APIs are supported.
-  console.log("here");
 } else {
   alert('The File APIs are not fully supported in this browser.');
 }
