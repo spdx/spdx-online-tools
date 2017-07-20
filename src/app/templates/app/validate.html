@@ -14,7 +14,6 @@
     background: #00CC71;
   }
 </style>
--->
 <style type="text/css">
   #drop_zone {
   border: 2px dashed #bbb;
@@ -27,6 +26,7 @@
   color: #bbb;
 }
 </style>
+-->
 <p class="lead" style="color:blue;">Validate</p>
 <hr>
 <p class ="lead"> {{ error }}</p>
@@ -43,17 +43,20 @@
 				</div>
 			</div>	
 		</div>
+		<!--
     <div class = "form-group">
       <div class="col-sm-12">
         <div id="drop_zone">or drop files here</div>
       </div>
     </div>
+    -->
 		<input class=" btn btn-md btn-info" type="submit" value="Validate">
 </form>
 <output id="list"></output>
 </div>
 {% endblock %}
 {% block script_block %}
+<!--
 <script>
   function handleFileSelect2(evt) {
     evt.stopPropagation();
@@ -109,4 +112,5 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
   alert('The File APIs are not fully supported in this browser.');
 }
 </script>
+-->
 {% endblock %}
