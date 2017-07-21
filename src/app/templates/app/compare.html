@@ -8,8 +8,11 @@
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">Compare SPDX RDF Documents</p> </div>
 <div class="panel-body">
+<div class="col-md-6">
 <form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
+		<fieldset>
+			<legend>Upload one by one</legend>
 			<div class = "form-group">
 				<div class="col-sm-12">
 				<label class="control-label col-sm-3" >SPDX Document</label>
@@ -28,7 +31,11 @@
 			</div>
 			<div id="morefiles">
 			</div>
-			<label id="addmore" class="btn btn-md btn-success"> Add more files</label>
+			<div class = "form-group">
+				<div class="col-sm-12">
+					<label id="addmore" class="btn btn-md btn-success"> Add more files</label>
+				</div>
+			</div>	
 			<br>
 			<div class = "form-group">
 				<div class="col-sm-12">
@@ -42,7 +49,39 @@
 		<input type="hidden" id="nofile" name="nofile" value="2">
 		<hr>
 		<input class=" btn btn-md btn-info" type="submit" value="Compare">
+		</fieldset>
 </form>
+</div>
+<div class="col-md-6">
+<form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+		{% csrf_token %}
+		<fieldset>
+			<legend>Upload all</legend>
+			<div class = "form-group">
+				<div class="col-sm-12">
+				<label class="control-label col-sm-3" >SPDX Document</label>
+					<div class="col-sm-3"> 
+					  <input type="file" id="files" placeholder="" name = "files" multiple>
+					</div>
+				</div>	
+			</div>
+			<div class = "form-group">
+				<div class="col-sm-12">
+				<label class="control-label col-sm-3" >Result File Name</label>
+					<div class="col-sm-3"> 
+					  <input type="text" id="rfilename" placeholder="" name = "rfilename"  >
+					  <label class="control-label" id="convertdoclabel" >.xlsx</label>
+					</div>
+				</div>	
+			</div>
+		
+		<hr>
+		<input class=" btn btn-md btn-info" type="submit" value="Compare">
+		</fieldset>
+		<output id="list"></output>
+</form>
+</div>
+</div>
 </div>
 {% endblock %}
 {% block script_block %}
@@ -61,5 +100,22 @@ $(document).ready(function () {
 	});
 
 })
+</script>
+
+<script>
+  function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+    console.log(files);
+    console.log(evt.target);
+    console.log(evt.target.value);
+    // files is a FileList of File objects. List some properties.
+    var output = [];
+    for (var i = 0, f; f = files[i]; i++) {
+      output.push('<li><strong>', escape(f.name), '</strong>','</li>');
+    }
+    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';			//append
+  }
+
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
 </script>
 {% endblock %}
