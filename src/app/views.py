@@ -126,10 +126,9 @@ def compare(request):
         elif 'compareall' in request.POST:
             try :
                 if request.FILES["files"]:
-                    #return HttpResponse(request.FILES["files"])
-                    # loop through the list of files
                     rfilename = request.POST["rfilename"]+".xlsx"
                     callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
+                    # loop through the list of files
                     for myfile in request.FILES.getlist("files"):
                         fs = FileSystemStorage()
                         filename = fs.save(myfile.name, myfile)
