@@ -128,14 +128,14 @@ def compare(request):
                 if request.FILES["files"]:
                     #return HttpResponse(request.FILES["files"])
                     # loop through the list of files
+                    rfilename = request.POST["rfilename"]+".xlsx"
+                    callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
                     for myfile in request.FILES.getlist("files"):
                         fs = FileSystemStorage()
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename)
                         verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
-                    rfilename = request.POST["rfilename"]+".xlsx"
-                    callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
                     """ Call the java function with parameters as list"""
                     mainclass.main(callfunc)
                     jpype.detachThreadFromJVM()
