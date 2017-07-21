@@ -87,41 +87,72 @@ def compare(request):
         package = jpype.JPackage("org.spdx.tools")
         verifyclass = package.Verify
         mainclass = package.Main
-        try :
-            if request.FILES["file1"]:
-                nofile = int(request.POST["nofile"])
-                rfilename = request.POST["rfilename"]+".xlsx"
-                callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
-                for i in range(1,nofile+1):
-                    """ Saving file to the media directory """
-                    try:
-                        a = 'file'+str(i)
-                        myfile = request.FILES['file'+str(i)]
-                    except:
-                        traceback.print_exc()
-                        return HttpResponse("File does not exist")
-                    fs = FileSystemStorage()
-                    filename = fs.save(myfile.name, myfile)
-                    uploaded_file_url = fs.url(filename)
-                    verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-                    callfunc.append(settings.APP_DIR+uploaded_file_url)
-                """ Call the java function with parameters as list"""
-                mainclass.main(callfunc)
+        if 'compare' in request.POST:
+            try :
+                if request.FILES["file1"]:
+                    nofile = int(request.POST["nofile"])
+                    rfilename = request.POST["rfilename"]+".xlsx"
+                    callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
+                    for i in range(1,nofile+1):
+                        """ Saving file to the media directory """
+                        try:
+                            a = 'file'+str(i)
+                            myfile = request.FILES['file'+str(i)]
+                        except:
+                            traceback.print_exc()
+                            return HttpResponse("File does not exist")
+                        fs = FileSystemStorage()
+                        filename = fs.save(myfile.name, myfile)
+                        uploaded_file_url = fs.url(filename)
+                        verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                        callfunc.append(settings.APP_DIR+uploaded_file_url)
+                    """ Call the java function with parameters as list"""
+                    mainclass.main(callfunc)
+                    jpype.detachThreadFromJVM()
+                    context_dict['Content-Disposition'] = 'attachment; filename='+filename
+                    return HttpResponseRedirect("/media/"+rfilename)
+                else :
+                    return HttpResponse("File Not Uploaded")
+            except jpype.JavaException,ex :
+                """ Error raised by verifyclass.verify without exiting the application"""
+                context_dict["error"] = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
                 jpype.detachThreadFromJVM()
-                context_dict['Content-Disposition'] = 'attachment; filename='+filename
-                return HttpResponseRedirect("/media/"+rfilename)
-            else :
-                return HttpResponse("File Not Uploaded")
-        except jpype.JavaException,ex :
-            """ Error raised by verifyclass.verify without exiting the application"""
-            context_dict["error"] = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
-            jpype.detachThreadFromJVM()
-            return render(request, 'app/compare.html',context_dict)
-        except :
-            traceback.print_exc()
-            context_dict["error"] = "Other Exception Raised." 
-            jpype.detachThreadFromJVM()
-            return render(request, 'app/compare.html',context_dict)
+                return render(request, 'app/compare.html',context_dict)
+            except :
+                traceback.print_exc()
+                context_dict["error"] = "Other Exception Raised." 
+                jpype.detachThreadFromJVM()
+                return render(request, 'app/compare.html',context_dict)
+        elif 'compareall' in request.POST:
+            try :
+                if request.FILES["files"]:
+                    #return HttpResponse(request.FILES["files"])
+                    # loop through the list of files
+                    for myfile in request.FILES.getlist("files"):
+                        fs = FileSystemStorage()
+                        filename = fs.save(myfile.name, myfile)
+                        uploaded_file_url = fs.url(filename)
+                        verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                        callfunc.append(settings.APP_DIR+uploaded_file_url)
+                    rfilename = request.POST["rfilename"]+".xlsx"
+                    callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
+                    """ Call the java function with parameters as list"""
+                    mainclass.main(callfunc)
+                    jpype.detachThreadFromJVM()
+                    context_dict['Content-Disposition'] = 'attachment; filename='+filename
+                    return HttpResponseRedirect("/media/"+rfilename)
+                else :
+                    return HttpResponse("File Not Uploaded")
+            except jpype.JavaException,ex :
+                """ Error raised by verifyclass.verify without exiting the application"""
+                context_dict["error"] = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
+                jpype.detachThreadFromJVM()
+                return render(request, 'app/compare.html',context_dict)
+            except :
+                traceback.print_exc()
+                context_dict["error"] = "Other Exception Raised." 
+                jpype.detachThreadFromJVM()
+                return render(request, 'app/compare.html',context_dict)
     else :
         return render(request, 'app/compare.html',context_dict)
 
