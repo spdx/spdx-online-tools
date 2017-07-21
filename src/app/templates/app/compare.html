@@ -40,7 +40,7 @@
 			<div class = "form-group">
 				<div class="col-sm-12">
 				<label class="control-label col-sm-3" >Result File Name</label>
-					<div class="col-sm-3"> 
+					<div class="col-sm-6"> 
 					  <input type="text" id="rfilename" placeholder="" name = "rfilename"  >
 					  <label class="control-label" id="convertdoclabel" >.xlsx</label>
 					</div>
@@ -53,7 +53,7 @@
 </form>
 </div>
 <div class="col-md-6">
-<form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+<form id="myform2" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
 		<fieldset>
 			<legend>Upload all</legend>
@@ -68,13 +68,12 @@
 			<div class = "form-group">
 				<div class="col-sm-12">
 				<label class="control-label col-sm-3" >Result File Name</label>
-					<div class="col-sm-3"> 
+					<div class="col-sm-6"> 
 					  <input type="text" id="rfilename" placeholder="" name = "rfilename"  >
 					  <label class="control-label" id="convertdoclabel" >.xlsx</label>
 					</div>
 				</div>	
 			</div>
-		
 		<hr>
 		<input class=" btn btn-md btn-info" type="submit" value="Compare">
 		</fieldset>
