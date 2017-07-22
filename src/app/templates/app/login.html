@@ -5,9 +5,10 @@
 <div class="col-md-3">
 </div>
 <div class="col-md-6">
-<p class="lead" style="color:blue;">Sign In</p>
-<hr>
-<p class="lead">{{ invalid }}</p>
+<div class="panel panel-default">
+<div class="panel-heading"> <p class="lead">Sign In</p> </div>
+<div class="panel-body">
+<p class="lead" style="color:red;">{{ invalid }}</p>
 <form id="login_form" role="form"  class="form-horizontal"  method="post" action="/app/login/" enctype="multipart/form-data">
   {% csrf_token %}
 	<div class="form-group">
@@ -28,6 +29,8 @@
     </div>
   </div>
 </form>
+</div>
+</div>
 </div>  
 <div class="col-md-3">
 </div>

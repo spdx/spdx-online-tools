@@ -2,33 +2,44 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
-<p class="lead" style="color:blue;">Registration</p>
-<hr>
-<p class="lead">Join the community</p>
-       <form id="register_form" role="form"  class="form-horizontal"  method="post" action="/app/register/" enctype="multipart/form-data">
+<div class="col-md-3">
+</div>
+<div class="col-md-6">
+<div class="panel panel-default">
+<div class="panel-heading"> <p class="lead">Join the community</p> </div>
+<div class="panel-body">
+    <form id="register_form" role="form"  class="form-horizontal"  method="post" action="/app/register/" enctype="multipart/form-data">
         {% csrf_token %}
         {% for field in user_form %}
         <div class="form-group">
-      	<label class="control-label col-sm-2" >{{ field.label_tag }}</label>
-	      	<div class="col-sm-5">
-		{{ field }}
-		</div>
+      	<label class="control-label col-sm-4" >{{ field.label_tag }}</label>
+    	      	<div class="col-sm-5">
+          		  {{ field }}
+          		</div>
+              <div class="col-sm-3">
+              </div>
       	</div>
-	{% endfor %}
-	{% for field in profile_form %}
-	<div class="form-group">
-	<div class="text-danger">{{ field.errors }}</div>
-     	 <label class="control-label col-sm-2" >{{ field.label_tag }}</label>
-	      	<div class="col-sm-5">
-		{{ field }}
-		</div>
+	      {% endfor %}
+      	{% for field in profile_form %}
+      	<div class="form-group">
+      	<div class="text-danger">{{ field.errors }}</div>
+           	 <label class="control-label col-sm-4" >{{ field.label_tag }}</label>
+      	      	<div class="col-sm-5">
+            		{{ field }}
+            		</div>
+                <div class="col-sm-3">
+                </div>
       	</div>
-		{% endfor %}
-  
-  <div class="form-group">
-    <div class="col-sm-offset-4 col-sm-5">
-      <button type="submit" class="btn btn-lg btn-block btn-success">Register</button>
-    </div>
-  </div>
-</form> 
+		    {% endfor %}
+        <div class="form-group">
+          <div class="col-sm-offset-4 col-sm-5">
+            <button type="submit" class="btn btn-lg btn-block btn-success">Register</button>
+          </div>
+        </div>
+    </form> 
+</div>
+</div>
+</div>
+<div class="col-md-3">
+</div>
 {% endblock %}
