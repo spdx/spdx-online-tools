@@ -66,6 +66,7 @@
 {% block script_block %}
 <script type="text/javascript">
 $(document).ready(function () {
+  $("#convertpage").addClass('linkactive');
 	$("#from_format").change(function() {
 	  if ($(this).data('options') === undefined) {
 	    /*Taking an array of all options-2 and kind of embedding it on the select1*/

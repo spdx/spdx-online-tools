@@ -84,6 +84,7 @@
 {% block script_block %}
 <script type="text/javascript">
 $(document).ready(function () {
+    $("#comparepage").addClass('linkactive');
 	$("#nofile").val("2");
 	$("#addmore").click(function(){
 		var no = parseInt($("#nofile").val());
@@ -96,7 +97,7 @@ $(document).ready(function () {
 		
 	});
 
-})
+});
 </script>
 
 <script>

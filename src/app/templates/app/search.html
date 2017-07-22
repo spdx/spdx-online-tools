@@ -6,3 +6,10 @@
 <hr>
 <p class="lead">This is the search page</p>
 {% endblock %}
+{% block script_block %}
+<script type="text/javascript">
+$(document).ready(function () {
+    $("#searchpage").addClass('linkactive');
+    });
+</script>
+{% endblock %}

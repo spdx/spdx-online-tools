@@ -7,3 +7,10 @@
 <p class="lead">Providing an easy all-in-one website to upload, parse, validate, compare, convert
 and search SPDX license list and documents.</p>
 {% endblock %}
+{% block script_block %}
+<script type="text/javascript">
+$(document).ready(function () {
+    $("#aboutpage").addClass('linkactive');
+  });
+</script>
+{% endblock %}
