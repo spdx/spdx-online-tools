@@ -52,18 +52,18 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse" >
           <ul class="nav navbar-nav" style="font-size: 16px;">
-            <li><a href="/app/about/">About</a></li>
-            <li><a href="/app/validate/">Validate</a></li>
-            <li><a href="/app/compare/">Compare</a></li>
-            <li><a href="/app/convert/">Convert</a></li>
-			<li><a href="/app/search/">Search</a></li>
+            <li><a href="/app/about/" id="aboutpage">About</a></li>
+            <li><a href="/app/validate/" id="validatepage">Validate</a></li>
+            <li><a href="/app/compare/" id="comparepage">Compare</a></li>
+            <li><a href="/app/convert/" id="convertpage">Convert</a></li>
+			<li><a href="/app/search/" id="searchpage">Search</a></li>
 		  </ul>
 		  <ul class="nav navbar-nav navbar-right" style="margin-right: 25px;font-size: 16px;">	
 			{% if user.is_authenticated %}
 			<li><a href="/app/logout/">Logout</a></li>
 						 {% else %}
-						<li><a href="/app/login/"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-						<li><a href="/app/register/"><span class="glyphicon glyphicon-user"></span> Register</a></li>
+						<li><a href="/app/login/" id="loginpage"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+						<li><a href="/app/register/" id="registerpage"><span class="glyphicon glyphicon-user"></span> Register</a></li>
 						{% endif %}
           </ul>
         </div><!--/.nav-collapse -->
