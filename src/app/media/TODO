@@ -1,0 +1,11 @@
+- Add a new test file / example file with embedded packages
+- cleanup warnings
+- use a spdx-licenselist artifact
+- use a spdx-testdata artifact?
+  - define reference test data (e.g. u-boot-2013.10.tar.bz2)
+- cleanup licensing
+- provide webservice
+- provide a perfect spdx file
+
+have fun!
+;-r
