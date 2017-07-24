@@ -75,7 +75,7 @@ def validate(request):
             jpype.detachThreadFromJVM()
             if (request.is_ajax()):
                 ajaxdict=dict()
-                ajaxdict["data"] = "Jpype" 
+                ajaxdict["data"] = jpype.JavaException.message(ex)
                 response = json.dumps(ajaxdict)
                 return HttpResponse("Jpype.",status=404)
             return render(request, 'app/validate.html',context_dict)
