@@ -40,8 +40,6 @@ def about(request):
 def validate(request):
     context_dict={}
     if request.method == 'POST':
-    	if (request.is_ajax()):
-    		print ("hoye")
         if (jpype.isJVMStarted()==0):
             """ If JVM not already started, start it, attach a Thread and start processing the request """
             classpath =os.path.abspath(".")+"/tool.jar"
@@ -61,6 +59,11 @@ def validate(request):
                 verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                 verifyclass.main([settings.APP_DIR+uploaded_file_url])
                 jpype.detachThreadFromJVM()
+                if (request.is_ajax()):
+                    a=dict()
+                    a["data"] = "This SPDX Document is valid."
+                    b = json.dumps(a)
+                    return HttpResponse(b)
                 return HttpResponse("This SPDX Document is valid.")
             else :
                 return HttpResponse("File Not Uploaded")

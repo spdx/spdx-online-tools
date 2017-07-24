@@ -59,10 +59,7 @@
 <script type="text/javascript">
   $('#myform').on('submit', function(event){
     event.preventDefault();
-    console.log("form submitted!")  // sanity check
-    var form = new FormData($("#myform")[0]); //$(this ).serialize();
-    form.append("CustomField", "This is some extra data, testing");
-    console.log(form);
+    var form = new FormData($("#myform")[0]);
     $.ajax({
             type: "POST",
             enctype: 'multipart/form-data',
@@ -72,19 +69,12 @@
             contentType: false,
             cache: false,
             timeout: 600000,
+            dataType: 'json',
             success: function (data) {
-                console.log("here");
-                $("#result").text(data);
                 console.log("SUCCESS : ", data);
-                $("#btnSubmit").prop("disabled", false);
-
             },
             error: function (e) {
-
-                $("#result").text(e.responseText);
                 console.log("ERROR : ", e);
-                $("#btnSubmit").prop("disabled", false);
-
             }
         });
 });
