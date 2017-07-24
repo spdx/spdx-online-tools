@@ -60,7 +60,8 @@
   $('#myform').on('submit', function(event){
     event.preventDefault();
     console.log("form submitted!")  // sanity check
-    create_post();
+    var form = $(this).serialize();
+    console.log(form);
 });
 
 </script>
