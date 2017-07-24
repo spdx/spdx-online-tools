@@ -40,6 +40,8 @@ def about(request):
 def validate(request):
     context_dict={}
     if request.method == 'POST':
+    	if (request.is_ajax()):
+    		print ("hoye")
         if (jpype.isJVMStarted()==0):
             """ If JVM not already started, start it, attach a Thread and start processing the request """
             classpath =os.path.abspath(".")+"/tool.jar"

@@ -60,8 +60,33 @@
   $('#myform').on('submit', function(event){
     event.preventDefault();
     console.log("form submitted!")  // sanity check
-    var form = $(this).serialize();
+    var form = new FormData($("#myform")[0]); //$(this ).serialize();
+    form.append("CustomField", "This is some extra data, testing");
     console.log(form);
+    $.ajax({
+            type: "POST",
+            enctype: 'multipart/form-data',
+            url: "/app/validate/",
+            data: form,
+            processData: false,
+            contentType: false,
+            cache: false,
+            timeout: 600000,
+            success: function (data) {
+                console.log("here");
+                $("#result").text(data);
+                console.log("SUCCESS : ", data);
+                $("#btnSubmit").prop("disabled", false);
+
+            },
+            error: function (e) {
+
+                $("#result").text(e.responseText);
+                console.log("ERROR : ", e);
+                $("#btnSubmit").prop("disabled", false);
+
+            }
+        });
 });
 
 </script>
