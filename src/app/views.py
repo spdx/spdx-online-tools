@@ -73,11 +73,22 @@ def validate(request):
             """ Error raised by verifyclass.verify without exiting the application"""
             context_dict["error"] = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
             jpype.detachThreadFromJVM()
+            if (request.is_ajax()):
+                ajaxdict=dict()
+                ajaxdict["data"] = "Jpype" 
+                response = json.dumps(ajaxdict)
+                return HttpResponse("Jpype.",status=404)
             return render(request, 'app/validate.html',context_dict)
         except :
             traceback.print_exc()
             context_dict["error"] = "Other Exception Raised." 
             jpype.detachThreadFromJVM()
+            print ("here")
+            if (request.is_ajax()):
+                ajaxdict=dict()
+                ajaxdict["data"] = "Other Exception Raised." 
+                response = json.dumps(ajaxdict)
+                return HttpResponse("Other Exception Raised.",status=404)
             return render(request, 'app/validate.html',context_dict)
     else :
         return render(request, 'app/validate.html',context_dict)
