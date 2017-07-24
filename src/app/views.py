@@ -28,6 +28,8 @@ from app.forms import UserRegisterForm,UserProfileForm
 import jpype
 import traceback
 import os
+import json
+
 
 def index(request):
     context_dict={}
@@ -60,10 +62,10 @@ def validate(request):
                 verifyclass.main([settings.APP_DIR+uploaded_file_url])
                 jpype.detachThreadFromJVM()
                 if (request.is_ajax()):
-                    a=dict()
-                    a["data"] = "This SPDX Document is valid."
-                    b = json.dumps(a)
-                    return HttpResponse(b)
+                    ajaxdict=dict()
+                    ajaxdict["data"] = "This SPDX Document is valid."
+                    response = json.dumps(ajaxdict)
+                    return HttpResponse(response)
                 return HttpResponse("This SPDX Document is valid.")
             else :
                 return HttpResponse("File Not Uploaded")
