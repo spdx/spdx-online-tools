@@ -57,6 +57,14 @@
 {% endblock %}
 {% block script_block %}
 <script type="text/javascript">
+  $('#myform').on('submit', function(event){
+    event.preventDefault();
+    console.log("form submitted!")  // sanity check
+    create_post();
+});
+
+</script>
+<script type="text/javascript">
 $(document).ready(function () {
     $("#validatepage").addClass('linkactive');
     });
