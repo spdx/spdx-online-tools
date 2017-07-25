@@ -104,6 +104,8 @@
   $('#myform').on('submit', function(event){
     event.preventDefault();
     var form = new FormData($("#myform")[0]);
+    form.append("compare","compare");
+    console.log(form);
     $.ajax({
             type: "POST",
             enctype: 'multipart/form-data',
@@ -131,7 +133,9 @@
 <script type="text/javascript">
   $('#myform2').on('submit', function(event){
     event.preventDefault();
-    var form = new FormData($("#myform")[0]);
+    var form = new FormData($("#myform2")[0]);
+    form.append("compareall","compareall");
+    console.log(form);
     $.ajax({
             type: "POST",
             enctype: 'multipart/form-data',

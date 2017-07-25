@@ -121,12 +121,18 @@ def compare(request):
                         fs = FileSystemStorage()
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename)
+                        print("verify")
                         verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
                     """ Call the java function with parameters as list"""
                     mainclass.main(callfunc)
                     jpype.detachThreadFromJVM()
                     context_dict['Content-Disposition'] = 'attachment; filename='+filename
+                    if (request.is_ajax()):
+                        ajaxdict=dict()
+                        ajaxdict["data"] = "This SPDX Document is valid."
+                        response = json.dumps(ajaxdict)
+                        return HttpResponse(response)
                     return HttpResponseRedirect("/media/"+rfilename)
                 else :
                     return HttpResponse("File Not Uploaded")
@@ -134,11 +140,21 @@ def compare(request):
                 """ Error raised by verifyclass.verify without exiting the application"""
                 context_dict["error"] = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
                 jpype.detachThreadFromJVM()
+                if (request.is_ajax()):
+                    ajaxdict=dict()
+                    ajaxdict["data"] = jpype.JavaException.message(ex)
+                    response = json.dumps(ajaxdict)
+                    return HttpResponse(response)
                 return render(request, 'app/compare.html',context_dict)
             except :
                 traceback.print_exc()
                 context_dict["error"] = "Other Exception Raised." 
                 jpype.detachThreadFromJVM()
+                if (request.is_ajax()):
+                    ajaxdict=dict()
+                    ajaxdict["data"] = "Other"
+                    response = json.dumps(ajaxdict)
+                    return HttpResponse(response)
                 return render(request, 'app/compare.html',context_dict)
         elif 'compareall' in request.POST:
             try :
@@ -156,6 +172,11 @@ def compare(request):
                     mainclass.main(callfunc)
                     jpype.detachThreadFromJVM()
                     context_dict['Content-Disposition'] = 'attachment; filename='+filename
+                    if (request.is_ajax()):
+                        ajaxdict=dict()
+                        ajaxdict["data"] = "This SPDX Document is valid."
+                        response = json.dumps(ajaxdict)
+                        return HttpResponse(response)
                     return HttpResponseRedirect("/media/"+rfilename)
                 else :
                     return HttpResponse("File Not Uploaded")
@@ -163,11 +184,21 @@ def compare(request):
                 """ Error raised by verifyclass.verify without exiting the application"""
                 context_dict["error"] = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
                 jpype.detachThreadFromJVM()
+                if (request.is_ajax()):
+                    ajaxdict=dict()
+                    ajaxdict["data"] = jpype.JavaException.message(ex)
+                    response = json.dumps(ajaxdict)
+                    return HttpResponse(response)
                 return render(request, 'app/compare.html',context_dict)
             except :
                 traceback.print_exc()
                 context_dict["error"] = "Other Exception Raised." 
                 jpype.detachThreadFromJVM()
+                if (request.is_ajax()):
+                    ajaxdict=dict()
+                    ajaxdict["data"] = "Other2"
+                    response = json.dumps(ajaxdict)
+                    return HttpResponse(response)
                 return render(request, 'app/compare.html',context_dict)
     else :
         return render(request, 'app/compare.html',context_dict)
