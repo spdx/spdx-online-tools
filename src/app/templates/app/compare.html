@@ -80,8 +80,83 @@
 </div>
 </div>
 </div>
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Modal Header</h4>
+      </div>
+      <div id="modal-body" class="modal-body">
+        <p>Some text in the modal.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 {% endblock %}
 {% block script_block %}
+<script type="text/javascript">
+  $('#myform').on('submit', function(event){
+    event.preventDefault();
+    var form = new FormData($("#myform")[0]);
+    $.ajax({
+            type: "POST",
+            enctype: 'multipart/form-data',
+            url: "/app/compare/",
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            cache: false,
+            timeout: 600000,
+            data: form,
+            success: function (data) {
+                console.log("SUCCESS : ", data);
+                $("#modal-body").html(data.data);
+                $("#myModal").modal('show');
+            },
+            error: function (e) {
+                console.log("ERROR : ", e);
+                $("#modal-body").html(e.data);
+                $("#myModal").modal('show');
+            }
+        });
+});
+
+</script>
+<script type="text/javascript">
+  $('#myform2').on('submit', function(event){
+    event.preventDefault();
+    var form = new FormData($("#myform")[0]);
+    $.ajax({
+            type: "POST",
+            enctype: 'multipart/form-data',
+            url: "/app/compare/",
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            cache: false,
+            timeout: 600000,
+            data: form,
+            success: function (data) {
+                console.log("SUCCESS : ", data);
+                $("#modal-body").html(data.data);
+                $("#myModal").modal('show');
+            },
+            error: function (e) {
+                console.log("ERROR : ", e);
+                $("#modal-body").html(e.data);
+                $("#myModal").modal('show');
+            }
+        });
+});
+
+</script>
 <script type="text/javascript">
 $(document).ready(function () {
     $("#comparepage").addClass('linkactive');
