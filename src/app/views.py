@@ -43,7 +43,6 @@ def validate(request):
     context_dict={}
     if request.method == 'POST':
         if (jpype.isJVMStarted()==0):
-            print ("restarting")
             """ If JVM not already started, start it, attach a Thread and start processing the request """
             classpath =os.path.abspath(".")+"/tool.jar"
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
@@ -184,7 +183,6 @@ def convert(request):
         jpype.attachThreadToJVM()
         package = jpype.JPackage("org.spdx.tools")
         mainclass = package.Main
-        print("here")
         try :
             if request.FILES["file"]:
                 """ Saving file to the media directory """
@@ -207,6 +205,7 @@ def convert(request):
                 if (request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = "This SPDX Document is valid."
+                        ajaxdict["medialink"] = "/media/" + convertfile
                         response = json.dumps(ajaxdict)
                         return HttpResponse(response)
                 return HttpResponseRedirect("/media/" + convertfile)
