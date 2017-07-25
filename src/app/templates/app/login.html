@@ -67,9 +67,7 @@
             timeout: 600000,
             data: form,
             success: function (data) {
-                console.log("ERROR : ", data);
-                $("#modal-body").html(data.data);
-                $("#myModal").modal('show');
+               window.location = data.next;  
             },
             error: function (e) {
                 console.log("ERROR : ", e);

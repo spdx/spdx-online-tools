@@ -14,7 +14,7 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import render,render_to_response
-from django.http import HttpResponse,HttpResponseRedirect,HttpResponseBadRequest,JsonResponse
+from django.http import HttpResponse,HttpResponseRedirect,HttpResponseBadRequest,JsonResponse,HttpResponseForbidden
 from django.contrib.auth import authenticate,login ,logout
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -281,6 +281,7 @@ def loginuser(request):
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = "Success"
+                    ajaxdict["next"] = "/app/"
                     response = json.dumps(ajaxdict)
                     return HttpResponse(response)
                 return HttpResponseRedirect('/app/')
@@ -291,7 +292,7 @@ def loginuser(request):
                 ajaxdict=dict()
                 ajaxdict["data"] = "Failed"
                 response = json.dumps(ajaxdict)
-                return HttpResponse(response)
+                return HttpResponseForbidden()
             context_dict['invalid']="Invalid login details supplied."
             print "Invalid login details: {0}, {1}".format(username, password)
             return render(request, 'app/login.html',context_dict)
