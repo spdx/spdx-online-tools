@@ -58,7 +58,7 @@
 <script type="text/javascript">
   $('#login_form').on('submit', function(event){
     event.preventDefault();
-    var form = new FormData($("#login_form")[0]);
+    var form = $('#login_form').serialize();
     $.ajax({
             type: "POST",
             enctype: 'multipart/form-data',
@@ -67,7 +67,9 @@
             timeout: 600000,
             data: form,
             success: function (data) {
-                
+                console.log("ERROR : ", data);
+                $("#modal-body").html(data.data);
+                $("#myModal").modal('show');
             },
             error: function (e) {
                 console.log("ERROR : ", e);

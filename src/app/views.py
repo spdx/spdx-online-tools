@@ -278,10 +278,20 @@ def loginuser(request):
             #add status  choice here
             if user.is_active:
                 login(request, user)
+                if (request.is_ajax()):
+                    ajaxdict=dict()
+                    ajaxdict["data"] = "Success"
+                    response = json.dumps(ajaxdict)
+                    return HttpResponse(response)
                 return HttpResponseRedirect('/app/')
             else:
                 return HttpResponse("Your account is disabled.")	
         else:
+            if (request.is_ajax()):
+                ajaxdict=dict()
+                ajaxdict["data"] = "Failed"
+                response = json.dumps(ajaxdict)
+                return HttpResponse(response)
             context_dict['invalid']="Invalid login details supplied."
             print "Invalid login details: {0}, {1}".format(username, password)
             return render(request, 'app/login.html',context_dict)
