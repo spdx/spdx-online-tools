@@ -289,10 +289,7 @@ def loginuser(request):
                 return HttpResponse("Your account is disabled.")	
         else:
             if (request.is_ajax()):
-                ajaxdict=dict()
-                ajaxdict["data"] = "Failed"
-                response = json.dumps(ajaxdict)
-                return HttpResponseForbidden()
+                return HttpResponseForbidden("Invalid login details supplied.")
             context_dict['invalid']="Invalid login details supplied."
             print "Invalid login details: {0}, {1}".format(username, password)
             return render(request, 'app/login.html',context_dict)
