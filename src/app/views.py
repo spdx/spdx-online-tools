@@ -30,6 +30,7 @@ import traceback
 import os
 import json
 
+from time import sleep
 
 def index(request):
     context_dict={}
@@ -44,12 +45,25 @@ def validate(request):
     if request.method == 'POST':
         if (jpype.isJVMStarted()==0):
             """ If JVM not already started, start it, attach a Thread and start processing the request """
+            print("starting")
             classpath =os.path.abspath(".")+"/tool.jar"
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
+            print("started")
         """ If JVM started, attach a Thread and start processing the request """
+        if (jpype.isJVMStarted()==0):
+            print("sleeping")
+            sleep(5)
+            print(jpype.isJVMStarted())
         jpype.attachThreadToJVM()
+        print("attached")
+        if (jpype.isThreadAttachedToJVM()==0):
+            print("sleeping for thread")
+            sleep(5)
+            print(jpype.isThreadAttachedToJVM())
         package = jpype.JPackage("org.spdx.tools")
+        print("verifying")
         verifyclass = package.Verify
+        print("verifying")
         try :
             if request.FILES["file"]:
                 """ Saving file to the media directory """
@@ -58,8 +72,11 @@ def validate(request):
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
                 """ Call the java function with parameters as list"""
+                print("verifying2")
                 verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                print("verifying2")
                 verifyclass.main([settings.APP_DIR+uploaded_file_url])
+                print("verifying2")
                 jpype.detachThreadFromJVM()
                 if (request.is_ajax()):
                     ajaxdict=dict()
@@ -72,22 +89,24 @@ def validate(request):
         except jpype.JavaException,ex :
             """ Error raised by verifyclass.verify without exiting the application"""
             context_dict["error"] = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
-            jpype.detachThreadFromJVM()
             if (request.is_ajax()):
                 ajaxdict=dict()
                 ajaxdict["data"] = jpype.JavaException.message(ex)
+                jpype.detachThreadFromJVM()
                 response = json.dumps(ajaxdict)
                 return HttpResponse("Jpype.",status=404)
+            jpype.detachThreadFromJVM()
             return render(request, 'app/validate.html',context_dict)
         except :
             traceback.print_exc()
             context_dict["error"] = "Other Exception Raised." 
-            jpype.detachThreadFromJVM()
             if (request.is_ajax()):
                 ajaxdict=dict()
                 ajaxdict["data"] = "Other Exception Raised." 
+                jpype.detachThreadFromJVM()
                 response = json.dumps(ajaxdict)
                 return HttpResponse("Other Exception Raised.",status=404)
+            jpype.detachThreadFromJVM()
             return render(request, 'app/validate.html',context_dict)
     else :
         return render(request, 'app/validate.html',context_dict)
