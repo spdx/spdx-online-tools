@@ -75,6 +75,7 @@
 </div>
 {% endblock %}
 {% block script_block %}
+<!--
 <script type="text/javascript">
   $('#myform').on('submit', function(event){
     event.preventDefault();
@@ -85,7 +86,7 @@
             url: "/app/validate/",
             processData: false,
             contentType: false,
-            cache: false;
+            cache: false,
             dataType: 'json',
             timeout: 600000,
             data: form,
@@ -103,6 +104,7 @@
 });
 
 </script>
+-->
 <script type="text/javascript">
 $(document).ready(function () {
     $("#validatepage").addClass('linkactive');
