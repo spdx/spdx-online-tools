@@ -148,7 +148,7 @@
             data: form,
             success: function (data) {
                 console.log("SUCCESS : ", data);
-                $("#modal-body").html(data.data);
+                $("#modal-body").html("<a href='"+data.medialink+"'>Link</a>");
                 $("#myModal").modal('show');
             },
             error: function (e) {

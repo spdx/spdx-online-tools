@@ -175,6 +175,7 @@ def compare(request):
                     if (request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = "This SPDX Document is valid."
+                        ajaxdict["medialink"] = "/media/" + rfilename
                         response = json.dumps(ajaxdict)
                         return HttpResponse(response)
                     return HttpResponseRedirect("/media/"+rfilename)
@@ -196,7 +197,7 @@ def compare(request):
                 jpype.detachThreadFromJVM()
                 if (request.is_ajax()):
                     ajaxdict=dict()
-                    ajaxdict["data"] = "Other2"
+                    ajaxdict["data"] = "Other Exception"
                     response = json.dumps(ajaxdict)
                     return HttpResponse(response)
                 return render(request, 'app/compare.html',context_dict)
