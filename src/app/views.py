@@ -43,6 +43,7 @@ def validate(request):
     context_dict={}
     if request.method == 'POST':
         if (jpype.isJVMStarted()==0):
+            print ("restarting")
             """ If JVM not already started, start it, attach a Thread and start processing the request """
             classpath =os.path.abspath(".")+"/tool.jar"
             jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
@@ -83,7 +84,6 @@ def validate(request):
             traceback.print_exc()
             context_dict["error"] = "Other Exception Raised." 
             jpype.detachThreadFromJVM()
-            print ("here")
             if (request.is_ajax()):
                 ajaxdict=dict()
                 ajaxdict["data"] = "Other Exception Raised." 
@@ -184,6 +184,7 @@ def convert(request):
         jpype.attachThreadToJVM()
         package = jpype.JPackage("org.spdx.tools")
         mainclass = package.Main
+        print("here")
         try :
             if request.FILES["file"]:
                 """ Saving file to the media directory """
@@ -203,17 +204,32 @@ def convert(request):
                 mainclass.main([functiontocall,settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                 jpype.detachThreadFromJVM()
                 context_dict['Content-Disposition'] = 'attachment; filename='+filename
+                if (request.is_ajax()):
+                        ajaxdict=dict()
+                        ajaxdict["data"] = "This SPDX Document is valid."
+                        response = json.dumps(ajaxdict)
+                        return HttpResponse(response)
                 return HttpResponseRedirect("/media/" + convertfile)
             else :
                 return HttpResponse("File Not Uploaded")
         except jpype.JavaException,ex :
             context_dict["error"] = jpype.JavaException.message(ex)
             jpype.detachThreadFromJVM()
+            if (request.is_ajax()):
+                ajaxdict=dict()
+                ajaxdict["data"] = jpype.JavaException.message(ex)
+                response = json.dumps(ajaxdict)
+                return HttpResponse(response)
             return render(request, 'app/convert.html',context_dict)
         except :
             traceback.print_exc()
             context_dict["error"] = "Other Exception Raised."
             jpype.detachThreadFromJVM()
+            if (request.is_ajax()):
+                ajaxdict=dict()
+                ajaxdict["data"] = "Other Exception Raised."
+                response = json.dumps(ajaxdict)
+                return HttpResponse(response)
             return render(request, 'app/convert.html',context_dict)
     else :
         return render(request, 'app/convert.html',context_dict)

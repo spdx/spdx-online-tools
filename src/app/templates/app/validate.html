@@ -84,12 +84,11 @@
             type: "POST",
             enctype: 'multipart/form-data',
             url: "/app/validate/",
-            data: form,
             processData: false,
             contentType: false,
-            cache: false,
-            timeout: 600000,
             dataType: 'json',
+            timeout: 600000,
+            data: form,
             success: function (data) {
                 console.log("SUCCESS : ", data);
                 $("#modal-body").html(data.data);
