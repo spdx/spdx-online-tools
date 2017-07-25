@@ -286,6 +286,8 @@ def loginuser(request):
                     return HttpResponse(response)
                 return HttpResponseRedirect('/app/')
             else:
+                if (request.is_ajax()):
+                    return HttpResponseForbidden("Your account is disabled.")
                 return HttpResponse("Your account is disabled.")	
         else:
             if (request.is_ajax()):
