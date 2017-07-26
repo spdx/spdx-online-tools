@@ -21,6 +21,9 @@ from django.conf import settings
 from django import forms
 from django.template import RequestContext
 from django.core.files.storage import FileSystemStorage
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm
@@ -343,4 +346,19 @@ def logoutuser(request):
 
 def profile(request):
     context_dict={}
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(request, 'Your password was successfully updated!')
+            context_dict["success"] = 'Your password was successfully updated!'
+            context_dict["form"] = form
+        else:
+            messages.error(request, 'Please correct the error below.')
+            context_dict["error"] = form.errors
+            context_dict["form"] = form
+    else:
+        form = PasswordChangeForm(request.user)
+        context_dict["form"] = form
     return render(request,'app/profile.html',context_dict)

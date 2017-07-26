@@ -2,17 +2,63 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
-<p class ="lead"> {{ error }}</p>
+{% if success %}
+<h3 style="color:green;">{{ success }}</h3>
+{% endif %}
+{% if error %}
+<h3 style="color:red;">{{ error }}</h3>
+{% endif %}
 <ul class="nav nav-tabs nav-justified" >
   <li  class="active"><a data-toggle="tab" href="#info">Info</a></li>
   <li ><a data-toggle="tab" href="#changepassword">Change Password</a></li>
 </ul>
 <div class="tab-content">
     <div id="info" class="tab-pane fade in active">
-    Hello
+      <div class="panel panel-default">
+      <div class="panel-heading"> <p class="lead"> Tag-Value, RDF and XML SPDX Document</p> </div>
+      <div class="panel-body">
+      <form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+      {% csrf_token %}
+        <div class = "form-group">
+        <div class="col-sm-12">
+        <label class="control-label col-sm-3" >SPDX Document</label>
+          <div class="col-sm-6"> 
+            <input type="file" id="file" placeholder="" name = "file"  style="width: 100%;">
+          </div>
+        </div>  
+      </div>
+      <hr>
+      <input class=" btn btn-md btn-info" type="submit" value="Validate">
+      </form>
+      </div>
+      </div>
     </div>
     <div id="changepassword" class="tab-pane fade">
-    Hello2
+    <div class="col-md-3">
+    </div>
+    <div class="col-md-6">
+    <div class="panel panel-default">
+    <div class="panel-heading"> <p class="lead"></p> </div>
+    <div class="panel-body">
+      <form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+        <label class="control-label col-sm-4" >{{ field.label_tag }}</label>
+              <div class="col-sm-5">
+                {{ field }}
+              </div>
+              <div class="col-sm-3">
+              </div>
+        </div>
+        {% endfor %}
+        <button type="submit">Save changes</button>
+      </form>
+    </div>
+    </div>  
+    </div>
+    <div class="col-md-3">
+    </div>
     </div>
 </div>
 {% endblock %}
