@@ -339,4 +339,4 @@ def register(request):
 
 def logoutuser(request):
     logout(request)
-    return HttpResponseRedirect("/app/")
+    return HttpResponseRedirect("/app/login/")
