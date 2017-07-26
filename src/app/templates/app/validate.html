@@ -97,7 +97,8 @@
             },
             error: function (e) {
                 console.log("ERROR : ", e);
-                $("#modal-body").html(e.responseText);
+                var obj = JSON.parse(e.responseText);
+                $("#modal-body").html(obj.data);
                 $("#myModal").modal('show');
             }
         });
