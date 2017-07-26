@@ -242,38 +242,42 @@ def convert(request):
                     verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                 """ Call the java function with parameters as list"""
                 mainclass.main([functiontocall,settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
-                jpype.detachThreadFromJVM()
                 context_dict['Content-Disposition'] = 'attachment; filename='+filename
                 if (request.is_ajax()):
                         ajaxdict=dict()
-                        ajaxdict["data"] = "This SPDX Document is valid."
                         ajaxdict["medialink"] = "/media/" + convertfile
                         response = json.dumps(ajaxdict)
+                        jpype.detachThreadFromJVM()
                         return HttpResponse(response)
+                jpype.detachThreadFromJVM()
                 return HttpResponseRedirect("/media/" + convertfile)
             else :
-                return HttpResponse("File Not Uploaded")
+                jpype.detachThreadFromJVM()
+                return HttpResponse("File Not Uploaded",status=404)
         except jpype.JavaException,ex :
             context_dict["error"] = jpype.JavaException.message(ex)
-            jpype.detachThreadFromJVM()
             if (request.is_ajax()):
                 ajaxdict=dict()
                 ajaxdict["data"] = jpype.JavaException.message(ex)
                 response = json.dumps(ajaxdict)
-                return HttpResponse(response)
+                jpype.detachThreadFromJVM()
+                return HttpResponse(response,status=400)
+            jpype.detachThreadFromJVM()
             return render(request, 'app/convert.html',context_dict)
         except :
             traceback.print_exc()
             context_dict["error"] = "Other Exception Raised."
-            jpype.detachThreadFromJVM()
             if (request.is_ajax()):
                 ajaxdict=dict()
                 ajaxdict["data"] = "Other Exception Raised."
-                response = json.dumps(ajaxdict)
+                response = json.dumps(ajaxdict,status=400)
+                jpype.detachThreadFromJVM()
                 return HttpResponse(response)
+            jpype.detachThreadFromJVM()    
             return render(request, 'app/convert.html',context_dict)
     else :
         return render(request, 'app/convert.html',context_dict)
+
 def search(request):
     context_dict={}
     return render(request, 'app/search.html',context_dict)
