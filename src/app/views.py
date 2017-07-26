@@ -63,10 +63,8 @@ def validate(request):
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = "This SPDX Document is valid."
-                    response = HttpResponse(json.dumps(ajaxdict))
-                    response.status_code = 400
+                    response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
-                    return response
                     return HttpResponse(response)
                 jpype.detachThreadFromJVM()
                 return HttpResponse("This SPDX Document is valid.")
