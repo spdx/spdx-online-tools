@@ -1,0 +1,25 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load staticfiles %}
+{% block body1 %}
+<p class ="lead"> {{ error }}</p>
+<ul class="nav nav-tabs nav-justified" >
+  <li  class="active"><a data-toggle="tab" href="#info">Info</a></li>
+  <li ><a data-toggle="tab" href="#changepassword">Change Password</a></li>
+</ul>
+<div class="tab-content">
+    <div id="info" class="tab-pane fade in active">
+    Hello
+    </div>
+    <div id="changepassword" class="tab-pane fade">
+    Hello2
+    </div>
+</div>
+{% endblock %}
+{% block script_block %}
+<script type="text/javascript">
+$(document).ready(function () {
+    $("#profilepage").addClass('linkactive');
+    });
+</script>
+{% endblock %}

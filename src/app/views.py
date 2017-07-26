@@ -340,3 +340,7 @@ def register(request):
 def logoutuser(request):
     logout(request)
     return HttpResponseRedirect("/app/login/")
+
+def profile(request):
+    context_dict={}
+    return render(request,'app/profile.html',context_dict)
