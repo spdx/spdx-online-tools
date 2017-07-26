@@ -100,7 +100,6 @@
 </div>
 {% endblock %}
 {% block script_block %}
-<!--
 <script type="text/javascript">
   $('#myform').on('submit', function(event){
     event.preventDefault();
@@ -119,20 +118,19 @@
             data: form,
             success: function (data) {
                 console.log("SUCCESS : ", data);
-                $("#modal-body").html(data.data);
+                $("#modal-body").html("<a href='"+data.medialink+"'>Link</a>");
                 $("#myModal").modal('show');
             },
             error: function (e) {
                 console.log("ERROR : ", e);
-                $("#modal-body").html(e.data);
+                var obj = JSON.parse(e.responseText);
+                $("#modal-body").html(obj.data);
                 $("#myModal").modal('show');
             }
         });
 });
 
 </script>
--->
-<!--
 <script type="text/javascript">
   $('#myform2').on('submit', function(event){
     event.preventDefault();
@@ -156,14 +154,13 @@
             },
             error: function (e) {
                 console.log("ERROR : ", e);
-                $("#modal-body").html(e.data);
+                var obj = JSON.parse(e.responseText);
+                $("#modal-body").html(obj.data);
                 $("#myModal").modal('show');
             }
         });
 });
-
 </script>
--->
 <script type="text/javascript">
 $(document).ready(function () {
     $("#comparepage").addClass('linkactive');
