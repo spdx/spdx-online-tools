@@ -15,6 +15,9 @@
   }
 </style>
 -->
+<div id="messages" class="messages">
+</div>
+
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead"> Convert to other SPDX format</p> </div>
@@ -70,9 +73,9 @@
 
     <!-- Modal content-->
     <div class="modal-content">
-      <div class="modal-header">
+      <div id="modal-header" class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Modal Header</h4>
+        <h4 id="modal-title" class="modal-title"></h4>
       </div>
       <div id="modal-body" class="modal-body">
       </div>
@@ -86,107 +89,143 @@
 {% endblock %}
 {% block script_block %}
 <script type="text/javascript">
+$(document).ready(function () {
+  $("#convertpage").addClass('linkactive');
+  $("#from_format").change(function() {
+    if ($(this).data('options') === undefined) {
+      /*Taking an array of all options-2 and kind of embedding it on the select1*/
+      $(this).data('options', $('#to_format option').clone());
+    }
+    var id = $(this).val();
+    var options = $(this).data('options').filter('[data-value=' + id + ']');
+    $('#to_format').html(options);
+    if (id!="0"){
+      $('#doclabel').text("SPDX " +id + " Document");
+    }
+    else{
+      $('#doclabel').text("SPDX Document");
+    }
+    var id2 = $('#to_format').val();
+    if (id2=="Spreadsheet"){
+      $('#convertdoclabel').text(".xlsx");
+      $('#cfileformat').val(".xlsx");
+    }
+    else if (id2=="RDF"){
+      $('#convertdoclabel').text(".rdf");
+      $('#cfileformat').val(".rdf");
+    }
+    else if (id2=="Tag"){
+      $('#convertdoclabel').text(".spdx");
+      $('#cfileformat').val(".spdx");
+    }
+    else if (id2=="HTML"){
+      $('#convertdoclabel').text(".html");
+      $('#cfileformat').val(".html");
+    }
+    else{
+      $('#convertdoclabel').text();
+      $('#cfileformat').val("");
+    }
+  });
+  $("#to_format").change(function() {
+    var id2 = $('#to_format').val();
+    if (id2=="Spreadsheet"){
+      $('#convertdoclabel').text(".xlsx");
+      $('#cfileformat').val(".xlsx");
+    }
+    else if (id2=="RDF"){
+      $('#convertdoclabel').text(".rdf");
+      $('#cfileformat').val(".rdf");
+    }
+    else if (id2=="Tag"){
+      $('#convertdoclabel').text(".spdx");
+      $('#cfileformat').val(".spdx");
+    }
+    else if (id2=="HTML"){
+      $('#convertdoclabel').text(".html");
+      $('#cfileformat').val(".html");
+    }
+    else{
+      $('#convertdoclabel').text();
+      $('#cfileformat').val("");
+    }
+  });
+})
+</script>
+<script type="text/javascript">
+function checkform() {
+  if ($('#file').get(0).files.length === 0) {
+    return ("No files selected.");
+  }
+  else if (($('#from_format').val() == "0")){
+    return("Please select the conversion type.");
+  }
+  else if (($('#to_format').val() == "0")){
+    return("Please select the conversion type.");
+  }
+  else if (($('#cfilename').val() == "")){
+    return("Please choose a file name for the converted file.");
+  }
+  else {
+    return "1";
+  }
+}
+</script>
+<script type="text/javascript">
   $('#myform').on('submit', function(event){
     event.preventDefault();
-    var form = new FormData($("#myform")[0]);
-    console.log(form)
-    $.ajax({
-            type: "POST",
-            enctype: 'multipart/form-data',
-            url: "/app/convert/",
-            processData: false,
-            contentType: false,
-            dataType: 'json',
-            cache: false,
-            timeout: 600000,
-            data: form,
-            success: function (data) {
-                console.log("SUCCESS : ", data);
-                $("#modal-body").html("<a href='"+data.medialink+"'>Link</a>");
-                $("#myModal").modal({
-                        backdrop: 'static',
-                        keyboard: true, 
-                        show: true
-                });
-            },
-            error: function (e) {
-                console.log("ERROR : ", e);
-                var obj = JSON.parse(e.responseText);
-                $("#modal-body").html(obj.data);
-                $("#myModal").modal({
-                        backdrop: 'static',
-                        keyboard: true, 
-                        show: true
-                });
-            }
-        });
+    var check = checkform();
+    if (check=="1"){
+      $("#messages").html("");
+      var form = new FormData($("#myform")[0]);
+      console.log(form)
+      $.ajax({
+              type: "POST",
+              enctype: 'multipart/form-data',
+              url: "/app/convert/",
+              processData: false,
+              contentType: false,
+              dataType: 'json',
+              cache: false,
+              timeout: 600000,
+              data: form,
+              success: function (data) {
+                  console.log("SUCCESS : ", data);
+                  $("#modal-header").removeClass("red-modal");
+                  $("#modal-header").addClass("green-modal");
+                  $("#modal-title").html("Success!");
+                  $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
+                  $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true, 
+                          show: true
+                  });
+              },
+              error: function (e) {
+                  console.log("ERROR : ", e);
+                  var obj = JSON.parse(e.responseText);
+                  $("#modal-header").removeClass("green-modal");
+                  $("#modal-header").addClass("red-modal");
+                  $("#modal-title").html("Error!");
+                  $("#modal-body").html("<h3>"+obj.data+"</h3");
+                  $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true, 
+                          show: true
+                  });
+              }
+          });
+    }
+    else{
+      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+      setTimeout(function() {
+        $("#messages").html("");
+      }, 5000);
+    }
 });
 
 </script>
-<script type="text/javascript">
-$(document).ready(function () {
-  $("#convertpage").addClass('linkactive');
-	$("#from_format").change(function() {
-	  if ($(this).data('options') === undefined) {
-	    /*Taking an array of all options-2 and kind of embedding it on the select1*/
-	    $(this).data('options', $('#to_format option').clone());
-	  }
-	  var id = $(this).val();
-	  var options = $(this).data('options').filter('[data-value=' + id + ']');
-	  $('#to_format').html(options);
-	  if (id!="0"){
-	  	$('#doclabel').text("SPDX " +id + " Document");
-	  }
-	  else{
-	  	$('#doclabel').text("SPDX Document");
-	  }
-	  var id2 = $('#to_format').val();
-	  if (id2=="Spreadsheet"){
-	  	$('#convertdoclabel').text(".xlsx");
-	  	$('#cfileformat').val(".xlsx");
-	  }
-	  else if (id2=="RDF"){
-	  	$('#convertdoclabel').text(".rdf");
-	  	$('#cfileformat').val(".rdf");
-	  }
-	  else if (id2=="Tag"){
-	  	$('#convertdoclabel').text(".spdx");
-	  	$('#cfileformat').val(".spdx");
-	  }
-	  else if (id2=="HTML"){
-	  	$('#convertdoclabel').text(".html");
-	  	$('#cfileformat').val(".html");
-	  }
-	  else{
-	  	$('#convertdoclabel').text();
-	  	$('#cfileformat').val("");
-	  }
-	});
-	$("#to_format").change(function() {
-	  var id2 = $('#to_format').val();
-	  if (id2=="Spreadsheet"){
-	  	$('#convertdoclabel').text(".xlsx");
-	  	$('#cfileformat').val(".xlsx");
-	  }
-	  else if (id2=="RDF"){
-	  	$('#convertdoclabel').text(".rdf");
-	  	$('#cfileformat').val(".rdf");
-	  }
-	  else if (id2=="Tag"){
-	  	$('#convertdoclabel').text(".spdx");
-	  	$('#cfileformat').val(".spdx");
-	  }
-	  else if (id2=="HTML"){
-	  	$('#convertdoclabel').text(".html");
-	  	$('#cfileformat').val(".html");
-	  }
-	  else{
-	  	$('#convertdoclabel').text();
-	  	$('#cfileformat').val("");
-	  }
-	});
-})
-</script>
+
 <!--
 <script type="text/javascript">
   (function(window) {
