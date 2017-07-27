@@ -42,3 +42,13 @@ class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserID
         fields = ('organisation',)
+
+class InfoForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name','last_name','email')
+
+class OrgInfoForm(forms.ModelForm):
+    class Meta:
+        model = UserID
+        fields = ('organisation',)

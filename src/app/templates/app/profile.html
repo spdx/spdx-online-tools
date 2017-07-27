@@ -14,16 +14,53 @@
 </ul>
 <div class="tab-content">
     <div id="info" class="tab-pane fade in active">
-      
+    <div class="col-md-3">
+    </div>
+    <div class="col-md-6">
+    <hr>
+    <div class="panel panel-default">
+    <div class="panel-heading"> <p class="lead">Information</p></div>
+    <div class="panel-body">
+      <form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+        {% csrf_token %}
+        <fieldset disabled>
+        {% for field in info_form %}
+        <div class="form-group">
+        <label class="control-label col-sm-4" >{{ field.label_tag }}</label>
+              <div class="col-sm-5">
+                {{ field }}
+              </div>
+              <div class="col-sm-3">
+              </div>
+        </div>
+        {% endfor %}
+        {% for field in orginfo_form %}
+        <div class="form-group">
+        <label class="control-label col-sm-4" >{{ field.label_tag }}</label>
+              <div class="col-sm-5">
+                {{ field }}
+              </div>
+              <div class="col-sm-3">
+              </div>
+        </div>
+        {% endfor %}
+        </fieldset>
+        <button name="saveinfo" type="submit">Save changes</button>
+      </form>
+    </div>
+    </div>
+    </div>
+    <div class="col-md-3">
+    </div>
     </div>
     <div id="changepassword" class="tab-pane fade">
     <div class="col-md-3">
     </div>
     <div class="col-md-6">
     <div class="panel panel-default">
-    <div class="panel-heading"> <p class="lead"></p> </div>
+    <div class="panel-heading"> <p class="lead">Change Password</p> </div>
     <div class="panel-body">
-      <form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+      <form id="myform2" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
         {% csrf_token %}
         {% for field in form %}
         <div class="form-group">
@@ -35,7 +72,7 @@
               </div>
         </div>
         {% endfor %}
-        <button type="submit">Save changes</button>
+        <button name="changepwd" type="submit">Save changes</button>
       </form>
     </div>
     </div>  

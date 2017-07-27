@@ -22,11 +22,10 @@ from django import forms
 from django.template import RequestContext
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 
 from app.models import UserID
-from app.forms import UserRegisterForm,UserProfileForm
+from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 
 import jpype
 import traceback
@@ -350,19 +349,40 @@ def logoutuser(request):
 
 def profile(request):
     context_dict={}
+    profile = UserID.objects.get(user=request.user)
     if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # Important!
-            messages.success(request, 'Your password was successfully updated!')
-            context_dict["success"] = 'Your password was successfully updated!'
-            context_dict["form"] = form
-        else:
-            messages.error(request, 'Please correct the error below.')
-            context_dict["error"] = form.errors
-            context_dict["form"] = form
+        if "saveinfo" in request.POST :
+            info_form = InfoForm(request.POST,instance=request.user)
+            orginfo_form = OrgInfoForm(request.POST,instance=profile)
+            if info_form.is_valid() and orginfo_form.is_valid():
+                form1 = info_form.save()
+                form2 = orginfo_form.save()
+                context_dict["success"] = "Details Successfully Updated"
+                info_form = InfoForm(instance=request.user)
+                orginfo_form = OrgInfoForm(instance=profile)
+                form = PasswordChangeForm(request.user)
+                context_dict["form"] = form
+                context_dict["info_form"] = info_form
+                context_dict["orginfo_form"] = orginfo_form
+                return render(request,'app/profile.html',context_dict)
+            else :
+                context_dict["error"] = "Error changing details" + str(info_form.errors) + str(orginfo_form.errors)
+                return render(request,'app/profile.html',context_dict)
+        if "changepwd" in request.POST:
+            form = PasswordChangeForm(request.user, request.POST)
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)  # Important!
+                context_dict["success"] = 'Your password was successfully updated!'
+                context_dict["form"] = form
+            else:
+                context_dict["error"] = form.errors
+                context_dict["form"] = form
     else:
+        info_form = InfoForm(instance=request.user)
+        orginfo_form = OrgInfoForm(instance=profile)
         form = PasswordChangeForm(request.user)
         context_dict["form"] = form
+        context_dict["info_form"] = info_form
+        context_dict["orginfo_form"] = orginfo_form
     return render(request,'app/profile.html',context_dict)
