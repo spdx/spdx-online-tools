@@ -93,7 +93,7 @@ function checkform() {
     event.preventDefault();
     var check = checkform();
     if (check=="1"){
-      $("#messages").html();
+      $("#messages").html("");
       var form = new FormData($("#myform")[0]);
       $.ajax({
               type: "POST",
@@ -134,6 +134,9 @@ function checkform() {
     }
     else{
       $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+      setTimeout(function() {
+        $("#messages").html("");
+      }, 5000);
     }
 });
 
