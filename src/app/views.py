@@ -169,9 +169,13 @@ def compare(request):
         elif 'compareall' in request.POST:
             try :
                 if request.FILES["files"]:
-                    rfilename = request.POST["rfilename"]+".xlsx"
+                    rfilename = request.POST["rfilename2"]+".xlsx"
                     callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
                     # loop through the list of files
+                    if (len(request.FILES.getlist("files"))<2):
+                        jpype.detachThreadFromJVM()    
+                        context_dict["error"]= "Please select atleast 2 files"
+                        return render(request, 'app/compare.html',context_dict)
                     for myfile in request.FILES.getlist("files"):
                         fs = FileSystemStorage()
                         filename = fs.save(myfile.name, myfile)

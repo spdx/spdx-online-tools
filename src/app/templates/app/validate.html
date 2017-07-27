@@ -81,6 +81,7 @@
 <script type="text/javascript">
 function checkform() {
   if ($('#file').get(0).files.length === 0) {
+    $('#file').focus();
     return ("No files selected.");
   }
   else {

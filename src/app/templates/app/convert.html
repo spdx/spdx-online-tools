@@ -155,15 +155,19 @@ $(document).ready(function () {
 <script type="text/javascript">
 function checkform() {
   if ($('#file').get(0).files.length === 0) {
+    $('#file').focus();
     return ("No files selected.");
   }
   else if (($('#from_format').val() == "0")){
+    $('#from_format').focus();
     return("Please select the conversion type.");
   }
   else if (($('#to_format').val() == "0")){
+    $('#to_format').focus();
     return("Please select the conversion type.");
   }
   else if (($('#cfilename').val() == "")){
+    $('#cfilename').focus();
     return("Please choose a file name for the converted file.");
   }
   else {

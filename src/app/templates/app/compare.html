@@ -2,6 +2,8 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
+<div id="messages" class="messages">
+</div>
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">Compare SPDX RDF Documents</p> </div>
@@ -13,7 +15,7 @@
 			<legend>Upload one by one</legend>
 			<div class = "form-group">
 				<div class="col-sm-12">
-				<label class="control-label col-sm-3" >SPDX Document</label>
+				<label class="control-label col-sm-3" >SPDX Document 1</label>
 					<div class="col-sm-3"> 
 					  <input type="file" id="file1" placeholder="" name = "file1"  >
 					</div>
@@ -67,7 +69,7 @@
 				<div class="col-sm-12">
 				<label class="control-label col-sm-3" >Result File Name</label>
 					<div class="col-sm-6"> 
-					  <input type="text" id="rfilename" placeholder="" name = "rfilename"  >
+					  <input type="text" id="rfilename2" placeholder="" name = "rfilename2"  >
 					  <label class="control-label" id="convertdoclabel" >.xlsx</label>
 					</div>
 				</div>	
@@ -102,72 +104,135 @@
 {% endblock %}
 {% block script_block %}
 <script type="text/javascript">
+function checkform() {
+	var nofile = parseInt($("#nofile").val());
+	for(i = 1; i <= nofile; i++){
+       if ($('#file'+i).get(0).files.length == 0) {
+    		return ("SPDX Document " + i + " not selected.");
+	  }
+    }
+  if (($('#rfilename').val() == "")){
+    return("Please choose a file name for the converted file.");
+  }
+  else {
+    return "1";
+  }
+}
+</script>
+<script type="text/javascript">
+function checkform2() {
+  if ($('#files').get(0).files.length < 2) {
+  	$('#files').focus();
+    return ("Please select atleast 2 files.");
+  }
+  else if (($('#rfilename2').val() == "")){
+  	$('#rfilename2').focus();
+    return("Please choose a file name for the converted file.");
+  }
+  else {
+    return "1";
+  }
+}
+</script>
+<script type="text/javascript">
   $('#myform').on('submit', function(event){
     event.preventDefault();
-    var form = new FormData($("#myform")[0]);
-    form.append("compare","compare");
-    console.log(form);
-    $.ajax({
-            type: "POST",
-            enctype: 'multipart/form-data',
-            url: "/app/compare/",
-            processData: false,
-            contentType: false,
-            dataType: 'json',
-            cache: false,
-            timeout: 600000,
-            data: form,
-            success: function (data) {
-                console.log("SUCCESS : ", data);
-                $("#modal-body").html("<a href='"+data.medialink+"'>Link</a>");
-                $("#myModal").modal('show');
-            },
-            error: function (e) {
-                console.log("ERROR : ", e);
-                var obj = JSON.parse(e.responseText);
-                $("#modal-body").html(obj.data);
-                $("#myModal").modal('show');
-            }
-        });
+    var check = checkform();
+    if (check=="1"){
+      $("#messages").html("");
+	    var form = new FormData($("#myform")[0]);
+	    form.append("compare","compare");
+	    console.log(form);
+	    $.ajax({
+	            type: "POST",
+	            enctype: 'multipart/form-data',
+	            url: "/app/compare/",
+	            processData: false,
+	            contentType: false,
+	            dataType: 'json',
+	            cache: false,
+	            timeout: 600000,
+	            data: form,
+	            success: function (data) {
+	                console.log("SUCCESS : ", data);
+	                $("#modal-header").removeClass("red-modal");
+                    $("#modal-header").addClass("green-modal");
+                    $("#modal-title").html("Success!");
+	                $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
+	                $("#myModal").modal('show');
+	            },
+	            error: function (e) {
+	                console.log("ERROR : ", e);
+	                var obj = JSON.parse(e.responseText);
+	                $("#modal-header").removeClass("green-modal");
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Error!");
+	                $("#modal-body").html(obj.data);
+	                $("#myModal").modal('show');
+	            }
+	        });
+	}
+	else{
+		$("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+	    setTimeout(function() {
+	        $("#messages").html("");
+	      }, 5000);
+	}
 });
 
 </script>
 <script type="text/javascript">
   $('#myform2').on('submit', function(event){
     event.preventDefault();
-    var form = new FormData($("#myform2")[0]);
-    form.append("compareall","compareall");
-    console.log(form);
-    $.ajax({
-            type: "POST",
-            enctype: 'multipart/form-data',
-            url: "/app/compare/",
-            processData: false,
-            contentType: false,
-            dataType: 'json',
-            cache: false,
-            timeout: 600000,
-            data: form,
-            success: function (data) {
-                console.log("SUCCESS : ", data);
-                $("#modal-body").html("<a href='"+data.medialink+"'>Link</a>");
-                $("#myModal").modal({
-                        backdrop: 'static',
-                        keyboard: true, 
-                        show: true
-                });
-            },
-            error: function (e) {
-                console.log("ERROR : ", e);
-                var obj = JSON.parse(e.responseText);
-                $("#modal-body").html(obj.data);
-                $("#myModal").modal({
-                        backdrop: 'static',
-                        keyboard: true, 
-                        show: true
-                });
-            }
-        });
+    var check = checkform2();
+    if (check=="1"){
+      $("#messages").html("");
+	    var form = new FormData($("#myform2")[0]);
+	    form.append("compareall","compareall");
+	    console.log(form);
+	    $.ajax({
+	            type: "POST",
+	            enctype: 'multipart/form-data',
+	            url: "/app/compare/",
+	            processData: false,
+	            contentType: false,
+	            dataType: 'json',
+	            cache: false,
+	            timeout: 600000,
+	            data: form,
+	            success: function (data) {
+	                console.log("SUCCESS : ", data);
+	                $("#modal-header").removeClass("red-modal");
+                    $("#modal-header").addClass("green-modal");
+                    $("#modal-title").html("Success!");
+	                $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
+	                $("#myModal").modal({
+	                        backdrop: 'static',
+	                        keyboard: true, 
+	                        show: true
+	                });
+	            },
+	            error: function (e) {
+	                console.log("ERROR : ", e);
+	                var obj = JSON.parse(e.responseText);
+	                $("#modal-header").removeClass("green-modal");
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Error!");
+	                $("#modal-body").html(obj.data);
+	                $("#myModal").modal({
+	                        backdrop: 'static',
+	                        keyboard: true, 
+	                        show: true
+	                });
+	            }
+	        });
+	}
+	else{
+		$("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+	    setTimeout(function() {
+	        $("#messages").html("");
+	      }, 5000);
+	}
 });
 </script>
 <script type="text/javascript">
