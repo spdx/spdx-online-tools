@@ -103,13 +103,21 @@
             success: function (data) {
                 console.log("SUCCESS : ", data);
                 $("#modal-body").html("<a href='"+data.medialink+"'>Link</a>");
-                $("#myModal").modal('show');
+                $("#myModal").modal({
+                        backdrop: 'static',
+                        keyboard: true, 
+                        show: true
+                });
             },
             error: function (e) {
                 console.log("ERROR : ", e);
                 var obj = JSON.parse(e.responseText);
                 $("#modal-body").html(obj.data);
-                $("#myModal").modal('show');
+                $("#myModal").modal({
+                        backdrop: 'static',
+                        keyboard: true, 
+                        show: true
+                });
             }
         });
 });
