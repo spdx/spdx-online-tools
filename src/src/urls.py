@@ -46,6 +46,7 @@ urlpatterns = [
 		url(r'^(/)?$', RedirectView.as_view(url='/app/')),
     url(r'^admin/', admin.site.urls),
     url(r'^app/', include('app.urls')),
+    url(r'^api2/', include('api.urls')),
     url(r'^api/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

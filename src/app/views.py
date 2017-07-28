@@ -127,7 +127,7 @@ def compare(request):
                         fs = FileSystemStorage()
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename)
-                        verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                        verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
                     """ Call the java function with parameters as list"""
                     mainclass.main(callfunc)
@@ -179,7 +179,7 @@ def compare(request):
                         fs = FileSystemStorage()
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename)
-                        verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                        verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
                     """ Call the java function with parameters as list"""
                     mainclass.main(callfunc)
