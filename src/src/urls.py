@@ -31,7 +31,13 @@ from django.views.generic import RedirectView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework import routers
+from api import views
 
+
+router = routers.DefaultRouter()
+router.register(r'users', views.UserViewSet)
+router.register(r'groups', views.GroupViewSet)
 
 urlpatterns = [
     # Examples:
@@ -40,8 +46,11 @@ urlpatterns = [
 		url(r'^(/)?$', RedirectView.as_view(url='/app/')),
     url(r'^admin/', admin.site.urls),
     url(r'^app/', include('app.urls')),
+    url(r'^api/', include(router.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
 
 urlpatterns += staticfiles_urlpatterns()
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
