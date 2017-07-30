@@ -6,6 +6,8 @@ from rest_framework import viewsets
 from serializers import UserSerializer, GroupSerializer
 from rest_framework.views import APIView
 from rest_framework.parsers import FileUploadParser
+from rest_framework.response import Response
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -35,4 +37,4 @@ class FileUploadView(APIView):
         # ...
         # do some stuff with uploaded file
         # ...
-        return Response(up_file.name, status.HTTP_201_CREATED)
+        return Response(up_file.name, status=201)
