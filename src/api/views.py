@@ -25,8 +25,8 @@ class GroupViewSet(viewsets.ModelViewSet):
     
 class FileUploadView(APIView):
     parser_classes = (FileUploadParser, )
-
     def post(self, request, format='jpg'):
+        print("here")
         up_file = request.FILES['file']
         destination = open(up_file.name,'wb+')
         for chunk in up_file.chunks():
