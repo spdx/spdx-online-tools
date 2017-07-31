@@ -7,7 +7,10 @@ from serializers import UserSerializer, GroupSerializer
 from rest_framework.views import APIView
 from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
-
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.viewsets import ModelViewSet
+from models import FileUpload
+from serializers import FileUploadSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -38,3 +41,14 @@ class FileUploadView(APIView):
         # do some stuff with uploaded file
         # ...
         return Response(up_file.name, status=201)
+
+
+class FileUploadViewSet(ModelViewSet):
+    
+    queryset = FileUpload.objects.all()
+    serializer_class = FileUploadSerializer
+    parser_classes = (MultiPartParser, FormParser,)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user,
+                       datafile=self.request.data.get('datafile'))
