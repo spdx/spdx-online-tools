@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.db import models
 
-class FileUpload(models.Model):
+class ValidateFileUpload(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, to_field='id')
-    datafile = models.FileField()
+    file = models.FileField()

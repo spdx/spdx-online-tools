@@ -9,8 +9,9 @@ from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet
-from models import FileUpload
+from models import ValidateFileUpload
 from serializers import FileUploadSerializer
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """
