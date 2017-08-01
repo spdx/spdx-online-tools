@@ -48,7 +48,7 @@
 			</div>
 		<input type="hidden" id="nofile" name="nofile" value="2">
 		<hr>
-		<button class=" btn btn-md btn-info" type="submit" value="Compare" name="compare">Compare</button>
+		<button class=" btn btn-md btn-info" type="submit" id="comparebutton1" value="Compare" name="compare">Compare</button>
 		</fieldset>
 </form>
 </div>
@@ -75,7 +75,7 @@
 				</div>	
 			</div>
 		<hr>
-		<button class=" btn btn-md btn-info" type="submit" value="Compare" name="compareall">Compare</button>
+		<button class=" btn btn-md btn-info" id="comparebutton2" type="submit" value="Compare" name="compareall">Compare</button>
 		</fieldset>
 		<output id="list"></output>
 </form>
@@ -121,6 +121,8 @@ function checkform2() {
   $('#myform').on('submit', function(event){
     event.preventDefault();
     var check = checkform();
+    $("#comparebutton1").text("Comparing...");
+    $("#comparebutton1").prop('disabled', true);
     if (check=="1"){
       $("#messages").html("");
 	    var form = new FormData($("#myform")[0]);
@@ -143,6 +145,8 @@ function checkform2() {
                     $("#modal-title").html("Success!");
 	                $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
 	                $("#myModal").modal('show');
+	                $("#comparebutton1").text("Compare");
+    				$("#comparebutton1").prop('disabled', false);
 	            },
 	            error: function (e) {
 	                console.log("ERROR : ", e);
@@ -152,6 +156,8 @@ function checkform2() {
                     $("#modal-title").html("Error!");
 	                $("#modal-body").text(obj.data);
 	                $("#myModal").modal('show');
+	                $("#comparebutton1").text("Compare");
+    				$("#comparebutton1").prop('disabled', false);
 	            }
 	        });
 	}
@@ -168,6 +174,8 @@ function checkform2() {
   $('#myform2').on('submit', function(event){
     event.preventDefault();
     var check = checkform2();
+    $("#comparebutton2").text("Comparing");
+	$("#comparebutton2").prop('disabled', true);
     if (check=="1"){
       $("#messages").html("");
 	    var form = new FormData($("#myform2")[0]);
@@ -194,6 +202,8 @@ function checkform2() {
 	                        keyboard: true, 
 	                        show: true
 	                });
+	                $("#comparebutton2").text("Compare");
+    				$("#comparebutton2").prop('disabled', false);
 	            },
 	            error: function (e) {
 	                console.log("ERROR : ", e);
@@ -207,6 +217,8 @@ function checkform2() {
 	                        keyboard: true, 
 	                        show: true
 	                });
+	                $("#comparebutton2").text("Compare");
+    				$("#comparebutton2").prop('disabled', false);
 	            }
 	        });
 	}
