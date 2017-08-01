@@ -63,7 +63,7 @@
 		</div>
     <hr>
 		<input type="hidden" id="cfileformat" name="cfileformat" value="">
-		<button class=" btn btn-md btn-info" id="convertbutton" type="submit" value="Convert">Convert</button>
+		<button class=" btn btn-md btn-info" id="convertbutton" type="submit" >Convert</button>
 </form>
 </div>
 </div>
@@ -163,6 +163,8 @@ function checkform() {
     event.preventDefault();
     var check = checkform();
     if (check=="1"){
+      $("#convertbutton").text("Converting...");
+      $("#convertbutton").prop('disabled', true);
       $("#messages").html("");
       var form = new FormData($("#myform")[0]);
       console.log(form)
@@ -187,6 +189,8 @@ function checkform() {
                           keyboard: true, 
                           show: true
                   });
+                  $("#convertbutton").text("Convert");
+                  $("#convertbutton").prop('disabled', false);
               },
               error: function (e) {
                   console.log("ERROR : ", e);
@@ -201,6 +205,8 @@ function checkform() {
                           keyboard: true, 
                           show: true
                   });
+                  $("#convertbutton").text("Convert");
+                  $("#convertbutton").prop('disabled', false);
               }
           });
     }
@@ -209,6 +215,7 @@ function checkform() {
       setTimeout(function() {
         $("#messages").html("");
       }, 5000);
+
     }
 });
 

@@ -174,10 +174,10 @@ function checkform2() {
   $('#myform2').on('submit', function(event){
     event.preventDefault();
     var check = checkform2();
-    $("#comparebutton2").text("Comparing");
-	$("#comparebutton2").prop('disabled', true);
     if (check=="1"){
-      $("#messages").html("");
+    	$("#comparebutton2").text("Comparing");
+	    $("#comparebutton2").prop('disabled', true);
+        $("#messages").html("");
 	    var form = new FormData($("#myform2")[0]);
 	    form.append("compareall","compareall");
 	    console.log(form);

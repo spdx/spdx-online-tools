@@ -75,9 +75,9 @@ function checkform() {
   $('#myform').on('submit', function(event){
     event.preventDefault();
     var check = checkform();
-    $("#validatebutton").text("Validating...");
-    $("#validatebutton").prop('disabled', true);
     if (check=="1"){
+      $("#validatebutton").text("Validating...");
+      $("#validatebutton").prop('disabled', true);
       $("#messages").html("");
       var form = new FormData($("#myform")[0]);
       $.ajax({
