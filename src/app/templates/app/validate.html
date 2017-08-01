@@ -51,7 +51,7 @@
     </div>
     -->
     <hr>
-		<input class=" btn btn-md btn-info" type="submit" value="Validate">
+		<button id="validatebutton" class=" btn btn-md btn-info" type="submit">Validate</button>
 </form>
 {% include "app/modal.html" %} 
 <!--
@@ -74,6 +74,8 @@ function checkform() {
 <script type="text/javascript">
   $('#myform').on('submit', function(event){
     event.preventDefault();
+    $("#validatebutton").text("Validating...");
+    $("#validatebutton").prop('disabled', true);
     var check = checkform();
     if (check=="1"){
       $("#messages").html("");
@@ -99,6 +101,8 @@ function checkform() {
                           keyboard: true, 
                           show: true
                   });
+                  $("#validatebutton").text("Validate");
+                  $("#validatebutton").prop('disabled', false);
               },
               error: function (e) {
                   console.log("ERROR : ", e);
@@ -112,6 +116,8 @@ function checkform() {
                           keyboard: true, 
                           show: true
                   });
+                  $("#validatebutton").text("Validate");
+                  $("#validatebutton").prop('disabled', false);
               }
           });
     }
