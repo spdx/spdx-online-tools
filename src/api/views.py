@@ -46,10 +46,10 @@ class FileUploadView(APIView):
 
 class FileUploadViewSet(ModelViewSet):
     
-    queryset = FileUpload.objects.all()
+    queryset = ValidateFileUpload.objects.all()
     serializer_class = FileUploadSerializer
     parser_classes = (MultiPartParser, FormParser,)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user,
-                       datafile=self.request.data.get('datafile'))
+                       file=self.request.data.get('file'))

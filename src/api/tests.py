@@ -32,7 +32,7 @@ class FileUploadTests(APITestCase):
         f.write('test123\n')
         f.close()
         f = open(path, 'rb')
-        return {'datafile': f}
+        return {'file': f}
 
     def test_upload_file(self):
         url = reverse('file')
@@ -46,7 +46,7 @@ class FileUploadTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('created', response.data)
         self.assertTrue(urlparse(
-            response.data['datafile']).path.startswith(settings.MEDIA_URL))
+            response.data['file']).path.startswith(settings.MEDIA_URL))
         self.assertEqual(response.data['owner'],
                        User.objects.get_by_natural_key('test').id)
         self.assertIn('created', response.data)
