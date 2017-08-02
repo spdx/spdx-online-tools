@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-from models import ValidateFileUpload
+from models import ValidateFileUpload,ConvertFileUpload
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -29,5 +29,5 @@ class ConvertSerializer(serializers.HyperlinkedModelSerializer):
         slug_field='id'
     )
     class Meta:
-        model = ValidateFileUpload
+        model = ConvertFileUpload
         fields = ('created', 'file', 'owner','result','type')

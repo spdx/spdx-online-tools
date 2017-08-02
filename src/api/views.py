@@ -9,8 +9,8 @@ from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet
-from models import ValidateFileUpload
-from serializers import ValidateSerializer
+from models import ValidateFileUpload,ConvertFileUpload
+from serializers import ValidateSerializer,ConvertSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -53,3 +53,13 @@ class ValidateViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user,
                        file=self.request.data.get('file'))
+
+class ConvertViewSet(ModelViewSet):
+    
+    queryset = ConvertFileUpload.objects.all()
+    serializer_class = ConvertSerializer
+    parser_classes = (MultiPartParser, FormParser,)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user,
+                       file=self.request.data.get('file'),type=self.request.data.get('type'),result=self.request.data.get('result'))
