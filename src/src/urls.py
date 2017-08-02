@@ -40,6 +40,7 @@ router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
 router.register(r'validate', views.ValidateViewSet)
 router.register(r'convert', views.ConvertViewSet)
+router.register(r'compare', views.CompareViewSet)
 
 urlpatterns = [
     # Examples:
