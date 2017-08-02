@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet
 from models import ValidateFileUpload
-from serializers import FileUploadSerializer
+from serializers import ValidateSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -44,10 +44,10 @@ class FileUploadView(APIView):
         return Response(up_file.name, status=201)
 
 
-class FileUploadViewSet(ModelViewSet):
+class ValidateViewSet(ModelViewSet):
     
     queryset = ValidateFileUpload.objects.all()
-    serializer_class = FileUploadSerializer
+    serializer_class = ValidateSerializer
     parser_classes = (MultiPartParser, FormParser,)
 
     def perform_create(self, serializer):
