@@ -12,8 +12,8 @@ from rest_framework.viewsets import ModelViewSet
 from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
 from serializers import ValidateSerializer,ConvertSerializer,CompareSerializer
 from rest_framework import status
-from rest_framework.decorators import api_view
-
+from rest_framework.decorators import api_view,renderer_classes
+from rest_framework.renderers import BrowsableAPIRenderer,JSONRenderer
 
 # class UserViewSet(viewsets.ModelViewSet):
 #     """
@@ -45,6 +45,9 @@ from rest_framework.decorators import api_view
 #         # ...
 #         return Response(up_file.name, status=201)
 
+class CustomBrowsableAPIRenderer(BrowsableAPIRenderer):
+    def get_default_renderer(self, view):
+        return JSONRenderer()
 
 class ValidateViewSet(ModelViewSet):
     
@@ -78,16 +81,18 @@ class CompareViewSet(ModelViewSet):
 
 
 @api_view(['GET', 'POST'])
+#@renderer_classes((JSONRenderer,))
 def validate(request):
     if request.method == 'GET':
         query = ValidateFileUpload.objects.all()
-        serializer = TaskSerializer(tasks, many=True)
+        serializer = ValidateSerializer(query, many=True)
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = TaskSerializer(data=request.DATA)
+        serializer = ValidateSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(owner=request.user,
+                       file=request.data.get('file'))
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(
