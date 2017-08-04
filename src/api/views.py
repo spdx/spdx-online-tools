@@ -92,37 +92,37 @@ def validate(request):
     elif request.method == 'POST':
         serializer = ValidateSerializer(data=request.data)
         if serializer.is_valid():
-        	if (jpype.isJVMStarted()==0):
-		        """ If JVM not already started, start it, attach a Thread and start processing the request """
-		        classpath =os.path.abspath(".")+"/tool.jar"
-		        jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-		    """ If JVM started, attach a Thread and start processing the request """
-		    jpype.attachThreadToJVM()
-		    package = jpype.JPackage("org.spdx.tools")
-		    verifyclass = package.Verify
-		    try :
-	            if request.FILES["file"]:
-	                """ Saving file to the media directory """
-	                myfile = request.FILES['file']
-	                fs = FileSystemStorage()
-	                filename = fs.save(myfile.name, myfile)
-	                uploaded_file_url = fs.url(filename)
-	                """ Call the java function with parameters as list"""
-	                verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-	                verifyclass.main([settings.APP_DIR+uploaded_file_url])
-	                jpype.detachThreadFromJVM()
-	                result = "This SPDX Document is valid."
-	            else :
-	                jpype.detachThreadFromJVM()
-	                result = "File Not Uploaded"
-	        except jpype.JavaException,ex :
-	            """ Error raised by verifyclass.verify without exiting the application"""
-	            result = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
-	            jpype.detachThreadFromJVM()
-	        except :
-	            traceback.print_exc()
-	            result = "Other Exception Raised." 
-	            jpype.detachThreadFromJVM()    
+            if (jpype.isJVMStarted()==0):
+                """ If JVM not already started, start it, attach a Thread and start processing the request """
+                classpath =os.path.abspath(".")+"/tool.jar"
+                jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
+            """ If JVM started, attach a Thread and start processing the request """
+            jpype.attachThreadToJVM()
+            package = jpype.JPackage("org.spdx.tools")
+            verifyclass = package.Verify
+            try :
+                if request.FILES["file"]:
+                    """ Saving file to the media directory """
+                    myfile = request.FILES['file']
+                    fs = FileSystemStorage()
+                    filename = fs.save(myfile.name, myfile)
+                    uploaded_file_url = fs.url(filename)
+                    """ Call the java function with parameters as list"""
+                    verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                    verifyclass.main([settings.APP_DIR+uploaded_file_url])
+                    jpype.detachThreadFromJVM()
+                    result = "This SPDX Document is valid."
+                else :
+                    jpype.detachThreadFromJVM()
+                    result = "File Not Uploaded"
+            except jpype.JavaException,ex :
+                """ Error raised by verifyclass.verify without exiting the application"""
+                result = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
+                jpype.detachThreadFromJVM()
+            except :
+                traceback.print_exc()
+                result = "Other Exception Raised." 
+                jpype.detachThreadFromJVM()    
             serializer.save(owner=request.user,
                        file=request.data.get('file'),result=result)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
