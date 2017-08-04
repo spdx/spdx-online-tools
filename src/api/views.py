@@ -11,6 +11,8 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet
 from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
 from serializers import ValidateSerializer,ConvertSerializer,CompareSerializer
+from rest_framework import status
+from rest_framework.decorators import api_view
 
 
 # class UserViewSet(viewsets.ModelViewSet):
@@ -73,3 +75,20 @@ class CompareViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user,
                        file1=self.request.data.get('file1'),file2=self.request.data.get('file2'),result=self.request.data.get('result'))
+
+
+@api_view(['GET', 'POST'])
+def validate(request):
+    if request.method == 'GET':
+        query = ValidateFileUpload.objects.all()
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = TaskSerializer(data=request.DATA)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
