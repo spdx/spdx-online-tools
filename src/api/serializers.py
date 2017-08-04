@@ -23,6 +23,11 @@ class ValidateSerializer(serializers.HyperlinkedModelSerializer):
         model = ValidateFileUpload
         fields = ('created', 'file', 'owner')
 
+class ValidateSerializer2(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ValidateFileUpload
+        fields = ('created', 'file', 'owner','result')
+
 class ConvertSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.SlugRelatedField(
         read_only=True,

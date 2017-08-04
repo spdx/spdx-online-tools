@@ -10,12 +10,16 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet
 from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
-from serializers import ValidateSerializer,ConvertSerializer,CompareSerializer
+from serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,ValidateSerializer2
 from rest_framework import status
 from rest_framework.decorators import api_view,renderer_classes
 from rest_framework.renderers import BrowsableAPIRenderer,JSONRenderer
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
 
 import jpype
+import traceback
+import os
 # class UserViewSet(viewsets.ModelViewSet):
 #     """
 #     API endpoint that allows users to be viewed or edited.
@@ -82,7 +86,7 @@ class CompareViewSet(ModelViewSet):
 
 
 @api_view(['GET', 'POST'])
-#@renderer_classes((JSONRenderer,))
+@renderer_classes((JSONRenderer,))
 def validate(request):
     if request.method == 'GET':
         query = ValidateFileUpload.objects.all()
@@ -125,6 +129,8 @@ def validate(request):
                 jpype.detachThreadFromJVM()    
             serializer.save(owner=request.user,
                        file=request.data.get('file'),result=result)
+            query = ValidateFileUpload.objects.filter(owner=request.user,result=result)[0]
+            serializer = ValidateSerializer2(query,context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(
