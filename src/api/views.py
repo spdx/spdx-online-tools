@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet
 from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
-from serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,ValidateSerializerReturn,ConvertSerializerReturn
+from serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn
 from rest_framework import status
 from rest_framework.decorators import api_view,renderer_classes
 from rest_framework.renderers import BrowsableAPIRenderer,JSONRenderer
@@ -24,7 +24,7 @@ import os
 
 @api_view(['GET', 'POST'])
 @renderer_classes((JSONRenderer,))
-def convert(request):
+def compare(request):
     if request.method == 'GET':
         query = ConvertFileUpload.objects.all()
         serializer = ConvertSerializer(query, many=True)
@@ -171,4 +171,64 @@ def validate(request):
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET', 'POST'])
+@renderer_classes((JSONRenderer,))
+def convert(request):
+    if request.method == 'GET':
+        query = ConvertFileUpload.objects.all()
+        serializer = ConvertSerializer(query, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = ConvertSerializer(data=request.data)
+        if serializer.is_valid():
+            if (jpype.isJVMStarted()==0):
+                """ If JVM not already started, start it, attach a Thread and start processing the request """
+                classpath =os.path.abspath(".")+"/tool.jar"
+                jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
+            """ If JVM started, attach a Thread and start processing the request """
+            jpype.attachThreadToJVM()
+            package = jpype.JPackage("org.spdx.tools")
+            mainclass = package.Main
+            try :
+                if request.FILES["file"]:
+                    """ Saving file to the media directory """
+                    myfile = request.FILES['file']
+                    fs = FileSystemStorage()
+                    filename = fs.save(myfile.name, myfile)
+                    uploaded_file_url = fs.url(filename)
+                    convertfile =  request.POST["cfilename"]
+                    option1 = request.POST["from_format"]
+                    option2 = request.POST["to_format"]
+                    functiontocall = option1 + "To" + option2
+                    if (option1=="Tag"):
+                        print ("Verifing for Tag/Value Document")
+                        verifyclass = package.Verify
+                        verifyclass.verifyTagFile(settings.APP_DIR+uploaded_file_url)
+                    elif (option1=="RDF"):
+                        print ("Verifing for RDF Document")
+                        verifyclass = package.Verify
+                        verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
+                    """ Call the java function with parameters as list"""
+                    mainclass.main([functiontocall,settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                    jpype.detachThreadFromJVM()
+                    result = "/media/" + convertfile
+                else :
+                    jpype.detachThreadFromJVM()
+                    result = "File Not Found"
+            except jpype.JavaException,ex :
+                result = jpype.JavaException.message(ex)
+                jpype.detachThreadFromJVM()
+            except :
+                traceback.print_exc()
+                result = "Other Exception Raised."
+                jpype.detachThreadFromJVM() 
+            query = ConvertFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result,from_format=option1,to_format=option2,cfilename=convertfile)
+            #serializer.save(owner=request.user,
+            #           file=request.data.get('file'),result=result)
+            serial = ConvertSerializerReturn(instance=query)
+            return Response(serial.data, status=status.HTTP_400_BAD_REQUEST)   
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
