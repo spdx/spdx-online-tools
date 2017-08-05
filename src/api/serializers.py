@@ -38,10 +38,6 @@ class ConvertSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('created', 'file', 'owner','cfilename','from_format','to_format')
 
 class ConvertSerializerReturn(serializers.HyperlinkedModelSerializer):
-    owner = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='id'
-    )
     class Meta:
         model = ConvertFileUpload
         fields = ('created', 'file', 'owner','result','from_format','to_format','cfilename')
@@ -51,6 +47,11 @@ class CompareSerializer(serializers.HyperlinkedModelSerializer):
         read_only=True,
         slug_field='id'
     )
+    class Meta:
+        model = CompareFileUpload
+        fields = ('created', 'file1','file2', 'owner')
+
+class CompareSerializerReturn(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = CompareFileUpload
         fields = ('created', 'file1','file2', 'owner','result')
