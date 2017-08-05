@@ -24,3 +24,4 @@ class CompareFileUpload(models.Model):
     result = models.CharField(max_length=32,null=False,blank=False)
     file1 = models.FileField()
     file2 = models.FileField()
+    rfilename = models.CharField(max_length=32,null=False,blank=False)
