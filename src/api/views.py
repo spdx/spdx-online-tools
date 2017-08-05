@@ -23,7 +23,7 @@ import os
 
 
 @api_view(['GET', 'POST'])
-@renderer_classes((BrowsableAPIRenderer,))
+@renderer_classes((JSONRenderer,))
 def convert(request):
     if request.method == 'GET':
         query = ConvertFileUpload.objects.all()
@@ -62,7 +62,6 @@ def convert(request):
                         verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
                     """ Call the java function with parameters as list"""
                     mainclass.main([functiontocall,settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
-                    context_dict['Content-Disposition'] = 'attachment; filename='+filename
                     jpype.detachThreadFromJVM()
                     result = "/media/" + convertfile
                 else :
@@ -74,7 +73,12 @@ def convert(request):
             except :
                 traceback.print_exc()
                 result = "Other Exception Raised."
-                jpype.detachThreadFromJVM()    
+                jpype.detachThreadFromJVM() 
+            query = ConvertFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result,from_format=option1,to_format=option2,cfilename=convertfile)
+            #serializer.save(owner=request.user,
+            #           file=request.data.get('file'),result=result)
+            serial = ConvertSerializerReturn(instance=query)
+            return Response(serial.data, status=status.HTTP_400_BAD_REQUEST)   
         else:
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -87,7 +91,7 @@ class CustomBrowsableAPIRenderer(BrowsableAPIRenderer):
 class ValidateViewSet(ModelViewSet):
     
     queryset = ValidateFileUpload.objects.all()
-    serializer_class = ValidateSerializer
+    serializer_class = ValidateSerializerReturn
     parser_classes = (MultiPartParser, FormParser,)
 
     def perform_create(self, serializer):
@@ -97,7 +101,7 @@ class ValidateViewSet(ModelViewSet):
 class ConvertViewSet(ModelViewSet):
     
     queryset = ConvertFileUpload.objects.all()
-    serializer_class = ConvertSerializer
+    serializer_class = ConvertSerializerReturn
     parser_classes = (MultiPartParser, FormParser,)
 
     def perform_create(self, serializer):
@@ -116,7 +120,7 @@ class CompareViewSet(ModelViewSet):
 
 
 @api_view(['GET', 'POST'])
-@renderer_classes((BrowsableAPIRenderer,))
+@renderer_classes((JSONRenderer,))
 def validate(request):
     if request.method == 'GET':
         query = ValidateFileUpload.objects.all()
@@ -142,7 +146,8 @@ def validate(request):
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
                     """ Call the java function with parameters as list"""
-                    verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                    lis = verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                    print (lis)
                     verifyclass.main([settings.APP_DIR+uploaded_file_url])
                     jpype.detachThreadFromJVM()
                     result = "This SPDX Document is valid."
