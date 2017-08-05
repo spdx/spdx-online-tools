@@ -290,7 +290,39 @@ def convert(request):
 
 def check_license(request):
     context_dict={}
-    return render(request, 'app/check_license.html',context_dict)
+    if request.method == 'POST':
+        licensetext = request.POST.get('licensetext')
+        if (jpype.isJVMStarted()==0):
+            """ If JVM not already started, start it, attach a Thread and start processing the request """
+            classpath =os.path.abspath(".")+"/tool.jar"
+            jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
+        """ If JVM started, attach a Thread and start processing the request """
+        jpype.attachThreadToJVM()
+        package = jpype.JPackage("org.spdx.compare")
+        compareclass = package.LicenseCompareHelper
+        try:
+            matching_licenses = compareclass.matchingStandardLicenseIds(licensetext)
+            jpype.detachThreadFromJVM()
+            if (matching_licenses and len(matching_licenses) > 0):
+                matching_str = "The following license ID(s) match: "
+                matching_str+= matching_licenses[0]
+                for i in range(1,len(matching_licenses)):
+                    matching_str += ", "
+                    matching_str += matching_licenses[i]
+                return HttpResponse(matching_str)
+            else:
+                return HttpResponse("There are no matching SPDX listed licenses")
+        except jpype.JavaException,ex :
+            context_dict["error"] = jpype.JavaException.message(ex)
+            jpype.detachThreadFromJVM()
+            return render(request, 'app/check_license.html',context_dict)
+        except :
+            traceback.print_exc()
+            context_dict["error"] = "Other Exception Raised."
+            jpype.detachThreadFromJVM()    
+            return render(request, 'app/check_license.html',context_dict)
+    else:
+        return render(request, 'app/check_license.html',context_dict)
 
 def loginuser(request):
     context_dict={}
