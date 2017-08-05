@@ -67,9 +67,9 @@ def convert(request):
                     result = "/media/" + convertfile
                 else :
                     jpype.detachThreadFromJVM()
-                    result = "File Not Uploaded"
+                    result = "File Not Found"
             except jpype.JavaException,ex :
-                result = = jpype.JavaException.message(ex)
+                result = jpype.JavaException.message(ex)
                 jpype.detachThreadFromJVM()
             except :
                 traceback.print_exc()
@@ -79,7 +79,7 @@ def convert(request):
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            
+
 class CustomBrowsableAPIRenderer(BrowsableAPIRenderer):
     def get_default_renderer(self, view):
         return JSONRenderer()
