@@ -60,8 +60,17 @@ def validate(request):
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
                 """ Call the java function with parameters as list"""
-                verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-                verifyclass.main([settings.APP_DIR+uploaded_file_url])
+                retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                """ If any error or warnings are returned"""
+                if (len(retval) > 0):
+                    if (request.is_ajax()):
+                        ajaxdict=dict()
+                        ajaxdict["data"] = "The following errors/warnings were raised: " + str(retval)
+                        response = json.dumps(ajaxdict)
+                        jpype.detachThreadFromJVM()
+                        return HttpResponse(response,status=400)
+                    jpype.detachThreadFromJVM()
+                    return HttpResponse(retval)
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = "This SPDX Document is valid."
