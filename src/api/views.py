@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet
 from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
-from serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,ValidateSerializer2
+from serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,ValidateSerializerReturn
 from rest_framework import status
 from rest_framework.decorators import api_view,renderer_classes
 from rest_framework.renderers import BrowsableAPIRenderer,JSONRenderer
@@ -86,7 +86,7 @@ class CompareViewSet(ModelViewSet):
 
 
 @api_view(['GET', 'POST'])
-@renderer_classes((JSONRenderer,))
+@renderer_classes((BrowsableAPIRenderer,))
 def validate(request):
     if request.method == 'GET':
         query = ValidateFileUpload.objects.all()
@@ -130,7 +130,7 @@ def validate(request):
             query = ValidateFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result)
             #serializer.save(owner=request.user,
             #           file=request.data.get('file'),result=result)
-            serial = ValidateSerializer2(instance=query)
+            serial = ValidateSerializerReturn(instance=query)
             return Response(serial.data, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(
