@@ -23,7 +23,7 @@ class ValidateSerializer(serializers.HyperlinkedModelSerializer):
         model = ValidateFileUpload
         fields = ('created', 'file', 'owner')
 
-class ValidateSerializer2(serializers.HyperlinkedModelSerializer):
+class ValidateSerializer2(serializers.ModelSerializer):
     class Meta:
         model = ValidateFileUpload
         fields = ('created', 'file', 'owner','result')

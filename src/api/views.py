@@ -127,11 +127,11 @@ def validate(request):
                 traceback.print_exc()
                 result = "Other Exception Raised." 
                 jpype.detachThreadFromJVM()    
-            serializer.save(owner=request.user,
-                       file=request.data.get('file'),result=result)
-            query = ValidateFileUpload.objects.filter(owner=request.user,result=result)[0]
-            serializer = ValidateSerializer2(query,context={'request': request})
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            query = ValidateFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result)
+            #serializer.save(owner=request.user,
+            #           file=request.data.get('file'),result=result)
+            serial = ValidateSerializer2(instance=query)
+            return Response(serial.data, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
