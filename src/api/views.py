@@ -42,6 +42,7 @@ def compare(request):
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
             mainclass = package.Main
+            result="default"
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     rfilename = request.POST["rfilename"]+".xlsx"
@@ -72,8 +73,7 @@ def compare(request):
                 traceback.print_exc()
                 result = "Other Exception Raised."
                 jpype.detachThreadFromJVM()
-            query = CompareFileUpload.objects.create(owner=request.user,file1=request.data.get('file1'),
-                file2=request.data.get('file2'),rfilename = rfilename, result=result)
+            query = CompareFileUpload.objects.create(owner=request.user,file1=request.data.get('file1'),file2=request.data.get('file2'),rfilename = rfilename, result=result)
             serial = CompareSerializerReturn(instance=query)
             return Response(serial.data, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -108,7 +108,7 @@ class ConvertViewSet(ModelViewSet):
 class CompareViewSet(ModelViewSet):
     
     queryset = CompareFileUpload.objects.all()
-    serializer_class = CompareSerializer
+    serializer_class = CompareSerializerReturn
     parser_classes = (MultiPartParser, FormParser,)
 
     def perform_create(self, serializer):
