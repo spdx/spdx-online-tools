@@ -12,7 +12,9 @@ class ValidateFileUpload(models.Model):
 class ConvertFileUpload(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, to_field='id')
-    type = models.CharField(max_length=16,null=False,blank=False)
+    from_format = models.CharField(max_length=16,null=False,blank=False)
+    to_format = models.CharField(max_length=16,null=False,blank=False)
+    cfilename = models.CharField(max_length=32,null=False,blank=False)
     result = models.CharField(max_length=32,null=False,blank=False)
     file = models.FileField()
 
