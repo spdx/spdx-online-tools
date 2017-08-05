@@ -35,6 +35,15 @@ class ConvertSerializer(serializers.HyperlinkedModelSerializer):
     )
     class Meta:
         model = ConvertFileUpload
+        fields = ('created', 'file', 'owner','type')
+
+class ConvertSerializer(serializers.HyperlinkedModelSerializer):
+    owner = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='id'
+    )
+    class Meta:
+        model = ConvertFileUpload
         fields = ('created', 'file', 'owner','result','type')
 
 class CompareSerializer(serializers.HyperlinkedModelSerializer):
