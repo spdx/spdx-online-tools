@@ -288,9 +288,9 @@ def convert(request):
     else :
         return render(request, 'app/convert.html',context_dict)
 
-def search(request):
+def check_license(request):
     context_dict={}
-    return render(request, 'app/search.html',context_dict)
+    return render(request, 'app/check_license.html',context_dict)
 
 def loginuser(request):
     context_dict={}
