@@ -302,15 +302,16 @@ def check_license(request):
         compareclass = package.LicenseCompareHelper
         try:
             matching_licenses = compareclass.matchingStandardLicenseIds(licensetext)
-            jpype.detachThreadFromJVM()
             if (matching_licenses and len(matching_licenses) > 0):
                 matching_str = "The following license ID(s) match: "
                 matching_str+= matching_licenses[0]
                 for i in range(1,len(matching_licenses)):
                     matching_str += ", "
                     matching_str += matching_licenses[i]
+                jpype.detachThreadFromJVM()
                 return HttpResponse(matching_str)
             else:
+                jpype.detachThreadFromJVM()
                 return HttpResponse("There are no matching SPDX listed licenses")
         except jpype.JavaException,ex :
             context_dict["error"] = jpype.JavaException.message(ex)
