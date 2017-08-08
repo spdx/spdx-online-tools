@@ -19,10 +19,9 @@ The tool would provide an an easy all-in-one website to upload, parse, validate,
     ```bash
     pip install -r requirements.txt
     ```
-4. Run Django migrations.
+4. Run Django migrate.
     
     ```bash
-    python manage.py makemigrations
     python manage.py migrate
     ```
 5. Start the application.
