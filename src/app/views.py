@@ -263,33 +263,96 @@ def convert(request):
                     print ("Verifing for Tag/Value Document")
                     if (option2=="RDF"):
                         tagtordfclass = package.TagToRDF
-                        tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        if (len(retval) > 0):
+                            if (request.is_ajax()):
+                                ajaxdict=dict()
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                response = json.dumps(ajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(response,status=400)
+                            jpype.detachThreadFromJVM()
+                            return HttpResponse(retval)
                     elif (option2=="Spreadsheet"):
                         tagtosprdclass = package.TagToSpreadsheet
-                        tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        if (len(retval) > 0):
+                            if (request.is_ajax()):
+                                ajaxdict=dict()
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                response = json.dumps(ajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(response,status=400)
+                            jpype.detachThreadFromJVM()
+                            return HttpResponse(retval)
                     else :
                         return HttpResponse("Select the available conversion types.")
                 elif (option1=="RDF"):
                     print ("Verifing for RDF Document")
                     if (option2=="Tag"):
                         rdftotagclass = package.RdfToTag
-                        rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        if (len(retval) > 0):
+                            if (request.is_ajax()):
+                                ajaxdict=dict()
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                response = json.dumps(ajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(response,status=400)
+                            jpype.detachThreadFromJVM()
+                            return HttpResponse(retval)
                     elif (option2=="Spreadsheet"):
                         rdftosprdclass = package.RdfToSpreadsheet
-                        rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        if (len(retval) > 0):
+                            if (request.is_ajax()):
+                                ajaxdict=dict()
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                response = json.dumps(ajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(response,status=400)
+                            jpype.detachThreadFromJVM()
+                            return HttpResponse(retval)
                     elif (option2=="HTML"):
                         rdftohtmlclass = package.RdfToHtml
-                        rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        if (len(retval) > 0):
+                            if (request.is_ajax()):
+                                ajaxdict=dict()
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                response = json.dumps(ajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(response,status=400)
+                            jpype.detachThreadFromJVM()
+                            return HttpResponse(retval)
                     else :
                         return HttpResponse("Select the available conversion types.")
                 elif (option1=="Spreadsheet"):
                     print ("Verifing for Spreadsheet Document")
                     if (option2=="Tag"):
                         sprdtotagclass = package.SpreadsheetToTag
-                        sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        if (len(retval) > 0):
+                            if (request.is_ajax()):
+                                ajaxdict=dict()
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                response = json.dumps(ajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(response,status=400)
+                            jpype.detachThreadFromJVM()
+                            return HttpResponse(retval)
                     elif (option2=="RDF"):
                         sprdtordfclass = package.SpreadsheetToRDF
-                        sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        if (len(retval) > 0):
+                            if (request.is_ajax()):
+                                ajaxdict=dict()
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                response = json.dumps(ajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(response,status=400)
+                            jpype.detachThreadFromJVM()
+                            return HttpResponse(retval)
                     else :
                         return HttpResponse("Select the available conversion types.")
                 """ Call the java function with parameters as list"""
