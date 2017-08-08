@@ -7,6 +7,7 @@ The tool would provide an an easy all-in-one website to upload, parse, validate,
 * Validate SPDX Documents
 * Compare Multiple SPDX Rdf Files
 * Convert one SPDX format to another
+* Compare License text to the SPDX listed Licenses
 
 ## Installation
 1. Clone or download the repository. 
