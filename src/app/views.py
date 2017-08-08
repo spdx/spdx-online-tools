@@ -321,9 +321,9 @@ def convert(request):
             if (request.is_ajax()):
                 ajaxdict=dict()
                 ajaxdict["data"] = "Other Exception Raised."
-                response = json.dumps(ajaxdict,status=400)
+                response = json.dumps(ajaxdict)
                 jpype.detachThreadFromJVM()
-                return HttpResponse(response)
+                return HttpResponse(response,status=400)
             jpype.detachThreadFromJVM()    
             return render(request, 'app/convert.html',context_dict)
     else :
@@ -362,9 +362,9 @@ def check_license(request):
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = "There are no matching SPDX listed licenses"
-                    response = json.dumps(ajaxdict,status=400)
+                    response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
-                    return HttpResponse(response)
+                    return HttpResponse(response,status=400)
                 return HttpResponse("There are no matching SPDX listed licenses")
         except jpype.JavaException,ex :
             context_dict["error"] = jpype.JavaException.message(ex)
@@ -382,9 +382,9 @@ def check_license(request):
             if (request.is_ajax()):
                 ajaxdict=dict()
                 ajaxdict["data"] = "Other Exception Raised."
-                response = json.dumps(ajaxdict,status=400)
+                response = json.dumps(ajaxdict)
                 jpype.detachThreadFromJVM()
-                return HttpResponse(response)
+                return HttpResponse(response,status=400)
             jpype.detachThreadFromJVM()    
             return render(request, 'app/check_license.html',context_dict)
     else:
