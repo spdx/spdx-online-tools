@@ -263,33 +263,33 @@ def convert(request):
                     print ("Verifing for Tag/Value Document")
                     if (option2=="RDF"):
                         tagtordfclass = package.TagToRDF
-                        tagtordfclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                        tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                     elif (option2=="Spreadsheet"):
                         tagtosprdclass = package.TagToSpreadsheet
-                        tagtosprdclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                        tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                     else :
                         return HttpResponse("Select the available conversion types.")
                 elif (option1=="RDF"):
                     print ("Verifing for RDF Document")
                     if (option2=="Tag"):
                         rdftotagclass = package.RdfToTag
-                        rdftotagclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                        rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                     elif (option2=="Spreadsheet"):
                         rdftosprdclass = package.RdfToSpreadsheet
-                        rdftosprdclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                        rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                     elif (option2=="HTML"):
                         rdftohtmlclass = package.RdfToHtml
-                        rdftohtmlclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                        rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                     else :
                         return HttpResponse("Select the available conversion types.")
                 elif (option1=="Spreadsheet"):
                     print ("Verifing for Spreadsheet Document")
                     if (option2=="Tag"):
                         sprdtotagclass = package.SpreadsheetToTag
-                        sprdtotagclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                        sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                     elif (option2=="RDF"):
                         sprdtordfclass = package.SpreadsheetToRDF
-                        sprdtordfclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                        sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                     else :
                         return HttpResponse("Select the available conversion types.")
                 """ Call the java function with parameters as list"""
