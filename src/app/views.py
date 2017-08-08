@@ -248,7 +248,6 @@ def convert(request):
         """ If JVM started, attach a Thread and start processing the request """
         jpype.attachThreadToJVM()
         package = jpype.JPackage("org.spdx.tools")
-        mainclass = package.Main
         try :
             if request.FILES["file"]:
                 """ Saving file to the media directory """
@@ -262,14 +261,38 @@ def convert(request):
                 functiontocall = option1 + "To" + option2
                 if (option1=="Tag"):
                     print ("Verifing for Tag/Value Document")
-                    verifyclass = package.Verify
-                    verifyclass.verifyTagFile(settings.APP_DIR+uploaded_file_url)
+                    if (option2=="RDF"):
+                        tagtordfclass = package.TagToRDF
+                        tagtordfclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                    elif (option2=="Spreadsheet"):
+                        tagtosprdclass = package.TagToSpreadsheet
+                        tagtosprdclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                    else :
+                        return HttpResponse("Select the available conversion types.")
                 elif (option1=="RDF"):
                     print ("Verifing for RDF Document")
-                    verifyclass = package.Verify
-                    verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
+                    if (option2=="Tag"):
+                        rdftotagclass = package.RdfToTag
+                        rdftotagclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                    elif (option2=="Spreadsheet"):
+                        rdftosprdclass = package.RdfToSpreadsheet
+                        rdftosprdclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                    elif (option2=="HTML"):
+                        rdftohtmlclass = package.RdfToHtml
+                        rdftohtmlclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                    else :
+                        return HttpResponse("Select the available conversion types.")
+                elif (option1=="Spreadsheet"):
+                    print ("Verifing for Spreadsheet Document")
+                    if (option2=="Tag"):
+                        sprdtotagclass = package.SpreadsheetToTag
+                        sprdtotagclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                    elif (option2=="RDF"):
+                        sprdtordfclass = package.SpreadsheetToRDF
+                        sprdtordfclass.onlineFunction(settings.APP_DIR+uploaded_file_url)
+                    else :
+                        return HttpResponse("Select the available conversion types.")
                 """ Call the java function with parameters as list"""
-                mainclass.main([functiontocall,settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                 context_dict['Content-Disposition'] = 'attachment; filename='+filename
                 if (request.is_ajax()):
                         ajaxdict=dict()
