@@ -9,7 +9,7 @@
 <div class="panel-heading"> <p class="lead">Compare SPDX RDF Documents</p> </div>
 <div class="panel-body">
 <div class="col-md-6">
-<form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+<form id="compareform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
 		<fieldset>
 			<legend>Upload one by one</legend>
@@ -53,7 +53,7 @@
 </form>
 </div>
 <div class="col-md-6">
-<form id="myform2" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+<form id="compareform2" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
 		<fieldset>
 			<legend>Upload all</legend>
@@ -118,14 +118,14 @@ function checkform2() {
 }
 </script>
 <script type="text/javascript">
-  $('#myform').on('submit', function(event){
+  $('#compareform').on('submit', function(event){
     event.preventDefault();
     var check = checkform();
     $("#comparebutton1").text("Comparing...");
     $("#comparebutton1").prop('disabled', true);
     if (check=="1"){
       $("#messages").html("");
-	    var form = new FormData($("#myform")[0]);
+	    var form = new FormData($("#compareform")[0]);
 	    form.append("compare","compare");
 	    console.log(form);
 	    $.ajax({
@@ -171,14 +171,14 @@ function checkform2() {
 
 </script>
 <script type="text/javascript">
-  $('#myform2').on('submit', function(event){
+  $('#compareform2').on('submit', function(event){
     event.preventDefault();
     var check = checkform2();
     if (check=="1"){
     	$("#comparebutton2").text("Comparing");
 	    $("#comparebutton2").prop('disabled', true);
         $("#messages").html("");
-	    var form = new FormData($("#myform2")[0]);
+	    var form = new FormData($("#compareform2")[0]);
 	    form.append("compareall","compareall");
 	    console.log(form);
 	    $.ajax({

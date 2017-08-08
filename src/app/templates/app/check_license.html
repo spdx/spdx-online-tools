@@ -24,7 +24,7 @@ $(document).ready(function () {
 </script>
 <script type="text/javascript">
 function checkform() {
-  if ($('#licensetext').val == "") {
+  if ($('#licensetext').val() == "") {
     $('#licensetext').focus();
     return ("No text entered.");
   }
@@ -41,7 +41,7 @@ function checkform() {
       $("#checklicensebutton").text("Checking...");
       $("#checklicensebutton").prop('disabled', true);
       $("#messages").html("");
-      var form = new FormData($("#myform")[0]);
+      var form = new FormData($("#checklicenseform")[0]);
       $.ajax({
               type: "POST",
               enctype: 'multipart/form-data',
@@ -62,7 +62,7 @@ function checkform() {
                           keyboard: true, 
                           show: true
                   });
-                  $("#checklicensebutton").text("Validate");
+                  $("#checklicensebutton").text("Check License");
                   $("#checklicensebutton").prop('disabled', false);
               },
               error: function (e) {
@@ -77,7 +77,7 @@ function checkform() {
                           keyboard: true, 
                           show: true
                   });
-                  $("#checklicensebutton").text("Validate");
+                  $("#checklicensebutton").text("Check License");
                   $("#checklicensebutton").prop('disabled', false);
               }
           });
