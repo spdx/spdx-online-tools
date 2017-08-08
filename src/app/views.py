@@ -84,7 +84,7 @@ def validate(request):
                 return HttpResponse("File Not Uploaded")
         except jpype.JavaException,ex :
             """ Error raised by verifyclass.verify without exiting the application"""
-            context_dict["error"] = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
+            context_dict["error"] = jpype.JavaException.message(ex) # "This SPDX Document is not a valid RDF/XML or tag/value format"
             if (request.is_ajax()):
                 ajaxdict=dict()
                 ajaxdict["data"] = jpype.JavaException.message(ex)
@@ -118,13 +118,13 @@ def compare(request):
         jpype.attachThreadToJVM()
         package = jpype.JPackage("org.spdx.tools")
         verifyclass = package.Verify
-        mainclass = package.Main
+        compareclass = package.CompareMultpleSpdxDocs
         if 'compare' in request.POST:
             try :
                 if request.FILES["file1"]:
                     nofile = int(request.POST["nofile"])
                     rfilename = request.POST["rfilename"]+".xlsx"
-                    callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
+                    callfunc = [settings.MEDIA_ROOT+"/"+rfilename]
                     for i in range(1,nofile+1):
                         """ Saving file to the media directory """
                         try:
@@ -136,10 +136,19 @@ def compare(request):
                         fs = FileSystemStorage()
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename)
-                        verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
+                        retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
+                        if (len(retval) > 0):
+                            if (request.is_ajax()):
+                                ajaxdict=dict()
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised: " + str(retval)
+                                response = json.dumps(ajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(response,status=400)
+                            jpype.detachThreadFromJVM()
+                            return HttpResponse(retval)
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
                     """ Call the java function with parameters as list"""
-                    mainclass.main(callfunc)
+                    compareclass.onlineFunction(callfunc)
                     context_dict['Content-Disposition'] = 'attachment; filename='+filename
                     if (request.is_ajax()):
                         ajaxdict=dict()
@@ -178,7 +187,7 @@ def compare(request):
             try :
                 if request.FILES["files"]:
                     rfilename = request.POST["rfilename2"]+".xlsx"
-                    callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
+                    callfunc = [settings.MEDIA_ROOT+"/"+rfilename]
                     # loop through the list of files
                     if (len(request.FILES.getlist("files"))<2):
                         jpype.detachThreadFromJVM()    
@@ -191,7 +200,7 @@ def compare(request):
                         verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
                     """ Call the java function with parameters as list"""
-                    mainclass.main(callfunc)
+                    compareclass.onlineFunction(callfunc)
                     context_dict['Content-Disposition'] = 'attachment; filename='+filename
                     if (request.is_ajax()):
                         ajaxdict=dict()
