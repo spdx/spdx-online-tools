@@ -14,9 +14,6 @@
 		<button id="checklicensebutton" class=" btn btn-md btn-info" type="submit">Check License</button>
 </form>
 {% include "app/modal.html" %} 
-<!--
-<output id="list"></output>
--->
 </div>
 {% endblock %}
 {% block script_block %}
@@ -24,5 +21,74 @@
 $(document).ready(function () {
     $("#checklicensepage").addClass('linkactive');
     });
+</script>
+<script type="text/javascript">
+function checkform() {
+  if ($('#licensetext').val == "") {
+    $('#licensetext').focus();
+    return ("No text entered.");
+  }
+  else {
+    return "1";
+  }
+}
+</script>
+<script type="text/javascript">
+  $('#checklicenseform').on('submit', function(event){
+    event.preventDefault();
+    var check = checkform();
+    if (check=="1"){
+      $("#checklicensebutton").text("Checking...");
+      $("#checklicensebutton").prop('disabled', true);
+      $("#messages").html("");
+      var form = new FormData($("#myform")[0]);
+      $.ajax({
+              type: "POST",
+              enctype: 'multipart/form-data',
+              url: "/app/check_license/",
+              processData: false,
+              contentType: false,
+              cache: false,
+              dataType: 'json',
+              data: form,
+              success: function (data) {
+                  console.log("SUCCESS : ", data);
+                  $("#modal-header").removeClass("red-modal");
+                  $("#modal-header").addClass("green-modal");
+                  $("#modal-title").html("Success!");
+                  $("#modal-body").html("<h3>"+data.data+"</h3>");
+                  $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true, 
+                          show: true
+                  });
+                  $("#checklicensebutton").text("Validate");
+                  $("#checklicensebutton").prop('disabled', false);
+              },
+              error: function (e) {
+                  console.log("ERROR : ", e);
+                  var obj = JSON.parse(e.responseText);
+                  $("#modal-header").removeClass("green-modal");
+                  $("#modal-header").addClass("red-modal");
+                  $("#modal-title").html("Error!");
+                  $("#modal-body").text(obj.data);
+                  $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true, 
+                          show: true
+                  });
+                  $("#checklicensebutton").text("Validate");
+                  $("#checklicensebutton").prop('disabled', false);
+              }
+          });
+    }
+    else{
+      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+      setTimeout(function() {
+        $("#messages").html("");
+      }, 5000);
+    }
+});
+
 </script>
 {% endblock %}
