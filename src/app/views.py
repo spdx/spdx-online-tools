@@ -317,18 +317,42 @@ def check_license(request):
                 for i in range(1,len(matching_licenses)):
                     matching_str += ", "
                     matching_str += matching_licenses[i]
+                if (request.is_ajax()):
+                    ajaxdict=dict()
+                    ajaxdict["data"] = matching_str
+                    response = json.dumps(ajaxdict)
+                    jpype.detachThreadFromJVM()
+                    return HttpResponse(response)
                 jpype.detachThreadFromJVM()
                 return HttpResponse(matching_str)
             else:
                 jpype.detachThreadFromJVM()
+                if (request.is_ajax()):
+                    ajaxdict=dict()
+                    ajaxdict["data"] = "There are no matching SPDX listed licenses"
+                    response = json.dumps(ajaxdict,status=400)
+                    jpype.detachThreadFromJVM()
+                    return HttpResponse(response)
                 return HttpResponse("There are no matching SPDX listed licenses")
         except jpype.JavaException,ex :
             context_dict["error"] = jpype.JavaException.message(ex)
+            if (request.is_ajax()):
+                ajaxdict=dict()
+                ajaxdict["data"] = jpype.JavaException.message(ex)
+                response = json.dumps(ajaxdict)
+                jpype.detachThreadFromJVM()
+                return HttpResponse(response,status=400)
             jpype.detachThreadFromJVM()
             return render(request, 'app/check_license.html',context_dict)
         except :
             traceback.print_exc()
             context_dict["error"] = "Other Exception Raised."
+            if (request.is_ajax()):
+                ajaxdict=dict()
+                ajaxdict["data"] = "Other Exception Raised."
+                response = json.dumps(ajaxdict,status=400)
+                jpype.detachThreadFromJVM()
+                return HttpResponse(response)
             jpype.detachThreadFromJVM()    
             return render(request, 'app/check_license.html',context_dict)
     else:
