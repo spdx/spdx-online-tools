@@ -10,7 +10,7 @@
 <div class="panel-body">
 <form id="checklicenseform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
-		<textarea id="licensetext" rows="18" style="width: 100%"></textarea>
+		<textarea id="licensetext" name="licensetext" rows="18" style="width: 100%"></textarea>
 		<button id="checklicensebutton" class=" btn btn-md btn-info" type="submit">Check License</button>
 </form>
 {% include "app/modal.html" %} 
