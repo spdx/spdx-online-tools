@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import User, Group
-from rest_framework import viewsets
-#from serializers import UserSerializer, GroupSerializer
-from rest_framework.views import APIView
 from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -20,12 +16,6 @@ from django.conf import settings
 import jpype
 import traceback
 import os
-
-
-
-class CustomBrowsableAPIRenderer(BrowsableAPIRenderer):
-    def get_default_renderer(self, view):
-        return JSONRenderer()
 
 class ValidateViewSet(ModelViewSet):
     
