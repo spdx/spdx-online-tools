@@ -145,7 +145,7 @@ def compare(request):
                         if (len(retval) > 0):
                             erroroccured = True
                             filelist.append(myfile.name)
-                            errorlist.append("The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval))
+                            errorlist.append(str(retval))
                         else :
                             filelist.append(myfile.name)
                             errorlist.append("No errors found")
