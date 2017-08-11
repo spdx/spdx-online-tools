@@ -152,6 +152,7 @@ function checkform2() {
 	                console.log("ERROR : ", e);
 	                var obj = JSON.parse(e.responseText);
 	                var i;
+	                $("#modal-body").text("");
 	                for(i=0;i<obj["files"].length;i++){
 	                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
 	                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
@@ -216,6 +217,7 @@ function checkform2() {
                     $("#modal-header").addClass("red-modal");
                     $("#modal-title").html("Error!");
 	                var i;
+	                $("#modal-body").text("");
 	                for(i=0;i<obj["files"].length;i++){
 	                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
 	                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
