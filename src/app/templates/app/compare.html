@@ -151,7 +151,6 @@ function checkform2() {
 	            error: function (e) {
 	                console.log("ERROR : ", e);
 	                var obj = JSON.parse(e.responseText);
-	                console.log(obj["files"].length);
 	                var i;
 	                for(i=0;i<obj["files"].length;i++){
 	                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
@@ -160,8 +159,6 @@ function checkform2() {
 	                $("#modal-header").removeClass("green-modal");
                     $("#modal-header").addClass("red-modal");
                     $("#modal-title").html("Error!");
-
-	                //$("#modal-body").text(obj.files);
 	                $("#myModal").modal('show');
 	                $("#comparebutton1").text("Compare");
     				$("#comparebutton1").prop('disabled', false);
@@ -218,7 +215,11 @@ function checkform2() {
 	                $("#modal-header").removeClass("green-modal");
                     $("#modal-header").addClass("red-modal");
                     $("#modal-title").html("Error!");
-	                $("#modal-body").text(obj.data);
+	                var i;
+	                for(i=0;i<obj["files"].length;i++){
+	                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
+	                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
+	                }
 	                $("#myModal").modal({
 	                        backdrop: 'static',
 	                        keyboard: true, 

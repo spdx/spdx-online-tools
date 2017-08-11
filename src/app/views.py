@@ -186,57 +186,69 @@ def compare(request):
                 jpype.detachThreadFromJVM()
                 return HttpResponse("File Not Uploaded",status=404)
         elif 'compareall' in request.POST:
-            try :
-                if request.FILES["files"]:
-                    rfilename = request.POST["rfilename2"]+".xlsx"
-                    callfunc = [settings.MEDIA_ROOT+"/"+rfilename]
-                    # loop through the list of files
-                    if (len(request.FILES.getlist("files"))<2):
-                        jpype.detachThreadFromJVM()    
-                        context_dict["error"]= "Please select atleast 2 files"
-                        return render(request, 'app/compare.html',context_dict)
-                    for myfile in request.FILES.getlist("files"):
-                        fs = FileSystemStorage()
-                        filename = fs.save(myfile.name, myfile)
-                        uploaded_file_url = fs.url(filename)
-                        verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
-                        callfunc.append(settings.APP_DIR+uploaded_file_url)
+            if request.FILES["files"]:
+                rfilename = request.POST["rfilename2"]+".xlsx"
+                callfunc = [settings.MEDIA_ROOT+"/"+rfilename]
+                ajaxdict = dict()
+                filelist = list()
+                errorlist = list()
+                erroroccured = False
+                if (len(request.FILES.getlist("files"))<2):
+                    jpype.detachThreadFromJVM()    
+                    context_dict["error"]= "Please select atleast 2 files"
+                    return render(request, 'app/compare.html',context_dict)
+                 # loop through the list of files
+                for myfile in request.FILES.getlist("files"):
+                    fs = FileSystemStorage()
+                    filename = fs.save(myfile.name, myfile)
+                    uploaded_file_url = fs.url(filename)
+                    callfunc.append(settings.APP_DIR+uploaded_file_url)
+                    try :
+                        retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
+                        if (len(retval) > 0):
+                            erroroccured = True
+                            filelist.append(myfile.name)
+                            errorlist.append(str(retval))
+                        else :
+                            filelist.append(myfile.name)
+                            errorlist.append("No errors found")
+                    except jpype.JavaException,ex :
+                        """ Error raised by verifyclass.verify without exiting the application"""
+                        erroroccured = True
+                        filelist.append(myfile.name)
+                        errorlist.append(jpype.JavaException.message(ex))
+                    except :
+                        """ Other Exceptions"""
+                        traceback.print_exc()
+                        erroroccured = True
+                        filelist.append(myfile.name)
+                        errorlist.append("Other Exception Raised")
+                """ Call the java function with parameters as list"""
+                """ If no errors in any of the file"""        
+                if (erroroccured==False):
                     """ Call the java function with parameters as list"""
                     compareclass.onlineFunction(callfunc)
-                    context_dict['Content-Disposition'] = 'attachment; filename='+filename
                     if (request.is_ajax()):
-                        ajaxdict=dict()
-                        ajaxdict["medialink"] = "/media/" + rfilename
-                        response = json.dumps(ajaxdict)
+                        newajaxdict=dict()
+                        newajaxdict["medialink"] = "/media/" + rfilename
+                        response = json.dumps(newajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response)
-                    jpype.detachThreadFromJVM()    
+                    jpype.detachThreadFromJVM()
                     return HttpResponseRedirect("/media/"+rfilename)
                 else :
+                    if (request.is_ajax()):
+                        ajaxdict["files"] = filelist
+                        ajaxdict["errors"] = errorlist
+                        response = json.dumps(ajaxdict)
+                        jpype.detachThreadFromJVM()
+                        return HttpResponse(response,status=404)
+                    context_dict['Content-Disposition'] = 'attachment; filename='+filename    
                     jpype.detachThreadFromJVM()
-                    return HttpResponse("File Not Uploaded",status=404)
-            except jpype.JavaException,ex :
-                """ Error raised by verifyclass.verify without exiting the application"""
-                context_dict["error"] = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
-                if (request.is_ajax()):
-                    ajaxdict=dict()
-                    ajaxdict["data"] = jpype.JavaException.message(ex)
-                    response = json.dumps(ajaxdict)
-                    jpype.detachThreadFromJVM()
-                    return HttpResponse(response,status=400)
-                jpype.detachThreadFromJVM()    
-                return render(request, 'app/compare.html',context_dict)
-            except :
-                traceback.print_exc()
-                context_dict["error"] = "Other Exception Raised." 
-                if (request.is_ajax()):
-                    ajaxdict=dict()
-                    ajaxdict["data"] = "Other Exception"
-                    response = json.dumps(ajaxdict)
-                    jpype.detachThreadFromJVM()
-                    return HttpResponse(response,status=400)
+                return HttpResponseRedirect("/media/"+rfilename)
+            else :
                 jpype.detachThreadFromJVM()
-                return render(request, 'app/compare.html',context_dict)
+                return HttpResponse("File Not Uploaded",status=404)
     else :
         return render(request, 'app/compare.html',context_dict)
 
