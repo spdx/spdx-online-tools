@@ -119,13 +119,15 @@ def compare(request):
         package = jpype.JPackage("org.spdx.tools")
         verifyclass = package.Verify
         compareclass = package.CompareMultpleSpdxDocs
-        erroroccured = False
         if 'compare' in request.POST:
             if request.FILES["file1"]:
                 nofile = int(request.POST["nofile"])
                 rfilename = request.POST["rfilename"]+".xlsx"
                 callfunc = [settings.MEDIA_ROOT+"/"+rfilename]
                 ajaxdict = dict()
+                filelist = list()
+                errorlist = list()
+                erroroccured = False
                 for i in range(1,nofile+1):
                     """ Saving file to the media directory """
                     try:
@@ -142,30 +144,22 @@ def compare(request):
                         retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
                         if (len(retval) > 0):
                             erroroccured = True
-                            filedict=dict()
-                            filedict["filename"] = myfile.name
-                            filedict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
-                            ajaxdict[str(i)] = filedict
+                            filelist.append(myfile.name)
+                            errorlist.append("The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval))
                         else :
-                            filedict=dict()
-                            filedict["filename"] = myfile.name
-                            filedict["data"] = "No errors found"
-                            ajaxdict[str(i)] = filedict
+                            filelist.append(myfile.name)
+                            errorlist.append("No errors found")
                     except jpype.JavaException,ex :
                         """ Error raised by verifyclass.verify without exiting the application"""
                         erroroccured = True
-                        filedict=dict()
-                        filedict["filename"] = myfile.name
-                        filedict["data"] = jpype.JavaException.message(ex)
-                        ajaxdict[str(i)] = filedict
+                        filelist.append(myfile.name)
+                        errorlist.append(jpype.JavaException.message(ex))
                     except :
                         """ Other Exceptions"""
                         traceback.print_exc()
                         erroroccured = True
-                        filedict=dict()
-                        filedict["filename"] = myfile.name
-                        filedict["data"] = "Other Excpetion Raised"
-                        ajaxdict[str(i)] = filedict
+                        filelist.append(myfile.name)
+                        errorlist.append("Other Excpetion Raised")
                 """ If no errors in any of the file"""        
                 if (erroroccured==False):
                     """ Call the java function with parameters as list"""
@@ -180,6 +174,8 @@ def compare(request):
                     return HttpResponseRedirect("/media/"+rfilename)
                 else :
                     if (request.is_ajax()):
+                        ajaxdict["files"] = filelist
+                        ajaxdict["errors"] = errorlist
                         response = json.dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=404)

@@ -152,16 +152,12 @@ function checkform2() {
 	                console.log("ERROR : ", e);
 	                var obj = JSON.parse(e.responseText);
 	                console.log(obj);
-	                console.log(typeof(obj));
-	                console.log(Object.keys(obj));
-	                console.log(Object.keys(obj).length);
-	                console.log(obj[0]);
-	                console.log(obj[1]);
-	                console.log(obj[2]);
+	                console.log(obj["files"])
+	                console.log(obj["errors"])
 	                $("#modal-header").removeClass("green-modal");
                     $("#modal-header").addClass("red-modal");
                     $("#modal-title").html("Error!");
-	                $("#modal-body").text(obj.data);
+	                $("#modal-body").text(obj.files);
 	                $("#myModal").modal('show');
 	                $("#comparebutton1").text("Compare");
     				$("#comparebutton1").prop('disabled', false);
