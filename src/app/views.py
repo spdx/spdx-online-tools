@@ -137,6 +137,7 @@ def compare(request):
                     fs = FileSystemStorage()
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
+                    callfunc.append(settings.APP_DIR+uploaded_file_url)
                     try : 
                         retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
                         if (len(retval) > 0):
@@ -145,8 +146,11 @@ def compare(request):
                             filedict["filename"] = myfile.name
                             filedict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
                             ajaxdict[str(i)] = filedict
-                        if (erroroccured==False):
-                            callfunc.append(settings.APP_DIR+uploaded_file_url)
+                        else :
+                            filedict=dict()
+                            filedict["filename"] = myfile.name
+                            filedict["data"] = "No errors found"
+                            ajaxdict[str(i)] = filedict
                     except jpype.JavaException,ex :
                         """ Error raised by verifyclass.verify without exiting the application"""
                         erroroccured = True
@@ -155,48 +159,36 @@ def compare(request):
                         filedict["data"] = jpype.JavaException.message(ex)
                         ajaxdict[str(i)] = filedict
                     except :
+                        """ Other Exceptions"""
                         traceback.print_exc()
                         erroroccured = True
                         filedict=dict()
                         filedict["filename"] = myfile.name
                         filedict["data"] = "Other Excpetion Raised"
                         ajaxdict[str(i)] = filedict
+                """ If no errors in any of the file"""        
+                if (erroroccured==False):
                     """ Call the java function with parameters as list"""
-                compareclass.onlineFunction(callfunc)
-                context_dict['Content-Disposition'] = 'attachment; filename='+filename
-                if (request.is_ajax()):
-                    ajaxdict=dict()
-                    ajaxdict["medialink"] = "/media/" + rfilename
-                    response = json.dumps(ajaxdict)
+                    compareclass.onlineFunction(callfunc)
+                    if (request.is_ajax()):
+                        newajaxdict=dict()
+                        newajaxdict["medialink"] = "/media/" + rfilename
+                        response = json.dumps(newajaxdict)
+                        jpype.detachThreadFromJVM()
+                        return HttpResponse(response)
                     jpype.detachThreadFromJVM()
-                    return HttpResponse(response)
-                jpype.detachThreadFromJVM()
+                    return HttpResponseRedirect("/media/"+rfilename)
+                else :
+                    if (request.is_ajax()):
+                        response = json.dumps(ajaxdict)
+                        jpype.detachThreadFromJVM()
+                        return HttpResponse(response)
+                    context_dict['Content-Disposition'] = 'attachment; filename='+filename    
+                    jpype.detachThreadFromJVM()
                 return HttpResponseRedirect("/media/"+rfilename)
             else :
                 jpype.detachThreadFromJVM()
                 return HttpResponse("File Not Uploaded",status=404)
-            except jpype.JavaException,ex :
-                """ Error raised by verifyclass.verify without exiting the application"""
-                context_dict["error"] = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
-                if (request.is_ajax()):
-                    ajaxdict=dict()
-                    ajaxdict["data"] = jpype.JavaException.message(ex)
-                    response = json.dumps(ajaxdict)
-                    jpype.detachThreadFromJVM()
-                    return HttpResponse(response,status=400)
-                jpype.detachThreadFromJVM()
-                return render(request, 'app/compare.html',context_dict)
-            except :
-                traceback.print_exc()
-                context_dict["error"] = "Other Exception Raised." 
-                if (request.is_ajax()):
-                    ajaxdict=dict()
-                    ajaxdict["data"] = "Other"
-                    response = json.dumps(ajaxdict)
-                    jpype.detachThreadFromJVM()
-                    return HttpResponse(response,status=400)
-                jpype.detachThreadFromJVM()    
-                return render(request, 'app/compare.html',context_dict)
         elif 'compareall' in request.POST:
             try :
                 if request.FILES["files"]:
