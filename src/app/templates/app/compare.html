@@ -247,11 +247,19 @@ $(document).ready(function () {
 	$("#addmore").click(function(){
 		var no = parseInt($("#nofile").val());
 		console.log(no);
-		$("#nofile").val(no+1);
-		console.log("here");
-		$("#morefiles").append('<div class = "form-group"><div class="col-sm-12"><label class="control-label col-sm-3" >SPDX Document '
-		 + (no+1)
-		 + '</label><div class="col-sm-3"> <input type="file" id="file'+  (no+1) +'" placeholder="" name = "file'+ (no+1) + '"  ></div></div>	</div>');
+		// Limit the no. of files uploaded to 13
+		if (no < 13){ 
+			$("#nofile").val(no+1);
+			$("#morefiles").append('<div class = "form-group"><div class="col-sm-12"><label class="control-label col-sm-3" >SPDX Document '
+			 + (no+1)
+			 + '</label><div class="col-sm-3"> <input type="file" id="file'+  (no+1) +'" placeholder="" name = "file'+ (no+1) + '"  ></div></div>	</div>');
+		}
+		else {
+			$("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Maximum file upload limit reached.</strong></div>');
+	    setTimeout(function() {
+	        $("#messages").html("");
+	      }, 5000);
+		}
 		
 	});
 
