@@ -182,7 +182,7 @@ def compare(request):
                     if (request.is_ajax()):
                         response = json.dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
-                        return HttpResponse(response)
+                        return HttpResponse(response,status=404)
                     context_dict['Content-Disposition'] = 'attachment; filename='+filename    
                     jpype.detachThreadFromJVM()
                 return HttpResponseRedirect("/media/"+rfilename)
