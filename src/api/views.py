@@ -276,7 +276,7 @@ def compare(request):
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     rfilename = request.POST["rfilename"]+".xlsx"
-                    callfunc = ["CompareMultipleSpdxDocs",settings.MEDIA_ROOT+"/"+rfilename]
+                    callfunc = [settings.MEDIA_ROOT+"/"+rfilename]
                     file1 = request.FILES["file1"]
                     file2 = request.FILES["file2"]
                     fs = FileSystemStorage()
