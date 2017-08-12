@@ -202,19 +202,39 @@ def convert(request):
                             result = "Select valid conversion types."
                             returnstatus = status.HTTP_400_BAD_REQUEST
                             jpype.detachThreadFromJVM()
+                    elif (option1=="Spreadsheet"):
+                        print ("Verifing for Spreadsheet Document")
+                        if (option2=="Tag"):
+                            sprdtotagclass = package.SpreadsheetToTag
+                            retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                            if (len(retval) > 0):
+                                result = "The following error(s)/warning(s) were raised: " + str(retval)
+                                returnstatus = status.HTTP_400_BAD_REQUEST
+                                jpype.detachThreadFromJVM()
+                        elif (option2=="RDF"):
+                            sprdtordfclass = package.SpreadsheetToRDF
+                            retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                            if (len(retval) > 0):
+                                result = "The following error(s)/warning(s) were raised: " + str(retval)
+                                returnstatus = status.HTTP_400_BAD_REQUEST
+                                jpype.detachThreadFromJVM()
+                        else :
+                            result = "Select valid conversion types."
+                            returnstatus = status.HTTP_400_BAD_REQUEST
+                            jpype.detachThreadFromJVM()
                 else :
                     result = "File Not Found"
                     returnstatus = status.HTTP_400_BAD_REQUEST
                     jpype.detachThreadFromJVM()
             except jpype.JavaException,ex :
                 result = jpype.JavaException.message(ex)
-                jpype.detachThreadFromJVM()
                 returnstatus = status.HTTP_400_BAD_REQUEST
+                jpype.detachThreadFromJVM() 
             except :
                 traceback.print_exc()
                 result = "Other Exception Raised."
-                jpype.detachThreadFromJVM() 
                 returnstatus = status.HTTP_400_BAD_REQUEST
+                jpype.detachThreadFromJVM() 
             query = ConvertFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result,from_format=request.POST["from_format"],to_format=request.POST["to_format"],cfilename=request.POST["cfilename"])
             serial = ConvertSerializerReturn(instance=query)
             return Response(serial.data, status=returnstatus)   
