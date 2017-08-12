@@ -127,7 +127,7 @@ def compare(request):
                 ajaxdict = dict()
                 filelist = list()
                 errorlist = list()
-                erroroccured = False
+                erroroccurred = False
                 for i in range(1,nofile+1):
                     """ Saving file to the media directory """
                     try:
@@ -143,7 +143,7 @@ def compare(request):
                     try : 
                         retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
                         if (len(retval) > 0):
-                            erroroccured = True
+                            erroroccurred = True
                             filelist.append(myfile.name)
                             errorlist.append(str(retval))
                         else :
@@ -151,17 +151,17 @@ def compare(request):
                             errorlist.append("No errors found")
                     except jpype.JavaException,ex :
                         """ Error raised by verifyclass.verify without exiting the application"""
-                        erroroccured = True
+                        erroroccurred = True
                         filelist.append(myfile.name)
                         errorlist.append(jpype.JavaException.message(ex))
                     except :
                         """ Other Exceptions"""
                         traceback.print_exc()
-                        erroroccured = True
+                        erroroccurred = True
                         filelist.append(myfile.name)
                         errorlist.append("Other Excpetion Raised")
                 """ If no errors in any of the file"""        
-                if (erroroccured==False):
+                if (erroroccurred==False):
                     """ Call the java function with parameters as list"""
                     compareclass.onlineFunction(callfunc)
                     if (request.is_ajax()):
@@ -192,7 +192,7 @@ def compare(request):
                 ajaxdict = dict()
                 filelist = list()
                 errorlist = list()
-                erroroccured = False
+                erroroccurred = False
                 if (len(request.FILES.getlist("files"))<2):
                     jpype.detachThreadFromJVM()    
                     context_dict["error"]= "Please select atleast 2 files"
@@ -206,7 +206,7 @@ def compare(request):
                     try :
                         retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
                         if (len(retval) > 0):
-                            erroroccured = True
+                            erroroccurred = True
                             filelist.append(myfile.name)
                             errorlist.append(str(retval))
                         else :
@@ -214,18 +214,18 @@ def compare(request):
                             errorlist.append("No errors found")
                     except jpype.JavaException,ex :
                         """ Error raised by verifyclass.verify without exiting the application"""
-                        erroroccured = True
+                        erroroccurred = True
                         filelist.append(myfile.name)
                         errorlist.append(jpype.JavaException.message(ex))
                     except :
                         """ Other Exceptions"""
                         traceback.print_exc()
-                        erroroccured = True
+                        erroroccurred = True
                         filelist.append(myfile.name)
                         errorlist.append("Other Exception Raised")
                 """ Call the java function with parameters as list"""
                 """ If no errors in any of the file"""        
-                if (erroroccured==False):
+                if (erroroccurred==False):
                     """ Call the java function with parameters as list"""
                     compareclass.onlineFunction(callfunc)
                     if (request.is_ajax()):

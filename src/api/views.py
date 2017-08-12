@@ -124,6 +124,7 @@ def convert(request):
             """ If JVM started, attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
+            result = ""
             try :
                 if request.FILES["file"]:
                     """ Saving file to the media directory """
@@ -211,12 +212,20 @@ def convert(request):
                                 result = "The following error(s)/warning(s) were raised: " + str(retval)
                                 returnstatus = status.HTTP_400_BAD_REQUEST
                                 jpype.detachThreadFromJVM()
+                            else :
+                                result = "/media/" + convertfile
+                                returnstatus = status.HTTP_201_CREATED
+                                jpype.detachThreadFromJVM()
                         elif (option2=="RDF"):
                             sprdtordfclass = package.SpreadsheetToRDF
                             retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
                             if (len(retval) > 0):
                                 result = "The following error(s)/warning(s) were raised: " + str(retval)
                                 returnstatus = status.HTTP_400_BAD_REQUEST
+                                jpype.detachThreadFromJVM()
+                            else :
+                                result = "/media/" + convertfile
+                                returnstatus = status.HTTP_201_CREATED
                                 jpype.detachThreadFromJVM()
                         else :
                             result = "Select valid conversion types."
@@ -242,6 +251,7 @@ def convert(request):
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['GET', 'POST'])
 @renderer_classes((JSONRenderer,))
 def compare(request):
@@ -261,8 +271,7 @@ def compare(request):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
-            mainclass = package.Main
-            result="default"
+            result=""
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     rfilename = request.POST["rfilename"]+".xlsx"
@@ -274,8 +283,14 @@ def compare(request):
                     uploaded_file_url1 = fs.url(filename1)
                     filename2 = fs.save(file2.name, file2)
                     uploaded_file_url2 = fs.url(filename2)
-                    verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url1)
-                    verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url2)
+                    retval1 = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url1)
+                    if (len(retval1) > 0):
+                        result = "The following error(s)/warning(s) were raised by" + str(file1.name) + ": " +str(retval1)
+                        returnstatus = status.HTTP_400_BAD_REQUEST
+                    retval2 = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url2)
+                    if (len(retval2) > 0):
+                        result += "The following error(s)/warning(s) were raised by" + str(file1.name) + ": " +str(retval2)
+                        returnstatus = status.HTTP_400_BAD_REQUEST
                     callfunc.append(settings.APP_DIR+uploaded_file_url1)
                     callfunc.append(settings.APP_DIR+uploaded_file_url2)
                     """ Call the java function with parameters as list"""
