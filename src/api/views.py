@@ -269,6 +269,7 @@ def compare(request):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
+            compareclass = package.CompareMultpleSpdxDocs
             result=""
             erroroccurred = False
             try :
