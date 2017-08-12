@@ -281,7 +281,7 @@ def convert(request):
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
-                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by "+ myfile.name + ": " + str(retval)
                                 response = json.dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=400)
@@ -293,7 +293,7 @@ def convert(request):
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
-                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by "+ myfile.name + ": " + str(retval)
                                 response = json.dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=400)
@@ -309,7 +309,7 @@ def convert(request):
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
-                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by "+ myfile.name + ": " + str(retval)
                                 response = json.dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=400)
@@ -321,7 +321,7 @@ def convert(request):
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
-                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by "+ myfile.name + ": " + str(retval)
                                 response = json.dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=400)
@@ -333,7 +333,7 @@ def convert(request):
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
-                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by "+ myfile.name + ": " + str(retval)
                                 response = json.dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=400)
@@ -349,7 +349,7 @@ def convert(request):
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
-                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by "+ myfile.name + ": " + str(retval)
                                 response = json.dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=400)
@@ -361,7 +361,7 @@ def convert(request):
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
-                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by: "+ myfile.name + " " + str(retval)
+                                ajaxdict["data"] = "The following error(s)/warning(s) were raised by "+ myfile.name + ": " + str(retval)
                                 response = json.dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=400)

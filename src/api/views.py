@@ -288,12 +288,12 @@ def compare(request):
                     retval1 = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url1)
                     if (len(retval1) > 0):
                         erroroccurred = True
-                        result = "The following error(s)/warning(s) were raised by" + str(file1.name) + ": " +str(retval1)
+                        result = "The following error(s)/warning(s) were raised by " + str(file1.name) + ": " +str(retval1)
                         returnstatus = status.HTTP_400_BAD_REQUEST
                     retval2 = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url2)
                     if (len(retval2) > 0):
                         erroroccurred = True
-                        result += "The following error(s)/warning(s) were raised by" + str(file1.name) + ": " +str(retval2)
+                        result += "The following error(s)/warning(s) were raised by " + str(file1.name) + ": " +str(retval2)
                         returnstatus = status.HTTP_400_BAD_REQUEST
                     if (erroroccurred == False):
                         compareclass.onlineFunction(callfunc)
