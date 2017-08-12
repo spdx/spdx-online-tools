@@ -272,6 +272,7 @@ def compare(request):
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
             result=""
+            erroroccurred = False
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     rfilename = request.POST["rfilename"]+".xlsx"
@@ -283,39 +284,39 @@ def compare(request):
                     uploaded_file_url1 = fs.url(filename1)
                     filename2 = fs.save(file2.name, file2)
                     uploaded_file_url2 = fs.url(filename2)
+                    callfunc.append(settings.APP_DIR+uploaded_file_url1)
+                    callfunc.append(settings.APP_DIR+uploaded_file_url2)
                     retval1 = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url1)
                     if (len(retval1) > 0):
+                        erroroccurred = True
                         result = "The following error(s)/warning(s) were raised by" + str(file1.name) + ": " +str(retval1)
                         returnstatus = status.HTTP_400_BAD_REQUEST
                     retval2 = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url2)
                     if (len(retval2) > 0):
+                        erroroccurred = True
                         result += "The following error(s)/warning(s) were raised by" + str(file1.name) + ": " +str(retval2)
                         returnstatus = status.HTTP_400_BAD_REQUEST
-                    callfunc.append(settings.APP_DIR+uploaded_file_url1)
-                    callfunc.append(settings.APP_DIR+uploaded_file_url2)
-                    """ Call the java function with parameters as list"""
-                    print(callfunc)
-                    mainclass.main(callfunc)
+                    if (erroroccurred == False):
+                        compareclass.onlineFunction(callfunc)
+                        result = "/media/" + rfilename
+                        returnstatus = status.HTTP_201_CREATED
                     jpype.detachThreadFromJVM()
-                    result = "/media/"+rfilename
-                    returnstatus = status.HTTP_201_CREATED
                 else :
-                    jpype.detachThreadFromJVM()
                     result = "File Not Uploaded"
                     returnstatus = status.HTTP_400_BAD_REQUEST
+                    jpype.detachThreadFromJVM()
             except jpype.JavaException,ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
                 result = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
-                jpype.detachThreadFromJVM()
                 returnstatus = status.HTTP_400_BAD_REQUEST
+                jpype.detachThreadFromJVM()
             except :
                 traceback.print_exc()
                 result = "Other Exception Raised."
-                jpype.detachThreadFromJVM()
                 returnstatus = status.HTTP_400_BAD_REQUEST
+                jpype.detachThreadFromJVM()
             query = CompareFileUpload.objects.create(owner=request.user,file1=request.data.get('file1'),file2=request.data.get('file2'),rfilename = rfilename, result=result)
             serial = CompareSerializerReturn(instance=query)
             return Response(serial.data, status=returnstatus)
         else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
