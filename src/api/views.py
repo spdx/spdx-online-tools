@@ -75,9 +75,7 @@ def validate(request):
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
                     """ Call the java function with parameters as list"""
-                    lis = verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-                    print (lis)
-                    retval = verifyclass.main([settings.APP_DIR+uploaded_file_url])
+                    retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                     if (len(retval) > 0):
                         result = "The following error(s)/warning(s) were raised: " + str(retval)
                         returnstatus = status.HTTP_400_BAD_REQUEST
