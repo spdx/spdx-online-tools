@@ -77,32 +77,34 @@ def validate(request):
                     """ Call the java function with parameters as list"""
                     lis = verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                     print (lis)
-                    verifyclass.main([settings.APP_DIR+uploaded_file_url])
-                    jpype.detachThreadFromJVM()
-                    result = "This SPDX Document is valid."
-                    returnstatus = status.HTTP_201_CREATED
+                    retval = verifyclass.main([settings.APP_DIR+uploaded_file_url])
+                    if (len(retval) > 0):
+                        result = "The following error(s)/warning(s) were raised: " + str(retval)
+                        returnstatus = status.HTTP_400_BAD_REQUEST
+                        jpype.detachThreadFromJVM()
+                    else :
+	                    result = "This SPDX Document is valid."
+	                    returnstatus = status.HTTP_201_CREATED
+	                    jpype.detachThreadFromJVM()
                 else :
-                    jpype.detachThreadFromJVM()
                     result = "File Not Uploaded"
                     returnstatus = status.HTTP_400_BAD_REQUEST
+                    jpype.detachThreadFromJVM()
             except jpype.JavaException,ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
                 result = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
-                jpype.detachThreadFromJVM()
                 returnstatus = status.HTTP_400_BAD_REQUEST
+                jpype.detachThreadFromJVM()
             except :
                 traceback.print_exc()
-                result = "Other Exception Raised." 
+                result = "Other Exception Raised."
+                returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
-                returnstatus = status.HTTP_400_BAD_REQUEST  
             query = ValidateFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result)
-            #serializer.save(owner=request.user,
-            #           file=request.data.get('file'),result=result)
             serial = ValidateSerializerReturn(instance=query)
             return Response(serial.data, status=returnstatus)
         else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'POST'])
 @renderer_classes((JSONRenderer,))
