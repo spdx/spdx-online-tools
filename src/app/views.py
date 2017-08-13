@@ -383,7 +383,7 @@ def convert(request):
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response)
                 jpype.detachThreadFromJVM()
-                return HttpResponseRedirect("/media/" + folder + "/" convertfile)
+                return HttpResponseRedirect("/media/" + folder + "/" + convertfile)
             else :
                 jpype.detachThreadFromJVM()
                 return HttpResponse("File Not Uploaded",status=404)
