@@ -71,7 +71,8 @@ def validate(request):
                 if request.FILES["file"]:
                     """ Saving file to the media directory """
                     myfile = request.FILES['file']
-                    fs = FileSystemStorage()
+                    folder = "api/"+str(request.user)
+                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
                     """ Call the java function with parameters as list"""
@@ -127,7 +128,8 @@ def convert(request):
                 if request.FILES["file"]:
                     """ Saving file to the media directory """
                     myfile = request.FILES['file']
-                    fs = FileSystemStorage()
+                    folder = "api/"+str(request.user)
+                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
                     convertfile =  request.POST["cfilename"]
@@ -138,7 +140,7 @@ def convert(request):
                         print ("Verifing for Tag/Value Document")
                         if (option2=="RDF"):
                             tagtordfclass = package.TagToRDF
-                            retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                            retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
                                 result = "The following error(s)/warning(s) were raised: " + str(retval)
                                 returnstatus = status.HTTP_400_BAD_REQUEST
@@ -149,7 +151,7 @@ def convert(request):
                                 jpype.detachThreadFromJVM()
                         elif (option2=="Spreadsheet"):
                             tagtosprdclass = package.TagToSpreadsheet
-                            retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                            retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
                                 result = "The following error(s)/warning(s) were raised: " + str(retval)
                                 returnstatus = status.HTTP_400_BAD_REQUEST
@@ -166,7 +168,7 @@ def convert(request):
                         print ("Verifing for RDF Document")
                         if (option2=="Tag"):
                             rdftotagclass = package.RdfToTag
-                            retval = rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                            retval = rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
                                 result = "The following error(s)/warning(s) were raised: " + str(retval)
                                 returnstatus = status.HTTP_400_BAD_REQUEST
@@ -177,7 +179,7 @@ def convert(request):
                                 jpype.detachThreadFromJVM()
                         elif (option2=="Spreadsheet"):
                             rdftosprdclass = package.RdfToSpreadsheet
-                            retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                            retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
                                 result = "The following error(s)/warning(s) were raised: " + str(retval)
                                 returnstatus = status.HTTP_400_BAD_REQUEST
@@ -188,7 +190,7 @@ def convert(request):
                                 jpype.detachThreadFromJVM()
                         elif (option2=="HTML"):
                             rdftohtmlclass = package.RdfToHtml
-                            retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                            retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
                                 result = "The following error(s)/warning(s) were raised: " + str(retval)
                                 returnstatus = status.HTTP_400_BAD_REQUEST
@@ -205,7 +207,7 @@ def convert(request):
                         print ("Verifing for Spreadsheet Document")
                         if (option2=="Tag"):
                             sprdtotagclass = package.SpreadsheetToTag
-                            retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                            retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
                                 result = "The following error(s)/warning(s) were raised: " + str(retval)
                                 returnstatus = status.HTTP_400_BAD_REQUEST
@@ -216,7 +218,7 @@ def convert(request):
                                 jpype.detachThreadFromJVM()
                         elif (option2=="RDF"):
                             sprdtordfclass = package.SpreadsheetToRDF
-                            retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                            retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
                                 result = "The following error(s)/warning(s) were raised: " + str(retval)
                                 returnstatus = status.HTTP_400_BAD_REQUEST
@@ -275,10 +277,11 @@ def compare(request):
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     rfilename = request.POST["rfilename"]+".xlsx"
-                    callfunc = [settings.MEDIA_ROOT+"/"+rfilename]
+                    folder = "api/"+str(request.user)
+                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
+                    callfunc = [settings.MEDIA_ROOT+"/"+ folder+"/"+rfilename]
                     file1 = request.FILES["file1"]
                     file2 = request.FILES["file2"]
-                    fs = FileSystemStorage()
                     filename1 = fs.save(file1.name, file1)
                     uploaded_file_url1 = fs.url(filename1)
                     filename2 = fs.save(file2.name, file2)
