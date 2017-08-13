@@ -127,6 +127,7 @@ def compare(request):
                 nofile = int(request.POST["nofile"])
                 rfilename = request.POST["rfilename"]+".xlsx"
                 callfunc = [settings.MEDIA_ROOT+"/"+rfilename]
+                folder = str(int(time()))
                 ajaxdict = dict()
                 filelist = list()
                 errorlist = list()
@@ -139,7 +140,7 @@ def compare(request):
                     except:
                         traceback.print_exc()
                         return HttpResponse("File does not exist",status=404)
-                    fs = FileSystemStorage()
+                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
                     callfunc.append(settings.APP_DIR+uploaded_file_url)
@@ -200,9 +201,10 @@ def compare(request):
                     jpype.detachThreadFromJVM()    
                     context_dict["error"]= "Please select atleast 2 files"
                     return render(request, 'app/compare.html',context_dict)
-                 # loop through the list of files
+                # loop through the list of files
+                folder = str(int(time())) 
                 for myfile in request.FILES.getlist("files"):
-                    fs = FileSystemStorage()
+                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
                     callfunc.append(settings.APP_DIR+uploaded_file_url)
@@ -268,8 +270,9 @@ def convert(request):
         try :
             if request.FILES["file"]:
                 """ Saving file to the media directory """
+                folder = str(int(time()))
                 myfile = request.FILES['file']
-                fs = FileSystemStorage()
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
                 convertfile =  request.POST["cfilename"]+request.POST["cfileformat"]
