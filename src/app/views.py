@@ -31,7 +31,8 @@ import jpype
 import traceback
 import os
 import json
-
+from time import time
+from urlparse import urljoin
 
 def index(request):
     context_dict={}
@@ -56,9 +57,11 @@ def validate(request):
             if request.FILES["file"]:
                 """ Saving file to the media directory """
                 myfile = request.FILES['file']
-                fs = FileSystemStorage()
+                folder = str(int(time()))
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
+                print (uploaded_file_url)
                 """ Call the java function with parameters as list"""
                 retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                 """ If any error or warnings are returned"""
