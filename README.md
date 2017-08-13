@@ -32,5 +32,26 @@ The tool would provide an an easy all-in-one website to upload, parse, validate,
     
 ## How to Run Tests
 python manage.py test
+
+## How to Use API
+1. Start the server.
+    ```bash
+    python manage.py runserver
+    ```
+2. Send the request to the url with the form input values accordingly. Curl examples are given below.
+
+3. For validation tool, send the request to /api2/validate/.
+    ```bash
+    sudo curl -X POST -u <admin>:<password> -F "file=@<fileInput>" -H "Accept: application/json" http://localhost:8000/api2/validate/ | json_pp
+    ```
+4. For compare tool, send the request to /api2/compare/.
+    ```bash
+    sudo curl -X POST -u <admin>:<password> -F "file1=@<fileInput1>" -F "file2=<fileInput2>" -F "rfilename=<resultFileName>" -H "Accept: application/json" http://localhost:8000/api2/compare/ | json_pp
+    ```
+5. For convert tool, send the request to /api2/convert/.
+    ```bash
+    sudo curl -X POST -u <admin>:<password> -F "file=@<fileInput>" -F "cfilename=<resultFileNameWithExtension>" -F "from_format=<convertFrom>" -F "to_format=<convertTo>" -H "Accept: application/json" http://localhost:8000/api2/convert/ | json_pp
+    ```
+
 ## Dependencies
 The project uses [spdx java tools](https://github.com/spdx/tools/) for various tools of the website.
