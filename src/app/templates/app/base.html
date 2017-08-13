@@ -78,10 +78,12 @@
         <div id="navbar" class="collapse navbar-collapse" >
           <ul class="nav navbar-nav" style="font-size: 16px;">
             <li><a href="/app/about/" id="aboutpage">About</a></li>
+            {% if user.is_authenticated %}
             <li><a href="/app/validate/" id="validatepage">Validate</a></li>
             <li><a href="/app/compare/" id="comparepage">Compare</a></li>
             <li><a href="/app/convert/" id="convertpage">Convert</a></li>
 			<li><a href="/app/check_license/" id="checklicensepage">Check License</a></li>
+            {% endif %}
 		  </ul>
 		  <ul class="nav navbar-nav navbar-right" style="margin-right: 25px;font-size: 16px;">	
 			{% if user.is_authenticated %}

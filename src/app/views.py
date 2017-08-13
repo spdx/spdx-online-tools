@@ -492,7 +492,7 @@ def loginuser(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(username=username, password=password)
-        if user and user.is_staff and not user.is_superuser:
+        if user and user.is_staff:
             #add status  choice here
             if user.is_active:
                 login(request, user)
