@@ -34,7 +34,10 @@ The tool would provide an an easy all-in-one website to upload, parse, validate,
 7. Register and login to use the tools.
     
 ## How to Run Tests
-python manage.py test
+    
+    ```bash
+    python manage.py test
+    ```
 
 ## How to Use API
 1. Start the server.
