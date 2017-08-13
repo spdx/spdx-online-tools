@@ -57,7 +57,7 @@ def validate(request):
             if request.FILES["file"]:
                 """ Saving file to the media directory """
                 myfile = request.FILES['file']
-                folder = str(int(time()))
+                folder = str(request.user) + "/" + str(int(time())) 
                 fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                 filename = fs.save(myfile.name, myfile)
                 uploaded_file_url = fs.url(filename)
@@ -126,12 +126,13 @@ def compare(request):
             if request.FILES["file1"]:
                 nofile = int(request.POST["nofile"])
                 rfilename = request.POST["rfilename"]+".xlsx"
-                callfunc = [settings.MEDIA_ROOT+"/"+rfilename]
                 folder = str(request.user)+"/"+ str(int(time()))
+                callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
                 ajaxdict = dict()
                 filelist = list()
                 errorlist = list()
                 erroroccurred = False
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                 for i in range(1,nofile+1):
                     """ Saving file to the media directory """
                     try:
@@ -140,7 +141,6 @@ def compare(request):
                     except:
                         traceback.print_exc()
                         return HttpResponse("File does not exist",status=404)
-                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
                     callfunc.append(settings.APP_DIR+uploaded_file_url)
@@ -170,7 +170,7 @@ def compare(request):
                     compareclass.onlineFunction(callfunc)
                     if (request.is_ajax()):
                         newajaxdict=dict()
-                        newajaxdict["medialink"] = "/media/" + rfilename
+                        newajaxdict["medialink"] = "/media/" + folder + "/" + rfilename
                         response = json.dumps(newajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response)
@@ -185,14 +185,14 @@ def compare(request):
                         return HttpResponse(response,status=404)
                     context_dict['Content-Disposition'] = 'attachment; filename='+filename    
                     jpype.detachThreadFromJVM()
-                return HttpResponseRedirect("/media/"+rfilename)
+                return HttpResponse(errorlist)
             else :
                 jpype.detachThreadFromJVM()
                 return HttpResponse("File Not Uploaded",status=404)
         elif 'compareall' in request.POST:
             if request.FILES["files"]:
                 rfilename = request.POST["rfilename2"]+".xlsx"
-                callfunc = [settings.MEDIA_ROOT+"/"+rfilename]
+                callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
                 ajaxdict = dict()
                 filelist = list()
                 errorlist = list()
@@ -202,9 +202,9 @@ def compare(request):
                     context_dict["error"]= "Please select atleast 2 files"
                     return render(request, 'app/compare.html',context_dict)
                 # loop through the list of files
-                folder = str(int(time())) 
+                folder = str(request.user) + "/" + str(int(time()))
+                fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/')) 
                 for myfile in request.FILES.getlist("files"):
-                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
                     callfunc.append(settings.APP_DIR+uploaded_file_url)
@@ -228,29 +228,28 @@ def compare(request):
                         erroroccurred = True
                         filelist.append(myfile.name)
                         errorlist.append("Other Exception Raised")
-                """ Call the java function with parameters as list"""
                 """ If no errors in any of the file"""        
                 if (erroroccurred==False):
                     """ Call the java function with parameters as list"""
                     compareclass.onlineFunction(callfunc)
                     if (request.is_ajax()):
                         newajaxdict=dict()
-                        newajaxdict["medialink"] = "/media/" + rfilename
+                        newajaxdict["medialink"] = "/media/" + folder + "/"+ rfilename
                         response = json.dumps(newajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response)
+                    context_dict['Content-Disposition'] = 'attachment; filename='+filename 
                     jpype.detachThreadFromJVM()
-                    return HttpResponseRedirect("/media/"+rfilename)
+                    return HttpResponseRedirect("/media/"+ folder + "/"+rfilename)
                 else :
                     if (request.is_ajax()):
                         ajaxdict["files"] = filelist
                         ajaxdict["errors"] = errorlist
                         response = json.dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
-                        return HttpResponse(response,status=404)
-                    context_dict['Content-Disposition'] = 'attachment; filename='+filename    
+                        return HttpResponse(response,status=404)   
                     jpype.detachThreadFromJVM()
-                return HttpResponseRedirect("/media/"+rfilename)
+                return HttpResponse(errorlist)
             else :
                 jpype.detachThreadFromJVM()
                 return HttpResponse("File Not Uploaded",status=404)
@@ -270,7 +269,7 @@ def convert(request):
         try :
             if request.FILES["file"]:
                 """ Saving file to the media directory """
-                folder = str(int(time()))
+                folder = str(request.user) + "/" + str(int(time())) 
                 myfile = request.FILES['file']
                 fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                 filename = fs.save(myfile.name, myfile)
@@ -283,7 +282,7 @@ def convert(request):
                     print ("Verifing for Tag/Value Document")
                     if (option2=="RDF"):
                         tagtordfclass = package.TagToRDF
-                        retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+convertfile])
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
@@ -295,7 +294,7 @@ def convert(request):
                             return HttpResponse(retval)
                     elif (option2=="Spreadsheet"):
                         tagtosprdclass = package.TagToSpreadsheet
-                        retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
@@ -311,7 +310,7 @@ def convert(request):
                     print ("Verifing for RDF Document")
                     if (option2=="Tag"):
                         rdftotagclass = package.RdfToTag
-                        retval = rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
@@ -323,7 +322,7 @@ def convert(request):
                             return HttpResponse(retval)
                     elif (option2=="Spreadsheet"):
                         rdftosprdclass = package.RdfToSpreadsheet
-                        retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
@@ -335,7 +334,7 @@ def convert(request):
                             return HttpResponse(retval)
                     elif (option2=="HTML"):
                         rdftohtmlclass = package.RdfToHtml
-                        retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
@@ -351,7 +350,7 @@ def convert(request):
                     print ("Verifing for Spreadsheet Document")
                     if (option2=="Tag"):
                         sprdtotagclass = package.SpreadsheetToTag
-                        retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
@@ -363,7 +362,7 @@ def convert(request):
                             return HttpResponse(retval)
                     elif (option2=="RDF"):
                         sprdtordfclass = package.SpreadsheetToRDF
-                        retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+convertfile])
+                        retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                         if (len(retval) > 0):
                             if (request.is_ajax()):
                                 ajaxdict=dict()
@@ -379,12 +378,12 @@ def convert(request):
                 context_dict['Content-Disposition'] = 'attachment; filename='+filename
                 if (request.is_ajax()):
                         ajaxdict=dict()
-                        ajaxdict["medialink"] = "/media/" + convertfile
+                        ajaxdict["medialink"] = "/media/" + folder + "/"+ convertfile
                         response = json.dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response)
                 jpype.detachThreadFromJVM()
-                return HttpResponseRedirect("/media/" + convertfile)
+                return HttpResponseRedirect("/media/" + folder + "/" convertfile)
             else :
                 jpype.detachThreadFromJVM()
                 return HttpResponse("File Not Uploaded",status=404)
