@@ -71,7 +71,7 @@ def validate(request):
                 if request.FILES["file"]:
                     """ Saving file to the media directory """
                     myfile = request.FILES['file']
-                    folder = "api/"+str(request.user)
+                    folder = "api/"+str(request.user) +"/"+ str(int(time())
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
@@ -128,7 +128,7 @@ def convert(request):
                 if request.FILES["file"]:
                     """ Saving file to the media directory """
                     myfile = request.FILES['file']
-                    folder = "api/"+str(request.user)
+                    folder = "api/"+str(request.user) +"/"+ str(int(time())
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
@@ -277,7 +277,7 @@ def compare(request):
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     rfilename = request.POST["rfilename"]+".xlsx"
-                    folder = "api/"+str(request.user)
+                    folder = "api/"+str(request.user) +"/"+ str(int(time())
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     callfunc = [settings.MEDIA_ROOT+"/"+ folder+"/"+rfilename]
                     file1 = request.FILES["file1"]
