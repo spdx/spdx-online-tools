@@ -148,7 +148,7 @@ def convert(request):
                                 returnstatus = status.HTTP_400_BAD_REQUEST
                                 jpype.detachThreadFromJVM()
                             else :
-                                result = "/media/" + convertfile
+                                result = "/media/" + folder+"/"+ convertfile
                                 returnstatus = status.HTTP_201_CREATED
                                 jpype.detachThreadFromJVM()
                         elif (option2=="Spreadsheet"):
@@ -159,7 +159,7 @@ def convert(request):
                                 returnstatus = status.HTTP_400_BAD_REQUEST
                                 jpype.detachThreadFromJVM()
                             else :
-                                result = "/media/" + convertfile
+                                result = "/media/" + folder+"/"+ convertfile
                                 returnstatus = status.HTTP_201_CREATED
                                 jpype.detachThreadFromJVM()
                         else :
@@ -176,7 +176,7 @@ def convert(request):
                                 returnstatus = status.HTTP_400_BAD_REQUEST
                                 jpype.detachThreadFromJVM()
                             else :
-                                result = "/media/" + convertfile
+                                result = "/media/" + folder+"/"+ convertfile
                                 returnstatus = status.HTTP_201_CREATED
                                 jpype.detachThreadFromJVM()
                         elif (option2=="Spreadsheet"):
@@ -187,7 +187,7 @@ def convert(request):
                                 returnstatus = status.HTTP_400_BAD_REQUEST
                                 jpype.detachThreadFromJVM()
                             else :
-                                result = "/media/" + convertfile
+                                result = "/media/" + folder+"/"+ convertfile
                                 returnstatus = status.HTTP_201_CREATED
                                 jpype.detachThreadFromJVM()
                         elif (option2=="HTML"):
@@ -198,7 +198,7 @@ def convert(request):
                                 returnstatus = status.HTTP_400_BAD_REQUEST
                                 jpype.detachThreadFromJVM()
                             else :
-                                result = "/media/" + convertfile
+                                result = "/media/" + folder+"/"+ convertfile
                                 returnstatus = status.HTTP_201_CREATED
                                 jpype.detachThreadFromJVM()
                         else :
@@ -215,7 +215,7 @@ def convert(request):
                                 returnstatus = status.HTTP_400_BAD_REQUEST
                                 jpype.detachThreadFromJVM()
                             else :
-                                result = "/media/" + convertfile
+                                result = "/media/" + folder+"/"+ convertfile
                                 returnstatus = status.HTTP_201_CREATED
                                 jpype.detachThreadFromJVM()
                         elif (option2=="RDF"):
@@ -226,7 +226,7 @@ def convert(request):
                                 returnstatus = status.HTTP_400_BAD_REQUEST
                                 jpype.detachThreadFromJVM()
                             else :
-                                result = "/media/" + convertfile
+                                result = "/media/" + folder+"/"+ convertfile
                                 returnstatus = status.HTTP_201_CREATED
                                 jpype.detachThreadFromJVM()
                         else :
@@ -302,7 +302,7 @@ def compare(request):
                         returnstatus = status.HTTP_400_BAD_REQUEST
                     if (erroroccurred == False):
                         compareclass.onlineFunction(callfunc)
-                        result = "/media/" + rfilename
+                        result = "/media/" + folder+"/"+ rfilename
                         returnstatus = status.HTTP_201_CREATED
                     jpype.detachThreadFromJVM()
                 else :
