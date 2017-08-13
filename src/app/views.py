@@ -424,8 +424,8 @@ def convert(request):
 
 def check_license(request):
     if request.user.is_authenticated():
+        context_dict={}
         if request.method == 'POST':
-            context_dict={}
             licensetext = request.POST.get('licensetext')
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """

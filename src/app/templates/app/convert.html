@@ -15,6 +15,7 @@
   }
 </style>
 -->
+{% if user.is_authenticated %}
 <div id="messages" class="messages">
 </div>
 
@@ -68,9 +69,15 @@
 </div>
 </div>
 {% include "app/modal.html" %}
-
+{% else %}
+<div id="messages" class="messages">
+You are not allowed to view this page. Please login first.
+</div>
+{% endif %}
 {% endblock %}
+
 {% block script_block %}
+{% if user.is_authenticated %}
 <script type="text/javascript">
 $(document).ready(function () {
   $("#convertpage").addClass('linkactive');
@@ -345,4 +352,5 @@ function checkform() {
   })(this);
 </script>
 -->
+{% endif %}
 {% endblock %}

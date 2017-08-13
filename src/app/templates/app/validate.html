@@ -27,6 +27,7 @@
 }
 </style>
 -->
+{% if user.is_authenticated %}
 <div id="messages" class="messages">
 </div>
 <p class ="lead"> {{ error }}</p>
@@ -58,8 +59,15 @@
 <output id="list"></output>
 -->
 </div>
+{% else %}
+<div id="messages" class="messages">
+You are not allowed to view this page. Please login first.
+</div>
+{% endif %}
 {% endblock %}
+
 {% block script_block %}
+{% if user.is_authenticated %}
 <script type="text/javascript">
 function checkform() {
   if ($('#file').get(0).files.length === 0) {
@@ -192,4 +200,5 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 }
 </script>
 -->
+{% endif %}
 {% endblock %}
