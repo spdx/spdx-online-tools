@@ -127,7 +127,7 @@ def compare(request):
                 nofile = int(request.POST["nofile"])
                 rfilename = request.POST["rfilename"]+".xlsx"
                 callfunc = [settings.MEDIA_ROOT+"/"+rfilename]
-                folder = str(int(time()))
+                folder = str(request.user)+"/"+ str(int(time()))
                 ajaxdict = dict()
                 filelist = list()
                 errorlist = list()
