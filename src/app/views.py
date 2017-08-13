@@ -175,7 +175,8 @@ def compare(request):
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response)
                     jpype.detachThreadFromJVM()
-                    return HttpResponseRedirect("/media/"+rfilename)
+                    context_dict['Content-Disposition'] = 'attachment; filename='+rfilename    
+                    return HttpResponseRedirect("/media/"+ folder + "/" +rfilename)
                 else :
                     if (request.is_ajax()):
                         ajaxdict["files"] = filelist
@@ -183,9 +184,8 @@ def compare(request):
                         response = json.dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=404)
-                    context_dict['Content-Disposition'] = 'attachment; filename='+filename    
                     jpype.detachThreadFromJVM()
-                return HttpResponse(errorlist)
+                    return HttpResponse(errorlist)
             else :
                 jpype.detachThreadFromJVM()
                 return HttpResponse("File Not Uploaded",status=404)
@@ -238,7 +238,7 @@ def compare(request):
                         response = json.dumps(newajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response)
-                    context_dict['Content-Disposition'] = 'attachment; filename='+filename 
+                    context_dict['Content-Disposition'] = 'attachment; filename='+rfilename 
                     jpype.detachThreadFromJVM()
                     return HttpResponseRedirect("/media/"+ folder + "/"+rfilename)
                 else :
@@ -375,7 +375,7 @@ def convert(request):
                     else :
                         return HttpResponse("Select the available conversion types.")
                 """ Call the java function with parameters as list"""
-                context_dict['Content-Disposition'] = 'attachment; filename='+filename
+                context_dict['Content-Disposition'] = 'attachment; filename='+convertfile
                 if (request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["medialink"] = "/media/" + folder + "/"+ convertfile
