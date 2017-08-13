@@ -192,6 +192,7 @@ def compare(request):
         elif 'compareall' in request.POST:
             if request.FILES["files"]:
                 rfilename = request.POST["rfilename2"]+".xlsx"
+                folder = str(request.user)+"/"+ str(int(time()))
                 callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
                 ajaxdict = dict()
                 filelist = list()
