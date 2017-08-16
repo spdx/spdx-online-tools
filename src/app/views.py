@@ -109,11 +109,10 @@ def validate(request):
                 jpype.detachThreadFromJVM()    
                 return render(request, 'app/validate.html',context_dict)
             except :
-                traceback.print_exc()
-                context_dict["error"] = "Other Exception Raised." 
+                context_dict["error"] = traceback.format_exc() 
                 if (request.is_ajax()):
                     ajaxdict=dict()
-                    ajaxdict["data"] = "Other Exception Raised." 
+                    ajaxdict["data"] = traceback.format_exc() 
                     response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(ajaxdict,status=400)
@@ -150,13 +149,24 @@ def compare(request):
                         erroroccurred = False
                         fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                         for i in range(1,nofile+1):
-                            """ Saving file to the media directory """
+                            """ Check if file selected or not"""
                             try:
                                 a = 'file'+str(i)
                                 myfile = request.FILES['file'+str(i)]
-                            except:
-                                traceback.print_exc()
-                                return HttpResponse("File does not exist",status=404)
+                            except MultiValueDictKeyError:
+                                """ If no files uploaded""" 
+                                if (request.is_ajax()):
+                                    filelist.append("File " + str(i) + " not selected.")
+                                    errorlist.append("Please select a file.")
+                                    ajaxdict["files"] = filelist
+                                    ajaxdict["errors"] = errorlist 
+                                    response = json.dumps(ajaxdict)
+                                    jpype.detachThreadFromJVM()
+                                    return HttpResponse(ajaxdict,status=400)
+                                context_dict["error"] = "No files selected."
+                                jpype.detachThreadFromJVM()
+                                return render(request, 'app/compare.html',context_dict)
+                            """ If file exist and uploaded, save it"""    
                             filename = fs.save(myfile.name, myfile)
                             uploaded_file_url = fs.url(filename)
                             callfunc.append(settings.APP_DIR+uploaded_file_url)
@@ -189,10 +199,9 @@ def compare(request):
                                 return render(request, 'app/compare.html',context_dict)
                             except :
                                 """ Other Exceptions"""
-                                traceback.print_exc()
                                 erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append("Other Excpetion Raised")
+                                errorlist.append(traceback.format_exc())
                         """ If no errors in any of the file"""        
                         if (erroroccurred==False):
                             """ Call the java function with parameters as list"""
@@ -278,10 +287,9 @@ def compare(request):
                                 return render(request, 'app/compare.html',context_dict)
                             except :
                                 """ Other Exceptions"""
-                                traceback.print_exc()
                                 erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append("Other Exception Raised")
+                                errorlist.append(traceback.format_exc())
                         """ If no errors in any of the file"""        
                         if (erroroccurred==False):
                             """ Call the java function with parameters as list"""
@@ -480,11 +488,10 @@ def convert(request):
                 jpype.detachThreadFromJVM()    
                 return render(request, 'app/convert.html',context_dict)
             except :
-                traceback.print_exc()
-                context_dict["error"] = "Other Exception Raised."
+                context_dict["error"] = traceback.format_exc()
                 if (request.is_ajax()):
                     ajaxdict=dict()
-                    ajaxdict["data"] = "Other Exception Raised."
+                    ajaxdict["data"] = traceback.format_exc()
                     response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=400)
@@ -544,11 +551,10 @@ def check_license(request):
                 jpype.detachThreadFromJVM()
                 return render(request, 'app/check_license.html',context_dict)
             except :
-                traceback.print_exc()
-                context_dict["error"] = "Other Exception Raised."
+                context_dict["error"] = traceback.format_exc()
                 if (request.is_ajax()):
                     ajaxdict=dict()
-                    ajaxdict["data"] = "Other Exception Raised."
+                    ajaxdict["data"] = traceback.format_exc()
                     response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=400)
