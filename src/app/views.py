@@ -671,6 +671,16 @@ def password_reset(request):
     context_dict={}
     return render(request,'app/password_reset.html',context_dict)
 
+def checkusername(request):
+    if 'username' in request.POST:
+        users = UserID.objects.filter(username=request.POST["username"])
+        if (len(users)>0):
+            return HttpResponse(json.dumps({"data": "Already Exist."}),status=400)
+        else :
+            return HttpResponse(json.dumps({"data": "Success"})) 
+    else :
+        return HttpResponse(json.dumps({"data": "No username entered"}))
+ 
 def handler404(request):
     return render_to_response('app/404.html',
         context_instance = RequestContext(request)

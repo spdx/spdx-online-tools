@@ -2,10 +2,8 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
-{% if invalid %}
 <div id="messages" class="messages">
 </div>
-{% endif %}
 <div class="col-md-3">
 </div>
 <div class="col-md-6">
@@ -85,15 +83,19 @@ function validateForm() {
       return "Enter a valid last name.";
     }
     var email = $("#id_email").val();
-    if (validateEmail(email) ) {
+    if (validateEmail(email)) {
     }
     else {
       return "Enter a valid email address.";
     }
     var username = $("#id_username").val();
     var exist = 0;
+    var form = new FormData();
+    form.append("username",username);
+    console.log(form);
     $.ajax({
             type: "POST",
+            csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
             enctype: 'multipart/form-data',
             url: "/app/checkusername/",
             processData: false,
@@ -114,9 +116,10 @@ function validateForm() {
     if (exist==1){
       return "This username already exists."
     }
+    console.log(exist)
     var organisation = $("#id_organisation").val();
     if (organisation){
-    };
+    }
     else {
       return "Enter a valid organisation name.";
     }
@@ -132,8 +135,8 @@ function checkForm() {
       setTimeout(function() {
         $("#messages").html("");
       }, 5000);
+      return false;
     }
-    return false;
 }
 </script>
 {% endblock %}
