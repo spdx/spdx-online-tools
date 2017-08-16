@@ -97,6 +97,17 @@ def validate(request):
                     return HttpResponse(response,status=400)
                 jpype.detachThreadFromJVM()
                 return render(request, 'app/validate.html',context_dict)
+            except MultiValueDictKeyError:
+                """ If no files uploaded"""
+                context_dict["error"] = "No files selected." 
+                if (request.is_ajax()):
+                    ajaxdict=dict()
+                    ajaxdict["data"] = "No files selected." 
+                    response = json.dumps(ajaxdict)
+                    jpype.detachThreadFromJVM()
+                    return HttpResponse(ajaxdict,status=400)
+                jpype.detachThreadFromJVM()    
+                return render(request, 'app/validate.html',context_dict)
             except :
                 traceback.print_exc()
                 context_dict["error"] = "Other Exception Raised." 
@@ -105,7 +116,7 @@ def validate(request):
                     ajaxdict["data"] = "Other Exception Raised." 
                     response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
-                    return HttpResponse("Other Exception Raised.",status=400)
+                    return HttpResponse(ajaxdict,status=400)
                 jpype.detachThreadFromJVM()    
                 return render(request, 'app/validate.html',context_dict)
         else :
@@ -162,6 +173,17 @@ def compare(request):
                             erroroccurred = True
                             filelist.append(myfile.name)
                             errorlist.append(jpype.JavaException.message(ex))
+                        except MultiValueDictKeyError:
+                            """ If no files uploaded"""
+                            context_dict["error"] = "No files selected." 
+                            if (request.is_ajax()):
+                                ajaxdict=dict()
+                                ajaxdict["data"] = "No files selected." 
+                                response = json.dumps(ajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(ajaxdict,status=400)
+                            jpype.detachThreadFromJVM()
+                            return render(request, 'app/compare.html',context_dict)
                         except :
                             """ Other Exceptions"""
                             traceback.print_exc()
@@ -227,6 +249,17 @@ def compare(request):
                             erroroccurred = True
                             filelist.append(myfile.name)
                             errorlist.append(jpype.JavaException.message(ex))
+                        except MultiValueDictKeyError:
+                            """ If no files uploaded"""
+                            context_dict["error"] = "No files selected." 
+                            if (request.is_ajax()):
+                                ajaxdict=dict()
+                                ajaxdict["data"] = "No files selected." 
+                                response = json.dumps(ajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(ajaxdict,status=400)
+                            jpype.detachThreadFromJVM()
+                            return render(request, 'app/compare.html',context_dict)
                         except :
                             """ Other Exceptions"""
                             traceback.print_exc()
@@ -405,6 +438,17 @@ def convert(request):
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=400)
                 jpype.detachThreadFromJVM()
+                return render(request, 'app/convert.html',context_dict)
+            except MultiValueDictKeyError:
+                """ If no files uploaded"""
+                context_dict["error"] = "No files selected." 
+                if (request.is_ajax()):
+                    ajaxdict=dict()
+                    ajaxdict["data"] = "No files selected." 
+                    response = json.dumps(ajaxdict)
+                    jpype.detachThreadFromJVM()
+                    return HttpResponse(ajaxdict,status=400)
+                jpype.detachThreadFromJVM()    
                 return render(request, 'app/convert.html',context_dict)
             except :
                 traceback.print_exc()
