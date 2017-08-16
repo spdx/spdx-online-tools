@@ -4,8 +4,6 @@
 {% block body1 %}
 {% if invalid %}
 <div id="messages" class="messages">
-<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>{{ invalid}}
-</div>
 </div>
 {% endif %}
 <div class="col-md-3">
@@ -14,7 +12,8 @@
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">Join the community</p> </div>
 <div class="panel-body">
-    <form id="register_form" role="form"  class="form-horizontal"  method="post" action="/app/register/" enctype="multipart/form-data">
+<p class="lead" style="color:red;">{{ invalid }}</p>
+    <form id="register_form" role="form"  class="form-horizontal"  method="post" action="/app/register/" enctype="multipart/form-data" onsubmit="return checkForm()">
         {% csrf_token %}
         {% for field in user_form %}
         <div class="form-group">
@@ -55,5 +54,86 @@
 $(document).ready(function () {
     $("#registerpage").addClass('linkactive');
   });
+</script>
+<script type="text/javascript">
+function validateEmail(email) {
+  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
+function validateForm() {
+    var letters = /^[A-Za-z ]+$/;
+    var firstname = $("#id_first_name").val();
+    if (firstname){
+      if (firstname.match(letters)){
+      }
+      else{
+        return "Enter a valid first name.";
+      }
+    }
+    else {
+      return "Enter a valid first name.";
+    }
+    var lastname = $("#id_last_name").val()
+    if (lastname){
+      if (lastname.match(letters)){
+      }
+      else{
+        return "Enter a valid last name.";
+      }
+    }
+    else {
+      return "Enter a valid last name.";
+    }
+    var email = $("#id_email").val();
+    if (validateEmail(email) ) {
+    }
+    else {
+      return "Enter a valid email address.";
+    }
+    var username = $("#id_username").val();
+    var exist = 0;
+    $.ajax({
+            type: "POST",
+            enctype: 'multipart/form-data',
+            url: "/app/checkusername/",
+            processData: false,
+            contentType: false,
+            cache: false,
+            dataType: 'json',
+            timeout: 600000,
+            data: form,
+            success: function (data) {
+                console.log("Username does not exist");
+                exist = 0;
+            },
+            error: function (e) {
+                console.log("Username exist");
+                exist = 1;
+            }
+        });
+    if (exist==1){
+      return "This username already exists."
+    }
+    var organisation = $("#id_organisation").val();
+    if (organisation){
+    };
+    else {
+      return "Enter a valid organisation name.";
+    }
+    return "1";
+}
+function checkForm() {
+  var check = validateForm();
+  if (check=="1"){
+    return true;
+  }
+  else{
+      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+      setTimeout(function() {
+        $("#messages").html("");
+      }, 5000);
+    }
+    return false;
+}
 </script>
 {% endblock %}
