@@ -28,5 +28,6 @@ urlpatterns = [
     url(r'^login/$', views.loginuser, name='login'),
     url(r'^register/$', views.register, name='register'),
     url(r'^logout/$', views.logoutuser, name='logout'),
-    url(r'^profile/$', views.profile, name='profile'), 
+    url(r'^profile/$', views.profile, name='profile'),
+    url(r'^password_reset/$', views.password_reset, name='password_reset'),
 ]

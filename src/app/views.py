@@ -587,3 +587,7 @@ def profile(request):
         return render(request,'app/profile.html',context_dict)
     else:
         return HttpResponseRedirect("/app/login")
+
+def password_reset(request):
+    context_dict={}
+    return render(request,'app/password_reset.html',context_dict)
