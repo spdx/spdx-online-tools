@@ -107,6 +107,23 @@ def validate(request):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+def extensionGiven(filename):
+    if (filename.find(".")!=-1):
+        return True
+    else:
+        return False
+def getFileFormat(to_format):
+    if (to_format=="Tag"):
+        return ".spdx"
+    elif (to_format=="RDF"):
+        return ".rdf"
+    elif (to_format=="Spreadsheet"):
+        return ".xlsx"
+    elif (to_format=="HTML"):
+        return ".html"
+    else :
+        return ".invalid"
+
 @api_view(['GET', 'POST'])
 @renderer_classes((JSONRenderer,))
 def convert(request):
@@ -134,9 +151,13 @@ def convert(request):
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
-                    convertfile =  request.POST["cfilename"]
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
+                    convertfile =  request.POST["cfilename"]
+                    if (!extensionGiven(convertfile)){
+                        extension= getFileFormat(option2)
+                        convertfile = convertfile + extension
+                    }
                     """ Call the java function with parameters as list"""
                     if (option1=="Tag"):
                         print ("Verifing for Tag/Value Document")
