@@ -2,13 +2,18 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
+{% if invalid %}
+<div id="messages" class="messages">
+<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>{{ invalid}}
+</div>
+</div>
+{% endif %}
 <div class="col-md-3">
 </div>
 <div class="col-md-6">
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">Sign In</p> </div>
 <div class="panel-body">
-<p class="lead" style="color:red;">{{ invalid }}</p>
 <form id="login_form" role="form"  class="form-horizontal"  method="post" action="/app/login/" enctype="multipart/form-data">
   {% csrf_token %}
 	<div class="form-group">
@@ -70,4 +75,12 @@ $(document).ready(function () {
     $("#loginpage").addClass('linkactive');
   });
 </script>
+<!--
+{% if invalid %}
+<script type="text/javascript">
+      setTimeout(function() {
+        $("#messages").html("");
+      }, 5000);
+</script>
+{% endif %}-->
 {% endblock %}

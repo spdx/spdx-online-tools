@@ -549,13 +549,13 @@ def loginuser(request):
                 return HttpResponseRedirect('/app/')
             else:
                 if (request.is_ajax()):
-                    return HttpResponseForbidden("Your account is disabled.")
-                return HttpResponse("Your account is disabled.")	
+                    return HttpResponse("Your account is disabled.",status=400)
+                context_dict["invalid"] = "Your account is disabled."
+                return render(request,"app/login.html",context_dict)	
         else:
             if (request.is_ajax()):
-                return HttpResponseForbidden("Invalid login details supplied.")
+                return HttpResponse("Invalid login details supplied.",status=400)
             context_dict['invalid']="Invalid login details supplied."
-            print "Invalid login details: {0}, {1}".format(username, password)
             return render(request, 'app/login.html',context_dict)
     else:
         return render(request, 'app/login.html',context_dict)

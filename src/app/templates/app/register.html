@@ -2,6 +2,12 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
+{% if invalid %}
+<div id="messages" class="messages">
+<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>{{ invalid}}
+</div>
+</div>
+{% endif %}
 <div class="col-md-3">
 </div>
 <div class="col-md-6">
