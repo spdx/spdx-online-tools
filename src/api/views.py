@@ -154,10 +154,9 @@ def convert(request):
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
                     convertfile =  request.POST["cfilename"]
-                    if (!extensionGiven(convertfile)){
-                        extension= getFileFormat(option2)
+                    if (extensionGiven(convertfile)==False):
+                        extension = getFileFormat(option2)
                         convertfile = convertfile + extension
-                    }
                     """ Call the java function with parameters as list"""
                     if (option1=="Tag"):
                         print ("Verifing for Tag/Value Document")
@@ -300,7 +299,7 @@ def compare(request):
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     rfilename = request.POST["rfilename"]
-                    if (!extensionGiven(rfilename)):
+                    if (extensionGiven(rfilename)==False):
                         rfilename = rfilename+".xlsx"
                     folder = "api/"+str(request.user) +"/"+ str(int(time()))
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
