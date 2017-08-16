@@ -26,7 +26,7 @@ from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 
 import jpype
-from traceback import format_exc()
+import traceback
 import os
 from time import time
 from urlparse import urljoin
