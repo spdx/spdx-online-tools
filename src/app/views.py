@@ -137,160 +137,189 @@ def compare(request):
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
             compareclass = package.CompareMultpleSpdxDocs
+            ajaxdict = dict()
+            filelist = list()
+            errorlist = list()
             if 'compare' in request.POST:
-                if request.FILES["file1"]:
-                    nofile = int(request.POST["nofile"])
-                    rfilename = request.POST["rfilename"]+".xlsx"
-                    folder = str(request.user)+"/"+ str(int(time()))
-                    callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
-                    ajaxdict = dict()
-                    filelist = list()
-                    errorlist = list()
-                    erroroccurred = False
-                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
-                    for i in range(1,nofile+1):
-                        """ Saving file to the media directory """
-                        try:
-                            a = 'file'+str(i)
-                            myfile = request.FILES['file'+str(i)]
-                        except:
-                            traceback.print_exc()
-                            return HttpResponse("File does not exist",status=404)
-                        filename = fs.save(myfile.name, myfile)
-                        uploaded_file_url = fs.url(filename)
-                        callfunc.append(settings.APP_DIR+uploaded_file_url)
-                        try : 
-                            retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
-                            if (len(retval) > 0):
+                try:
+                    if request.FILES["file1"]:
+                        nofile = int(request.POST["nofile"])
+                        rfilename = request.POST["rfilename"]+".xlsx"
+                        folder = str(request.user)+"/"+ str(int(time()))
+                        callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
+                        erroroccurred = False
+                        fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
+                        for i in range(1,nofile+1):
+                            """ Saving file to the media directory """
+                            try:
+                                a = 'file'+str(i)
+                                myfile = request.FILES['file'+str(i)]
+                            except:
+                                traceback.print_exc()
+                                return HttpResponse("File does not exist",status=404)
+                            filename = fs.save(myfile.name, myfile)
+                            uploaded_file_url = fs.url(filename)
+                            callfunc.append(settings.APP_DIR+uploaded_file_url)
+                            try : 
+                                retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
+                                if (len(retval) > 0):
+                                    erroroccurred = True
+                                    filelist.append(myfile.name)
+                                    errorlist.append(str(retval))
+                                else :
+                                    filelist.append(myfile.name)
+                                    errorlist.append("No errors found")
+                            except jpype.JavaException,ex :
+                                """ Error raised by verifyclass.verify without exiting the application"""
                                 erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append(str(retval))
-                            else :
+                                errorlist.append(jpype.JavaException.message(ex))
+                            except MultiValueDictKeyError:
+                                """ If no files uploaded""" 
+                                if (request.is_ajax()):
+                                    filelist.append("File not selected.")
+                                    errorlist.append("Please select a file.")
+                                    ajaxdict["files"] = filelist
+                                    ajaxdict["errors"] = errorlist 
+                                    response = json.dumps(ajaxdict)
+                                    jpype.detachThreadFromJVM()
+                                    return HttpResponse(ajaxdict,status=400)
+                                context_dict["error"] = "No files selected."
+                                jpype.detachThreadFromJVM()
+                                return render(request, 'app/compare.html',context_dict)
+                            except :
+                                """ Other Exceptions"""
+                                traceback.print_exc()
+                                erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append("No errors found")
-                        except jpype.JavaException,ex :
-                            """ Error raised by verifyclass.verify without exiting the application"""
-                            erroroccurred = True
-                            filelist.append(myfile.name)
-                            errorlist.append(jpype.JavaException.message(ex))
-                        except MultiValueDictKeyError:
-                            """ If no files uploaded"""
-                            context_dict["error"] = "No files selected." 
+                                errorlist.append("Other Excpetion Raised")
+                        """ If no errors in any of the file"""        
+                        if (erroroccurred==False):
+                            """ Call the java function with parameters as list"""
+                            compareclass.onlineFunction(callfunc)
                             if (request.is_ajax()):
-                                ajaxdict=dict()
-                                ajaxdict["data"] = "No files selected." 
+                                newajaxdict=dict()
+                                newajaxdict["medialink"] = "/media/" + folder + "/" + rfilename
+                                response = json.dumps(newajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(response)
+                            jpype.detachThreadFromJVM()
+                            context_dict['Content-Disposition'] = 'attachment; filename='+rfilename    
+                            return HttpResponseRedirect("/media/"+ folder + "/" +rfilename)
+                        else :
+                            if (request.is_ajax()):
+                                ajaxdict["files"] = filelist
+                                ajaxdict["errors"] = errorlist
                                 response = json.dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
-                                return HttpResponse(ajaxdict,status=400)
+                                return HttpResponse(response,status=404)
                             jpype.detachThreadFromJVM()
-                            return render(request, 'app/compare.html',context_dict)
-                        except :
-                            """ Other Exceptions"""
-                            traceback.print_exc()
-                            erroroccurred = True
-                            filelist.append(myfile.name)
-                            errorlist.append("Other Excpetion Raised")
-                    """ If no errors in any of the file"""        
-                    if (erroroccurred==False):
-                        """ Call the java function with parameters as list"""
-                        compareclass.onlineFunction(callfunc)
-                        if (request.is_ajax()):
-                            newajaxdict=dict()
-                            newajaxdict["medialink"] = "/media/" + folder + "/" + rfilename
-                            response = json.dumps(newajaxdict)
-                            jpype.detachThreadFromJVM()
-                            return HttpResponse(response)
-                        jpype.detachThreadFromJVM()
-                        context_dict['Content-Disposition'] = 'attachment; filename='+rfilename    
-                        return HttpResponseRedirect("/media/"+ folder + "/" +rfilename)
+                            return HttpResponse(errorlist)
                     else :
-                        if (request.is_ajax()):
-                            ajaxdict["files"] = filelist
-                            ajaxdict["errors"] = errorlist
-                            response = json.dumps(ajaxdict)
-                            jpype.detachThreadFromJVM()
-                            return HttpResponse(response,status=404)
                         jpype.detachThreadFromJVM()
-                        return HttpResponse(errorlist)
-                else :
+                        return HttpResponse("File Not Uploaded",status=404)
+                except MultiValueDictKeyError:
+                    """ If no files uploaded""" 
+                    if (request.is_ajax()):
+                        filelist.append("File-1 not selected.")
+                        errorlist.append("Please select a file.")
+                        ajaxdict["files"] = filelist
+                        ajaxdict["errors"] = errorlist 
+                        response = json.dumps(ajaxdict)
+                        jpype.detachThreadFromJVM()
+                        return HttpResponse(ajaxdict,status=400)
+                    context_dict["error"] = "No files selected."
                     jpype.detachThreadFromJVM()
-                    return HttpResponse("File Not Uploaded",status=404)
+                    return render(request, 'app/compare.html',context_dict)
             elif 'compareall' in request.POST:
-                if request.FILES["files"]:
-                    rfilename = request.POST["rfilename2"]+".xlsx"
-                    folder = str(request.user)+"/"+ str(int(time()))
-                    callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
-                    ajaxdict = dict()
-                    filelist = list()
-                    errorlist = list()
-                    erroroccurred = False
-                    if (len(request.FILES.getlist("files"))<2):
-                        jpype.detachThreadFromJVM()    
-                        context_dict["error"]= "Please select atleast 2 files"
-                        return render(request, 'app/compare.html',context_dict)
-                    # loop through the list of files
-                    folder = str(request.user) + "/" + str(int(time()))
-                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/')) 
-                    for myfile in request.FILES.getlist("files"):
-                        filename = fs.save(myfile.name, myfile)
-                        uploaded_file_url = fs.url(filename)
-                        callfunc.append(settings.APP_DIR+uploaded_file_url)
-                        try :
-                            retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
-                            if (len(retval) > 0):
+                try:
+                    if request.FILES["files"]:
+                        rfilename = request.POST["rfilename2"]+".xlsx"
+                        folder = str(request.user)+"/"+ str(int(time()))
+                        callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
+                        erroroccurred = False
+                        if (len(request.FILES.getlist("files"))<2):
+                            jpype.detachThreadFromJVM()    
+                            context_dict["error"]= "Please select atleast 2 files"
+                            return render(request, 'app/compare.html',context_dict)
+                        # loop through the list of files
+                        folder = str(request.user) + "/" + str(int(time()))
+                        fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/')) 
+                        for myfile in request.FILES.getlist("files"):
+                            filename = fs.save(myfile.name, myfile)
+                            uploaded_file_url = fs.url(filename)
+                            callfunc.append(settings.APP_DIR+uploaded_file_url)
+                            try :
+                                retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
+                                if (len(retval) > 0):
+                                    erroroccurred = True
+                                    filelist.append(myfile.name)
+                                    errorlist.append(str(retval))
+                                else :
+                                    filelist.append(myfile.name)
+                                    errorlist.append("No errors found")
+                            except jpype.JavaException,ex :
+                                """ Error raised by verifyclass.verify without exiting the application"""
                                 erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append(str(retval))
-                            else :
+                                errorlist.append(jpype.JavaException.message(ex))
+                            except MultiValueDictKeyError:
+                                """ If no files uploaded""" 
+                                if (request.is_ajax()):
+                                    filelist.append("Files not selected.")
+                                    errorlist.append("Please select atleast 2 files.")
+                                    ajaxdict["files"] = filelist
+                                    ajaxdict["errors"] = errorlist 
+                                    response = json.dumps(ajaxdict)
+                                    jpype.detachThreadFromJVM()
+                                    return HttpResponse(ajaxdict,status=400)
+                                context_dict["error"] = "Select atleast two files"
+                                jpype.detachThreadFromJVM()
+                                return render(request, 'app/compare.html',context_dict)
+                            except :
+                                """ Other Exceptions"""
+                                traceback.print_exc()
+                                erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append("No errors found")
-                        except jpype.JavaException,ex :
-                            """ Error raised by verifyclass.verify without exiting the application"""
-                            erroroccurred = True
-                            filelist.append(myfile.name)
-                            errorlist.append(jpype.JavaException.message(ex))
-                        except MultiValueDictKeyError:
-                            """ If no files uploaded"""
-                            context_dict["error"] = "No files selected." 
+                                errorlist.append("Other Exception Raised")
+                        """ If no errors in any of the file"""        
+                        if (erroroccurred==False):
+                            """ Call the java function with parameters as list"""
+                            compareclass.onlineFunction(callfunc)
                             if (request.is_ajax()):
-                                ajaxdict=dict()
-                                ajaxdict["data"] = "No files selected." 
+                                newajaxdict=dict()
+                                newajaxdict["medialink"] = "/media/" + folder + "/"+ rfilename
+                                response = json.dumps(newajaxdict)
+                                jpype.detachThreadFromJVM()
+                                return HttpResponse(response)
+                            context_dict['Content-Disposition'] = 'attachment; filename='+rfilename 
+                            jpype.detachThreadFromJVM()
+                            return HttpResponseRedirect("/media/"+ folder + "/"+rfilename)
+                        else :
+                            if (request.is_ajax()):
+                                ajaxdict["files"] = filelist
+                                ajaxdict["errors"] = errorlist
                                 response = json.dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
-                                return HttpResponse(ajaxdict,status=400)
+                                return HttpResponse(response,status=404)   
                             jpype.detachThreadFromJVM()
-                            return render(request, 'app/compare.html',context_dict)
-                        except :
-                            """ Other Exceptions"""
-                            traceback.print_exc()
-                            erroroccurred = True
-                            filelist.append(myfile.name)
-                            errorlist.append("Other Exception Raised")
-                    """ If no errors in any of the file"""        
-                    if (erroroccurred==False):
-                        """ Call the java function with parameters as list"""
-                        compareclass.onlineFunction(callfunc)
-                        if (request.is_ajax()):
-                            newajaxdict=dict()
-                            newajaxdict["medialink"] = "/media/" + folder + "/"+ rfilename
-                            response = json.dumps(newajaxdict)
-                            jpype.detachThreadFromJVM()
-                            return HttpResponse(response)
-                        context_dict['Content-Disposition'] = 'attachment; filename='+rfilename 
-                        jpype.detachThreadFromJVM()
-                        return HttpResponseRedirect("/media/"+ folder + "/"+rfilename)
+                        return HttpResponse(errorlist)
                     else :
-                        if (request.is_ajax()):
-                            ajaxdict["files"] = filelist
-                            ajaxdict["errors"] = errorlist
-                            response = json.dumps(ajaxdict)
-                            jpype.detachThreadFromJVM()
-                            return HttpResponse(response,status=404)   
                         jpype.detachThreadFromJVM()
-                    return HttpResponse(errorlist)
-                else :
+                        return HttpResponse("File Not Uploaded",status=404)
+                except MultiValueDictKeyError:
+                    """ If no files uploaded""" 
+                    if (request.is_ajax()):
+                        filelist.append("Files not selected.")
+                        errorlist.append("Please select atleast 2 files.")
+                        ajaxdict["files"] = filelist
+                        ajaxdict["errors"] = errorlist 
+                        response = json.dumps(ajaxdict)
+                        jpype.detachThreadFromJVM()
+                        return HttpResponse(ajaxdict,status=400)
+                    context_dict["error"] = "Select atleast two files"
                     jpype.detachThreadFromJVM()
-                    return HttpResponse("File Not Uploaded",status=404)
+                    return render(request, 'app/compare.html',context_dict)
         else :
             return render(request, 'app/compare.html',context_dict)
     else :
