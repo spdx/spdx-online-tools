@@ -299,7 +299,9 @@ def compare(request):
             erroroccurred = False
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
-                    rfilename = request.POST["rfilename"]+".xlsx"
+                    rfilename = request.POST["rfilename"]
+                    if (!extensionGiven(rfilename)):
+                        rfilename = rfilename+".xlsx"
                     folder = "api/"+str(request.user) +"/"+ str(int(time()))
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     callfunc = [settings.MEDIA_ROOT+"/"+ folder+"/"+rfilename]
