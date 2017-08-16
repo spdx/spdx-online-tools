@@ -26,7 +26,7 @@ from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 
 import jpype
-import traceback
+from traceback import format_exc()
 import os
 from time import time
 from urlparse import urljoin
@@ -109,8 +109,7 @@ def validate(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
             except :
-                traceback.print_exc()
-                result = "Other Exception Raised."
+                result = traceback.format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
             query = ValidateFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result)
@@ -274,8 +273,7 @@ def convert(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM() 
             except :
-                traceback.print_exc()
-                result = "Other Exception Raised."
+                result = traceback.format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM() 
             query = ConvertFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result,from_format=request.POST["from_format"],to_format=request.POST["to_format"],cfilename=request.POST["cfilename"])
@@ -349,8 +347,7 @@ def compare(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
             except :
-                traceback.print_exc()
-                result = "Other Exception Raised."
+                result = traceback.format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
             query = CompareFileUpload.objects.create(owner=request.user,file1=request.data.get('file1'),file2=request.data.get('file2'),rfilename = rfilename, result=result)
