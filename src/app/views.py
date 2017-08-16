@@ -15,14 +15,14 @@ from __future__ import unicode_literals
 
 from django.shortcuts import render,render_to_response
 from django.http import HttpResponse,HttpResponseRedirect,HttpResponseBadRequest,JsonResponse,HttpResponseForbidden
-from django.contrib.auth import authenticate,login ,logout
+from django.contrib.auth import authenticate,login ,logout,update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django import forms
 from django.template import RequestContext
 from django.core.files.storage import FileSystemStorage
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm 
+from django.contrib.auth.models import User
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
@@ -333,6 +333,17 @@ def compare(request):
     else :
         return HttpResponseRedirect("/app/login")
 
+def getFileFormat(to_format):
+    if (to_format=="Tag"):
+        return ".spdx"
+    elif (to_format=="RDF"):
+        return ".rdf"
+    elif (to_format=="Spreadsheet"):
+        return ".xlsx"
+    elif (to_format=="HTML"):
+        return ".html"
+    else :
+        return ".invalid"
 
 def convert(request):
     if request.user.is_authenticated():
@@ -353,10 +364,14 @@ def convert(request):
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
-                    convertfile =  request.POST["cfilename"]+request.POST["cfileformat"]
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
                     functiontocall = option1 + "To" + option2
+                    if "cfileformat" in request.POST :
+                        cfileformat = request.POST["cfileformat"]
+                    else :
+                        cfileformat = getFileFormat(option2)
+                    convertfile =  request.POST["cfilename"] + cfileformat
                     if (option1=="Tag"):
                         print ("Verifing for Tag/Value Document")
                         if (option2=="RDF"):
@@ -673,14 +688,14 @@ def password_reset(request):
 
 def checkusername(request):
     if 'username' in request.POST:
-        users = UserID.objects.filter(username=request.POST["username"])
+        users = User.objects.filter(username=request.POST["username"])
         if (len(users)>0):
             return HttpResponse(json.dumps({"data": "Already Exist."}),status=400)
         else :
             return HttpResponse(json.dumps({"data": "Success"})) 
     else :
         return HttpResponse(json.dumps({"data": "No username entered"}))
- 
+
 def handler404(request):
     return render_to_response('app/404.html',
         context_instance = RequestContext(request)

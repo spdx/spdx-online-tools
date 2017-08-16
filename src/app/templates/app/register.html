@@ -58,6 +58,30 @@ function validateEmail(email) {
   var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(email);
 }
+function validateUserName(username){
+  var form = new FormData();
+  form.append("username",username);
+  $.ajax({
+            type: "POST",
+            csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+            enctype: 'multipart/form-data',
+            url: "/app/checkusername/",
+            processData: false,
+            contentType: false,
+            cache: false,
+            dataType: 'json',
+            timeout: 600000,
+            data: form,
+            success: function (data) {
+                //console.log("Username does not exist");
+                return "1";
+            },
+            error: function (e) {
+                //console.log("Username exist");
+                return "This username already exists."
+            }
+        });
+}
 function validateForm() {
     var letters = /^[A-Za-z ]+$/;
     var firstname = $("#id_first_name").val();
@@ -89,34 +113,12 @@ function validateForm() {
       return "Enter a valid email address.";
     }
     var username = $("#id_username").val();
-    var exist = 0;
-    var form = new FormData();
-    form.append("username",username);
-    console.log(form);
-    $.ajax({
-            type: "POST",
-            csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
-            enctype: 'multipart/form-data',
-            url: "/app/checkusername/",
-            processData: false,
-            contentType: false,
-            cache: false,
-            dataType: 'json',
-            timeout: 600000,
-            data: form,
-            success: function (data) {
-                console.log("Username does not exist");
-                exist = 0;
-            },
-            error: function (e) {
-                console.log("Username exist");
-                exist = 1;
-            }
-        });
-    if (exist==1){
-      return "This username already exists."
+    var checkuser = validateUserName(username);
+    if (checkuser=="1"){
     }
-    console.log(exist)
+    else{
+      return "Username already exists."
+    }
     var organisation = $("#id_organisation").val();
     if (organisation){
     }
