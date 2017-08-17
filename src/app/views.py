@@ -42,6 +42,10 @@ def about(request):
     context_dict={}
     return render(request, 'app/about.html',context_dict)
 
+def home(request):
+    context_dict={}
+    return render(request, 'app/home.html',context_dict)
+
 def validate(request):
     if request.user.is_authenticated():
         context_dict={}
@@ -690,10 +694,6 @@ def checkusername(request):
     else :
         return HttpResponse(json.dumps({"data": "No username entered"}))
 
-def handler404(request):
-    return render_to_response('app/404.html',
-        context_instance = RequestContext(request)
-    )
 
 def handler400(request):
     return render_to_response('app/400.html',
@@ -705,6 +705,11 @@ def handler403(request):
         context_instance = RequestContext(request)
     )
 
+def handler404(request):
+    return render_to_response('app/404.html',
+        context_instance = RequestContext(request)
+    )
+    
 def handler500(request):
     return render_to_response('app/500.html',
         context_instance = RequestContext(request)

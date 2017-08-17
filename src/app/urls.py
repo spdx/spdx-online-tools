@@ -16,13 +16,15 @@ from __future__ import unicode_literals
 from django.conf.urls import url,handler400, handler403, handler404, handler500
 from app import views
 
-handler404 = 'views.handler404'
-handler403 = 'views.handler403'
-handler500 = 'views.handler500'
 handler400 = 'views.handler400'
+handler403 = 'views.handler403'
+handler404 = 'views.handler404'
+handler500 = 'views.handler500'
+
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^home/$', views.home, name='home'),
     url(r'^validate/$', views.validate, name='index'),
     url(r'^about/$', views.about, name='about'),
     url(r'^convert/$', views.convert, name='convert'),
