@@ -30,7 +30,7 @@ class ValidateViewsTestCase(TestCase):
     
     def test_validate(self):
         resp = self.client.get('/app/validate/')
-        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.status_code,302) # Not Logged in
 
     # def test_upload_tv(self):
     #     resp = self.client.post('/app/validate/',{'file' : self.tv_file},follow=True)
@@ -59,9 +59,9 @@ class CompareViewsTestCase(TestCase):
         self.rdf_file2 = open("examples/SPDXRdfExample2-v2.0.rdf")
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
 
-    # def test_compare(self):
-    #     resp = self.client.get('/app/compare/')
-    #     self.assertEqual(resp.status_code,200)
+    def test_compare(self):
+        resp = self.client.get('/app/compare/')
+        self.assertEqual(resp.status_code,302) # Not Logged in
 
     # def test_compare_two_rdf(self):
     #     resp = self.client.post('/app/compare/',{'nofile': "2" ,'rfilename': "test",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True)
@@ -76,7 +76,7 @@ class ConvertViewsTestCase(TestCase):
 
     def test_convert(self):
         resp = self.client.get('/app/convert/')
-        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.status_code,302) # Not Logged in
 
     def test_convert_tagtordf(self):
         global_media_root = settings.MEDIA_ROOT
@@ -84,7 +84,7 @@ class ConvertViewsTestCase(TestCase):
             self.assertNotEqual(global_media_root,settings.MEDIA_ROOT)
         self.assertEqual(global_media_root,settings.MEDIA_ROOT)
         resp = self.client.post('/app/convert/',{'cfilename': "test" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True)
-        self.assertEqual(resp.status_code,404)  #Because test download file do not exist
+        self.assertEqual(resp.status_code,200)  #Not logged in and  Because test download file do not exist
 
     # def test_convert_tagtoxlsx(self):
     #     resp = self.client.post('/app/convert/',{'cfilename': "test" ,'cfileformat': ".xlsx",'from_format' : "Tag", 'to_format' : "Spreadsheet", 'file' : self.tv_file},follow=True)
@@ -104,16 +104,16 @@ class ConvertViewsTestCase(TestCase):
 
     def test_convert_xlsxtotag(self):
         resp = self.client.post('/app/convert/',{'cfilename': "test2" ,'cfileformat': ".spdx",'from_format' : "Spreadsheet", 'to_format' : "Tag", 'file' : self.xls_file},follow=True)
-        self.assertEqual(resp.status_code,404)  #Because test download file do not exist
+        self.assertEqual(resp.status_code,200)  #Not logged in and Because test download file do not exist
 
     def test_convert_xlsxtordf(self):
         resp = self.client.post('/app/convert/',{'cfilename': "test2" ,'cfileformat': ".rdf",'from_format' : "Spreadsheet", 'to_format' : "RDF", 'file' : self.xls_file},follow=True)
-        self.assertEqual(resp.status_code,404)  #Because test download file do not exist
+        self.assertEqual(resp.status_code,200)  #Not logged in and Because test download file do not exist
 
 class SearchViewsTestCase(TestCase):
     def test_search(self):
         resp = self.client.get('/app/search/')
-        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.status_code,404) # Does not exist
 
 class LoginViewsTestCase(TestCase):
     def setUp(self):
