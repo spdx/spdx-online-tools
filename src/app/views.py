@@ -643,6 +643,12 @@ def profile(request):
     if request.user.is_authenticated():
         context_dict={}
         profile = UserID.objects.get(user=request.user)
+        info_form = InfoForm(instance=request.user)
+        orginfo_form = OrgInfoForm(instance=profile)
+        form = PasswordChangeForm(request.user)
+        context_dict["form"] = form
+        context_dict["info_form"] = info_form
+        context_dict["orginfo_form"] = orginfo_form
         if request.method == 'POST':
             if "saveinfo" in request.POST :
                 info_form = InfoForm(request.POST,instance=request.user)
@@ -651,15 +657,9 @@ def profile(request):
                     form1 = info_form.save()
                     form2 = orginfo_form.save()
                     context_dict["success"] = "Details Successfully Updated"
-                    info_form = InfoForm(instance=request.user)
-                    orginfo_form = OrgInfoForm(instance=profile)
-                    form = PasswordChangeForm(request.user)
-                    context_dict["form"] = form
-                    context_dict["info_form"] = info_form
-                    context_dict["orginfo_form"] = orginfo_form
                     return render(request,'app/profile.html',context_dict)
                 else :
-                    context_dict["error"] = "Error changing details" + str(info_form.errors) + str(orginfo_form.errors)
+                    context_dict["error"] = "Error changing details " + str(info_form.errors) + str(orginfo_form.errors)
                     return render(request,'app/profile.html',context_dict)
             if "changepwd" in request.POST:
                 form = PasswordChangeForm(request.user, request.POST)
@@ -667,18 +667,12 @@ def profile(request):
                     user = form.save()
                     update_session_auth_hash(request, user)  # Important!
                     context_dict["success"] = 'Your password was successfully updated!'
-                    context_dict["form"] = form
+                    return render(request,'app/profile.html',context_dict)
                 else:
                     context_dict["error"] = form.errors
-                    context_dict["form"] = form
+                    return render(request,'app/profile.html',context_dict)
         else:
-            info_form = InfoForm(instance=request.user)
-            orginfo_form = OrgInfoForm(instance=profile)
-            form = PasswordChangeForm(request.user)
-            context_dict["form"] = form
-            context_dict["info_form"] = info_form
-            context_dict["orginfo_form"] = orginfo_form
-        return render(request,'app/profile.html',context_dict)
+            return render(request,'app/profile.html',context_dict)
     else:
         return HttpResponseRedirect("/app/login")
 
