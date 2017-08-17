@@ -473,47 +473,47 @@ def convert(request):
                         else :
                             return HttpResponse("Select the available conversion types.")
                     """ Call the java function with parameters as list"""
-                    context_dict['Content-Disposition'] = 'attachment; filename='+convertfile
                     if (request.is_ajax()):
                             ajaxdict=dict()
                             ajaxdict["medialink"] = "/media/" + folder + "/"+ convertfile
                             response = json.dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
                             return HttpResponse(response)
+                    context_dict['Content-Disposition'] = 'attachment; filename='+convertfile
                     jpype.detachThreadFromJVM()
                     return HttpResponseRedirect("/media/" + folder + "/" + convertfile)
                 else :
                     jpype.detachThreadFromJVM()
                     return HttpResponse("File Not Uploaded",status=404)
             except jpype.JavaException,ex :
-                context_dict["error"] = jpype.JavaException.message(ex)
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = jpype.JavaException.message(ex)
                     response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
+                context_dict["error"] = jpype.JavaException.message(ex)
                 jpype.detachThreadFromJVM()
                 return HttpResponse(context_dict,status=404)
             except MultiValueDictKeyError:
                 """ If no files uploaded"""
-                context_dict["error"] = "No files selected." 
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = "No files selected." 
                     response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
+                context_dict["error"] = "No files selected." 
                 jpype.detachThreadFromJVM()    
                 return HttpResponse(context_dict,status=404)
             except :
-                context_dict["error"] = traceback.format_exc()
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = traceback.format_exc()
                     response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
+                context_dict["error"] = traceback.format_exc()
                 jpype.detachThreadFromJVM()    
                 return HttpResponse(context_dict,status=404)
         else :
