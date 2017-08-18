@@ -368,6 +368,7 @@ def convert(request):
                     convertfile =  request.POST["cfilename"] + cfileformat
                     if (option1=="Tag"):
                         print ("Verifing for Tag/Value Document")
+                        print(option2)
                         if (option2=="RDF"):
                             tagtordfclass = package.TagToRDF
                             retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+convertfile])
@@ -379,6 +380,8 @@ def convert(request):
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
                                 context_dict["error"] = retval
+                                print ("here")
+                                print(retval)
                                 jpype.detachThreadFromJVM()
                                 return render(request, 'app/convert.html',context_dict,status=404)
                         elif (option2=="Spreadsheet"):
@@ -395,6 +398,7 @@ def convert(request):
                                 jpype.detachThreadFromJVM()
                                 return render(request, 'app/convert.html',context_dict,status=404)
                         else :
+                            jpype.detachThreadFromJVM()
                             context_dict["error"] = "Select the available conversion types."
                             return render(request, 'app/convert.html',context_dict,status=400)
                     elif (option1=="RDF"):
@@ -439,6 +443,7 @@ def convert(request):
                                 jpype.detachThreadFromJVM()
                                 return render(request, 'app/convert.html',context_dict,status=404)
                         else :
+                            jpype.detachThreadFromJVM()
                             context_dict["error"] = "Select the available conversion types."
                             return render(request, 'app/convert.html',context_dict,status=400)
                     elif (option1=="Spreadsheet"):
@@ -470,15 +475,15 @@ def convert(request):
                                 jpype.detachThreadFromJVM()
                                 return render(request, 'app/convert.html',context_dict,status=404)
                         else :
+                            jpype.detachThreadFromJVM()
                             context_dict["error"] = "Select the available conversion types."
                             return render(request, 'app/convert.html',context_dict,status=400)
-                    """ Call the java function with parameters as list"""
                     if (request.is_ajax()):
-                            ajaxdict=dict()
-                            ajaxdict["medialink"] = "/media/" + folder + "/"+ convertfile
-                            response = json.dumps(ajaxdict)
-                            jpype.detachThreadFromJVM()
-                            return HttpResponse(response)
+                        ajaxdict=dict()
+                        ajaxdict["medialink"] = "/media/" + folder + "/"+ convertfile
+                        response = json.dumps(ajaxdict)
+                        jpype.detachThreadFromJVM()
+                        return HttpResponse(response)
                     context_dict['Content-Disposition'] = 'attachment; filename='+convertfile
                     jpype.detachThreadFromJVM()
                     return HttpResponseRedirect("/media/" + folder + "/" + convertfile)
