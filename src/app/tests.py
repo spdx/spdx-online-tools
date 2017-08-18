@@ -280,15 +280,15 @@ class ConvertViewsTestCase(TestCase):
         self.assertEqual(resp3.resolver_match.func.__name__,"convert")     #View function called
         self.client.logout()
 
-    # def test_convert_tagtordf(self):
-    #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-    #     self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-    #     resp = self.client.post('/app/convert/',{'cfilename': "tagtest" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True,secure=True)
-    #     self.assertEqual(resp.status_code,200)
-    #     self.assertNotEqual(resp.redirect_chain,[])
-    #     self.tv_file.close()
-    #     self.client.logout()
-    #     print("done")
+    def test_convert_tagtordf(self):
+        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        resp = self.client.post('/app/convert/',{'cfilename': "tagtest" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertNotEqual(resp.redirect_chain,[])
+        self.tv_file.close()
+        self.client.logout()
+        print("done")
         # global_media_root = settings.MEDIA_ROOT
         # with temporary_media_root():
         #     self.assertNotEqual(global_media_root,settings.MEDIA_ROOT)
@@ -371,8 +371,26 @@ class LogoutViewsTestCase(TestCase):
         resp = self.client.get('/app/logout/')
         self.assertEqual(resp.status_code,302)
 
-# class RootViewsTestCase(TestCase):
-#     def test_logout(self):
-#         resp = self.client.get('/')
-#         # For View Redirection to index
-#         self.assertEqual(resp.status_code,302)
+class RootViewsTestCase(TestCase):
+    def test_root_url(self):
+        resp = self.client.get('/')
+        # For View Redirection to index
+        self.assertEqual(resp.status_code,302)
+
+class ProfileViewsTestCase(TestCase):
+
+    def test_profile(self):
+        resp = self.client.get('/app/profile/',follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)      
+        self.assertNotEqual(resp.redirect_chain,[])    
+        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+
+        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+        resp2 = self.client.get('/app/profile/',follow=True,secure=True)
+        self.assertEqual(resp2.status_code,200)
+        self.assertEqual(resp2.redirect_chain,[])    # No redirection
+        self.assertIn("app/profile.html",(i.name for i in resp2.templates))    #list of templates
+        self.assertEqual(resp2.resolver_match.func.__name__,"profile")     #View function called
+        self.client.logout()
+
+

@@ -379,7 +379,7 @@ def convert(request):
                                     response = json.dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
-                                context_dict["error"] = retval
+                                context_dict["error"] = str(retval)
                                 print ("here")
                                 print(retval)
                                 jpype.detachThreadFromJVM()
