@@ -35,13 +35,13 @@ class LoginViewsTestCase(TestCase):
         user.is_active = True
         user.save()
         self.credentials2 = {'username':'testuser2','password':'testpass2' }
-        #An anonymous user
+        #Non-staff user
         user2 = User.objects.create_user(**self.credentials2)
         user2.is_staff = False
         user2.is_active = True
         user2.save()
         self.credentials3 = {'username':'testuser3','password':'testpass3' }
-        #An inactive user
+        #Inactive user
         user3 = User.objects.create_user(**self.credentials3)
         user3.is_staff = True
         user3.is_active = False
@@ -61,6 +61,7 @@ class LoginViewsTestCase(TestCase):
         self.assertTrue(resp.context['user'].is_active)
         self.assertTrue(resp.context['user'].is_staff)
         self.assertFalse(resp.context['user'].is_superuser)
+        #self.assertIn("app/index.html",(i.name for i in resp.templates))
         self.client.get('/app/logout/')
         resp2 = self.client.post('/app/login/',self.credentials2,follow=True,secure=True)
         self.assertEqual(resp2.status_code,403)
@@ -68,6 +69,7 @@ class LoginViewsTestCase(TestCase):
         self.assertFalse(resp2.context['user'].is_active)
         self.assertFalse(resp2.context['user'].is_staff)
         self.assertFalse(resp2.context['user'].is_superuser)
+        self.assertIn("app/login.html",(i.name for i in resp2.templates))
         self.client.get('/app/logout/')
         resp3 = self.client.post('/app/login/',self.credentials3,follow=True,secure=True)
         self.assertEqual(resp3.status_code,403)
@@ -75,6 +77,7 @@ class LoginViewsTestCase(TestCase):
         self.assertFalse(resp3.context['user'].is_active)
         self.assertFalse(resp3.context['user'].is_staff)
         self.assertFalse(resp3.context['user'].is_superuser)
+        self.assertIn("app/login.html",(i.name for i in resp3.templates))
         self.client.get('/app/logout/')
 
 # class RegisterViewsTestCase(TestCase):
