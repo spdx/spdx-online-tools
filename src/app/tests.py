@@ -431,10 +431,12 @@ class CheckUserNameTestCase(TestCase):
         self.password ="checktestpass"
         self.credentials = {'username':self.username,'password':self.password }
         User.objects.create_user(**self.credentials)
-        
+
     def test_check_username(self):
         resp = self.client.post('/app/checkusername/',{"username":"spdx"},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
+        resp2 = self.client.post('/app/checkusername/',{"randomkey":"randomvalue"},follow=True,secure=True)
+        self.assertEqual(resp2.status_code,400)
         self.initialise()
-        resp2 = self.client.post('/app/checkusername/',{"username":"checktestuser"},follow=True,secure=True)
-        self.assertEqual(resp2.status_code,404)
+        resp3 = self.client.post('/app/checkusername/',{"username":"checktestuser"},follow=True,secure=True)
+        self.assertEqual(resp3.status_code,404)
