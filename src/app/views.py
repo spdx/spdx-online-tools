@@ -196,19 +196,6 @@ def compare(request):
                                 erroroccurred = True
                                 filelist.append(myfile.name)
                                 errorlist.append(jpype.JavaException.message(ex))
-                            except MultiValueDictKeyError:
-                                """ If no files uploaded""" 
-                                if (request.is_ajax()):
-                                    filelist.append("File not selected.")
-                                    errorlist.append("Please select a file.")
-                                    ajaxdict["files"] = filelist
-                                    ajaxdict["errors"] = errorlist 
-                                    response = json.dumps(ajaxdict)
-                                    jpype.detachThreadFromJVM()
-                                    return HttpResponse(response,status=404)
-                                context_dict["error"] = "No files selected."
-                                jpype.detachThreadFromJVM()
-                                return render(request, 'app/compare.html',context_dict,status=404)
                             except :
                                 """ Other Exceptions"""
                                 erroroccurred = True
@@ -287,19 +274,6 @@ def compare(request):
                                 erroroccurred = True
                                 filelist.append(myfile.name)
                                 errorlist.append(jpype.JavaException.message(ex))
-                            except MultiValueDictKeyError:
-                                """ If no files uploaded""" 
-                                if (request.is_ajax()):
-                                    filelist.append("Files not selected.")
-                                    errorlist.append("Please select atleast 2 files.")
-                                    ajaxdict["files"] = filelist
-                                    ajaxdict["errors"] = errorlist 
-                                    response = json.dumps(ajaxdict)
-                                    jpype.detachThreadFromJVM()
-                                    return HttpResponse(response,status=404)
-                                context_dict["error"] = "Select atleast two files"
-                                jpype.detachThreadFromJVM()
-                                return render(request, 'app/compare.html',context_dict,status=404)
                             except :
                                 """ Other Exceptions"""
                                 erroroccurred = True
