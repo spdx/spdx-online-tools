@@ -58,6 +58,7 @@ class LoginViewsTestCase(TestCase):
         resp = self.client.post('/app/login/',self.credentials,follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertNotEqual(resp.redirect_chain,[])
+        self.assertIn(settings.LOGIN_REDIRECT_URL, (i[0] for i in resp.redirect_chain))
         self.assertTrue(resp.context['user'].is_active)
         self.assertTrue(resp.context['user'].is_staff)
         self.assertFalse(resp.context['user'].is_superuser)

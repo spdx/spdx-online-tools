@@ -600,7 +600,7 @@ def loginuser(request):
                     ajaxdict["next"] = "/app/"
                     response = json.dumps(ajaxdict)
                     return HttpResponse(response)
-                return HttpResponseRedirect('/app/')
+                return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
             else:
                 if (request.is_ajax()):
                     return HttpResponse("Your account is disabled.",status=401)
