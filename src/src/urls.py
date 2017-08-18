@@ -46,7 +46,7 @@ urlpatterns = [
     # Examples:
     # url(r'^$', 'src.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
-		url(r'^(/)?$', RedirectView.as_view(url='/app/')),
+		url(r'^(/)?$', RedirectView.as_view(url=settings.HOME_URL)),
     url(r'^admin/', admin.site.urls),
     url(r'^app/', include('app.urls')),
     url(r'^api2/', include('api.urls')),

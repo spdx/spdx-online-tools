@@ -368,7 +368,6 @@ def convert(request):
                     convertfile =  request.POST["cfilename"] + cfileformat
                     if (option1=="Tag"):
                         print ("Verifing for Tag/Value Document")
-                        print(option2)
                         if (option2=="RDF"):
                             tagtordfclass = package.TagToRDF
                             retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+convertfile])
@@ -380,8 +379,6 @@ def convert(request):
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
                                 context_dict["error"] = str(retval)
-                                print ("here")
-                                print(retval)
                                 jpype.detachThreadFromJVM()
                                 return render(request, 'app/convert.html',context_dict,status=404)
                         elif (option2=="Spreadsheet"):
@@ -394,7 +391,7 @@ def convert(request):
                                     response = json.dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
-                                context_dict["error"] = retval
+                                context_dict["error"] = str(retval)
                                 jpype.detachThreadFromJVM()
                                 return render(request, 'app/convert.html',context_dict,status=404)
                         else :
@@ -646,7 +643,7 @@ def register(request):
 
 def logoutuser(request):
     logout(request)
-    return HttpResponseRedirect("/app/login/")
+    return HttpResponseRedirect(settings.LOGIN_URL)
 
 def profile(request):
     if request.user.is_authenticated():
@@ -695,9 +692,9 @@ def checkusername(request):
         if (len(users)>0):
             return HttpResponse(json.dumps({"data": "Already Exist."}),status=404)
         else :
-            return HttpResponse(json.dumps({"data": "Success"})) 
+            return HttpResponse(json.dumps({"data": "Success"}),status=200) 
     else :
-        return HttpResponse(json.dumps({"data": "No username entered"}))
+        return HttpResponse(json.dumps({"data": "No username entered"}),status=400)
 
 
 def handler400(request):

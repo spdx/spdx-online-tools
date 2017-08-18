@@ -5,6 +5,8 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from django.conf import settings
 
+from app.models import UserID
+
 from django_downloadview.test import temporary_media_root
 
 import jpype
@@ -280,15 +282,15 @@ class ConvertViewsTestCase(TestCase):
         self.assertEqual(resp3.resolver_match.func.__name__,"convert")     #View function called
         self.client.logout()
 
-    def test_convert_tagtordf(self):
-        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-        resp = self.client.post('/app/convert/',{'cfilename': "tagtest" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True,secure=True)
-        self.assertEqual(resp.status_code,200)
-        self.assertNotEqual(resp.redirect_chain,[])
-        self.tv_file.close()
-        self.client.logout()
-        print("done")
+    # def test_convert_tagtordf(self):
+    #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+    #     self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+    #     resp = self.client.post('/app/convert/',{'cfilename': "tagtest" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True,secure=True)
+    #     self.assertEqual(resp.status_code,200)
+    #     self.assertNotEqual(resp.redirect_chain,[])
+    #     self.tv_file.close()
+    #     self.client.logout()
+        #print("done")
         # global_media_root = settings.MEDIA_ROOT
         # with temporary_media_root():
         #     self.assertNotEqual(global_media_root,settings.MEDIA_ROOT)
@@ -367,30 +369,72 @@ class CheckLicenseViewsTestCase(TestCase):
 
         
 class LogoutViewsTestCase(TestCase):
+
     def test_logout(self):
-        resp = self.client.get('/app/logout/')
-        self.assertEqual(resp.status_code,302)
+        resp = self.client.get('/app/logout/',follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
 
 class RootViewsTestCase(TestCase):
+
     def test_root_url(self):
-        resp = self.client.get('/')
-        # For View Redirection to index
-        self.assertEqual(resp.status_code,302)
+        resp = self.client.get('/',follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertIn(settings.HOME_URL, (i[0] for i in resp.redirect_chain))
+
 
 class ProfileViewsTestCase(TestCase):
+
+    def initialise(self):
+        self.username = "profiletestuser"
+        self.password ="profiletestpass"
+        self.credentials = {"first_name": "test","last_name" : "test" ,"email" : "profiletest@spdx.org",'username':self.username,'password':self.password }
+        self.user = User.objects.create_user(**self.credentials)
+        UserID.objects.get_or_create({"user":self.user,"organisation":"spdx"})
 
     def test_profile(self):
         resp = self.client.get('/app/profile/',follow=True,secure=True)
         self.assertEqual(resp.status_code,200)      
         self.assertNotEqual(resp.redirect_chain,[])    
         self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
-
-        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+        self.initialise()
+        self.client.force_login(User.objects.get_or_create(username='profiletestuser')[0])
         resp2 = self.client.get('/app/profile/',follow=True,secure=True)
         self.assertEqual(resp2.status_code,200)
         self.assertEqual(resp2.redirect_chain,[])    # No redirection
         self.assertIn("app/profile.html",(i.name for i in resp2.templates))    #list of templates
         self.assertEqual(resp2.resolver_match.func.__name__,"profile")     #View function called
+        self.assertIn("form",resp2.context)
+        self.assertIn("info_form",resp2.context)
+        self.assertIn("orginfo_form",resp2.context)
         self.client.logout()
 
+    def test_saveinfo(self):
+        print("to be done")
 
+    def test_changepwd(self):
+        print("to be done")
+
+class PasswordResetViewsTestCase(TestCase):
+
+    def test_password_reset(self):
+        resp = self.client.get('/app/password_reset/',follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)      #Status OK
+        self.assertEqual(resp.redirect_chain,[])    # No redirection
+        self.assertIn("app/password_reset.html",(i.name for i in resp.templates))    #list of templates
+        self.assertEqual(resp.resolver_match.func.__name__,"password_reset")     #View function called
+
+class CheckUserNameTestCase(TestCase):
+
+    def initialise(self):
+        self.username = "checktestuser"
+        self.password ="checktestpass"
+        self.credentials = {'username':self.username,'password':self.password }
+        User.objects.create_user(**self.credentials)
+        
+    def test_check_username(self):
+        resp = self.client.post('/app/checkusername/',{"username":"spdx"},follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.initialise()
+        resp2 = self.client.post('/app/checkusername/',{"username":"checktestuser"},follow=True,secure=True)
+        self.assertEqual(resp2.status_code,404)
