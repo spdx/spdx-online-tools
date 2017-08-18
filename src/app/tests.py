@@ -27,7 +27,7 @@ class AboutViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"about")     #View function called
 
 class LoginViewsTestCase(TestCase):
-    def setUp(self):
+    def initialise(self):
         self.credentials = {'username':'testuser','password':'testpass' }
         user = User.objects.create_user(**self.credentials)
         #A staff user
@@ -55,6 +55,7 @@ class LoginViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"loginuser")     #View function called
 
     def test_postlogin(self):
+        self.initialise()
         resp = self.client.post('/app/login/',self.credentials,follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertNotEqual(resp.redirect_chain,[])
@@ -85,7 +86,7 @@ class LoginViewsTestCase(TestCase):
         self.client.get('/app/logout/')
 
 class RegisterViewsTestCase(TestCase):
-    def setUp(self):
+    def initialise(self):
         self.username = "testuser4"
         self.password ="testpass4"
         self.data = {"first_name": "test","last_name" : "test" ,
@@ -101,6 +102,7 @@ class RegisterViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"register")     #View function called
 
     def test_formregister(self):
+        self.initialise()
         resp = self.client.post('/app/register/',self.data,follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertNotEqual(resp.redirect_chain,[])
