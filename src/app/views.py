@@ -627,8 +627,7 @@ def register(request):
             user.save()
             profile.user = user
             profile.save()
-            registered = True
-            return HttpResponseRedirect('/app/login/')
+            return HttpResponseRedirect(settings.REGISTER_REDIRECT_UTL)
         else:
             print user_form.errors
             print profile_form.errors

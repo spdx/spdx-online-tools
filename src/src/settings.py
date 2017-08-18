@@ -145,3 +145,4 @@ REST_FRAMEWORK = {
 }
 
 LOGIN_REDIRECT_URL = "/app/"
+REGISTER_REDIRECT_UTL = "/app/login/"
