@@ -77,8 +77,8 @@ def validate(request):
                             response = json.dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
                             return HttpResponse(response,status=400)
-                        jpype.detachThreadFromJVM()
                         context_dict["error"] = retval
+                        jpype.detachThreadFromJVM()
                         return render(request, 'app/validate.html',context_dict,status=400)
                     if (request.is_ajax()):
                         ajaxdict=dict()
@@ -95,8 +95,8 @@ def validate(request):
                         response = json.dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=404)
-                    jpype.detachThreadFromJVM()
                     context_dict["error"] = "No file uploaded"
+                    jpype.detachThreadFromJVM()
                     return render(request, 'app/validate.html',context_dict,status=404)
             except jpype.JavaException,ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
@@ -211,8 +211,8 @@ def compare(request):
                                 response = json.dumps(newajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response)
-                            jpype.detachThreadFromJVM()
-                            context_dict['Content-Disposition'] = 'attachment; filename='+rfilename    
+                            context_dict['Content-Disposition'] = 'attachment; filename='+rfilename 
+                            jpype.detachThreadFromJVM()   
                             return HttpResponseRedirect("/media/"+ folder + "/" +rfilename)
                         else :
                             if (request.is_ajax()):
@@ -221,12 +221,12 @@ def compare(request):
                                 response = json.dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=400)
-                            jpype.detachThreadFromJVM()
                             context_dict["error"]= errorlist
+                            jpype.detachThreadFromJVM()
                             return render(request, 'app/compare.html',context_dict,status=400)
                     else :
-                        jpype.detachThreadFromJVM()
                         context_dict["error"]= "File Not Uploaded"
+                        jpype.detachThreadFromJVM()
                         return render(request, 'app/compare.html',context_dict,status=404)
                 except MultiValueDictKeyError:
                     """ If no files uploaded""" 
@@ -250,8 +250,8 @@ def compare(request):
                         callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
                         erroroccurred = False
                         if (len(request.FILES.getlist("files"))<2):
-                            jpype.detachThreadFromJVM()    
                             context_dict["error"]= "Please select atleast 2 files"
+                            jpype.detachThreadFromJVM()
                             return render(request, 'app/compare.html',context_dict)
                         # loop through the list of files
                         folder = str(request.user) + "/" + str(int(time()))
@@ -299,12 +299,12 @@ def compare(request):
                                 response = json.dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=400)   
+                            context_dict["error"] = errorlist
                             jpype.detachThreadFromJVM()
-                        context_dict["error"] = errorlist
-                        return render(request, 'app/compare.html',context_dict,status=400)
+                            return render(request, 'app/compare.html',context_dict,status=400)
                     else :
-                        jpype.detachThreadFromJVM()
                         context_dict["error"]= "File Not Uploaded"
+                        jpype.detachThreadFromJVM()
                         return render(request, 'app/compare.html',context_dict,status=404)
                 except MultiValueDictKeyError:
                     """ If no files uploaded""" 
@@ -378,8 +378,9 @@ def convert(request):
                                     response = json.dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
+                                context_dict["error"] = retval
                                 jpype.detachThreadFromJVM()
-                                return HttpResponse(retval)
+                                return render(request, 'app/convert.html',context_dict,status=404)
                         elif (option2=="Spreadsheet"):
                             tagtosprdclass = package.TagToSpreadsheet
                             retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
@@ -390,10 +391,12 @@ def convert(request):
                                     response = json.dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
+                                context_dict["error"] = retval
                                 jpype.detachThreadFromJVM()
-                                return HttpResponse(retval)
+                                return render(request, 'app/convert.html',context_dict,status=404)
                         else :
-                            return HttpResponse("Select the available conversion types.")
+                            context_dict["error"] = "Select the available conversion types."
+                            return render(request, 'app/convert.html',context_dict,status=400)
                     elif (option1=="RDF"):
                         print ("Verifing for RDF Document")
                         if (option2=="Tag"):
@@ -406,8 +409,9 @@ def convert(request):
                                     response = json.dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
+                                context_dict["error"] = retval
                                 jpype.detachThreadFromJVM()
-                                return HttpResponse(retval)
+                                return render(request, 'app/convert.html',context_dict,status=404)
                         elif (option2=="Spreadsheet"):
                             rdftosprdclass = package.RdfToSpreadsheet
                             retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
@@ -418,8 +422,9 @@ def convert(request):
                                     response = json.dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
+                                context_dict["error"] = retval
                                 jpype.detachThreadFromJVM()
-                                return HttpResponse(retval)
+                                return render(request, 'app/convert.html',context_dict,status=404)
                         elif (option2=="HTML"):
                             rdftohtmlclass = package.RdfToHtml
                             retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
@@ -430,10 +435,12 @@ def convert(request):
                                     response = json.dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
+                                context_dict["error"] = retval
                                 jpype.detachThreadFromJVM()
-                                return HttpResponse(retval)
+                                return render(request, 'app/convert.html',context_dict,status=404)
                         else :
-                            return HttpResponse("Select the available conversion types.")
+                            context_dict["error"] = "Select the available conversion types."
+                            return render(request, 'app/convert.html',context_dict,status=400)
                     elif (option1=="Spreadsheet"):
                         print ("Verifing for Spreadsheet Document")
                         if (option2=="Tag"):
@@ -446,8 +453,9 @@ def convert(request):
                                     response = json.dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
+                                context_dict["error"] = retval
                                 jpype.detachThreadFromJVM()
-                                return HttpResponse(retval)
+                                return render(request, 'app/convert.html',context_dict,status=404)
                         elif (option2=="RDF"):
                             sprdtordfclass = package.SpreadsheetToRDF
                             retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
@@ -458,10 +466,12 @@ def convert(request):
                                     response = json.dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
+                                context_dict["error"] = retval
                                 jpype.detachThreadFromJVM()
-                                return HttpResponse(retval)
+                                return render(request, 'app/convert.html',context_dict,status=404)
                         else :
-                            return HttpResponse("Select the available conversion types.")
+                            context_dict["error"] = "Select the available conversion types."
+                            return render(request, 'app/convert.html',context_dict,status=400)
                     """ Call the java function with parameters as list"""
                     if (request.is_ajax()):
                             ajaxdict=dict()
@@ -473,18 +483,19 @@ def convert(request):
                     jpype.detachThreadFromJVM()
                     return HttpResponseRedirect("/media/" + folder + "/" + convertfile)
                 else :
+                    context_dict["error"] = "No file uploaded"
                     jpype.detachThreadFromJVM()
-                    return HttpResponse("File Not Uploaded",status=404)
+                    return render(request, 'app/convert.html',context_dict,status=404)
             except jpype.JavaException,ex :
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = jpype.JavaException.message(ex)
                     response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
-                    return HttpResponse(response,status=404)
+                    return HttpResponse(response,status=400)
                 context_dict["error"] = jpype.JavaException.message(ex)
                 jpype.detachThreadFromJVM()
-                return HttpResponse(context_dict,status=404)
+                return render(request, 'app/convert.html',context_dict,status=400)
             except MultiValueDictKeyError:
                 """ If no files uploaded"""
                 if (request.is_ajax()):
@@ -495,17 +506,17 @@ def convert(request):
                     return HttpResponse(response,status=404)
                 context_dict["error"] = "No files selected." 
                 jpype.detachThreadFromJVM()    
-                return HttpResponse(context_dict,status=404)
+                return render(request, 'app/convert.html',context_dict,status=404)
             except :
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = traceback.format_exc()
                     response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
-                    return HttpResponse(response,status=404)
+                    return HttpResponse(response,status=400)
                 context_dict["error"] = traceback.format_exc()
                 jpype.detachThreadFromJVM()    
-                return HttpResponse(context_dict,status=404)
+                return render(request, 'app/convert.html',context_dict,status=400)
         else :
             return render(request, 'app/convert.html',context_dict)
     else :
@@ -541,32 +552,32 @@ def check_license(request):
                     jpype.detachThreadFromJVM()
                     return HttpResponse(matching_str)
                 else:
-                    jpype.detachThreadFromJVM()
                     if (request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = "There are no matching SPDX listed licenses"
                         response = json.dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=404)
+                    jpype.detachThreadFromJVM()
                     return HttpResponse("There are no matching SPDX listed licenses")
             except jpype.JavaException,ex :
-                context_dict["error"] = jpype.JavaException.message(ex)
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = jpype.JavaException.message(ex)
                     response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
+                context_dict["error"] = jpype.JavaException.message(ex)
                 jpype.detachThreadFromJVM()
                 return HttpResponse(context_dict,status=404)
             except :
-                context_dict["error"] = traceback.format_exc()
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = traceback.format_exc()
                     response = json.dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
+                context_dict["error"] = traceback.format_exc()
                 jpype.detachThreadFromJVM()    
                 return HttpResponse(context_dict,status=404)
         else:
