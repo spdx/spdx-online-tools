@@ -705,7 +705,8 @@ def handler403(request):
 
 def handler404(request):
     return render_to_response('app/404.html',
-        context_instance = RequestContext(request)
+        context_instance = RequestContext(request),
+        status=404
     )
     
 def handler500(request):

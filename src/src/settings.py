@@ -26,8 +26,9 @@ SECRET_KEY = 'wmf(fc)l3jitafjt1^ys8x@&2@++p589vfg++1(@_+^=rqfqft'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TEMPLATE_DEBUG=True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
