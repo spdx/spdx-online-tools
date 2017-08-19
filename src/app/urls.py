@@ -24,14 +24,14 @@ handler500 = 'views.handler500'
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^validate/$', views.validate, name='index'),
+    url(r'^validate/$', views.validate, name='validate'),
     url(r'^about/$', views.about, name='about'),
     url(r'^convert/$', views.convert, name='convert'),
     url(r'^compare/$', views.compare, name='compare'),
-    url(r'^check_license/$', views.check_license, name='check license'),
+    url(r'^check_license/$', views.check_license, name='check-license'),
     url(r'^login/$', views.loginuser, name='login'),
     url(r'^register/$', views.register, name='register'),
     url(r'^logout/$', views.logoutuser, name='logout'),
     url(r'^profile/$', views.profile, name='profile'),
-    url(r'^checkusername/$', views.checkusername, name='check username'),
+    url(r'^checkusername/$', views.checkusername, name='check-username'),
 ]
