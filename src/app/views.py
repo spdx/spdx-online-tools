@@ -43,10 +43,6 @@ def about(request):
     context_dict={}
     return render(request, 'app/about.html',context_dict)
 
-def home(request):
-    context_dict={}
-    return render(request, 'app/home.html',context_dict)
-
 def validate(request):
     if request.user.is_authenticated():
         context_dict={}

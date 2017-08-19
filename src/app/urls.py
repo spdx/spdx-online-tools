@@ -24,7 +24,6 @@ handler500 = 'views.handler500'
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^home/$', views.home, name='home'),
     url(r'^validate/$', views.validate, name='index'),
     url(r'^about/$', views.about, name='about'),
     url(r'^convert/$', views.convert, name='convert'),

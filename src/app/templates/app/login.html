@@ -45,8 +45,9 @@
 
 {% endblock %}
 {% block script_block %}
-<!--
+<!-- 
 <script type="text/javascript">
+// Ajax Login Submit
   $('#login_form').on('submit', function(event){
     event.preventDefault();
     var form = $('#login_form').serialize();
@@ -77,6 +78,7 @@ $(document).ready(function () {
 <!--
 {% if invalid %}
 <script type="text/javascript">
+// Error display Timeout
       setTimeout(function() {
         $("#messages").html("");
       }, 5000);

@@ -445,18 +445,6 @@ class ProfileViewsTestCase(TestCase):
         self.client.logout()
 
 
-class PasswordResetViewsTestCase(TestCase):
-
-    def test_password_reset(self):
-        resp = self.client.get('/app/password_reset/',follow=True,secure=True)
-        self.assertEqual(resp.status_code,200)      #Status OK
-        self.assertEqual(resp.redirect_chain,[])    # No redirection
-        self.assertIn("app/password_reset.html",(i.name for i in resp.templates))    #list of templates
-        self.assertEqual(resp.resolver_match.func.__name__,"password_reset")     #View function called
-
-    def test_post_pwd_reset(self):
-        print("to be done")
-
 class CheckUserNameTestCase(TestCase):
 
     def initialise(self):
@@ -473,12 +461,3 @@ class CheckUserNameTestCase(TestCase):
         self.initialise()
         resp3 = self.client.post('/app/checkusername/',{"username":"checktestuser"},follow=True,secure=True)
         self.assertEqual(resp3.status_code,404)
-
-class HomeViewsTestCase(TestCase):
-
-    def test_home(self):
-        resp = self.client.get('/app/home/',follow=True,secure=True)
-        self.assertEqual(resp.status_code,200)      #Status OK
-        self.assertEqual(resp.redirect_chain,[])    # No redirection
-        self.assertIn("app/home.html",(i.name for i in resp.templates))    #list of templates
-        self.assertEqual(resp.resolver_match.func.__name__,"home")     #View function called
