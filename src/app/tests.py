@@ -251,6 +251,7 @@ class CompareViewsTestCase(TestCase):
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
         resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': '2' ,'rfilename': 'comparetest','file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
+        self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         if (resp.status_code == 200):
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
@@ -293,6 +294,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
         resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True,secure=True)
+        self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         if (resp.status_code == 200):
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
@@ -314,6 +316,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
         resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".xlsx",'from_format' : "Tag", 'to_format' : "Spreadsheet", 'file' : self.tv_file},follow=True)
+        self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         if (resp.status_code == 200):
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
@@ -329,6 +332,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
         resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".spdx",'from_format' : "RDF", 'to_format' : "Tag", 'file' : self.rdf_file},follow=True)
+        self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         if (resp.status_code == 200):
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
@@ -344,6 +348,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
         resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".xlsx",'from_format' : "RDF", 'to_format' : "Spreadsheet", 'file' : self.rdf_file},follow=True)
+        self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         if (resp.status_code == 200):
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
@@ -368,6 +373,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
         resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".spdx",'from_format' : "Spreadsheet", 'to_format' : "Tag", 'file' : self.xls_file},follow=True)
+        self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         if (resp.status_code == 200):
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
@@ -383,6 +389,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
         resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".rdf",'from_format' : "Spreadsheet", 'to_format' : "RDF", 'file' : self.xls_file},follow=True)
+        self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         if (resp.status_code == 200):
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))

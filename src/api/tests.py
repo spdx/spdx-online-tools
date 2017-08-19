@@ -34,27 +34,27 @@ class ValidateFileUploadTests(APITestCase):
             pass
         ValidateFileUpload.objects.all().delete()
 
-    # def test_validate_api(self):
-    #     resp1 = self.client.get(reverse("validate-api"))
-    #     self.assertTrue(resp1.status_code,403)
-    #     self.client.login(username=self.username,password=self.password)
-    #     resp2 = self.client.get(reverse("validate-api")) 
-    #     self.assertTrue(resp2.status_code,200)
+    def test_validate_api(self):
+        resp1 = self.client.get(reverse("validate-api"))
+        self.assertTrue(resp1.status_code,403)
+        self.client.login(username=self.username,password=self.password)
+        resp2 = self.client.get(reverse("validate-api")) 
+        self.assertTrue(resp2.status_code,200)
 
-    #     resp3 = self.client.post(reverse("validate-api"),{"file":self.tv_file},format="multipart")
-    #     self.assertEqual(resp3.status_code,201)
-    #     self.assertEqual(resp3.data["result"],"This SPDX Document is valid.")
-    #     resp4 = self.client.post(reverse("validate-api"),{"file":self.rdf_file},format="multipart")
-    #     self.assertEqual(resp4.status_code,201)
-    #     self.assertEqual(resp4.data["result"],"This SPDX Document is valid.")
-    #     resp5 = self.client.post(reverse("validate-api"),{"file":self.invalid_tv_file},format="multipart")
-    #     self.assertEqual(resp5.status_code,400)
-    #     self.assertNotEqual(resp5.data["result"],"This SPDX Document is valid.")
-    #     resp6 = self.client.post(reverse("validate-api"),{"file":self.invalid_rdf_file},format="multipart")
-    #     self.assertEqual(resp6.status_code,400)
-    #     self.assertNotEqual(resp6.data["result"],"This SPDX Document is valid.")
-    #     self.client.logout()
-    #     self.tearDown()
+        resp3 = self.client.post(reverse("validate-api"),{"file":self.tv_file},format="multipart")
+        self.assertEqual(resp3.status_code,201)
+        self.assertEqual(resp3.data["result"],"This SPDX Document is valid.")
+        resp4 = self.client.post(reverse("validate-api"),{"file":self.rdf_file},format="multipart")
+        self.assertEqual(resp4.status_code,201)
+        self.assertEqual(resp4.data["result"],"This SPDX Document is valid.")
+        resp5 = self.client.post(reverse("validate-api"),{"file":self.invalid_tv_file},format="multipart")
+        self.assertEqual(resp5.status_code,400)
+        self.assertNotEqual(resp5.data["result"],"This SPDX Document is valid.")
+        resp6 = self.client.post(reverse("validate-api"),{"file":self.invalid_rdf_file},format="multipart")
+        self.assertEqual(resp6.status_code,400)
+        self.assertNotEqual(resp6.data["result"],"This SPDX Document is valid.")
+        self.client.logout()
+        self.tearDown()
 
         # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # self.assertIn('created', response.data)
@@ -101,33 +101,33 @@ class ConvertFileUploadTests(APITestCase):
         self.assertTrue(resp2.status_code,200)
         self.client.logout()
 
-    # def test_convert_tagtordf_api(self):
-    #     self.client.login(username=self.username,password=self.password)
-    #     resp = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.rdf,"cfilename":"tagtordf-apitest"},format="multipart")
-    #     self.assertTrue(resp.status_code==406 or resp.status_code == 201)
-    #     self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
-    #     self.client.logout()
+    def test_convert_tagtordf_api(self):
+        self.client.login(username=self.username,password=self.password)
+        resp = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.rdf,"cfilename":"tagtordf-apitest"},format="multipart")
+        self.assertTrue(resp.status_code==406 or resp.status_code == 201)
+        self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.client.logout()
 
-    # def test_convert_tagtoxlsx_api(self):
-    #     self.client.login(username=self.username,password=self.password)
-    #     resp = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.xlsx,"cfilename":"tagtoxlsx-apitest"},format="multipart")
-    #     self.assertTrue(resp.status_code==406 or resp.status_code == 201)
-    #     self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
-    #     self.client.logout()
+    def test_convert_tagtoxlsx_api(self):
+        self.client.login(username=self.username,password=self.password)
+        resp = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.xlsx,"cfilename":"tagtoxlsx-apitest"},format="multipart")
+        self.assertTrue(resp.status_code==406 or resp.status_code == 201)
+        self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.client.logout()
 
-    # def test_convert_rdftotag_api(self):
-    #     self.client.login(username=self.username,password=self.password)
-    #     resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.tag,"cfilename":"rdftotag-apitest"},format="multipart")
-    #     self.assertTrue(resp.status_code==406 or resp.status_code == 201)
-    #     self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
-    #     self.client.logout()
+    def test_convert_rdftotag_api(self):
+        self.client.login(username=self.username,password=self.password)
+        resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.tag,"cfilename":"rdftotag-apitest"},format="multipart")
+        self.assertTrue(resp.status_code==406 or resp.status_code == 201)
+        self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.client.logout()
 
-    # def test_convert_rdftoxlsx_api(self):
-    #     self.client.login(username=self.username,password=self.password)
-    #     resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.xlsx,"cfilename":"rdftoxlsx-apitest"},format="multipart")
-    #     self.assertTrue(resp.status_code==406 or resp.status_code == 201)
-    #     self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
-    #     self.client.logout()
+    def test_convert_rdftoxlsx_api(self):
+        self.client.login(username=self.username,password=self.password)
+        resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.xlsx,"cfilename":"rdftoxlsx-apitest"},format="multipart")
+        self.assertTrue(resp.status_code==406 or resp.status_code == 201)
+        self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.client.logout()
 
     # def test_convert_rdftohtml_api(self):
     #     self.client.login(username=self.username,password=self.password)
@@ -139,7 +139,6 @@ class ConvertFileUploadTests(APITestCase):
     def test_convert_xlsxtordf_api(self):
         self.client.login(username=self.username,password=self.password)
         resp = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.rdf,"cfilename":"xlsxtordf-apitest"},format="multipart")
-        print resp.data
         self.assertTrue(resp.status_code==406 or resp.status_code == 201)
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
         self.client.logout()
@@ -147,7 +146,6 @@ class ConvertFileUploadTests(APITestCase):
     def test_convert_xlsxtotag_api(self):
         self.client.login(username=self.username,password=self.password)
         resp = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.tag,"cfilename":"xlsxtotag-apitest"},format="multipart")
-        print resp.data
         self.assertTrue(resp.status_code==406 or resp.status_code == 201)
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
         self.client.logout()
@@ -182,6 +180,7 @@ class CompareFileUploadTests(APITestCase):
 
         resp3 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.rdf_file2,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertTrue(resp3.status_code==406 or resp3.status_code == 201)
+        self.assertTrue(resp3.data["result"].startswith(settings.MEDIA_URL))
         resp4 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.tv_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertEqual(resp4.status_code,400)
 
