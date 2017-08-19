@@ -157,6 +157,7 @@ class ValidateViewsTestCase(TestCase):
     #     resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
     #     self.assertEqual(resp.status_code,200)
     #     self.assertEqual(resp.content,"This SPDX Document is valid.")
+    #     self.assertTrue(urlparse(response.data['file']).path.startswith(settings.MEDIA_URL))
     #     self.client.logout()
 
     # def test_upload_rdf(self):

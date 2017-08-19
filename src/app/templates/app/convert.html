@@ -174,7 +174,6 @@ function checkform() {
       $("#convertbutton").prop('disabled', true);
       $("#messages").html("");
       var form = new FormData($("#convertform")[0]);
-      console.log(form)
       $.ajax({
               type: "POST",
               enctype: 'multipart/form-data',
@@ -188,6 +187,7 @@ function checkform() {
               success: function (data) {
                   console.log("SUCCESS : ", data);
                   $("#modal-header").removeClass("red-modal");
+                  $("#modal-header").removeClass("yellow-modal");
                   $("#modal-header").addClass("green-modal");
                   $("#modal-title").html("Success!");
                   $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
@@ -203,10 +203,21 @@ function checkform() {
                   console.log("ERROR : ", e);
                   var obj = JSON.parse(e.responseText);
                   $("#modal-header").removeClass("green-modal");
-                  $("#modal-header").addClass("red-modal");
-                  $("#modal-title").html("Error!");
-                  $("#modal-body").text(obj.data);
-                  console.log(obj.data);
+                  $("#modal-body").text("");
+                  if (obj.type=="warning"){
+                    $("#modal-header").removeClass("red-modal");
+                    $("#modal-header").addClass("yellow-modal");
+                    $("#modal-title").html("Warning!");
+                    $("#modal-body").append(obj.data+"<br><hr>");
+                    $("#modal-body").append("Ignoring the warnings, the following file was generated<br>");
+                    $("#modal-body").append('<h3><a href="'+obj.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
+                  }
+                  else if (obj.type=="error"){
+                    $("#modal-header").removeClass("yellow-modal");
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Error!");
+                    $("#modal-body").text(obj.data);
+                  }
                   $("#myModal").modal({
                           backdrop: 'static',
                           keyboard: true, 

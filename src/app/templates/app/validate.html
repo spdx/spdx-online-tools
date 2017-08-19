@@ -101,6 +101,7 @@ function checkform() {
               success: function (data) {
                   console.log("SUCCESS : ", data);
                   $("#modal-header").removeClass("red-modal");
+                  $("#modal-header").removeClass("yellow-modal");
                   $("#modal-header").addClass("green-modal");
                   $("#modal-title").html("Success!");
                   $("#modal-body").html("<h3>"+data.data+"</h3>");
@@ -116,8 +117,16 @@ function checkform() {
                   console.log("ERROR : ", e);
                   var obj = JSON.parse(e.responseText);
                   $("#modal-header").removeClass("green-modal");
-                  $("#modal-header").addClass("red-modal");
-                  $("#modal-title").html("Error!");
+                  if (obj.type=="warning"){
+                    $("#modal-header").removeClass("red-modal");
+                    $("#modal-header").addClass("yellow-modal");
+                    $("#modal-title").html("Warning!");
+                  }
+                  else if (obj.type=="error"){
+                    $("#modal-header").removeClass("yellow-modal");
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Error!");
+                  }
                   $("#modal-body").text(obj.data);
                   $("#myModal").modal({
                           backdrop: 'static',

@@ -134,7 +134,6 @@ function checkform2() {
       $("#messages").html("");
 	    var form = new FormData($("#compareform")[0]);
 	    form.append("compare","compare");
-	    console.log(form);
 	    $.ajax({
 	            type: "POST",
 	            enctype: 'multipart/form-data',
@@ -148,10 +147,15 @@ function checkform2() {
 	            success: function (data) {
 	                console.log("SUCCESS : ", data);
 	                $("#modal-header").removeClass("red-modal");
+	                $("#modal-header").removeClass("yellow-modal");
                     $("#modal-header").addClass("green-modal");
                     $("#modal-title").html("Success!");
 	                $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
-	                $("#myModal").modal('show');
+	                $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true, 
+                          show: true
+                  	});
 	                $("#comparebutton1").text("Compare");
     				$("#comparebutton1").prop('disabled', false);
 	            },
@@ -160,14 +164,46 @@ function checkform2() {
 	                var obj = JSON.parse(e.responseText);
 	                var i;
 	                $("#modal-body").text("");
-	                for(i=0;i<obj["files"].length;i++){
-	                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
-	                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
-	                }
 	                $("#modal-header").removeClass("green-modal");
-                    $("#modal-header").addClass("red-modal");
-                    $("#modal-title").html("Error!");
-	                $("#myModal").modal('show');
+	                if (obj.type=="warning"){
+	                    $("#modal-header").removeClass("red-modal");
+	                    $("#modal-header").addClass("yellow-modal");
+	                    $("#modal-title").html("Warning!");
+	                    for(i=0;i<obj["files"].length;i++){
+		                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
+		                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
+		                }
+		                $("#modal-body").append("Ignoring the warnings, the following file was generated<br>");
+		                $("#modal-body").append('<h3><a href="'+obj.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
+
+	                }
+	                else if (obj.type=="warning2"){
+	                    $("#modal-header").removeClass("red-modal");
+	                    $("#modal-header").addClass("yellow-modal");
+	                    $("#modal-title").html("Warning!");
+	                    for(i=0;i<obj["files"].length;i++){
+		                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
+		                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
+		                }
+		                $("#modal-body").append("Ignoring the warnings,the compare tool was run and the following error was generated:<br><hr>");
+		                $("#modal-body").append(obj["toolerror"]);
+
+	                }
+                    else if (obj.type=="error"){
+	                    $("#modal-header").removeClass("yellow-modal");
+	                    $("#modal-header").addClass("red-modal");
+	                    $("#modal-title").html("Error!");
+	                    for(i=0;i<obj["files"].length;i++){
+		                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
+		                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
+		                }
+                    }
+
+	                $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true, 
+                          show: true
+                  	});
 	                $("#comparebutton1").text("Compare");
     				$("#comparebutton1").prop('disabled', false);
 	            }
@@ -192,7 +228,6 @@ function checkform2() {
         $("#messages").html("");
 	    var form = new FormData($("#compareform2")[0]);
 	    form.append("compareall","compareall");
-	    console.log(form);
 	    $.ajax({
 	            type: "POST",
 	            enctype: 'multipart/form-data',
@@ -206,6 +241,7 @@ function checkform2() {
 	            success: function (data) {
 	                console.log("SUCCESS : ", data);
 	                $("#modal-header").removeClass("red-modal");
+	                $("#modal-header").removeClass("yellow-modal");
                     $("#modal-header").addClass("green-modal");
                     $("#modal-title").html("Success!");
 	                $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
@@ -220,20 +256,47 @@ function checkform2() {
 	            error: function (e) {
 	                console.log("ERROR : ", e);
 	                var obj = JSON.parse(e.responseText);
-	                $("#modal-header").removeClass("green-modal");
-                    $("#modal-header").addClass("red-modal");
-                    $("#modal-title").html("Error!");
-	                var i;
 	                $("#modal-body").text("");
-	                for(i=0;i<obj["files"].length;i++){
-	                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
-	                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
+	                $("#modal-header").removeClass("green-modal");
+	                if (obj.type=="warning"){
+	                    $("#modal-header").removeClass("red-modal");
+	                    $("#modal-header").addClass("yellow-modal");
+	                    $("#modal-title").html("Warning!");
+	                    for(i=0;i<obj["files"].length;i++){
+		                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
+		                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
+		                }
+		                $("#modal-body").append("Ignoring the warnings, the following file was generated<br>");
+		                $("#modal-body").append('<h3><a href="'+obj.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
+
 	                }
+	                else if (obj.type=="warning2"){
+	                    $("#modal-header").removeClass("red-modal");
+	                    $("#modal-header").addClass("yellow-modal");
+	                    $("#modal-title").html("Warning!");
+	                    for(i=0;i<obj["files"].length;i++){
+		                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
+		                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
+		                }
+		                $("#modal-body").append("Ignoring the warnings,the compare tool was run and the following error was generated:<br><hr>");
+		                $("#modal-body").append(obj["toolerror"]);
+
+	                }
+                    else if (obj.type=="error"){
+	                    $("#modal-header").removeClass("yellow-modal");
+	                    $("#modal-header").addClass("red-modal");
+	                    $("#modal-title").html("Error!");
+	                    for(i=0;i<obj["files"].length;i++){
+		                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
+		                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
+		                }
+                    }
+
 	                $("#myModal").modal({
-	                        backdrop: 'static',
-	                        keyboard: true, 
-	                        show: true
-	                });
+                          backdrop: 'static',
+                          keyboard: true, 
+                          show: true
+                  	});
 	                $("#comparebutton2").text("Compare");
     				$("#comparebutton2").prop('disabled', false);
 	            }
@@ -253,7 +316,6 @@ $(document).ready(function () {
 	$("#nofile").val("2");
 	$("#addmore").click(function(){
 		var no = parseInt($("#nofile").val());
-		console.log(no);
 		// Limit the no. of files uploaded to 13
 		if (no < 13){ 
 			$("#nofile").val(no+1);
@@ -276,9 +338,9 @@ $(document).ready(function () {
 <script>
   function handleFileSelect(evt) {
     var files = evt.target.files; // FileList object
-    console.log(files);
-    console.log(evt.target);
-    console.log(evt.target.value);
+    // console.log(files);
+    // console.log(evt.target);
+    // console.log(evt.target.value);
     // files is a FileList of File objects. List some properties.
     var output = [];
     for (var i = 0, f; f = files[i]; i++) {
