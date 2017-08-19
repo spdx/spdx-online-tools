@@ -135,65 +135,64 @@ class ValidateViewsTestCase(TestCase):
         self.assertEqual(resp3.resolver_match.func.__name__,"validate")     #View function called
         self.client.logout()
         
-    # def test_validate_post_without_login(self):
-    #     self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-    #     resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
-    #     self.assertNotEqual(resp.redirect_chain,[])
-    #     self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
-    #     self.tv_file.close()
-    #     self.assertEqual(resp.status_code,200)
+    def test_validate_post_without_login(self):
+        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
+        self.assertNotEqual(resp.redirect_chain,[])
+        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+        self.tv_file.close()
+        self.assertEqual(resp.status_code,200)
 
-    # def test_validate_post_without_file(self):
-    #     self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-    #     resp = self.client.post(reverse("validate"),{},follow=True,secure=True)
-    #     self.assertEqual(resp.status_code,404)
-    #     self.assertTrue('error' in resp.context)
-    #     self.assertEqual(resp.redirect_chain,[])
-    #     self.client.logout()
+    def test_validate_post_without_file(self):
+        self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
+        resp = self.client.post(reverse("validate"),{},follow=True,secure=True)
+        self.assertEqual(resp.status_code,404)
+        self.assertTrue('error' in resp.context)
+        self.assertEqual(resp.redirect_chain,[])
+        self.client.logout()
 
-    # def test_upload_tv(self):
-    #     self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-    #     self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-    #     resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
-    #     self.assertEqual(resp.status_code,200)
-    #     self.assertEqual(resp.content,"This SPDX Document is valid.")
-    #     self.assertTrue(urlparse(response.data['file']).path.startswith(settings.MEDIA_URL))
-    #     self.client.logout()
+    def test_upload_tv(self):
+        self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
+        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.content,"This SPDX Document is valid.")
+        self.client.logout()
 
-    # def test_upload_rdf(self):
-    #     self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-    #     self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-    #     resp = self.client.post(reverse("validate"),{'file' : self.rdf_file},follow=True,secure=True)
-    #     self.assertEqual(resp.status_code,200)
-    #     self.assertEqual(resp.content,"This SPDX Document is valid.")
-    #     self.rdf_file.close()
-    #     self.client.logout()
+    def test_upload_rdf(self):
+        self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
+        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        resp = self.client.post(reverse("validate"),{'file' : self.rdf_file},follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.content,"This SPDX Document is valid.")
+        self.rdf_file.close()
+        self.client.logout()
     
-    # def test_upload_other(self):
-    #     self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-    #     self.other_file = open("examples/Other.txt")
-    #     resp = self.client.post(reverse("validate"),{'file' : self.other_file},follow=True,secure=True)
-    #     self.assertTrue(resp.status_code,400)
-    #     self.assertTrue('error' in resp.context)
-    #     self.other_file.close()
-    #     self.client.logout()
+    def test_upload_other(self):
+        self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
+        self.other_file = open("examples/Other.txt")
+        resp = self.client.post(reverse("validate"),{'file' : self.other_file},follow=True,secure=True)
+        self.assertTrue(resp.status_code,400)
+        self.assertTrue('error' in resp.context)
+        self.other_file.close()
+        self.client.logout()
 
-    # def test_upload_inv_tv(self):
-    #     self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-    #     self.invalid_tv_file = open("examples/SPDXTagExample-v2.0_invalid.spdx")
-    #     resp = self.client.post(reverse("validate"),{'file' : self.invalid_tv_file},follow=True)
-    #     self.assertTrue(resp.status_code,400)
-    #     self.assertTrue('error' in resp.context)
-    #     self.invalid_tv_file.close()
-    #     self.client.logout()
+    def test_upload_inv_tv(self):
+        self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
+        self.invalid_tv_file = open("examples/SPDXTagExample-v2.0_invalid.spdx")
+        resp = self.client.post(reverse("validate"),{'file' : self.invalid_tv_file},follow=True)
+        self.assertTrue(resp.status_code,400)
+        self.assertTrue('error' in resp.context)
+        self.invalid_tv_file.close()
+        self.client.logout()
 
-    # def test_upload_inv_rdf(self):
-    #     self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-    #     self.invalid_rdf_file = open("examples/SPDXRdfExample-v2.0_invalid.rdf")
-    #     resp = self.client.post(reverse("validate"),{'file' : self.invalid_rdf_file},follow=True)
-    #     self.assertTrue(resp.status_code,400)
-    #     self.assertTrue('error' in resp.context)
-    #     self.client.logout()
+    def test_upload_inv_rdf(self):
+        self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
+        self.invalid_rdf_file = open("examples/SPDXRdfExample-v2.0_invalid.rdf")
+        resp = self.client.post(reverse("validate"),{'file' : self.invalid_rdf_file},follow=True)
+        self.assertTrue(resp.status_code,400)
+        self.assertTrue('error' in resp.context)
+        self.client.logout()
 
 
 class CompareViewsTestCase(TestCase):
@@ -220,52 +219,58 @@ class CompareViewsTestCase(TestCase):
         self.assertEqual(resp3.resolver_match.func.__name__,"compare")     #View function called
         self.client.logout()
 
-    # def test_compare_post_without_login(self):
-    #     self.initialise()
-    #     resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': "2" ,'rfilename': "comparetest",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
-    #     self.assertNotEqual(resp.redirect_chain,[])
-    #     self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
-    #     self.assertEqual(resp.status_code,200)
-    #     self.exit()
+    def test_compare_post_without_login(self):
+        self.initialise()
+        resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': "2" ,'rfilename': "comparetest",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
+        self.assertNotEqual(resp.redirect_chain,[])
+        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+        self.assertEqual(resp.status_code,200)
+        self.exit()
 
-    # def test_compare_post_without_file(self):
-    #     self.initialise()
-    #     self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
-    #     resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': "2" ,'rfilename': "comparetest"},follow=True,secure=True)
-    #     self.assertEqual(resp.status_code,404)
-    #     self.assertTrue('error' in resp.context)
-    #     self.assertEqual(resp.redirect_chain,[])
-    #     self.exit()
-    #     self.client.logout()
+    def test_compare_post_without_file(self):
+        self.initialise()
+        self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
+        resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': "2" ,'rfilename': "comparetest"},follow=True,secure=True)
+        self.assertEqual(resp.status_code,404)
+        self.assertTrue('error' in resp.context)
+        self.assertEqual(resp.redirect_chain,[])
+        self.exit()
+        self.client.logout()
 
-    # def test_compare_post_without_valid_compare_method(self):
-    #     self.initialise()
-    #     self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
-    #     resp = self.client.post(reverse("compare"),{'nofile': "2" ,'rfilename': "comparetest",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
-    #     self.assertEqual(resp.status_code,404)
-    #     self.assertTrue('error' in resp.context)
-    #     self.assertEqual(resp.redirect_chain,[])
-    #     self.exit()
-    #     self.client.logout()
+    def test_compare_post_without_valid_compare_method(self):
+        self.initialise()
+        self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
+        resp = self.client.post(reverse("compare"),{'nofile': "2" ,'rfilename': "comparetest",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
+        self.assertEqual(resp.status_code,404)
+        self.assertTrue('error' in resp.context)
+        self.assertEqual(resp.redirect_chain,[])
+        self.exit()
+        self.client.logout()
 
-    # def test_compare_two_rdf(self):
-    #     self.initialise()
-    #     self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
-    #     resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': '2' ,'rfilename': 'comparetest','file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
-    #     self.assertEqual(resp.status_code,200)
-    #     self.assertNotEqual(resp.redirect_chain,[])
-    #     self.exit()
-    #     self.client.logout()
+    def test_compare_two_rdf(self):
+        self.initialise()
+        self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
+        resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': '2' ,'rfilename': 'comparetest','file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
+        if (resp.status_code == 200):
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
+        elif (resp.status_code == 406):
+            self.assertIn("medialink",resp.context)
+            self.assertEqual(resp.redirect_chain,[])
+            self.assertEqual(resp.context["type"],"warning")
+            self.assertTrue(resp.context["medialink"].startswith(settings.MEDIA_URL))
+        self.exit()
+        self.client.logout()
 
-    # def test_compare_invalid_rdf(self):
-    #     self.initialise()
-    #     self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
-    #     resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': '2' ,'rfilename': 'comparetest','file1' : self.rdf_file, 'file2' : self.tv_file},follow=True,secure=True)
-    #     self.assertEqual(resp.status_code,400)
-    #     self.assertTrue('error' in resp.context)
-    #     self.assertEqual(resp.redirect_chain,[])
-    #     self.exit()
-    #     self.client.logout()
+    def test_compare_invalid_rdf(self):
+        self.initialise()
+        self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
+        resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': '2' ,'rfilename': 'comparetest','file1' : self.rdf_file, 'file2' : self.tv_file},follow=True,secure=True)
+        self.assertEqual(resp.status_code,400)
+        self.assertTrue('error' in resp.context)
+        self.assertEqual(resp.redirect_chain,[])
+        self.exit()
+        self.client.logout()
 
     
     
@@ -284,47 +289,71 @@ class ConvertViewsTestCase(TestCase):
         self.assertEqual(resp3.resolver_match.func.__name__,"convert")     #View function called
         self.client.logout()
 
-    # def test_convert_tagtordf(self):
-    #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-    #     self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-    #     resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True,secure=True)
-    #     self.assertEqual(resp.status_code,200)
-    #     self.assertNotEqual(resp.redirect_chain,[])
-    #     self.tv_file.close()
-    #     self.client.logout()
-    #     print("done")
-    #     global_media_root = settings.MEDIA_ROOT
-    #     with temporary_media_root():
-    #         self.assertNotEqual(global_media_root,settings.MEDIA_ROOT)
-    #     self.assertEqual(global_media_root,settings.MEDIA_ROOT)
-    #     print resp.content
+    def test_convert_tagtordf(self):
+        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True,secure=True)
+        if (resp.status_code == 200):
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
+        elif (resp.status_code == 406):
+            self.assertIn("medialink",resp.context)
+            self.assertEqual(resp.redirect_chain,[])
+            self.assertEqual(resp.context["type"],"warning")
+            self.assertTrue(resp.context["medialink"].startswith(settings.MEDIA_URL))
+        self.tv_file.close()
+        self.client.logout()
+        # print("done")
+        # global_media_root = settings.MEDIA_ROOT
+        # with temporary_media_root():
+        #     self.assertNotEqual(global_media_root,settings.MEDIA_ROOT)
+        # self.assertEqual(global_media_root,settings.MEDIA_ROOT)
+        # print resp.content
 
-    # def test_convert_tagtoxlsx(self):
-    #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-    #     self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-    #     resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".xlsx",'from_format' : "Tag", 'to_format' : "Spreadsheet", 'file' : self.tv_file},follow=True)
-    #     self.assertEqual(resp.status_code,200)
-    #     self.assertNotEqual(resp.redirect_chain,[])
-    #     self.tv_file.close()
-    #     self.client.logout()
+    def test_convert_tagtoxlsx(self):
+        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".xlsx",'from_format' : "Tag", 'to_format' : "Spreadsheet", 'file' : self.tv_file},follow=True)
+        if (resp.status_code == 200):
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
+        elif (resp.status_code == 406):
+            self.assertIn("medialink",resp.context)
+            self.assertEqual(resp.redirect_chain,[])
+            self.assertEqual(resp.context["type"],"warning")
+            self.assertTrue(resp.context["medialink"].startswith(settings.MEDIA_URL))
+        self.tv_file.close()
+        self.client.logout()
 
-    # def test_convert_rdftotag(self):
-    #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-    #     self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-    #     resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".spdx",'from_format' : "RDF", 'to_format' : "Tag", 'file' : self.rdf_file},follow=True)
-    #     self.assertEqual(resp.status_code,200)
-    #     self.assertNotEqual(resp.redirect_chain,[])
-    #     self.rdf_file.close()
-    #     self.client.logout()
+    def test_convert_rdftotag(self):
+        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".spdx",'from_format' : "RDF", 'to_format' : "Tag", 'file' : self.rdf_file},follow=True)
+        if (resp.status_code == 200):
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
+        elif (resp.status_code == 406):
+            self.assertIn("medialink",resp.context)
+            self.assertEqual(resp.redirect_chain,[])
+            self.assertEqual(resp.context["type"],"warning")
+            self.assertTrue(resp.context["medialink"].startswith(settings.MEDIA_URL))
+        self.rdf_file.close()
+        self.client.logout()
 
-    # def test_convert_rdftoxlsx(self):
-    #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-    #     self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-    #     resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".xlsx",'from_format' : "RDF", 'to_format' : "Spreadsheet", 'file' : self.rdf_file},follow=True)
-    #     self.assertEqual(resp.status_code,200)
-    #     self.assertNotEqual(resp.redirect_chain,[])
-    #     self.rdf_file.close()
-    #     self.client.logout()
+    def test_convert_rdftoxlsx(self):
+        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".xlsx",'from_format' : "RDF", 'to_format' : "Spreadsheet", 'file' : self.rdf_file},follow=True)
+        if (resp.status_code == 200):
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
+        elif (resp.status_code == 406):
+            self.assertIn("medialink",resp.context)
+            self.assertEqual(resp.redirect_chain,[])
+            self.assertEqual(resp.context["type"],"warning")
+            self.assertTrue(resp.context["medialink"].startswith(settings.MEDIA_URL))
+        self.rdf_file.close()
+        self.client.logout()
 
     # def test_convert_rdftohtml(self):
     #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
@@ -335,23 +364,35 @@ class ConvertViewsTestCase(TestCase):
     #     self.rdf_file.close()
     #     self.client.logout()
 
-    # def test_convert_xlsxtotag(self):
-    #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-    #     self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
-    #     resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".spdx",'from_format' : "Spreadsheet", 'to_format' : "Tag", 'file' : self.xls_file},follow=True)
-    #     self.assertEqual(resp.status_code,200)
-    #     self.assertNotEqual(resp.redirect_chain,[])
-    #     self.xls_file.close()
-    #     self.client.logout()
+    def test_convert_xlsxtotag(self):
+        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
+        resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".spdx",'from_format' : "Spreadsheet", 'to_format' : "Tag", 'file' : self.xls_file},follow=True)
+        if (resp.status_code == 200):
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
+        elif (resp.status_code == 406):
+            self.assertIn("medialink",resp.context)
+            self.assertEqual(resp.redirect_chain,[])
+            self.assertEqual(resp.context["type"],"warning")
+            self.assertTrue(resp.context["medialink"].startswith(settings.MEDIA_URL))
+        self.xls_file.close()
+        self.client.logout()
 
-    # def test_convert_xlsxtordf(self):
-    #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-    #     self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
-    #     resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".rdf",'from_format' : "Spreadsheet", 'to_format' : "RDF", 'file' : self.xls_file},follow=True)
-    #     self.assertEqual(resp.status_code,200)
-    #     self.assertNotEqual(resp.redirect_chain,[])
-    #     self.xls_file.close()
-    #     self.client.logout()
+    def test_convert_xlsxtordf(self):
+        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
+        resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".rdf",'from_format' : "Spreadsheet", 'to_format' : "RDF", 'file' : self.xls_file},follow=True)
+        if (resp.status_code == 200):
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertTrue(resp.redirect_chain[0][0].startswith(settings.MEDIA_URL))
+        elif (resp.status_code == 406):
+            self.assertIn("medialink",resp.context)
+            self.assertEqual(resp.redirect_chain,[])
+            self.assertEqual(resp.context["type"],"warning")
+            self.assertTrue(resp.context["medialink"].startswith(settings.MEDIA_URL))
+        self.xls_file.close()
+        self.client.logout()
 
 class CheckLicenseViewsTestCase(TestCase):
 

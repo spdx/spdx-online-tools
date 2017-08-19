@@ -154,6 +154,7 @@ def convert(request):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             result = ""
+            message = ""
             try :
                 if request.FILES["file"]:
                     """ Saving file to the media directory """
@@ -165,6 +166,7 @@ def convert(request):
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
                     convertfile =  request.POST["cfilename"]
+                    warningoccurred = False
                     if (extensionGiven(convertfile)==False):
                         extension = getFileFormat(option2)
                         convertfile = convertfile + extension
@@ -175,26 +177,14 @@ def convert(request):
                             tagtordfclass = package.TagToRDF
                             retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
-                                result = "The following error(s)/warning(s) were raised: " + str(retval)
-                                returnstatus = status.HTTP_400_BAD_REQUEST
-                                jpype.detachThreadFromJVM()
-                            else :
-                                result = "/media/" + folder+"/"+ convertfile
-                                returnstatus = status.HTTP_201_CREATED
-                                jpype.detachThreadFromJVM()
+                                warningoccurred = True
                         elif (option2=="Spreadsheet"):
                             tagtosprdclass = package.TagToSpreadsheet
                             retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
-                                result = "The following error(s)/warning(s) were raised: " + str(retval)
-                                returnstatus = status.HTTP_400_BAD_REQUEST
-                                jpype.detachThreadFromJVM()
-                            else :
-                                result = "/media/" + folder+"/"+ convertfile
-                                returnstatus = status.HTTP_201_CREATED
-                                jpype.detachThreadFromJVM()
+                                warningoccurred = True
                         else :
-                            result = "Select valid conversion types."
+                            message = "Select valid conversion types."
                             returnstatus = status.HTTP_400_BAD_REQUEST
                             jpype.detachThreadFromJVM()
                     elif (option1=="RDF"):
@@ -203,37 +193,19 @@ def convert(request):
                             rdftotagclass = package.RdfToTag
                             retval = rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
-                                result = "The following error(s)/warning(s) were raised: " + str(retval)
-                                returnstatus = status.HTTP_400_BAD_REQUEST
-                                jpype.detachThreadFromJVM()
-                            else :
-                                result = "/media/" + folder+"/"+ convertfile
-                                returnstatus = status.HTTP_201_CREATED
-                                jpype.detachThreadFromJVM()
+                                warningoccurred = True
                         elif (option2=="Spreadsheet"):
                             rdftosprdclass = package.RdfToSpreadsheet
                             retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
-                                result = "The following error(s)/warning(s) were raised: " + str(retval)
-                                returnstatus = status.HTTP_400_BAD_REQUEST
-                                jpype.detachThreadFromJVM()
-                            else :
-                                result = "/media/" + folder+"/"+ convertfile
-                                returnstatus = status.HTTP_201_CREATED
-                                jpype.detachThreadFromJVM()
+                                warningoccurred = True
                         elif (option2=="HTML"):
                             rdftohtmlclass = package.RdfToHtml
                             retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
-                                result = "The following error(s)/warning(s) were raised: " + str(retval)
-                                returnstatus = status.HTTP_400_BAD_REQUEST
-                                jpype.detachThreadFromJVM()
-                            else :
-                                result = "/media/" + folder+"/"+ convertfile
-                                returnstatus = status.HTTP_201_CREATED
-                                jpype.detachThreadFromJVM()
+                                warningoccurred = True
                         else :
-                            result = "Select valid conversion types."
+                            message = "Select valid conversion types."
                             returnstatus = status.HTTP_400_BAD_REQUEST
                             jpype.detachThreadFromJVM()
                     elif (option1=="Spreadsheet"):
@@ -242,41 +214,38 @@ def convert(request):
                             sprdtotagclass = package.SpreadsheetToTag
                             retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
-                                result = "The following error(s)/warning(s) were raised: " + str(retval)
-                                returnstatus = status.HTTP_400_BAD_REQUEST
-                                jpype.detachThreadFromJVM()
-                            else :
-                                result = "/media/" + folder+"/"+ convertfile
-                                returnstatus = status.HTTP_201_CREATED
-                                jpype.detachThreadFromJVM()
+                                warningoccurred = True
                         elif (option2=="RDF"):
                             sprdtordfclass = package.SpreadsheetToRDF
                             retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
                             if (len(retval) > 0):
-                                result = "The following error(s)/warning(s) were raised: " + str(retval)
-                                returnstatus = status.HTTP_400_BAD_REQUEST
-                                jpype.detachThreadFromJVM()
-                            else :
-                                result = "/media/" + folder+"/"+ convertfile
-                                returnstatus = status.HTTP_201_CREATED
-                                jpype.detachThreadFromJVM()
+                                warningoccurred = True
                         else :
-                            result = "Select valid conversion types."
+                            message = "Select valid conversion types."
                             returnstatus = status.HTTP_400_BAD_REQUEST
                             jpype.detachThreadFromJVM()
+                    if (warningoccurred == True ):
+                        message = "The following error(s)/warning(s) were raised: " + str(retval)
+                        result = "/media/" + folder+"/"+ convertfile
+                        returnstatus = status.HTTP_406_NOT_ACCEPTABLE
+                        jpype.detachThreadFromJVM()
+                    else :
+                        result = "/media/" + folder+"/"+ convertfile
+                        returnstatus = status.HTTP_201_CREATED
+                        jpype.detachThreadFromJVM()
                 else :
-                    result = "File Not Found"
+                    message = "File Not Found"
                     returnstatus = status.HTTP_400_BAD_REQUEST
                     jpype.detachThreadFromJVM()
             except jpype.JavaException,ex :
-                result = jpype.JavaException.message(ex)
+                message = jpype.JavaException.message(ex)
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM() 
             except :
-                result = traceback.format_exc()
+                message = traceback.format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM() 
-            query = ConvertFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result,from_format=request.POST["from_format"],to_format=request.POST["to_format"],cfilename=request.POST["cfilename"])
+            query = ConvertFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result,message=message, from_format=request.POST["from_format"],to_format=request.POST["to_format"],cfilename=request.POST["cfilename"])
             serial = ConvertSerializerReturn(instance=query)
             return Response(serial.data, status=returnstatus)   
         else:
@@ -305,6 +274,7 @@ def compare(request):
             verifyclass = package.Verify
             compareclass = package.CompareMultpleSpdxDocs
             result=""
+            message=""
             erroroccurred = False
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
@@ -325,32 +295,37 @@ def compare(request):
                     retval1 = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url1)
                     if (len(retval1) > 0):
                         erroroccurred = True
-                        result = "The following error(s)/warning(s) were raised by " + str(file1.name) + ": " +str(retval1)
-                        returnstatus = status.HTTP_400_BAD_REQUEST
+                        message = "The following error(s)/warning(s) were raised by " + str(file1.name) + ": " +str(retval1)
                     retval2 = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url2)
                     if (len(retval2) > 0):
                         erroroccurred = True
-                        result += "The following error(s)/warning(s) were raised by " + str(file1.name) + ": " +str(retval2)
-                        returnstatus = status.HTTP_400_BAD_REQUEST
-                    if (erroroccurred == False):
+                        message += "The following error(s)/warning(s) were raised by " + str(file1.name) + ": " +str(retval2)
+                    try :
                         compareclass.onlineFunction(callfunc)
                         result = "/media/" + folder+"/"+ rfilename
                         returnstatus = status.HTTP_201_CREATED
+                    except :
+                        message += "While running compare tool " + traceback.format_exc()
+                        returnstatus = status.HTTP_400_BAD_REQUEST
+                    if (erroroccurred == False):
+                        returnstatus = status.HTTP_201_CREATED
+                    else :
+                        returnstatus = status.HTTP_406_BAD_REQUEST
                     jpype.detachThreadFromJVM()
                 else :
-                    result = "File Not Uploaded"
+                    message = "File Not Uploaded"
                     returnstatus = status.HTTP_400_BAD_REQUEST
                     jpype.detachThreadFromJVM()
             except jpype.JavaException,ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
-                result = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
+                message = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
             except :
-                result = traceback.format_exc()
+                message = traceback.format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
-            query = CompareFileUpload.objects.create(owner=request.user,file1=request.data.get('file1'),file2=request.data.get('file2'),rfilename = rfilename, result=result)
+            query = CompareFileUpload.objects.create(owner=request.user,message=message, file1=request.data.get('file1'),file2=request.data.get('file2'),rfilename = rfilename, result=result)
             serial = CompareSerializerReturn(instance=query)
             return Response(serial.data, status=returnstatus)
         else:

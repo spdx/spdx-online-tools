@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.urls import reverse
 
 from rest_framework.test import APITestCase,APIClient
@@ -90,6 +91,7 @@ class ConvertFileUploadTests(APITestCase):
             u.delete()
         except ObjectDoesNotExist:
             pass
+        print("eher")
         ConvertFileUpload.objects.all().delete()
 
     def test_convert_api(self):
@@ -98,23 +100,56 @@ class ConvertFileUploadTests(APITestCase):
         self.client.login(username=self.username,password=self.password)
         resp2 = self.client.get(reverse("convert-api"))
         self.assertTrue(resp2.status_code,200)
-
-        resp3 = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.rdf,"cfilename":"tagtordf-apitest"},format="multipart")
-        self.assertEqual(resp3.status_code,201)
-        resp4 = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.xlsx,"cfilename":"tagtoxlsx-apitest"},format="multipart")
-        self.assertEqual(resp4.status_code,201)
-        resp5 = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.tag,"cfilename":"rdftotag-apitest"},format="multipart")
-        self.assertEqual(resp5.status_code,201)
-        resp6 = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.xlsx,"cfilename":"rdftoxlsx-apitest"},format="multipart")
-        self.assertEqual(resp6.status_code,201)
-        resp7 = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.html,"cfilename":"rdftohtml-apitest"},format="multipart")
-        self.assertEqual(resp7.status_code,201)
-        resp8 = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.tag,"cfilename":"xlsxtotag-apitest"},format="multipart")
-        self.assertEqual(resp8.status_code,201)
-        resp9 = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.rdf,"cfilename":"xlsxtordf-apitest"},format="multipart")
-        self.assertEqual(resp9.status_code,201)
         self.client.logout()
-        self.tearDown()
+
+    def test_convert_tagtordf_api(self):
+        self.client.login(username=self.username,password=self.password)
+        resp = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.rdf,"cfilename":"tagtordf-apitest"},format="multipart")
+        self.assertEqual(resp.status_code,406 or 201)
+        self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.client.logout()
+
+    def test_convert_tagtoxlsx_api(self):
+        self.client.login(username=self.username,password=self.password)
+        resp = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.xlsx,"cfilename":"tagtoxlsx-apitest"},format="multipart")
+        self.assertEqual(resp.status_code,406 or 201)
+        self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.client.logout()
+
+    def test_convert_rdftotag_api(self):
+        self.client.login(username=self.username,password=self.password)
+        resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.tag,"cfilename":"rdftotag-apitest"},format="multipart")
+        self.assertEqual(resp.status_code,406 or 201)
+        self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.client.logout()
+
+    def test_convert_rdftoxlsx_api(self):
+        self.client.login(username=self.username,password=self.password)
+        resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.xlsx,"cfilename":"rdftoxlsx-apitest"},format="multipart")
+        self.assertEqual(resp.status_code,406 or 201)
+        self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.client.logout()
+
+    # def test_convert_rdftohtml_api(self):
+    #     self.client.login(username=self.username,password=self.password)
+    #     resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.html,"cfilename":"rdftohtml-apitest"},format="multipart")
+    #     self.assertEqual(resp.status_code,406 or 201)
+    #     self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+    #     self.client.logout()
+
+    def test_convert_xlsxtordf_api(self):
+        self.client.login(username=self.username,password=self.password)
+        resp = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.rdf,"cfilename":"xlsxtordf-apitest"},format="multipart")
+        self.assertEqual(resp.status_code,406 or 201)
+        self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.client.logout()
+
+    def test_convert_xlsxtotag_api(self):
+        self.client.login(username=self.username,password=self.password)
+        resp = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.tag,"cfilename":"xlsxtotag-apitest"},format="multipart")
+        self.assertEqual(resp.status_code,406 or 201)
+        self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.client.logout()
 
 class CompareFileUploadTests(APITestCase):
     def setUp(self):
@@ -145,7 +180,7 @@ class CompareFileUploadTests(APITestCase):
         self.assertTrue(resp2.status_code,200)
 
         resp3 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.rdf_file2,"rfilename":"compare-apitest.xlsx"},format="multipart")
-        self.assertEqual(resp3.status_code,201)
+        self.assertEqual(resp3.status_code,201 or 406)
         resp4 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.tv_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertEqual(resp4.status_code,400)
 

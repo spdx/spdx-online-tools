@@ -30,12 +30,14 @@ class ConvertFileUpload(models.Model):
     to_format = models.CharField(max_length=16,null=False,blank=False)
     cfilename = models.CharField(max_length=32,null=False,blank=False)
     result = models.CharField(max_length=32,null=False,blank=False)
+    message = models.CharField(max_length=64,null=False,blank=False)
     file = models.FileField()
 
 class CompareFileUpload(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, to_field='id')
     result = models.CharField(max_length=32,null=False,blank=False)
+    message = models.CharField(max_length=64,null=False,blank=False)
     file1 = models.FileField()
     file2 = models.FileField()
     rfilename = models.CharField(max_length=32,null=False,blank=False)

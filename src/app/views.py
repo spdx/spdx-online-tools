@@ -226,26 +226,28 @@ def compare(request):
                             if (warningoccurred==False):
                                 if (request.is_ajax()):
                                     newajaxdict=dict()
-                                    newajaxdict["medialink"] = "/media/" + folder + "/" + rfilename
+                                    newajaxdict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                     response = json.dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response)
                                 context_dict['Content-Disposition'] = 'attachment; filename='+rfilename 
+                                context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                 jpype.detachThreadFromJVM()   
-                                return HttpResponseRedirect("/media/"+ folder + "/" +rfilename)
+                                return HttpResponseRedirect(settings.MEDIA_URL+ folder + "/" +rfilename)
                             else :
                                 if (request.is_ajax()):
                                     ajaxdict["type"] = "warning"
                                     ajaxdict["files"] = filelist
                                     ajaxdict["errors"] = errorlist
-                                    ajaxdict["medialink"] = "/media/" + folder + "/" + rfilename
+                                    ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                     response = json.dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=400)
                                 context_dict['Content-Disposition'] = 'attachment; filename='+rfilename 
                                 context_dict["type"] = "warning"
+                                context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                 jpype.detachThreadFromJVM()   
-                                return HttpResponseRedirect("/media/"+ folder + "/" +rfilename)
+                                return render(request, 'app/compare.html',context_dict,status=406)
                         else :
                             if (request.is_ajax()):
                                 ajaxdict["type"] = "error"
@@ -338,26 +340,28 @@ def compare(request):
                             if (warningoccurred==False):
                                 if (request.is_ajax()):
                                     newajaxdict=dict()
-                                    newajaxdict["medialink"] = "/media/" + folder + "/"+ rfilename
+                                    newajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ rfilename
                                     response = json.dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response)
-                                context_dict['Content-Disposition'] = 'attachment; filename='+rfilename 
+                                context_dict['Content-Disposition'] = 'attachment; filename='+rfilename
+                                context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                 jpype.detachThreadFromJVM()
-                                return HttpResponseRedirect("/media/"+ folder + "/"+rfilename)
+                                return HttpResponseRedirect(settings.MEDIA_URL+ folder + "/"+rfilename)
                             else :
                                 if (request.is_ajax()):
                                     ajaxdict["type"] = "warning"
                                     ajaxdict["files"] = filelist
                                     ajaxdict["errors"] = errorlist
-                                    ajaxdict["medialink"] = "/media/" + folder + "/" + rfilename
+                                    ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                     response = json.dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
-                                    return HttpResponse(response,status=400)
+                                    return HttpResponse(response,status=406)
                                 context_dict['Content-Disposition'] = 'attachment; filename='+rfilename 
                                 context_dict["type"] = "warning"
+                                context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                 jpype.detachThreadFromJVM()   
-                                return HttpResponseRedirect("/media/"+ folder + "/" +rfilename)
+                                return render(request, 'app/compare.html',context_dict,status=406)
                         else :
                             if (request.is_ajax()):
                                 ajaxdict["files"] = filelist
@@ -496,25 +500,27 @@ def convert(request):
                             return render(request, 'app/convert.html',context_dict,status=400)
                     if (warningoccurred==False) :
                         if (request.is_ajax()):
-                            ajaxdict["medialink"] = "/media/" + folder + "/"+ convertfile
+                            ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                             response = json.dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
                             return HttpResponse(response)
                         context_dict['Content-Disposition'] = 'attachment; filename='+convertfile
+                        context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                         jpype.detachThreadFromJVM()
-                        return HttpResponseRedirect("/media/" + folder + "/" + convertfile)
+                        return HttpResponseRedirect(settings.MEDIA_URL + folder + "/" + convertfile)
                     else :
                         if (request.is_ajax()):
                             ajaxdict["type"] = "warning"
                             ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ": " + str(retval)
-                            ajaxdict["medialink"] = "/media/" + folder + "/"+ convertfile
+                            ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                             response = json.dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
-                            return HttpResponse(response,status=404)
+                            return HttpResponse(response,status=406)
                         context_dict["error"] = str(retval)
                         context_dict["type"] = "warning"
+                        context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                         jpype.detachThreadFromJVM()
-                        return render(request, 'app/convert.html',context_dict,status=404)
+                        return render(request, 'app/convert.html',context_dict,status=406)
                 else :
                     context_dict["error"] = "No file uploaded"
                     context_dict["type"] = "error"
@@ -677,6 +683,7 @@ def register(request):
     return render(request,'app/register.html',context_dict)
 
 def logoutuser(request):
+    request.session.flush()
     logout(request)
     return HttpResponseRedirect(settings.LOGIN_URL)
 
