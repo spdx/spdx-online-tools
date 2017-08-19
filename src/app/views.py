@@ -666,7 +666,7 @@ def profile(request):
                     return render(request,'app/profile.html',context_dict)
                 else :
                     context_dict["error"] = "Error changing details " + str(info_form.errors) + str(orginfo_form.errors)
-                    return render(request,'app/profile.html',context_dict)
+                    return render(request,'app/profile.html',context_dict,status=400)
             if "changepwd" in request.POST:
                 form = PasswordChangeForm(request.user, request.POST)
                 if form.is_valid():
@@ -676,15 +676,15 @@ def profile(request):
                     return render(request,'app/profile.html',context_dict)
                 else:
                     context_dict["error"] = form.errors
-                    return render(request,'app/profile.html',context_dict)
+                    return render(request,'app/profile.html',context_dict,status=400)
+            else :
+                context_dict["error"] = "Invalid request."
+                return render(request,'app/profile.html',context_dict,status=404)
         else:
             return render(request,'app/profile.html',context_dict)
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
 
-def password_reset(request):
-    context_dict={}
-    return render(request,'app/password_reset.html',context_dict)
 
 def checkusername(request):
     if 'username' in request.POST:
