@@ -410,7 +410,22 @@ class ProfileViewsTestCase(TestCase):
         self.client.logout()
 
     def test_saveinfo(self):
-        print("to be done")
+        self.initialise()
+        user = User.objects.get_or_create(username='profiletestuser')[0]
+        self.client.force_login(user)
+        self.assertEqual(user.first_name,"test")
+        self.assertEqual(user.last_name,"test")
+        self.assertEqual(user.email,"profiletest@spdx.org")
+        self.assertEqual(user.organisation,"spdx")
+        save_info_resp = self.client.post('/app/profile/',{'saveinfo':'saveinfo',"first_name": "john","last_name" : "doe" ,"email" : "johndoe@spdx.org","organisation":"Software Package Data Exchange"},follow=True,secure=True)
+        self.assertEqual(save_info_resp.context["success"],"Details Successfully Updated")
+        user = User.objects.get_or_create(username='profiletestuser')[0]
+        self.assertEqual(user.first_name,"john")
+        self.assertEqual(user.last_name,"doe")
+        self.assertEqual(user.email,"johndoe@spdx.org")
+        self.assertEqual(user.organisation,"Software Package Data Exchange")
+        self.assertEqual(save_info_resp.status_code,200)
+        self.client.logout()
 
     def test_changepwd(self):
         print("to be done")
