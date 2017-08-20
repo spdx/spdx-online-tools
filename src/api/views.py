@@ -26,59 +26,50 @@ from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 
 import jpype
-import traceback
-import os
+from traceback import format_exc
+from os.path import abspath
+from json import dumps
 from time import time
 from urlparse import urljoin
 
 
 class ValidateViewSet(ModelViewSet):
-    
+    """ View all validate api request """
     queryset = ValidateFileUpload.objects.all()
     serializer_class = ValidateSerializerReturn
     parser_classes = (MultiPartParser, FormParser,)
 
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user,
-                       file=self.request.data.get('file'))
-
 class ConvertViewSet(ModelViewSet):
-    
+    """ View all convert api request """
     queryset = ConvertFileUpload.objects.all()
     serializer_class = ConvertSerializerReturn
     parser_classes = (MultiPartParser, FormParser,)
 
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user,
-                       file=self.request.data.get('file'),type=self.request.data.get('type'),result=self.request.data.get('result'))
-
 class CompareViewSet(ModelViewSet):
-    
+    """ View all compare api request """
     queryset = CompareFileUpload.objects.all()
     serializer_class = CompareSerializerReturn
     parser_classes = (MultiPartParser, FormParser,)
 
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user,
-                       file1=self.request.data.get('file1'),file2=self.request.data.get('file2'),result=self.request.data.get('result'))
-
-
 @api_view(['GET', 'POST'])
 @renderer_classes((JSONRenderer,))
 def validate(request):
+    """ Handle Validate api request """
     if request.method == 'GET':
+        """ Return all validate api request """
         query = ValidateFileUpload.objects.all()
         serializer = ValidateSerializer(query, many=True)
         return Response(serializer.data)
 
     elif request.method == 'POST':
+        """ Return validate tool result on the post file"""
         serializer = ValidateSerializer(data=request.data)
         if serializer.is_valid():
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
                 classpath =os.path.abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ If JVM started, attach a Thread and start processing the request """
+            """Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
@@ -87,10 +78,12 @@ def validate(request):
                     """ Saving file to the media directory """
                     myfile = request.FILES['file']
                     folder = "api/"+str(request.user) +"/"+ str(int(time()))
-                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
+                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
+                        base_url=urljoin(settings.MEDIA_URL, folder+'/')
+                        )
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
-                    """ Call the java function with parameters as list"""
+                    """ Call the java function with parameter"""
                     retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                     if (len(retval) > 0):
                         result = "The following error(s)/warning(s) were raised: " + str(retval)
@@ -110,20 +103,30 @@ def validate(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
             except :
+                """ Other errors raised"""
                 result = traceback.format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
-            query = ValidateFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result)
+            query = ValidateFileUpload.objects.create(
+                owner=request.user,
+                file=request.data.get('file'),
+                result=result
+                )
             serial = ValidateSerializerReturn(instance=query)
-            return Response(serial.data, status=returnstatus)
+            return Response(
+                serial.data, status=returnstatus
+                )
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
 
 def extensionGiven(filename):
     if (filename.find(".")!=-1):
         return True
     else:
         return False
+
 def getFileFormat(to_format):
     if (to_format=="Tag"):
         return ".spdx"
@@ -139,19 +142,21 @@ def getFileFormat(to_format):
 @api_view(['GET', 'POST'])
 @renderer_classes((JSONRenderer,))
 def convert(request):
+    """ Handle Convert api request """
     if request.method == 'GET':
+        """ Return all convert api request """
         query = ConvertFileUpload.objects.all()
         serializer = ConvertSerializer(query, many=True)
         return Response(serializer.data)
-
     elif request.method == 'POST':
+        """ Return convert tool result on the post file"""
         serializer = ConvertSerializer(data=request.data)
         if serializer.is_valid():
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
                 classpath =os.path.abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ If JVM started, attach a Thread and start processing the request """
+            """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             result = ""
@@ -161,7 +166,9 @@ def convert(request):
                     """ Saving file to the media directory """
                     myfile = request.FILES['file']
                     folder = "api/"+str(request.user) +"/"+ str(int(time()))
-                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
+                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
+                        base_url=urljoin(settings.MEDIA_URL, folder+'/')
+                        )
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
                     option1 = request.POST["from_format"]
@@ -176,12 +183,18 @@ def convert(request):
                         print ("Verifing for Tag/Value Document")
                         if (option2=="RDF"):
                             tagtordfclass = package.TagToRDF
-                            retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
+                            retval = tagtordfclass.onlineFunction([
+                                settings.APP_DIR+uploaded_file_url,
+                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="Spreadsheet"):
                             tagtosprdclass = package.TagToSpreadsheet
-                            retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
+                            retval = tagtosprdclass.onlineFunction([
+                                settings.APP_DIR+uploaded_file_url,
+                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         else :
@@ -192,17 +205,26 @@ def convert(request):
                         print ("Verifing for RDF Document")
                         if (option2=="Tag"):
                             rdftotagclass = package.RdfToTag
-                            retval = rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
+                            retval = rdftotagclass.onlineFunction([
+                                settings.APP_DIR+uploaded_file_url,
+                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="Spreadsheet"):
                             rdftosprdclass = package.RdfToSpreadsheet
-                            retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
+                            retval = rdftosprdclass.onlineFunction([
+                                settings.APP_DIR+uploaded_file_url,
+                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="HTML"):
                             rdftohtmlclass = package.RdfToHtml
-                            retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
+                            retval = rdftohtmlclass.onlineFunction([
+                                settings.APP_DIR+uploaded_file_url,
+                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         else :
@@ -213,12 +235,18 @@ def convert(request):
                         print ("Verifing for Spreadsheet Document")
                         if (option2=="Tag"):
                             sprdtotagclass = package.SpreadsheetToTag
-                            retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
+                            retval = sprdtotagclass.onlineFunction([
+                                settings.APP_DIR+uploaded_file_url,
+                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="RDF"):
                             sprdtordfclass = package.SpreadsheetToRDF
-                            retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile])
+                            retval = sprdtordfclass.onlineFunction([
+                                settings.APP_DIR+uploaded_file_url,
+                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         else :
@@ -246,30 +274,43 @@ def convert(request):
                 message = traceback.format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM() 
-            query = ConvertFileUpload.objects.create(owner=request.user,file=request.data.get('file'),result=result,message=message, from_format=request.POST["from_format"],to_format=request.POST["to_format"],cfilename=request.POST["cfilename"])
+            query = ConvertFileUpload.objects.create(
+                owner=request.user,
+                file=request.data.get('file'),
+                result=result,message=message,
+                from_format=request.POST["from_format"],
+                to_format=request.POST["to_format"],
+                cfilename=request.POST["cfilename"]
+                )
             serial = ConvertSerializerReturn(instance=query)
-            return Response(serial.data, status=returnstatus)   
+            return Response(
+                serial.data,status=returnstatus
+                )   
         else:
             return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                serializer.errors,status=status.HTTP_400_BAD_REQUEST
+                )
 
 
 @api_view(['GET', 'POST'])
 @renderer_classes((JSONRenderer,))
 def compare(request):
+    """ Handle Compare api request """
     if request.method == 'GET':
+        """ Return all compare api request """
         query = CompareFileUpload.objects.all()
         serializer = CompareSerializerReturn(query, many=True)
         return Response(serializer.data)
 
     elif request.method == 'POST':
+        """ Return compare tool result on the post file"""
         serializer = CompareSerializer(data=request.data)
         if serializer.is_valid():
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
                 classpath =os.path.abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ If JVM started, attach a Thread and start processing the request """
+            """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
@@ -279,11 +320,14 @@ def compare(request):
             erroroccurred = False
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
+                    """ Saving file to the media directory """
                     rfilename = request.POST["rfilename"]
                     if (extensionGiven(rfilename)==False):
                         rfilename = rfilename+".xlsx"
                     folder = "api/"+str(request.user) +"/"+ str(int(time()))
-                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
+                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
+                        base_url=urljoin(settings.MEDIA_URL, folder+'/')
+                        )
                     callfunc = [settings.MEDIA_ROOT+"/"+ folder+"/"+rfilename]
                     file1 = request.FILES["file1"]
                     file2 = request.FILES["file2"]
@@ -293,6 +337,7 @@ def compare(request):
                     uploaded_file_url2 = fs.url(filename2)
                     callfunc.append(settings.APP_DIR+uploaded_file_url1)
                     callfunc.append(settings.APP_DIR+uploaded_file_url2)
+                    """ Call the java function with parameters as list"""
                     retval1 = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url1)
                     if (len(retval1) > 0):
                         erroroccurred = True
@@ -326,8 +371,19 @@ def compare(request):
                 message = traceback.format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
-            query = CompareFileUpload.objects.create(owner=request.user,message=message, file1=request.data.get('file1'),file2=request.data.get('file2'),rfilename = rfilename, result=result)
+            query = CompareFileUpload.objects.create(
+                owner=request.user,
+                message=message,
+                file1=request.data.get('file1'),
+                file2=request.data.get('file2'),
+                rfilename = rfilename,
+                result=result
+                )
             serial = CompareSerializerReturn(instance=query)
-            return Response(serial.data, status=returnstatus)
+            return Response(
+                serial.data,status=returnstatus
+                )
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors,status=status.HTTP_400_BAD_REQUEST
+                )

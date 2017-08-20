@@ -21,6 +21,7 @@ from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
  
 
 class ValidateSerializer(serializers.HyperlinkedModelSerializer):
+    """POST validate API fields serializer"""
     owner = serializers.SlugRelatedField(
         read_only=True,
         slug_field='id'
@@ -30,11 +31,13 @@ class ValidateSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('created', 'file', 'owner')
 
 class ValidateSerializerReturn(serializers.ModelSerializer):
+    """RETURN validate API fields serializer"""
     class Meta:
         model = ValidateFileUpload
         fields = ('created', 'file', 'owner','result')
 
 class ConvertSerializer(serializers.HyperlinkedModelSerializer):
+    """POST convert API fields serializer"""
     owner = serializers.SlugRelatedField(
         read_only=True,
         slug_field='id'
@@ -44,11 +47,13 @@ class ConvertSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('created', 'file', 'owner','cfilename','from_format','to_format')
 
 class ConvertSerializerReturn(serializers.ModelSerializer):
+    """RETURN convert API fields serializer"""
     class Meta:
         model = ConvertFileUpload
         fields = ('created', 'file', 'owner','result','from_format','to_format','cfilename','message')
 
 class CompareSerializer(serializers.HyperlinkedModelSerializer):
+    """POST compare API fields serializer"""
     owner = serializers.SlugRelatedField(
         read_only=True,
         slug_field='id'
@@ -58,6 +63,7 @@ class CompareSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('created', 'file1','file2', 'owner','rfilename')
 
 class CompareSerializerReturn(serializers.ModelSerializer):
+    """RETURN compare API fields serializer"""
     class Meta:
         model = CompareFileUpload
         fields = ('created', 'file1','file2', 'owner','result','rfilename','message')
