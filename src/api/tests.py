@@ -25,6 +25,7 @@ from rest_framework.authtoken.models import Token
 
 from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
 
+
 class ValidateFileUploadTests(APITestCase):
     def setUp(self):
         self.username = "validateapitestuser"

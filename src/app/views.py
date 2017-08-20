@@ -36,39 +36,54 @@ from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 
 
 def index(request):
+    """ View for index
+    returns index.html template
+    """
     context_dict={}
-    return render(request, 'app/index.html',context_dict)
+    return render(request, 
+        'app/index.html',context_dict
+        )
 
 def about(request):
+    """ View for about
+    returns about.html template
+    """
     context_dict={}
-    return render(request, 'app/about.html',context_dict)
+    return render(request, 
+        'app/about.html',context_dict
+        )
 
 def validate(request):
+    """ View for validate tool
+    returns validate.html template
+    """
     if request.user.is_authenticated():
         context_dict={}
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
-                """ If JVM not already started, start it, attach a Thread and start processing the request """
+                """ If JVM not already started, start it."""
                 classpath =abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ If JVM started, attach a Thread and start processing the request """
+            """ Attach a Thread and start processing the request. """
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
+            ajaxdict=dict()
             try :
                 if request.FILES["file"]:
                     """ Saving file to the media directory """
                     myfile = request.FILES['file']
                     folder = str(request.user) + "/" + str(int(time())) 
-                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
+                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
+                        base_url=urljoin(settings.MEDIA_URL, folder+'/')
+                        )
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename)
-                    """ Call the java function with parameters as list"""
+                    """ Call the java function with parameters """
                     retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url))
-                    """ If any error or warnings are returned"""
                     if (len(retval) > 0):
+                        """ If any warnings are returned """
                         if (request.is_ajax()):
-                            ajaxdict=dict()
                             ajaxdict["type"] = "warning"
                             ajaxdict["data"] = "The following warning(s) were raised: " + str(retval)
                             response = dumps(ajaxdict)
@@ -76,9 +91,11 @@ def validate(request):
                             return HttpResponse(response,status=400)
                         context_dict["error"] = retval
                         jpype.detachThreadFromJVM()
-                        return render(request, 'app/validate.html',context_dict,status=400)
+                        return render(request, 
+                            'app/validate.html',context_dict,status=400
+                            )
                     if (request.is_ajax()):
-                        ajaxdict=dict()
+                        """ Valid SPDX Document """
                         ajaxdict["data"] = "This SPDX Document is valid."
                         response = dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
@@ -86,6 +103,7 @@ def validate(request):
                     jpype.detachThreadFromJVM()
                     return HttpResponse("This SPDX Document is valid.",status=200)
                 else :
+                    """ If no file uploaded."""
                     if (request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["type"] = "error"
@@ -95,7 +113,9 @@ def validate(request):
                         return HttpResponse(response,status=404)
                     context_dict["error"] = "No file uploaded"
                     jpype.detachThreadFromJVM()
-                    return render(request, 'app/validate.html',context_dict,status=404)
+                    return render(request, 
+                        'app/validate.html',context_dict,status=404
+                        )
             except jpype.JavaException,ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
                 if (request.is_ajax()):
@@ -107,9 +127,11 @@ def validate(request):
                     return HttpResponse(response,status=400)
                 context_dict["error"] = jpype.JavaException.message(ex)
                 jpype.detachThreadFromJVM()
-                return render(request, 'app/validate.html',context_dict,status=400)
+                return render(request, 
+                    'app/validate.html',context_dict,status=400
+                    )
             except MultiValueDictKeyError:
-                """ If no files uploaded"""
+                """ If no files selected"""
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["type"] = "error"
@@ -119,8 +141,11 @@ def validate(request):
                     return HttpResponse(response,status=404)
                 context_dict["error"] = "No files selected." 
                 jpype.detachThreadFromJVM()    
-                return render(request, 'app/validate.html',context_dict,status=404)
+                return render(request,
+                 'app/validate.html',context_dict,status=404
+                 )
             except :
+                """ Other error raised """
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["type"] = "error"
@@ -130,13 +155,21 @@ def validate(request):
                     return HttpResponse(response,status=400)
                 context_dict["error"] = format_exc() 
                 jpype.detachThreadFromJVM()    
-                return render(request, 'app/validate.html',context_dict,status=400)
+                return render(request, 
+                    'app/validate.html',context_dict,status=400
+                    )
         else :
-            return render(request, 'app/validate.html',context_dict)
+            """ GET,HEAD """
+            return render(request,
+             'app/validate.html',context_dict
+             )
     else :
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def compare(request):
+    """ View for compare tool
+    returns compare.html template
+    """
     if request.user.is_authenticated():
         context_dict={}
         if request.method == 'POST':
@@ -144,7 +177,7 @@ def compare(request):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
                 classpath =abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ If JVM started, attach a Thread and start processing the request """
+            """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
@@ -153,6 +186,7 @@ def compare(request):
             filelist = list()
             errorlist = list()
             if 'compare' in request.POST:
+                """ If files submitted one by one """
                 try:
                     if request.FILES["file1"]:
                         nofile = int(request.POST["nofile"])
@@ -161,14 +195,16 @@ def compare(request):
                         callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
                         erroroccurred = False
                         warningoccurred = False
-                        fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
+                        fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
+                            base_url=urljoin(settings.MEDIA_URL, folder+'/')
+                            )
                         for i in range(1,nofile+1):
                             """ Check if file selected or not"""
                             try:
                                 a = 'file'+str(i)
                                 myfile = request.FILES['file'+str(i)]
                             except MultiValueDictKeyError:
-                                """ If no files uploaded""" 
+                                """ If no files selected""" 
                                 if (request.is_ajax()):
                                     filelist.append("File " + str(i) + " not selected.")
                                     errorlist.append("Please select a file.")
@@ -181,14 +217,18 @@ def compare(request):
                                 context_dict["error"] = "No files selected."
                                 context_dict["type"] = "error"
                                 jpype.detachThreadFromJVM()
-                                return render(request, 'app/compare.html',context_dict,status=404)
+                                return render(request, 
+                                    'app/compare.html',context_dict,status=404
+                                    )
                             """ If file exist and uploaded, save it"""    
                             filename = fs.save(myfile.name, myfile)
                             uploaded_file_url = fs.url(filename)
                             callfunc.append(settings.APP_DIR+uploaded_file_url)
                             try : 
+                                """Call the java function to verify for valid RDF Files."""
                                 retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
                                 if (len(retval) > 0):
+                                    """ If warnings raised"""
                                     warningoccurred = True
                                     filelist.append(myfile.name)
                                     errorlist.append("The following warning(s) were raised: " +str(retval))
@@ -196,7 +236,7 @@ def compare(request):
                                     filelist.append(myfile.name)
                                     errorlist.append("No errors found")
                             except jpype.JavaException,ex :
-                                """ Error raised by verifyclass.verify without exiting the application"""
+                                """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
                                 erroroccurred = True
                                 filelist.append(myfile.name)
                                 errorlist.append(jpype.JavaException.message(ex))
@@ -204,13 +244,13 @@ def compare(request):
                                 """ Other Exceptions"""
                                 erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append(format_exc())
-                        """ If no errors in any of the file"""        
+                                errorlist.append(format_exc())       
                         if (erroroccurred==False):
-                            """ Call the java function with parameters as list"""
+                            """If no errors in any of the file, call the java function with parameters as list"""
                             try :
                                 compareclass.onlineFunction(callfunc)
                             except :
+                                """Error raised by onlineFunction"""
                                 if (request.is_ajax()):
                                     ajaxdict["type"] = "warning2"
                                     ajaxdict["files"] = filelist
@@ -222,8 +262,11 @@ def compare(request):
                                 context_dict["type"] = "warning2"
                                 context_dict["error"]= errorlist
                                 jpype.detachThreadFromJVM()
-                                return render(request, 'app/compare.html',context_dict,status=400)
+                                return render(request,
+                                    'app/compare.html',context_dict,status=400
+                                    )
                             if (warningoccurred==False):
+                                """If no warnings raised """
                                 if (request.is_ajax()):
                                     newajaxdict=dict()
                                     newajaxdict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
@@ -234,7 +277,9 @@ def compare(request):
                                 context_dict["Content-Type"] = "application/vnd.ms-excel"
                                 context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                 jpype.detachThreadFromJVM()
-                                return render(request, 'app/compare.html',context_dict,status=200)
+                                return render(request,
+                                    'app/compare.html',context_dict,status=200
+                                    )
                                 #return HttpResponseRedirect(settings.MEDIA_URL+ folder + "/" +rfilename)
                             else :
                                 if (request.is_ajax()):
@@ -244,13 +289,15 @@ def compare(request):
                                     ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                     response = dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
-                                    return HttpResponse(response,status=400)
+                                    return HttpResponse(response,status=406)
                                 context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
                                 context_dict["Content-Type"] = "application/vnd.ms-excel"
                                 context_dict["type"] = "warning"
                                 context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                 jpype.detachThreadFromJVM()   
-                                return render(request, 'app/compare.html',context_dict,status=406)
+                                return render(request,
+                                    'app/compare.html',context_dict,status=406
+                                    )
                         else :
                             if (request.is_ajax()):
                                 ajaxdict["type"] = "error"
@@ -262,12 +309,17 @@ def compare(request):
                             context_dict["error"]= errorlist
                             context_dict["type"] = "error"
                             jpype.detachThreadFromJVM()
-                            return render(request, 'app/compare.html',context_dict,status=400)
+                            return render(request,
+                                'app/compare.html',context_dict,status=400
+                                )
                     else :
                         context_dict["error"]= "File Not Uploaded"
                         context_dict["type"] = "error"
                         jpype.detachThreadFromJVM()
-                        return render(request, 'app/compare.html',context_dict,status=404)
+                        return render(request,
+                            'app/compare.html',context_dict,status=404
+                            )
+
                 except MultiValueDictKeyError:
                     """ If no files uploaded""" 
                     if (request.is_ajax()):
@@ -282,9 +334,12 @@ def compare(request):
                     context_dict["error"] = "No files selected."
                     context_dict["type"] = "error"
                     jpype.detachThreadFromJVM()
-                    return render(request, 'app/compare.html',context_dict,status=404)
+                    return render(request, 
+                        'app/compare.html',context_dict,status=404
+                        )
 
             elif 'compareall' in request.POST:
+                """ If all files submitted at once"""
                 try:
                     if request.FILES["files"]:
                         rfilename = request.POST["rfilename2"]+".xlsx"
@@ -295,17 +350,23 @@ def compare(request):
                         if (len(request.FILES.getlist("files"))<2):
                             context_dict["error"]= "Please select atleast 2 files"
                             jpype.detachThreadFromJVM()
-                            return render(request, 'app/compare.html',context_dict)
-                        # loop through the list of files
+                            return render(request, 
+                                'app/compare.html',context_dict
+                                )
+                        """Loop through the list of files"""
                         folder = str(request.user) + "/" + str(int(time()))
-                        fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/')) 
+                        fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
+                            base_url=urljoin(settings.MEDIA_URL, folder+'/')
+                            ) 
                         for myfile in request.FILES.getlist("files"):
                             filename = fs.save(myfile.name, myfile)
                             uploaded_file_url = fs.url(filename)
                             callfunc.append(settings.APP_DIR+uploaded_file_url)
                             try :
+                                """Call the java function to verify for valid RDF Files."""
                                 retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
                                 if (len(retval) > 0):
+                                    """If warnings raised"""
                                     warningoccurred = True
                                     filelist.append(myfile.name)
                                     errorlist.append(str(retval))
@@ -313,7 +374,7 @@ def compare(request):
                                     filelist.append(myfile.name)
                                     errorlist.append("No errors found")
                             except jpype.JavaException,ex :
-                                """ Error raised by verifyclass.verify without exiting the application"""
+                                """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
                                 erroroccurred = True
                                 filelist.append(myfile.name)
                                 errorlist.append(jpype.JavaException.message(ex))
@@ -322,12 +383,13 @@ def compare(request):
                                 erroroccurred = True
                                 filelist.append(myfile.name)
                                 errorlist.append(format_exc())
-                        """ If no errors in any of the file"""        
+        
                         if (erroroccurred==False):
-                            """ Call the java function with parameters as list"""
+                            """ If no errors in any of the file,call the java function with parameters as list"""
                             try :
                                 compareclass.onlineFunction(callfunc)
                             except :
+                                """Error raised by onlineFunction"""
                                 if (request.is_ajax()):
                                     ajaxdict["type"] = "warning2"
                                     ajaxdict["files"] = filelist
@@ -339,8 +401,11 @@ def compare(request):
                                 context_dict["type"] = "warning2"
                                 context_dict["error"]= errorlist
                                 jpype.detachThreadFromJVM()
-                                return render(request, 'app/compare.html',context_dict,status=400)
+                                return render(request, 
+                                    'app/compare.html',context_dict,status=400
+                                    )
                             if (warningoccurred==False):
+                                """If no warning raised """
                                 if (request.is_ajax()):
                                     newajaxdict=dict()
                                     newajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ rfilename
@@ -351,7 +416,9 @@ def compare(request):
                                 context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
                                 context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                 jpype.detachThreadFromJVM()
-                                return render(request, 'app/compare.html',context_dict,status=200)
+                                return render(request, 
+                                    'app/compare.html',context_dict,status=200
+                                    )
                                 #return HttpResponseRedirect(settings.MEDIA_URL+ folder + "/"+rfilename)
                             else :
                                 if (request.is_ajax()):
@@ -367,7 +434,9 @@ def compare(request):
                                 context_dict["type"] = "warning"
                                 context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                 jpype.detachThreadFromJVM()   
-                                return render(request, 'app/compare.html',context_dict,status=406)
+                                return render(request, 
+                                    'app/compare.html',context_dict,status=406
+                                    )
                         else :
                             if (request.is_ajax()):
                                 ajaxdict["files"] = filelist
@@ -379,12 +448,17 @@ def compare(request):
                             context_dict["type"] = "error"
                             context_dict["error"] = errorlist
                             jpype.detachThreadFromJVM()
-                            return render(request, 'app/compare.html',context_dict,status=400)
+                            return render(request, 
+                                'app/compare.html',context_dict,status=400
+                                )
                     else :
                         context_dict["error"]= "File Not Uploaded"
                         context_dict["type"] = "error"
                         jpype.detachThreadFromJVM()
-                        return render(request, 'app/compare.html',context_dict,status=404)
+                        return render(request, 
+                            'app/compare.html',context_dict,status=404
+                            )
+
                 except MultiValueDictKeyError:
                     """ If no files uploaded""" 
                     if (request.is_ajax()):
@@ -399,14 +473,21 @@ def compare(request):
                     context_dict["error"] = "Select atleast two files"
                     context_dict["type"] = "error"
                     jpype.detachThreadFromJVM()
-                    return render(request, 'app/compare.html',context_dict,status=404)
+                    return render(request, 
+                        'app/compare.html',context_dict,status=404
+                        )
             else :
                 context_dict["error"] = "Not a valid request"
                 context_dict["type"] = "error"
                 jpype.detachThreadFromJVM()
-                return render(request, 'app/compare.html',context_dict,status=404)
+                return render(request, 
+                    'app/compare.html',context_dict,status=404
+                    )
         else :
-            return render(request, 'app/compare.html',context_dict)
+            """GET,HEAD"""
+            return render(request, 
+                'app/compare.html',context_dict
+                )
     else :
         return HttpResponseRedirect(settings.LOGIN_URL)
 
@@ -423,6 +504,9 @@ def getFileFormat(to_format):
         return ".invalid"
 
 def convert(request):
+    """ View for convert tool
+    returns convert.html template
+    """
     if request.user.is_authenticated():
         context_dict={}
         if request.method == 'POST':
@@ -430,13 +514,13 @@ def convert(request):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
                 classpath =abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ If JVM started, attach a Thread and start processing the request """
+            """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             ajaxdict=dict()
             try :
                 if request.FILES["file"]:
-                    """ Saving file to the media directory """
+                    """ Saving file to media directory """
                     folder = str(request.user) + "/" + str(int(time())) 
                     myfile = request.FILES['file']
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
@@ -452,6 +536,7 @@ def convert(request):
                     else :
                         cfileformat = getFileFormat(option2)
                     convertfile =  request.POST["cfilename"] + cfileformat
+                    """ Call the java function with parameters as list """
                     if (option1=="Tag"):
                         print ("Verifing for Tag/Value Document")
                         if (option2=="RDF"):
@@ -469,7 +554,9 @@ def convert(request):
                         else :
                             jpype.detachThreadFromJVM()
                             context_dict["error"] = "Select the available conversion types."
-                            return render(request, 'app/convert.html',context_dict,status=400)
+                            return render(request, 
+                                'app/convert.html',context_dict,status=400
+                                )
                     elif (option1=="RDF"):
                         print ("Verifing for RDF Document")
                         if (option2=="Tag"):
@@ -493,7 +580,9 @@ def convert(request):
                         else :
                             jpype.detachThreadFromJVM()
                             context_dict["error"] = "Select the available conversion types."
-                            return render(request, 'app/convert.html',context_dict,status=400)
+                            return render(request, 
+                                'app/convert.html',context_dict,status=400
+                                )
                     elif (option1=="Spreadsheet"):
                         print ("Verifing for Spreadsheet Document")
                         if (option2=="Tag"):
@@ -511,8 +600,11 @@ def convert(request):
                         else :
                             jpype.detachThreadFromJVM()
                             context_dict["error"] = "Select the available conversion types."
-                            return render(request, 'app/convert.html',context_dict,status=400)
+                            return render(request, 
+                                'app/convert.html',context_dict,status=400
+                                )
                     if (warningoccurred==False) :
+                        """ If no warnings raised """
                         if (request.is_ajax()):
                             ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                             response = dumps(ajaxdict)
@@ -522,7 +614,9 @@ def convert(request):
                         context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                         context_dict["Content-Type"] = content_type
                         jpype.detachThreadFromJVM()
-                        return render(request, 'app/convert.html',context_dict,status=200)
+                        return render(request, 
+                            'app/convert.html',context_dict,status=200
+                            )
                         #return HttpResponseRedirect(settings.MEDIA_URL + folder + "/" + convertfile)
                     else :
                         if (request.is_ajax()):
@@ -538,13 +632,18 @@ def convert(request):
                         context_dict["Content-Type"] = content_type
                         context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                         jpype.detachThreadFromJVM()
-                        return render(request, 'app/convert.html',context_dict,status=406)
+                        return render(request, 
+                            'app/convert.html',context_dict,status=406
+                            )
                 else :
                     context_dict["error"] = "No file uploaded"
                     context_dict["type"] = "error"
                     jpype.detachThreadFromJVM()
-                    return render(request, 'app/convert.html',context_dict,status=404)
+                    return render(request, 
+                        'app/convert.html',context_dict,status=404
+                        )
             except jpype.JavaException,ex :
+                """ Java exception raised without exiting the application"""
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = jpype.JavaException.message(ex)
@@ -554,7 +653,9 @@ def convert(request):
                 context_dict["type"] = "error"
                 context_dict["error"] = jpype.JavaException.message(ex)
                 jpype.detachThreadFromJVM()
-                return render(request, 'app/convert.html',context_dict,status=400)
+                return render(request, 
+                    'app/convert.html',context_dict,status=400
+                    )
             except MultiValueDictKeyError:
                 """ If no files uploaded"""
                 if (request.is_ajax()):
@@ -566,8 +667,11 @@ def convert(request):
                 context_dict["type"] = "error"
                 context_dict["error"] = "No files selected." 
                 jpype.detachThreadFromJVM()    
-                return render(request, 'app/convert.html',context_dict,status=404)
+                return render(request, 
+                    'app/convert.html',context_dict,status=404
+                    )
             except :
+                """ Other error raised """
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = format_exc()
@@ -577,13 +681,20 @@ def convert(request):
                 context_dict["type"] = "error"
                 context_dict["error"] = format_exc()
                 jpype.detachThreadFromJVM()    
-                return render(request, 'app/convert.html',context_dict,status=400)
+                return render(request, 
+                    'app/convert.html',context_dict,status=400
+                    )
         else :
-            return render(request, 'app/convert.html',context_dict)
+            return render(request, 
+                'app/convert.html',context_dict
+                )
     else :
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def check_license(request):
+    """ View for check license tool
+    returns check_license.html template
+    """
     if request.user.is_authenticated():
         context_dict={}
         if request.method == 'POST':
@@ -592,11 +703,12 @@ def check_license(request):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
                 classpath =abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ If JVM started, attach a Thread and start processing the request """
+            """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.compare")
             compareclass = package.LicenseCompareHelper
             try:
+                """Call the java function with parameter"""
                 matching_licenses = compareclass.matchingStandardLicenseIds(licensetext)
                 if (matching_licenses and len(matching_licenses) > 0):
                     matching_str = "The following license ID(s) match: "
@@ -610,8 +722,11 @@ def check_license(request):
                         response = dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response)
+                    context_dict["success"] = str(matching_str)
                     jpype.detachThreadFromJVM()
-                    return HttpResponse(matching_str)
+                    return render(request, 
+                        'app/check_license.html',context_dict
+                        )
                 else:
                     if (request.is_ajax()):
                         ajaxdict=dict()
@@ -619,9 +734,13 @@ def check_license(request):
                         response = dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=404)
+                    context_dict["error"] = "There are no matching SPDX listed licenses"
                     jpype.detachThreadFromJVM()
-                    return HttpResponse("There are no matching SPDX listed licenses")
+                    return render(request, 
+                        'app/check_license.html',context_dict,status=404
+                        )
             except jpype.JavaException,ex :
+                """ Java exception raised without exiting the application """
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = jpype.JavaException.message(ex)
@@ -630,8 +749,11 @@ def check_license(request):
                     return HttpResponse(response,status=404)
                 context_dict["error"] = jpype.JavaException.message(ex)
                 jpype.detachThreadFromJVM()
-                return HttpResponse(context_dict,status=404)
+                return render(request, 
+                    'app/check_license.html',context_dict,status=404
+                    )
             except :
+                """ Other exception raised """
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = format_exc()
@@ -640,13 +762,21 @@ def check_license(request):
                     return HttpResponse(response,status=404)
                 context_dict["error"] = format_exc()
                 jpype.detachThreadFromJVM()    
-                return HttpResponse(context_dict,status=404)
+                return render(request, 
+                    'app/check_license.html',context_dict,status=404
+                    )
         else:
-            return render(request, 'app/check_license.html',context_dict)
+            """GET,HEAD"""
+            return render(request, 
+                'app/check_license.html',context_dict
+                )
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def loginuser(request):
+    """ View for Login
+    returns login.html template
+    """
     context_dict={}
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -667,16 +797,25 @@ def loginuser(request):
                 if (request.is_ajax()):
                     return HttpResponse("Your account is disabled.",status=401)
                 context_dict["invalid"] = "Your account is disabled."
-                return render(request,"app/login.html",context_dict,status=401)	
+                return render(request,
+                    "app/login.html",context_dict,status=401
+                    )	
         else:
             if (request.is_ajax()):
                 return HttpResponse("Invalid login details supplied.",status=403)
             context_dict['invalid']="Invalid login details supplied."
-            return render(request, 'app/login.html',context_dict,status=403)
+            return render(request, 
+                'app/login.html',context_dict,status=403
+                )
     else:
-        return render(request, 'app/login.html',context_dict)
+        return render(request, 
+            'app/login.html',context_dict
+            )
 
 def register(request):
+    """ View for register
+    returns register.html template
+    """
     context_dict={}
     if request.method == 'POST':
         user_form = UserRegisterForm(data=request.POST)
@@ -693,19 +832,27 @@ def register(request):
         else:
             print user_form.errors
             print profile_form.errors
+            context_dict["error1"] = user_form.errors
+            context_dict["error2"] = user_form.errors
     else:
         user_form = UserRegisterForm()
         profile_form = UserProfileForm()
         context_dict["user_form"]=user_form
         context_dict["profile_form"]=profile_form
-    return render(request,'app/register.html',context_dict)
+    return render(request,
+        'app/register.html',context_dict
+        )
 
 def logoutuser(request):
+    """Flush session and logout user """
     request.session.flush()
     logout(request)
     return HttpResponseRedirect(settings.LOGIN_URL)
 
 def profile(request):
+    """ View for profile
+    returns profile.html template
+    """
     if request.user.is_authenticated():
         context_dict={}
         profile = UserID.objects.get(user=request.user)
@@ -723,30 +870,43 @@ def profile(request):
                     form1 = info_form.save()
                     form2 = orginfo_form.save()
                     context_dict["success"] = "Details Successfully Updated"
-                    return render(request,'app/profile.html',context_dict)
+                    return render(request,
+                        'app/profile.html',context_dict
+                        )
                 else :
                     context_dict["error"] = "Error changing details " + str(info_form.errors) + str(orginfo_form.errors)
-                    return render(request,'app/profile.html',context_dict,status=400)
+                    return render(request,
+                        'app/profile.html',context_dict,status=400
+                        )
             if "changepwd" in request.POST:
                 form = PasswordChangeForm(request.user, request.POST)
                 if form.is_valid():
                     user = form.save()
                     update_session_auth_hash(request, user)  # Important!
                     context_dict["success"] = 'Your password was successfully updated!'
-                    return render(request,'app/profile.html',context_dict)
+                    return render(request,
+                        'app/profile.html',context_dict
+                        )
                 else:
                     context_dict["error"] = form.errors
-                    return render(request,'app/profile.html',context_dict,status=400)
+                    return render(request,
+                        'app/profile.html',context_dict,status=400
+                        )
             else :
                 context_dict["error"] = "Invalid request."
-                return render(request,'app/profile.html',context_dict,status=404)
+                return render(request,
+                    'app/profile.html',context_dict,status=404
+                    )
         else:
-            return render(request,'app/profile.html',context_dict)
+            return render(request,
+                'app/profile.html',context_dict
+                )
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 
 def checkusername(request):
+    """Returns whether username already taken or not"""
     if 'username' in request.POST:
         users = User.objects.filter(username=request.POST["username"])
         if (len(users)>0):
