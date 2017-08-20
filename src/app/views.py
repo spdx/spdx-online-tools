@@ -230,10 +230,12 @@ def compare(request):
                                     response = json.dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response)
-                                context_dict['Content-Disposition'] = 'attachment; filename='+rfilename 
+                                context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
+                                context_dict["Content-Type"] = "application/vnd.ms-excel"
                                 context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
-                                jpype.detachThreadFromJVM()   
-                                return HttpResponseRedirect(settings.MEDIA_URL+ folder + "/" +rfilename)
+                                jpype.detachThreadFromJVM()
+                                return render(request, 'app/compare.html',context_dict,status=200)
+                                #return HttpResponseRedirect(settings.MEDIA_URL+ folder + "/" +rfilename)
                             else :
                                 if (request.is_ajax()):
                                     ajaxdict["type"] = "warning"
@@ -243,7 +245,8 @@ def compare(request):
                                     response = json.dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=400)
-                                context_dict['Content-Disposition'] = 'attachment; filename='+rfilename 
+                                context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
+                                context_dict["Content-Type"] = "application/vnd.ms-excel"
                                 context_dict["type"] = "warning"
                                 context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                 jpype.detachThreadFromJVM()   
@@ -344,10 +347,12 @@ def compare(request):
                                     response = json.dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response)
-                                context_dict['Content-Disposition'] = 'attachment; filename='+rfilename
+                                context_dict["Content-Type"] = "application/vnd.ms-excel"
+                                context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
                                 context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                 jpype.detachThreadFromJVM()
-                                return HttpResponseRedirect(settings.MEDIA_URL+ folder + "/"+rfilename)
+                                return render(request, 'app/compare.html',context_dict,status=200)
+                                #return HttpResponseRedirect(settings.MEDIA_URL+ folder + "/"+rfilename)
                             else :
                                 if (request.is_ajax()):
                                     ajaxdict["type"] = "warning"
@@ -357,7 +362,8 @@ def compare(request):
                                     response = json.dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=406)
-                                context_dict['Content-Disposition'] = 'attachment; filename='+rfilename 
+                                context_dict["Content-Type"] = "application/vnd.ms-excel"
+                                context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
                                 context_dict["type"] = "warning"
                                 context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                                 jpype.detachThreadFromJVM()   
@@ -440,6 +446,7 @@ def convert(request):
                     option2 = request.POST["to_format"]
                     functiontocall = option1 + "To" + option2
                     warningoccurred = False
+                    content_type =""
                     if "cfileformat" in request.POST :
                         cfileformat = request.POST["cfileformat"]
                     else :
@@ -448,11 +455,13 @@ def convert(request):
                     if (option1=="Tag"):
                         print ("Verifing for Tag/Value Document")
                         if (option2=="RDF"):
+                            content_type = "application/rdf+xml"
                             tagtordfclass = package.TagToRDF
                             retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+convertfile])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="Spreadsheet"):
+                            content_type = "application/vnd.ms-excel"
                             tagtosprdclass = package.TagToSpreadsheet
                             retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                             if (len(retval) > 0):
@@ -464,16 +473,19 @@ def convert(request):
                     elif (option1=="RDF"):
                         print ("Verifing for RDF Document")
                         if (option2=="Tag"):
+                            content_type = "text/tag-value"
                             rdftotagclass = package.RdfToTag
                             retval = rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="Spreadsheet"):
+                            content_type = "application/vnd.ms-excel"
                             rdftosprdclass = package.RdfToSpreadsheet
                             retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="HTML"):
+                            content_type = "text/html"
                             rdftohtmlclass = package.RdfToHtml
                             retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                             if (len(retval) > 0):
@@ -485,11 +497,13 @@ def convert(request):
                     elif (option1=="Spreadsheet"):
                         print ("Verifing for Spreadsheet Document")
                         if (option2=="Tag"):
+                            content_type = "text/tag-value"
                             sprdtotagclass = package.SpreadsheetToTag
                             retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="RDF"):
+                            content_type = "application/rdf+xml"
                             sprdtordfclass = package.SpreadsheetToRDF
                             retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
                             if (len(retval) > 0):
@@ -504,10 +518,12 @@ def convert(request):
                             response = json.dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
                             return HttpResponse(response)
-                        context_dict['Content-Disposition'] = 'attachment; filename='+convertfile
+                        context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(convertfile)
                         context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
+                        context_dict["Content-Type"] = content_type
                         jpype.detachThreadFromJVM()
-                        return HttpResponseRedirect(settings.MEDIA_URL + folder + "/" + convertfile)
+                        return render(request, 'app/convert.html',context_dict,status=200)
+                        #return HttpResponseRedirect(settings.MEDIA_URL + folder + "/" + convertfile)
                     else :
                         if (request.is_ajax()):
                             ajaxdict["type"] = "warning"
@@ -518,6 +534,8 @@ def convert(request):
                             return HttpResponse(response,status=406)
                         context_dict["error"] = str(retval)
                         context_dict["type"] = "warning"
+                        context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(convertfile)
+                        context_dict["Content-Type"] = content_type
                         context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                         jpype.detachThreadFromJVM()
                         return render(request, 'app/convert.html',context_dict,status=406)
