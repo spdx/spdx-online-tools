@@ -11,12 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from __future__ import unicode_literals
 
 from django.contrib import admin
 
 from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
+
 
 admin.site.register(ValidateFileUpload)
 admin.site.register(CompareFileUpload)
