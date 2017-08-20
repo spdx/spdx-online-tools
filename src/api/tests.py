@@ -43,30 +43,29 @@ class ValidateFileUploadTests(APITestCase):
 
         resp3 = self.client.post(reverse("validate-api"),{"file":self.tv_file},format="multipart")
         self.assertEqual(resp3.status_code,201)
+        self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp3.data["result"],"This SPDX Document is valid.")
         resp4 = self.client.post(reverse("validate-api"),{"file":self.rdf_file},format="multipart")
         self.assertEqual(resp4.status_code,201)
+        self.assertEqual(resp4.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp4.data["result"],"This SPDX Document is valid.")
         resp5 = self.client.post(reverse("validate-api"),{"file":self.invalid_tv_file},format="multipart")
+        self.assertEqual(resp5.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp5.status_code,400)
         self.assertNotEqual(resp5.data["result"],"This SPDX Document is valid.")
         resp6 = self.client.post(reverse("validate-api"),{"file":self.invalid_rdf_file},format="multipart")
+        self.assertEqual(resp6.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp6.status_code,400)
         self.assertNotEqual(resp6.data["result"],"This SPDX Document is valid.")
         self.client.logout()
         self.tearDown()
-
-        # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # self.assertIn('created', response.data)
-        # self.assertTrue(urlparse(response.data['file']).path.startswith(settings.MEDIA_URL))
-        # self.assertEqual(response.data['owner'],
-        #                User.objects.get_by_natural_key('test').id)
-        # self.assertIn('created', response.data)
-
-        # # assert unauthenticated user can not upload file
-        # client.logout()
-        # response = client.post(url, data, format='multipart')
-        # self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        
+    def test_validate_without_argument(self):
+        self.client.login(username=self.username,password=self.password)
+        resp7 = self.client.post(reverse("validate-api"),{},format="multipart")
+        self.assertEqual(resp7.status_code,400)
+        self.client.logout()
+        self.tearDown()
 
 class ConvertFileUploadTests(APITestCase):
     def setUp(self):
@@ -106,6 +105,7 @@ class ConvertFileUploadTests(APITestCase):
         resp = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.rdf,"cfilename":"tagtordf-apitest"},format="multipart")
         self.assertTrue(resp.status_code==406 or resp.status_code == 201)
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
 
     def test_convert_tagtoxlsx_api(self):
@@ -113,6 +113,7 @@ class ConvertFileUploadTests(APITestCase):
         resp = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.xlsx,"cfilename":"tagtoxlsx-apitest"},format="multipart")
         self.assertTrue(resp.status_code==406 or resp.status_code == 201)
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
 
     def test_convert_rdftotag_api(self):
@@ -120,6 +121,7 @@ class ConvertFileUploadTests(APITestCase):
         resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.tag,"cfilename":"rdftotag-apitest"},format="multipart")
         self.assertTrue(resp.status_code==406 or resp.status_code == 201)
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
 
     def test_convert_rdftoxlsx_api(self):
@@ -127,6 +129,7 @@ class ConvertFileUploadTests(APITestCase):
         resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.xlsx,"cfilename":"rdftoxlsx-apitest"},format="multipart")
         self.assertTrue(resp.status_code==406 or resp.status_code == 201)
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
 
     # def test_convert_rdftohtml_api(self):
@@ -141,6 +144,7 @@ class ConvertFileUploadTests(APITestCase):
         resp = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.rdf,"cfilename":"xlsxtordf-apitest"},format="multipart")
         self.assertTrue(resp.status_code==406 or resp.status_code == 201)
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
 
     def test_convert_xlsxtotag_api(self):
@@ -148,6 +152,19 @@ class ConvertFileUploadTests(APITestCase):
         resp = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.tag,"cfilename":"xlsxtotag-apitest"},format="multipart")
         self.assertTrue(resp.status_code==406 or resp.status_code == 201)
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
+        self.client.logout()
+
+    def test_convert_without_one_argument(self):
+        self.client.login(username=self.username,password=self.password)
+        resp = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"to_format":self.tag,"cfilename":"xlsxtotag-apitest"},format="multipart")
+        self.assertEqual(resp.status_code,400)
+        resp2 = self.client.post(reverse("convert-api"),{"from_format":self.xlsx,"to_format":self.tag,"cfilename":"xlsxtotag-apitest"},format="multipart")
+        self.assertEqual(resp2.status_code,400)
+        resp3 = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.tag},format="multipart")
+        self.assertEqual(resp3.status_code,400)
+        resp3 = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"cfilename":"xlsxtotag-apitest"},format="multipart")
+        self.assertEqual(resp3.status_code,400)
         self.client.logout()
 
 class CompareFileUploadTests(APITestCase):
@@ -180,10 +197,21 @@ class CompareFileUploadTests(APITestCase):
 
         resp3 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.rdf_file2,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertTrue(resp3.status_code==406 or resp3.status_code == 201)
+        self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertTrue(resp3.data["result"].startswith(settings.MEDIA_URL))
         resp4 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.tv_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertEqual(resp4.status_code,400)
+        self.client.logout()
+        self.tearDown()
+        
+    def test_compare_without_one_argument(self):
+        self.client.login(username=self.username,password=self.password)
+        resp5 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.rdf_file2},format="multipart")
+        self.assertEqual(resp5.status_code,400)
+        resp6 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
+        self.assertEqual(resp6.status_code,400)
+        resp7 = self.client.post(reverse("compare-api"),{"file2":self.rdf_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
+        self.assertEqual(resp7.status_code,400)
 
         self.client.logout()
         self.tearDown()
-        #self.assertTrue(urlparse(response.data['result']).path.startswith(settings.MEDIA_URL))
