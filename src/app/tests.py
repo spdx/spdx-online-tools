@@ -196,6 +196,7 @@ class ValidateViewsTestCase(TestCase):
 
 
 class CompareViewsTestCase(TestCase):
+    
     def initialise(self):
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
         self.rdf_file2 = open("examples/SPDXRdfExample.rdf")

@@ -57,7 +57,7 @@ def validate(request):
     """ View for validate tool
     returns validate.html template
     """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
@@ -170,7 +170,7 @@ def compare(request):
     """ View for compare tool
     returns compare.html template
     """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
@@ -507,7 +507,7 @@ def convert(request):
     """ View for convert tool
     returns convert.html template
     """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
@@ -695,7 +695,7 @@ def check_license(request):
     """ View for check license tool
     returns check_license.html template
     """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             licensetext = request.POST.get('licensetext')
@@ -777,71 +777,77 @@ def loginuser(request):
     """ View for Login
     returns login.html template
     """
-    context_dict={}
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(username=username, password=password)
-        if user and user.is_staff:
-            #add status  choice here
-            if user.is_active:
-                login(request, user)
-                if (request.is_ajax()):
-                    ajaxdict=dict()
-                    ajaxdict["data"] = "Success"
-                    ajaxdict["next"] = "/app/"
-                    response = dumps(ajaxdict)
-                    return HttpResponse(response)
-                return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
+    if not request.user.is_authenticated():
+        context_dict={}
+        if request.method == 'POST':
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            user = authenticate(username=username, password=password)
+            if user and user.is_staff:
+                #add status  choice here
+                if user.is_active:
+                    login(request, user)
+                    if (request.is_ajax()):
+                        ajaxdict=dict()
+                        ajaxdict["data"] = "Success"
+                        ajaxdict["next"] = "/app/"
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response)
+                    return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
+                else:
+                    if (request.is_ajax()):
+                        return HttpResponse("Your account is disabled.",status=401)
+                    context_dict["invalid"] = "Your account is disabled."
+                    return render(request,
+                        "app/login.html",context_dict,status=401
+                        )	
             else:
                 if (request.is_ajax()):
-                    return HttpResponse("Your account is disabled.",status=401)
-                context_dict["invalid"] = "Your account is disabled."
-                return render(request,
-                    "app/login.html",context_dict,status=401
-                    )	
+                    return HttpResponse("Invalid login details supplied.",status=403)
+                context_dict['invalid']="Invalid login details supplied."
+                return render(request, 
+                    'app/login.html',context_dict,status=403
+                    )
         else:
-            if (request.is_ajax()):
-                return HttpResponse("Invalid login details supplied.",status=403)
-            context_dict['invalid']="Invalid login details supplied."
             return render(request, 
-                'app/login.html',context_dict,status=403
+                'app/login.html',context_dict
                 )
-    else:
-        return render(request, 
-            'app/login.html',context_dict
-            )
+    else :
+        return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
 
 def register(request):
     """ View for register
     returns register.html template
     """
-    context_dict={}
-    if request.method == 'POST':
-        user_form = UserRegisterForm(data=request.POST)
-        profile_form = UserProfileForm(data=request.POST)
-        if user_form.is_valid() and profile_form.is_valid():
-            user = user_form.save(commit=False)
-            user.set_password(user.password)
-            user.is_staff=True
-            profile = profile_form.save(commit=False)
-            user.save()
-            profile.user = user
-            profile.save()
-            return HttpResponseRedirect(settings.REGISTER_REDIRECT_UTL)
+    if not request.user.is_authenticated():
+        context_dict={}
+        if request.method == 'POST':
+            user_form = UserRegisterForm(data=request.POST)
+            profile_form = UserProfileForm(data=request.POST)
+            if user_form.is_valid() and profile_form.is_valid():
+                user = user_form.save(commit=False)
+                user.set_password(user.password)
+                user.is_staff=True
+                profile = profile_form.save(commit=False)
+                user.save()
+                profile.user = user
+                profile.save()
+                return HttpResponseRedirect(settings.REGISTER_REDIRECT_UTL)
+            else:
+                print user_form.errors
+                print profile_form.errors
+                context_dict["error1"] = user_form.errors
+                context_dict["error2"] = user_form.errors
         else:
-            print user_form.errors
-            print profile_form.errors
-            context_dict["error1"] = user_form.errors
-            context_dict["error2"] = user_form.errors
-    else:
-        user_form = UserRegisterForm()
-        profile_form = UserProfileForm()
-        context_dict["user_form"]=user_form
-        context_dict["profile_form"]=profile_form
-    return render(request,
-        'app/register.html',context_dict
-        )
+            user_form = UserRegisterForm()
+            profile_form = UserProfileForm()
+            context_dict["user_form"]=user_form
+            context_dict["profile_form"]=profile_form
+        return render(request,
+            'app/register.html',context_dict
+            )
+    else :
+        return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
 
 def logoutuser(request):
     """Flush session and logout user """

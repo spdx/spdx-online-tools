@@ -153,3 +153,6 @@ LOGIN_REDIRECT_URL = "/app/"
 REGISTER_REDIRECT_UTL = "/app/login/"
 LOGIN_URL = "/app/login/"
 HOME_URL="/app/"
+
+# Online tool usage without login
+ANONYMOUS_LOGIN_ENABLED = True

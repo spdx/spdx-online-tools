@@ -2,7 +2,6 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
-{% if user.is_authenticated %}
 <div id="messages" class="messages">
 </div>
 <p class ="lead"> {{ medialink }}</p>
@@ -85,15 +84,9 @@
 </div>
 </div>
 {% include "app/modal.html" %}
-{% else %}
-<div id="messages" class="messages">
-You are not allowed to view this page. Please login first.
-</div>
-{% endif %}
 {% endblock %}
 
 {% block script_block %}
-{% if user.is_authenticated %}
 <script type="text/javascript">
 function checkform() {
 	var nofile = parseInt($("#nofile").val());
@@ -352,5 +345,4 @@ $(document).ready(function () {
 
   document.getElementById('files').addEventListener('change', handleFileSelect, false);
 </script>
-{% endif %}
 {% endblock %}

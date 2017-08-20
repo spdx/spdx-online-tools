@@ -2,32 +2,7 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
-<!--
-<style type="text/css">
-  .demo-droppable {
-    background: #08c;
-    color: #fff;
-    padding: 100px 0;
-    text-align: center;
-  }
-  .demo-droppable.dragover {
-    background: #00CC71;
-  }
-</style>
-<style type="text/css">
-  #drop_zone {
-  border: 2px dashed #bbb;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  border-radius: 5px;
-  padding: 25px;
-  text-align: center;
-  font: 20pt bold 'Vollkorn';
-  color: #bbb;
-}
-</style>
--->
-{% if user.is_authenticated %}
+
 <div id="messages" class="messages">
 </div>
 <p class ="lead"> {{ error }}</p>
@@ -59,15 +34,11 @@
 <output id="list"></output>
 -->
 </div>
-{% else %}
-<div id="messages" class="messages">
-You are not allowed to view this page. Please login first.
-</div>
-{% endif %}
+
 {% endblock %}
 
 {% block script_block %}
-{% if user.is_authenticated %}
+
 <script type="text/javascript">
 function checkform() {
   if ($('#file').get(0).files.length === 0) {
@@ -209,5 +180,5 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 }
 </script>
 -->
-{% endif %}
+
 {% endblock %}
