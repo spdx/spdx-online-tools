@@ -15,45 +15,45 @@ class IndexViewsTestCase(TestCase):
 
     def test_index(self):
         resp = self.client.get(reverse("index"),follow=True,secure=True)
-        self.assertEqual(resp.status_code,200)      #Status OK
-        self.assertEqual(resp.redirect_chain,[])    # No redirection
-        self.assertIn("app/index.html",(i.name for i in resp.templates))    #list of templates
-        self.assertEqual(resp.resolver_match.func.__name__,"index")     #View function called
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertIn("app/index.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"index")
 
 class AboutViewsTestCase(TestCase):
 
     def test_about(self):
         resp = self.client.get(reverse("about"),follow=True,secure=True)
-        self.assertEqual(resp.status_code,200)      #Status OK
-        self.assertEqual(resp.redirect_chain,[])    # No redirection
-        self.assertIn("app/about.html",(i.name for i in resp.templates))    #list of templates
-        self.assertEqual(resp.resolver_match.func.__name__,"about")     #View function called
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertIn("app/about.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"about")
 
 class LoginViewsTestCase(TestCase):
 
     def initialise(self):
         self.credentials = {'username':'testuser','password':'testpass' }
-        user = User.objects.create_user(**self.credentials)     # Staff
+        user = User.objects.create_user(**self.credentials)
         user.is_staff = True
         user.is_active = True
         user.save()
         self.credentials2 = {'username':'testuser2','password':'testpass2' }
-        user2 = User.objects.create_user(**self.credentials2)   # Non-staff
+        user2 = User.objects.create_user(**self.credentials2)
         user2.is_staff = False
         user2.is_active = True
         user2.save()
         self.credentials3 = {'username':'testuser3','password':'testpass3' }
-        user3 = User.objects.create_user(**self.credentials3) # Inactive
+        user3 = User.objects.create_user(**self.credentials3)
         user3.is_staff = True
         user3.is_active = False
         user3.save()
 
     def test_login(self):
         resp = self.client.get(reverse("login"),follow=True,secure=True)
-        self.assertEqual(resp.status_code,200)      #Status OK
-        self.assertEqual(resp.redirect_chain,[])    # No redirection
-        self.assertIn("app/login.html",(i.name for i in resp.templates))    #list of templates
-        self.assertEqual(resp.resolver_match.func.__name__,"loginuser")     #View function called
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertIn("app/login.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"loginuser")
 
     def test_postlogin(self):
         self.initialise()
@@ -100,9 +100,9 @@ class RegisterViewsTestCase(TestCase):
         self.assertEqual(resp.status_code,200)
         self.assertTrue('user_form' in resp.context)
         self.assertTrue('profile_form' in resp.context)
-        self.assertEqual(resp.redirect_chain,[])    # No redirection
-        self.assertIn("app/register.html",(i.name for i in resp.templates))    #list of templates
-        self.assertEqual(resp.resolver_match.func.__name__,"register")     #View function called
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertIn("app/register.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"register")
 
     def test_formregister(self):
         self.initialise()
@@ -110,6 +110,7 @@ class RegisterViewsTestCase(TestCase):
         self.assertEqual(resp.status_code,200)
         self.assertNotEqual(resp.redirect_chain,[])
         self.assertIn(settings.REGISTER_REDIRECT_UTL, (i[0] for i in resp.redirect_chain))
+
         loginresp = self.client.post(reverse("login"),{'username':self.username,'password':self.password},follow=True,secure=True)
         self.assertEqual(loginresp.status_code,200)
         self.assertTrue(loginresp.context['user'].is_active)
@@ -126,11 +127,12 @@ class ValidateViewsTestCase(TestCase):
         self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
         self.assertEqual(resp.status_code,200)
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-        resp3 = self.client.get(reverse("validate"),follow=True,secure=True)
-        self.assertEqual(resp3.status_code,200)
-        self.assertEqual(resp3.redirect_chain,[])    # No redirection
-        self.assertIn("app/validate.html",(i.name for i in resp3.templates))    #list of templates
-        self.assertEqual(resp3.resolver_match.func.__name__,"validate")     #View function called
+
+        resp2 = self.client.get(reverse("validate"),follow=True,secure=True)
+        self.assertEqual(resp2.status_code,200)
+        self.assertEqual(resp2.redirect_chain,[])
+        self.assertIn("app/validate.html",(i.name for i in resp2.templates))
+        self.assertEqual(resp2.resolver_match.func.__name__,"validate")
         self.client.logout()
         
     def test_validate_post_without_login(self):
@@ -210,11 +212,11 @@ class CompareViewsTestCase(TestCase):
         self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
         self.assertEqual(resp.status_code,200)
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
-        resp3 = self.client.get(reverse("compare"),follow=True,secure=True)
-        self.assertEqual(resp3.status_code,200)
-        self.assertEqual(resp3.redirect_chain,[])    # No redirection
-        self.assertIn("app/compare.html",(i.name for i in resp3.templates))    #list of templates
-        self.assertEqual(resp3.resolver_match.func.__name__,"compare")     #View function called
+        resp2 = self.client.get(reverse("compare"),follow=True,secure=True)
+        self.assertEqual(resp2.status_code,200)
+        self.assertEqual(resp2.redirect_chain,[])
+        self.assertIn("app/compare.html",(i.name for i in resp2.templates))
+        self.assertEqual(resp2.resolver_match.func.__name__,"compare")
         self.client.logout()
 
     def test_compare_post_without_login(self):
@@ -278,11 +280,11 @@ class ConvertViewsTestCase(TestCase):
         self.assertNotEqual(resp.redirect_chain,[])
         self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        resp3 = self.client.get(reverse("convert"),follow=True,secure=True)
-        self.assertEqual(resp3.status_code,200)
-        self.assertEqual(resp3.redirect_chain,[])    # No redirection
-        self.assertIn("app/convert.html",(i.name for i in resp3.templates))    #list of templates
-        self.assertEqual(resp3.resolver_match.func.__name__,"convert")     #View function called
+        resp2 = self.client.get(reverse("convert"),follow=True,secure=True)
+        self.assertEqual(resp2.status_code,200)
+        self.assertEqual(resp2.redirect_chain,[])
+        self.assertIn("app/convert.html",(i.name for i in resp2.templates))
+        self.assertEqual(resp2.resolver_match.func.__name__,"convert")
         self.client.logout()
 
     def test_convert_tagtordf(self):
@@ -339,7 +341,7 @@ class ConvertViewsTestCase(TestCase):
 
     # def test_convert_rdftohtml(self):
     #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-    #     self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf") 
+    #     self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
     #     resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".html",'from_format' : "RDF", 'to_format' : "Html", 'file' : self.rdf_file},follow=True)
     #     self.assertEqual(resp.status_code,200)
     #     self.assertNotEqual(resp.redirect_chain,[])
@@ -376,15 +378,16 @@ class CheckLicenseViewsTestCase(TestCase):
 
     def test_check_license(self):
         resp = self.client.get(reverse("check-license"),follow=True,secure=True)
-        self.assertEqual(resp.status_code,200)      
-        self.assertNotEqual(resp.redirect_chain,[])    
+        self.assertEqual(resp.status_code,200)
+        self.assertNotEqual(resp.redirect_chain,[])
         self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+        
         resp2 = self.client.get(reverse("check-license"),follow=True,secure=True)
         self.assertEqual(resp2.status_code,200)
-        self.assertEqual(resp2.redirect_chain,[])    # No redirection
-        self.assertIn("app/check_license.html",(i.name for i in resp2.templates))    #list of templates
-        self.assertEqual(resp2.resolver_match.func.__name__,"check_license")     #View function called
+        self.assertEqual(resp2.redirect_chain,[])
+        self.assertIn("app/check_license.html",(i.name for i in resp2.templates))
+        self.assertEqual(resp2.resolver_match.func.__name__,"check_license")
         self.client.logout()
 
         
@@ -414,16 +417,17 @@ class ProfileViewsTestCase(TestCase):
 
     def test_profile(self):
         resp = self.client.get(reverse("profile"),follow=True,secure=True)
-        self.assertEqual(resp.status_code,200)      
-        self.assertNotEqual(resp.redirect_chain,[])    
+        self.assertEqual(resp.status_code,200)
+        self.assertNotEqual(resp.redirect_chain,[])
         self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='profiletestuser')[0])
+        
         resp2 = self.client.get(reverse("profile"),follow=True,secure=True)
         self.assertEqual(resp2.status_code,200)
-        self.assertEqual(resp2.redirect_chain,[])    # No redirection
-        self.assertIn("app/profile.html",(i.name for i in resp2.templates))    #list of templates
-        self.assertEqual(resp2.resolver_match.func.__name__,"profile")     #View function called
+        self.assertEqual(resp2.redirect_chain,[])
+        self.assertIn("app/profile.html",(i.name for i in resp2.templates))
+        self.assertEqual(resp2.resolver_match.func.__name__,"profile")
         self.assertIn("form",resp2.context)
         self.assertIn("info_form",resp2.context)
         self.assertIn("orginfo_form",resp2.context)
@@ -438,6 +442,7 @@ class ProfileViewsTestCase(TestCase):
         self.assertEqual(user.email,"profiletest@spdx.org")
         self.assertEqual(userid.organisation,"spdx")
         self.client.force_login(user)
+        
         save_info_resp = self.client.post(reverse("profile"),{'saveinfo':'saveinfo',"first_name": "john","last_name" : "doe" ,"email" : "johndoe@spdx.org","organisation":"Software Package Data Exchange"},follow=True,secure=True)
         self.assertEqual(save_info_resp.status_code,200)
         self.assertEqual(save_info_resp.redirect_chain,[])
@@ -459,8 +464,10 @@ class ProfileViewsTestCase(TestCase):
         self.assertEqual(change_pwd_resp.redirect_chain,[])
         self.assertEqual(change_pwd_resp.context["success"],"Your password was successfully updated!")
         self.client.logout()
+        
         resp2 = self.client.login(username='profiletestuser', password='profiletestpass')
         self.assertFalse(resp2)
+        
         resp3 = self.client.login(username='profiletestuser', password='johndoepass')
         self.assertTrue(resp3)
         self.client.logout()
@@ -477,8 +484,10 @@ class CheckUserNameTestCase(TestCase):
     def test_check_username(self):
         resp = self.client.post(reverse("check-username"),{"username":"spdx"},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
+        
         resp2 = self.client.post(reverse("check-username"),{"randomkey":"randomvalue"},follow=True,secure=True)
         self.assertEqual(resp2.status_code,400)
+        
         self.initialise()
         resp3 = self.client.post(reverse("check-username"),{"username":"checktestuser"},follow=True,secure=True)
         self.assertEqual(resp3.status_code,404)

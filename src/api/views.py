@@ -34,19 +34,19 @@ from urlparse import urljoin
 
 
 class ValidateViewSet(ModelViewSet):
-    """ View all validate api request """
+    """ Returns all validate api request """
     queryset = ValidateFileUpload.objects.all()
     serializer_class = ValidateSerializerReturn
     parser_classes = (MultiPartParser, FormParser,)
 
 class ConvertViewSet(ModelViewSet):
-    """ View all convert api request """
+    """ Returns all convert api request """
     queryset = ConvertFileUpload.objects.all()
     serializer_class = ConvertSerializerReturn
     parser_classes = (MultiPartParser, FormParser,)
 
 class CompareViewSet(ModelViewSet):
-    """ View all compare api request """
+    """ Returns all compare api request """
     queryset = CompareFileUpload.objects.all()
     serializer_class = CompareSerializerReturn
     parser_classes = (MultiPartParser, FormParser,)

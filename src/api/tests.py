@@ -27,11 +27,17 @@ from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
 
 
 class ValidateFileUploadTests(APITestCase):
+    """ Test for validate api with all
+    possible combination of POST and GET 
+    request with login enabled.
+    """
     def setUp(self):
         self.username = "validateapitestuser"
         self.password = "validateapitestpass"
         self.tearDown()
-        self.credentials = {'username':self.username,'password':self.password }
+        self.credentials = {'username':self.username,
+            'password':self.password
+            }
         u = User.objects.create_user(**self.credentials)
         u.is_staff = True
         u.save()
@@ -49,24 +55,29 @@ class ValidateFileUploadTests(APITestCase):
         ValidateFileUpload.objects.all().delete()
 
     def test_validate_api(self):
+        """Access get without login"""
         resp1 = self.client.get(reverse("validate-api"))
         self.assertTrue(resp1.status_code,403)
         self.client.login(username=self.username,password=self.password)
+        """ Access get after login"""
         resp2 = self.client.get(reverse("validate-api")) 
         self.assertTrue(resp2.status_code,200)
-
+        """ Valid Tag Value File"""
         resp3 = self.client.post(reverse("validate-api"),{"file":self.tv_file},format="multipart")
         self.assertEqual(resp3.status_code,201)
         self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp3.data["result"],"This SPDX Document is valid.")
+        """ Valid RDF File"""
         resp4 = self.client.post(reverse("validate-api"),{"file":self.rdf_file},format="multipart")
         self.assertEqual(resp4.status_code,201)
         self.assertEqual(resp4.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp4.data["result"],"This SPDX Document is valid.")
+        """ Invalid Tag Value File"""
         resp5 = self.client.post(reverse("validate-api"),{"file":self.invalid_tv_file},format="multipart")
         self.assertEqual(resp5.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp5.status_code,400)
         self.assertNotEqual(resp5.data["result"],"This SPDX Document is valid.")
+        """ Invalid RDF File"""
         resp6 = self.client.post(reverse("validate-api"),{"file":self.invalid_rdf_file},format="multipart")
         self.assertEqual(resp6.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp6.status_code,400)
@@ -82,6 +93,10 @@ class ValidateFileUploadTests(APITestCase):
         self.tearDown()
 
 class ConvertFileUploadTests(APITestCase):
+    """ Test for convert api with all
+    possible combination of POST and GET 
+    request with login enabled.
+    """
     def setUp(self):
         self.username = "convertapitestuser"
         self.password = "convertapitestpass"
@@ -107,8 +122,10 @@ class ConvertFileUploadTests(APITestCase):
         ConvertFileUpload.objects.all().delete()
 
     def test_convert_api(self):
+        """Access get without login"""
         resp1 = self.client.get(reverse("convert-api"))
         self.assertTrue(resp1.status_code,403)
+        """Access get after login"""
         self.client.login(username=self.username,password=self.password)
         resp2 = self.client.get(reverse("convert-api"))
         self.assertTrue(resp2.status_code,200)
@@ -173,15 +190,22 @@ class ConvertFileUploadTests(APITestCase):
         self.client.login(username=self.username,password=self.password)
         resp = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"to_format":self.tag,"cfilename":"xlsxtotag-apitest"},format="multipart")
         self.assertEqual(resp.status_code,400)
+        
         resp2 = self.client.post(reverse("convert-api"),{"from_format":self.xlsx,"to_format":self.tag,"cfilename":"xlsxtotag-apitest"},format="multipart")
         self.assertEqual(resp2.status_code,400)
+        
         resp3 = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.tag},format="multipart")
         self.assertEqual(resp3.status_code,400)
-        resp3 = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"cfilename":"xlsxtotag-apitest"},format="multipart")
-        self.assertEqual(resp3.status_code,400)
+        
+        resp4 = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"cfilename":"xlsxtotag-apitest"},format="multipart")
+        self.assertEqual(resp4.status_code,400)
         self.client.logout()
 
 class CompareFileUploadTests(APITestCase):
+    """ Test for compare api with all
+    possible combination of POST and GET 
+    request with login enabled.
+    """
     def setUp(self):
         self.username = "compareapitestuser"
         self.password = "compareapitestpass"
@@ -203,16 +227,19 @@ class CompareFileUploadTests(APITestCase):
         CompareFileUpload.objects.all().delete()
 
     def test_compare_api(self):
+        """Access get without login"""
         resp1 = self.client.get(reverse("compare-api"))
         self.assertTrue(resp1.status_code,403)
+        """Access get after login"""
         self.client.login(username=self.username,password=self.password)
         resp2 = self.client.get(reverse("compare-api"))
         self.assertTrue(resp2.status_code,200)
-
+        """Compare two valid RDF files"""
         resp3 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.rdf_file2,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertTrue(resp3.status_code==406 or resp3.status_code == 201)
         self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertTrue(resp3.data["result"].startswith(settings.MEDIA_URL))
+        """Compare with one  invalid RDF files"""
         resp4 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.tv_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertEqual(resp4.status_code,400)
         self.client.logout()
@@ -222,10 +249,11 @@ class CompareFileUploadTests(APITestCase):
         self.client.login(username=self.username,password=self.password)
         resp5 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.rdf_file2},format="multipart")
         self.assertEqual(resp5.status_code,400)
+        
         resp6 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertEqual(resp6.status_code,400)
+        
         resp7 = self.client.post(reverse("compare-api"),{"file2":self.rdf_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertEqual(resp7.status_code,400)
-
         self.client.logout()
         self.tearDown()
