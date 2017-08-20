@@ -122,12 +122,13 @@ class RegisterViewsTestCase(TestCase):
 class ValidateViewsTestCase(TestCase):
 
     def test_validate(self):
-        resp = self.client.get(reverse("validate"),follow=True,secure=True)
-        self.assertNotEqual(resp.redirect_chain,[])
-        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
-        self.assertEqual(resp.status_code,200)
+        if not settings.ANONYMOUS_LOGIN_ENABLED :
+            resp = self.client.get(reverse("validate"),follow=True,secure=True)
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+            self.assertEqual(resp.status_code,200)
+        
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-
         resp2 = self.client.get(reverse("validate"),follow=True,secure=True)
         self.assertEqual(resp2.status_code,200)
         self.assertEqual(resp2.redirect_chain,[])
@@ -136,12 +137,13 @@ class ValidateViewsTestCase(TestCase):
         self.client.logout()
         
     def test_validate_post_without_login(self):
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-        resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
-        self.assertNotEqual(resp.redirect_chain,[])
-        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
-        self.tv_file.close()
-        self.assertEqual(resp.status_code,200)
+        if not settings.ANONYMOUS_LOGIN_ENABLED :
+            self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+            resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+            self.tv_file.close()
+            self.assertEqual(resp.status_code,200)
 
     def test_validate_post_without_file(self):
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
@@ -196,7 +198,7 @@ class ValidateViewsTestCase(TestCase):
 
 
 class CompareViewsTestCase(TestCase):
-    
+
     def initialise(self):
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
         self.rdf_file2 = open("examples/SPDXRdfExample.rdf")
@@ -208,10 +210,11 @@ class CompareViewsTestCase(TestCase):
         self.tv_file.close()
 
     def test_compare(self):
-        resp = self.client.get(reverse("compare"),follow=True,secure=True)
-        self.assertNotEqual(resp.redirect_chain,[])
-        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
-        self.assertEqual(resp.status_code,200)
+        if not settings.ANONYMOUS_LOGIN_ENABLED :
+            resp = self.client.get(reverse("compare"),follow=True,secure=True)
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+            self.assertEqual(resp.status_code,200)
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
         resp2 = self.client.get(reverse("compare"),follow=True,secure=True)
         self.assertEqual(resp2.status_code,200)
@@ -221,12 +224,13 @@ class CompareViewsTestCase(TestCase):
         self.client.logout()
 
     def test_compare_post_without_login(self):
-        self.initialise()
-        resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': "2" ,'rfilename': "comparetest",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
-        self.assertNotEqual(resp.redirect_chain,[])
-        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
-        self.assertEqual(resp.status_code,200)
-        self.exit()
+        if not settings.ANONYMOUS_LOGIN_ENABLED :
+            self.initialise()
+            resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': "2" ,'rfilename': "comparetest",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+            self.assertEqual(resp.status_code,200)
+            self.exit()
 
     def test_compare_post_without_file(self):
         self.initialise()
@@ -276,10 +280,11 @@ class CompareViewsTestCase(TestCase):
 class ConvertViewsTestCase(TestCase):
 
     def test_convert(self):
-        resp = self.client.get(reverse("convert"),follow=True,secure=True)
-        self.assertEqual(resp.status_code,200)
-        self.assertNotEqual(resp.redirect_chain,[])
-        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+        if not settings.ANONYMOUS_LOGIN_ENABLED :
+            resp = self.client.get(reverse("convert"),follow=True,secure=True)
+            self.assertEqual(resp.status_code,200)
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         resp2 = self.client.get(reverse("convert"),follow=True,secure=True)
         self.assertEqual(resp2.status_code,200)
@@ -378,12 +383,12 @@ class ConvertViewsTestCase(TestCase):
 class CheckLicenseViewsTestCase(TestCase):
 
     def test_check_license(self):
-        resp = self.client.get(reverse("check-license"),follow=True,secure=True)
-        self.assertEqual(resp.status_code,200)
-        self.assertNotEqual(resp.redirect_chain,[])
-        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
-        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        
+        if not settings.ANONYMOUS_LOGIN_ENABLED :
+            resp = self.client.get(reverse("check-license"),follow=True,secure=True)
+            self.assertEqual(resp.status_code,200)
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+            self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         resp2 = self.client.get(reverse("check-license"),follow=True,secure=True)
         self.assertEqual(resp2.status_code,200)
         self.assertEqual(resp2.redirect_chain,[])

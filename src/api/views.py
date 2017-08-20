@@ -28,7 +28,6 @@ from django.conf import settings
 import jpype
 from traceback import format_exc
 from os.path import abspath
-from json import dumps
 from time import time
 from urlparse import urljoin
 
@@ -67,7 +66,7 @@ def validate(request):
         if serializer.is_valid():
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =os.path.abspath(".")+"/tool.jar"
+                classpath =abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -104,7 +103,7 @@ def validate(request):
                 jpype.detachThreadFromJVM()
             except :
                 """ Other errors raised"""
-                result = traceback.format_exc()
+                result = format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
             query = ValidateFileUpload.objects.create(
@@ -154,7 +153,7 @@ def convert(request):
         if serializer.is_valid():
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =os.path.abspath(".")+"/tool.jar"
+                classpath =abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -271,7 +270,7 @@ def convert(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM() 
             except :
-                message = traceback.format_exc()
+                message = format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM() 
             query = ConvertFileUpload.objects.create(
@@ -308,7 +307,7 @@ def compare(request):
         if serializer.is_valid():
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =os.path.abspath(".")+"/tool.jar"
+                classpath =abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -351,7 +350,7 @@ def compare(request):
                         result = "/media/" + folder+"/"+ rfilename
                         returnstatus = status.HTTP_201_CREATED
                     except :
-                        message += "While running compare tool " + traceback.format_exc()
+                        message += "While running compare tool " + format_exc()
                         returnstatus = status.HTTP_400_BAD_REQUEST
                     if (erroroccurred == False):
                         returnstatus = status.HTTP_201_CREATED
@@ -368,7 +367,7 @@ def compare(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
             except :
-                message = traceback.format_exc()
+                message = format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 jpype.detachThreadFromJVM()
             query = CompareFileUpload.objects.create(
