@@ -8,10 +8,8 @@ from django.urls import reverse
 
 from app.models import UserID
 
-from django_downloadview.test import temporary_media_root
-
 import jpype
-# Create your tests here.
+
 
 class IndexViewsTestCase(TestCase):
 
@@ -299,10 +297,6 @@ class ConvertViewsTestCase(TestCase):
         self.assertEqual(resp.context["Content-Type"],"application/rdf+xml")
         self.tv_file.close()
         self.client.logout()
-        # global_media_root = settings.MEDIA_ROOT
-        # with temporary_media_root():
-        #     self.assertNotEqual(global_media_root,settings.MEDIA_ROOT)
-        # self.assertEqual(global_media_root,settings.MEDIA_ROOT)
 
     def test_convert_tagtoxlsx(self):
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
