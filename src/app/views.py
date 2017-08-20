@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2017 Rohit Lodha
+# Copyright (c) 2017 Rohit Lodha 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,9 +14,8 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import render,render_to_response
-from django.http import HttpResponse,HttpResponseRedirect,HttpResponseBadRequest,JsonResponse,HttpResponseForbidden
+from django.http import HttpResponse,HttpResponseRedirect
 from django.contrib.auth import authenticate,login ,logout,update_session_auth_hash
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django import forms
 from django.template import RequestContext
@@ -25,15 +24,16 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDictKeyError
 
+import jpype
+from traceback import format_exc
+from os.path import abspath
+from json import dumps
+from time import time
+from urlparse import urljoin
+
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 
-import jpype
-import traceback
-import os
-import json
-from time import time
-from urlparse import urljoin
 
 def index(request):
     context_dict={}
@@ -49,7 +49,7 @@ def validate(request):
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =os.path.abspath(".")+"/tool.jar"
+                classpath =abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ If JVM started, attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -71,7 +71,7 @@ def validate(request):
                             ajaxdict=dict()
                             ajaxdict["type"] = "warning"
                             ajaxdict["data"] = "The following warning(s) were raised: " + str(retval)
-                            response = json.dumps(ajaxdict)
+                            response = dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
                             return HttpResponse(response,status=400)
                         context_dict["error"] = retval
@@ -80,7 +80,7 @@ def validate(request):
                     if (request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = "This SPDX Document is valid."
-                        response = json.dumps(ajaxdict)
+                        response = dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=200)
                     jpype.detachThreadFromJVM()
@@ -90,7 +90,7 @@ def validate(request):
                         ajaxdict=dict()
                         ajaxdict["type"] = "error"
                         ajaxdict["data"] = "No file uploaded"
-                        response = json.dumps(ajaxdict)
+                        response = dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=404)
                     context_dict["error"] = "No file uploaded"
@@ -102,7 +102,7 @@ def validate(request):
                     ajaxdict=dict()
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = jpype.JavaException.message(ex)
-                    response = json.dumps(ajaxdict)
+                    response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=400)
                 context_dict["error"] = jpype.JavaException.message(ex)
@@ -114,7 +114,7 @@ def validate(request):
                     ajaxdict=dict()
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "No files selected." 
-                    response = json.dumps(ajaxdict)
+                    response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
                 context_dict["error"] = "No files selected." 
@@ -124,11 +124,11 @@ def validate(request):
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["type"] = "error"
-                    ajaxdict["data"] = traceback.format_exc() 
-                    response = json.dumps(ajaxdict)
+                    ajaxdict["data"] = format_exc() 
+                    response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=400)
-                context_dict["error"] = traceback.format_exc() 
+                context_dict["error"] = format_exc() 
                 jpype.detachThreadFromJVM()    
                 return render(request, 'app/validate.html',context_dict,status=400)
         else :
@@ -142,7 +142,7 @@ def compare(request):
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =os.path.abspath(".")+"/tool.jar"
+                classpath =abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ If JVM started, attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -175,7 +175,7 @@ def compare(request):
                                     ajaxdict["type"] = "error"
                                     ajaxdict["files"] = filelist
                                     ajaxdict["errors"] = errorlist 
-                                    response = json.dumps(ajaxdict)
+                                    response = dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=404)
                                 context_dict["error"] = "No files selected."
@@ -204,7 +204,7 @@ def compare(request):
                                 """ Other Exceptions"""
                                 erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append(traceback.format_exc())
+                                errorlist.append(format_exc())
                         """ If no errors in any of the file"""        
                         if (erroroccurred==False):
                             """ Call the java function with parameters as list"""
@@ -215,8 +215,8 @@ def compare(request):
                                     ajaxdict["type"] = "warning2"
                                     ajaxdict["files"] = filelist
                                     ajaxdict["errors"] = errorlist
-                                    ajaxdict["toolerror"] = traceback.format_exc()
-                                    response = json.dumps(ajaxdict)
+                                    ajaxdict["toolerror"] = format_exc()
+                                    response = dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=400)
                                 context_dict["type"] = "warning2"
@@ -227,7 +227,7 @@ def compare(request):
                                 if (request.is_ajax()):
                                     newajaxdict=dict()
                                     newajaxdict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
-                                    response = json.dumps(newajaxdict)
+                                    response = dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response)
                                 context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
@@ -242,7 +242,7 @@ def compare(request):
                                     ajaxdict["files"] = filelist
                                     ajaxdict["errors"] = errorlist
                                     ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
-                                    response = json.dumps(newajaxdict)
+                                    response = dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=400)
                                 context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
@@ -256,7 +256,7 @@ def compare(request):
                                 ajaxdict["type"] = "error"
                                 ajaxdict["files"] = filelist
                                 ajaxdict["errors"] = errorlist
-                                response = json.dumps(ajaxdict)
+                                response = dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=400)
                             context_dict["error"]= errorlist
@@ -276,7 +276,7 @@ def compare(request):
                         ajaxdict["type"] = "error"
                         ajaxdict["files"] = filelist
                         ajaxdict["errors"] = errorlist 
-                        response = json.dumps(ajaxdict)
+                        response = dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=404)
                     context_dict["error"] = "No files selected."
@@ -321,7 +321,7 @@ def compare(request):
                                 """ Other Exceptions"""
                                 erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append(traceback.format_exc())
+                                errorlist.append(format_exc())
                         """ If no errors in any of the file"""        
                         if (erroroccurred==False):
                             """ Call the java function with parameters as list"""
@@ -332,8 +332,8 @@ def compare(request):
                                     ajaxdict["type"] = "warning2"
                                     ajaxdict["files"] = filelist
                                     ajaxdict["errors"] = errorlist
-                                    ajaxdict["toolerror"] = traceback.format_exc()
-                                    response = json.dumps(ajaxdict)
+                                    ajaxdict["toolerror"] = format_exc()
+                                    response = dumps(ajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=400)
                                 context_dict["type"] = "warning2"
@@ -344,7 +344,7 @@ def compare(request):
                                 if (request.is_ajax()):
                                     newajaxdict=dict()
                                     newajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ rfilename
-                                    response = json.dumps(newajaxdict)
+                                    response = dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response)
                                 context_dict["Content-Type"] = "application/vnd.ms-excel"
@@ -359,7 +359,7 @@ def compare(request):
                                     ajaxdict["files"] = filelist
                                     ajaxdict["errors"] = errorlist
                                     ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
-                                    response = json.dumps(newajaxdict)
+                                    response = dumps(newajaxdict)
                                     jpype.detachThreadFromJVM()
                                     return HttpResponse(response,status=406)
                                 context_dict["Content-Type"] = "application/vnd.ms-excel"
@@ -373,7 +373,7 @@ def compare(request):
                                 ajaxdict["files"] = filelist
                                 ajaxdict["type"] = "error"
                                 ajaxdict["errors"] = errorlist
-                                response = json.dumps(ajaxdict)
+                                response = dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=400)   
                             context_dict["type"] = "error"
@@ -393,7 +393,7 @@ def compare(request):
                         ajaxdict["files"] = filelist
                         ajaxdict["type"] = "error"
                         ajaxdict["errors"] = errorlist 
-                        response = json.dumps(ajaxdict)
+                        response = dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=404)
                     context_dict["error"] = "Select atleast two files"
@@ -428,7 +428,7 @@ def convert(request):
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =os.path.abspath(".")+"/tool.jar"
+                classpath =abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ If JVM started, attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -515,7 +515,7 @@ def convert(request):
                     if (warningoccurred==False) :
                         if (request.is_ajax()):
                             ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
-                            response = json.dumps(ajaxdict)
+                            response = dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
                             return HttpResponse(response)
                         context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(convertfile)
@@ -529,7 +529,7 @@ def convert(request):
                             ajaxdict["type"] = "warning"
                             ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ": " + str(retval)
                             ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
-                            response = json.dumps(ajaxdict)
+                            response = dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
                             return HttpResponse(response,status=406)
                         context_dict["error"] = str(retval)
@@ -548,7 +548,7 @@ def convert(request):
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = jpype.JavaException.message(ex)
-                    response = json.dumps(ajaxdict)
+                    response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=400)
                 context_dict["type"] = "error"
@@ -560,7 +560,7 @@ def convert(request):
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "No files selected." 
-                    response = json.dumps(ajaxdict)
+                    response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
                 context_dict["type"] = "error"
@@ -570,12 +570,12 @@ def convert(request):
             except :
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
-                    ajaxdict["data"] = traceback.format_exc()
-                    response = json.dumps(ajaxdict)
+                    ajaxdict["data"] = format_exc()
+                    response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=400)
                 context_dict["type"] = "error"
-                context_dict["error"] = traceback.format_exc()
+                context_dict["error"] = format_exc()
                 jpype.detachThreadFromJVM()    
                 return render(request, 'app/convert.html',context_dict,status=400)
         else :
@@ -590,7 +590,7 @@ def check_license(request):
             licensetext = request.POST.get('licensetext')
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =os.path.abspath(".")+"/tool.jar"
+                classpath =abspath(".")+"/tool.jar"
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ If JVM started, attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -607,7 +607,7 @@ def check_license(request):
                     if (request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = matching_str
-                        response = json.dumps(ajaxdict)
+                        response = dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response)
                     jpype.detachThreadFromJVM()
@@ -616,7 +616,7 @@ def check_license(request):
                     if (request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = "There are no matching SPDX listed licenses"
-                        response = json.dumps(ajaxdict)
+                        response = dumps(ajaxdict)
                         jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=404)
                     jpype.detachThreadFromJVM()
@@ -625,7 +625,7 @@ def check_license(request):
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = jpype.JavaException.message(ex)
-                    response = json.dumps(ajaxdict)
+                    response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
                 context_dict["error"] = jpype.JavaException.message(ex)
@@ -634,11 +634,11 @@ def check_license(request):
             except :
                 if (request.is_ajax()):
                     ajaxdict=dict()
-                    ajaxdict["data"] = traceback.format_exc()
-                    response = json.dumps(ajaxdict)
+                    ajaxdict["data"] = format_exc()
+                    response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
-                context_dict["error"] = traceback.format_exc()
+                context_dict["error"] = format_exc()
                 jpype.detachThreadFromJVM()    
                 return HttpResponse(context_dict,status=404)
         else:
@@ -660,7 +660,7 @@ def loginuser(request):
                     ajaxdict=dict()
                     ajaxdict["data"] = "Success"
                     ajaxdict["next"] = "/app/"
-                    response = json.dumps(ajaxdict)
+                    response = dumps(ajaxdict)
                     return HttpResponse(response)
                 return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
             else:
@@ -750,11 +750,11 @@ def checkusername(request):
     if 'username' in request.POST:
         users = User.objects.filter(username=request.POST["username"])
         if (len(users)>0):
-            return HttpResponse(json.dumps({"data": "Already Exist."}),status=404)
+            return HttpResponse(dumps({"data": "Already Exist."}),status=404)
         else :
-            return HttpResponse(json.dumps({"data": "Success"}),status=200) 
+            return HttpResponse(dumps({"data": "Success"}),status=200) 
     else :
-        return HttpResponse(json.dumps({"data": "No username entered"}),status=400)
+        return HttpResponse(dumps({"data": "No username entered"}),status=400)
 
 
 def handler400(request):

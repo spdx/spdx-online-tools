@@ -6,9 +6,9 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.urls import reverse
 
-from app.models import UserID
-
 import jpype
+
+from app.models import UserID
 
 
 class IndexViewsTestCase(TestCase):

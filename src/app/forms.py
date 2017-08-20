@@ -21,6 +21,7 @@ from app.models import UserID
 
 
 class UserRegisterForm(forms.ModelForm):
+
     password = forms.CharField(widget=forms.PasswordInput())
     confirm_password = forms.CharField(widget=forms.PasswordInput())
     def clean_username(self):
@@ -39,16 +40,19 @@ class UserRegisterForm(forms.ModelForm):
         fields = ('first_name','last_name','email','username','password','confirm_password')
 
 class UserProfileForm(forms.ModelForm):
+
     class Meta:
         model = UserID
         fields = ('organisation',)
 
 class InfoForm(forms.ModelForm):
+
     class Meta:
         model = User
         fields = ('first_name','last_name','email')
 
 class OrgInfoForm(forms.ModelForm):
+    
     class Meta:
         model = UserID
         fields = ('organisation',)
