@@ -86,19 +86,27 @@ function checkform() {
               },
               error: function (e) {
                   console.log("ERROR : ", e);
-                  var obj = JSON.parse(e.responseText);
                   $("#modal-header").removeClass("green-modal");
-                  if (obj.type=="warning"){
-                    $("#modal-header").removeClass("red-modal");
-                    $("#modal-header").addClass("yellow-modal");
-                    $("#modal-title").html("Warning!");
+                  try {
+                  	var obj = JSON.parse(e.responseText);
+                  	if (obj.type=="warning"){
+	                    $("#modal-header").removeClass("red-modal");
+	                    $("#modal-header").addClass("yellow-modal");
+	                    $("#modal-title").html("Warning!");
+	                }
+	                else if (obj.type=="error"){
+	                    $("#modal-header").removeClass("yellow-modal");
+	                    $("#modal-header").addClass("red-modal");
+	                    $("#modal-title").html("Error!");
+	                }
+	                $("#modal-body").text(obj.data);
                   }
-                  else if (obj.type=="error"){
-                    $("#modal-header").removeClass("yellow-modal");
+                  catch (e){
+                  	$("#modal-header").removeClass("yellow-modal");
                     $("#modal-header").addClass("red-modal");
                     $("#modal-title").html("Error!");
+                    $("#modal-body").text("The application could not be connected. Please try later.");
                   }
-                  $("#modal-body").text(obj.data);
                   $("#myModal").modal({
                           backdrop: 'static',
                           keyboard: true, 
