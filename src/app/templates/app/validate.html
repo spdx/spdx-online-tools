@@ -93,12 +93,12 @@ function checkform() {
 	                    $("#modal-header").removeClass("red-modal");
 	                    $("#modal-header").addClass("yellow-modal");
 	                    $("#modal-title").html("Warning!");
-	                }
+	                  }
 	                else if (obj.type=="error"){
 	                    $("#modal-header").removeClass("yellow-modal");
 	                    $("#modal-header").addClass("red-modal");
 	                    $("#modal-title").html("Error!");
-	                }
+	                  }
 	                $("#modal-body").text(obj.data);
                   }
                   catch (e){
