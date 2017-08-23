@@ -23,6 +23,7 @@ from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.forms import PasswordChangeForm 
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDictKeyError
+from django.contrib.auth.decorators import login_required
 
 import jpype
 from traceback import format_exc
@@ -849,6 +850,7 @@ def register(request):
     else :
         return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
 
+@login_required
 def logoutuser(request):
     """Flush session and logout user """
     request.session.flush()
