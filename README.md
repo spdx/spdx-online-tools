@@ -1,5 +1,4 @@
-![GSoC Logo](https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-logo-horizontal.svg)(https://summerofcode.withgoogle.com/projects/#5747767629578240)
-
+[![GSoC Logo](https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-logo-horizontal.svg)](https://summerofcode.withgoogle.com/projects/#5747767629578240)
 # spdx-online-tools
 Source for the website providing online SPDX tools.
 The tool would provide an an easy all-in-one website to upload, parse, validate, compare, convert and search SPDX license list and documents.
