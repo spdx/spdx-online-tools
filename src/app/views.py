@@ -726,7 +726,7 @@ def check_license(request):
                     context_dict["success"] = str(matching_str)
                     jpype.detachThreadFromJVM()
                     return render(request, 
-                        'app/check_license.html',context_dict
+                        'app/check_license.html',context_dict,status=200
                         )
                 else:
                     if (request.is_ajax()):
