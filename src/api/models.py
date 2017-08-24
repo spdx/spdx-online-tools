@@ -23,6 +23,7 @@ class ValidateFileUpload(models.Model):
     owner = models.ForeignKey(User, to_field='id')
     file = models.FileField()
     result = models.CharField(max_length=128,null=False,blank=False)
+    status = models.IntegerField(default=200,blank=False)
 
 class ConvertFileUpload(models.Model):
 
@@ -34,6 +35,7 @@ class ConvertFileUpload(models.Model):
     result = models.CharField(max_length=32,null=False,blank=False)
     message = models.CharField(max_length=64,null=False,blank=False)
     file = models.FileField()
+    status = models.IntegerField(default=200,blank=False)
 
 class CompareFileUpload(models.Model):
     
@@ -44,3 +46,4 @@ class CompareFileUpload(models.Model):
     file1 = models.FileField()
     file2 = models.FileField()
     rfilename = models.CharField(max_length=32,null=False,blank=False)
+    status = models.IntegerField(default=200,blank=False)

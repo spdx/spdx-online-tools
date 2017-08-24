@@ -87,29 +87,35 @@ def validate(request):
                     if (len(retval) > 0):
                         result = "The following error(s)/warning(s) were raised: " + str(retval)
                         returnstatus = status.HTTP_400_BAD_REQUEST
+                        httpstatus = 400
                         jpype.detachThreadFromJVM()
                     else :
                         result = "This SPDX Document is valid."
                         returnstatus = status.HTTP_201_CREATED
+                        httpstatus = 201
                         jpype.detachThreadFromJVM()
                 else :
                     result = "File Not Uploaded"
                     returnstatus = status.HTTP_400_BAD_REQUEST
+                    httpstatus = 400
                     jpype.detachThreadFromJVM()
             except jpype.JavaException,ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
                 result = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
                 returnstatus = status.HTTP_400_BAD_REQUEST
+                httpstatus = 400
                 jpype.detachThreadFromJVM()
             except :
                 """ Other errors raised"""
                 result = format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
+                httpstatus = 400
                 jpype.detachThreadFromJVM()
             query = ValidateFileUpload.objects.create(
                 owner=request.user,
                 file=request.data.get('file'),
-                result=result
+                result=result,
+                status = httpstatus,
                 )
             serial = ValidateSerializerReturn(instance=query)
             return Response(
@@ -199,6 +205,7 @@ def convert(request):
                         else :
                             message = "Select valid conversion types."
                             returnstatus = status.HTTP_400_BAD_REQUEST
+                            httpstatus = 400
                             jpype.detachThreadFromJVM()
                     elif (option1=="RDF"):
                         print ("Verifing for RDF Document")
@@ -229,6 +236,7 @@ def convert(request):
                         else :
                             message = "Select valid conversion types."
                             returnstatus = status.HTTP_400_BAD_REQUEST
+                            httpstatus = 400
                             jpype.detachThreadFromJVM()
                     elif (option1=="Spreadsheet"):
                         print ("Verifing for Spreadsheet Document")
@@ -251,27 +259,33 @@ def convert(request):
                         else :
                             message = "Select valid conversion types."
                             returnstatus = status.HTTP_400_BAD_REQUEST
+                            httpstatus = 400
                             jpype.detachThreadFromJVM()
                     if (warningoccurred == True ):
                         message = "The following error(s)/warning(s) were raised: " + str(retval)
                         result = "/media/" + folder+"/"+ convertfile
                         returnstatus = status.HTTP_406_NOT_ACCEPTABLE
+                        httpstatus = 406
                         jpype.detachThreadFromJVM()
                     else :
                         result = "/media/" + folder+"/"+ convertfile
                         returnstatus = status.HTTP_201_CREATED
+                        httpstatus = 201
                         jpype.detachThreadFromJVM()
                 else :
                     message = "File Not Found"
                     returnstatus = status.HTTP_400_BAD_REQUEST
+                    httpstatus = 400
                     jpype.detachThreadFromJVM()
             except jpype.JavaException,ex :
                 message = jpype.JavaException.message(ex)
                 returnstatus = status.HTTP_400_BAD_REQUEST
+                httpstatus = 400
                 jpype.detachThreadFromJVM() 
             except :
                 message = format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
+                httpstatus = 400
                 jpype.detachThreadFromJVM() 
             query = ConvertFileUpload.objects.create(
                 owner=request.user,
@@ -279,7 +293,8 @@ def convert(request):
                 result=result,message=message,
                 from_format=request.POST["from_format"],
                 to_format=request.POST["to_format"],
-                cfilename=request.POST["cfilename"]
+                cfilename=request.POST["cfilename"],
+                status =httpstatus
                 )
             serial = ConvertSerializerReturn(instance=query)
             return Response(
@@ -349,26 +364,33 @@ def compare(request):
                         compareclass.onlineFunction(callfunc)
                         result = "/media/" + folder+"/"+ rfilename
                         returnstatus = status.HTTP_201_CREATED
+                        httpstatus = 201
                     except :
                         message += "While running compare tool " + format_exc()
                         returnstatus = status.HTTP_400_BAD_REQUEST
+                        httpstatus = 400
                     if (erroroccurred == False):
                         returnstatus = status.HTTP_201_CREATED
+                        httpstatus = 201
                     else :
                         returnstatus = status.HTTP_406_BAD_REQUEST
+                        httpstatus = 406
                     jpype.detachThreadFromJVM()
                 else :
                     message = "File Not Uploaded"
                     returnstatus = status.HTTP_400_BAD_REQUEST
+                    httpstatus = 400
                     jpype.detachThreadFromJVM()
             except jpype.JavaException,ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
                 message = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
                 returnstatus = status.HTTP_400_BAD_REQUEST
+                httpstatus = 400
                 jpype.detachThreadFromJVM()
             except :
                 message = format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
+                httpstatus = 400
                 jpype.detachThreadFromJVM()
             query = CompareFileUpload.objects.create(
                 owner=request.user,
@@ -376,7 +398,8 @@ def compare(request):
                 file1=request.data.get('file1'),
                 file2=request.data.get('file2'),
                 rfilename = rfilename,
-                result=result
+                result=result,
+                status=httpstatus
                 )
             serial = CompareSerializerReturn(instance=query)
             return Response(

@@ -34,7 +34,7 @@ class ValidateSerializerReturn(serializers.ModelSerializer):
     """RETURN validate API fields serializer"""
     class Meta:
         model = ValidateFileUpload
-        fields = ('created', 'file', 'owner','result')
+        fields = ('created', 'file', 'owner','result','status')
 
 class ConvertSerializer(serializers.HyperlinkedModelSerializer):
     """POST convert API fields serializer"""
@@ -50,7 +50,7 @@ class ConvertSerializerReturn(serializers.ModelSerializer):
     """RETURN convert API fields serializer"""
     class Meta:
         model = ConvertFileUpload
-        fields = ('created', 'file', 'owner','result','from_format','to_format','cfilename','message')
+        fields = ('created', 'file', 'owner','result','from_format','to_format','cfilename','message','status')
 
 class CompareSerializer(serializers.HyperlinkedModelSerializer):
     """POST compare API fields serializer"""
@@ -66,4 +66,4 @@ class CompareSerializerReturn(serializers.ModelSerializer):
     """RETURN compare API fields serializer"""
     class Meta:
         model = CompareFileUpload
-        fields = ('created', 'file1','file2', 'owner','result','rfilename','message')
+        fields = ('created', 'file1','file2', 'owner','result','rfilename','message','status')
