@@ -1,7 +1,8 @@
 [![GSoC Logo](https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-logo-horizontal.svg)](https://summerofcode.withgoogle.com/projects/#5747767629578240)
 # spdx-online-tools
 Source for the website providing online SPDX tools.
-The tool would provide an an easy all-in-one website to upload, parse, validate, compare, convert and search SPDX license list and documents.
+The tool provides an easy all-in-one website to upload, parse, validate, compare, convert and search SPDX license list and documents.  
+[Here](https://github.com/spdx/spdx-online-tools/wiki/Online-SPDX-Tool,-Google-Summer-of-Code-2017) you can find more about the working of the tool.
 
 ## Features
 * Upload and parse SPDX Documents
@@ -10,15 +11,33 @@ The tool would provide an an easy all-in-one website to upload, parse, validate,
 * Convert one SPDX format to another
 * Compare License text to the SPDX listed Licenses
 
+## Requirements (Linux/Debian/Ubuntu)  
+
+Either the Sun/Oracle JDK/JRE Variant or OpenJDK. Python 2.6+ (including Python 3+).  
+
+Debian/Ubuntu users will have to install g++ and python-dev first:  
+```
+sudo apt-get install g++ python-dev
+```
+
+## Requirements (Windows)  
+
+Windows users need a Python installation and C++ compiler:
+
+* Install some version of Python (2.7 or higher), e.g., [Anaconda](https://www.continuum.io/downloads) is a good choice for users not yet familiar with the language
+* Install a [Windows C++ Compiler](http://landinghub.visualstudio.com/visual-cpp-build-tools)
+
+
 ## Installation
 1. Clone or download the repository. 
-2. Create a new virtual environment for the project.
+2. Create a new virtual environment for the project. To download virtual environment run ```pip install virtualenv```
     ```bash
     virtualenv venv
     source venv/bin/activate
     ```
 3. Install the required python libraries given in the requirements.txt file.
     ```bash
+    cd spdx-online-tools
     pip install -r requirements.txt
     ```
 4. Run Django migrate.
@@ -36,11 +55,14 @@ The tool would provide an an easy all-in-one website to upload, parse, validate,
     
 ## How to Run Tests
     
-    ```bash
-    python manage.py test
-    ```
+```
+python manage.py test
+```
 
 ## How to Use API
+
+**[Here](https://github.com/spdx/spdx-online-tools/wiki/REST-API-Fields-Request-and-Response) is the exhaustive list of request and response fields of different api tools.**
+
 1. Start the server.
     ```bash
     python manage.py runserver
