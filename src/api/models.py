@@ -16,12 +16,15 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.db import models
 
+def user_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/<username>/<filename>
+    return 'apifiles/{0}/{1}'.format(instance.owner.username, filename)
 
 class ValidateFileUpload(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, to_field='id')
-    file = models.FileField()
+    file = models.FileField(upload_to=user_directory_path)
     result = models.CharField(max_length=128,null=False,blank=False)
     status = models.IntegerField(default=200,blank=False)
 
@@ -34,7 +37,7 @@ class ConvertFileUpload(models.Model):
     cfilename = models.CharField(max_length=32,null=False,blank=False)
     result = models.CharField(max_length=32,null=False,blank=False)
     message = models.CharField(max_length=64,null=False,blank=False)
-    file = models.FileField()
+    file = models.FileField(upload_to=user_directory_path)
     status = models.IntegerField(default=200,blank=False)
 
 class CompareFileUpload(models.Model):
@@ -43,7 +46,7 @@ class CompareFileUpload(models.Model):
     owner = models.ForeignKey(User, to_field='id')
     result = models.CharField(max_length=32,null=False,blank=False)
     message = models.CharField(max_length=64,null=False,blank=False)
-    file1 = models.FileField()
-    file2 = models.FileField()
+    file1 = models.FileField(upload_to=user_directory_path)
+    file2 = models.FileField(upload_to=user_directory_path)
     rfilename = models.CharField(max_length=32,null=False,blank=False)
     status = models.IntegerField(default=200,blank=False)
