@@ -14,6 +14,7 @@ from app.models import UserID
 class IndexViewsTestCase(TestCase):
 
     def test_index(self):
+        """GET Request for index"""
         resp = self.client.get(reverse("index"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.redirect_chain,[])
@@ -23,6 +24,7 @@ class IndexViewsTestCase(TestCase):
 class AboutViewsTestCase(TestCase):
 
     def test_about(self):
+        """GET Request for about"""
         resp = self.client.get(reverse("about"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.redirect_chain,[])
@@ -32,6 +34,7 @@ class AboutViewsTestCase(TestCase):
 class LoginViewsTestCase(TestCase):
 
     def initialise(self):
+        """ Create users"""
         self.credentials = {'username':'testuser','password':'testpass' }
         user = User.objects.create_user(**self.credentials)
         user.is_staff = True
@@ -49,6 +52,7 @@ class LoginViewsTestCase(TestCase):
         user3.save()
 
     def test_login(self):
+        """GET Request for login"""
         resp = self.client.get(reverse("login"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.redirect_chain,[])
@@ -56,6 +60,7 @@ class LoginViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"loginuser")
 
     def test_postlogin(self):
+        """POST Request for index with different user types."""
         self.initialise()
         resp = self.client.post(reverse("login"),self.credentials,follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
@@ -96,6 +101,7 @@ class RegisterViewsTestCase(TestCase):
             "password":self.password,"confirm_password":self.password,"organisation":"spdx"}
             
     def test_register(self):
+        """GET Request for register"""
         resp = self.client.get(reverse("register"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertTrue('user_form' in resp.context)
@@ -105,6 +111,7 @@ class RegisterViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"register")
 
     def test_formregister(self):
+        """POST Request for register"""
         self.initialise()
         resp = self.client.post(reverse("register"),self.data,follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
@@ -122,6 +129,7 @@ class RegisterViewsTestCase(TestCase):
 class ValidateViewsTestCase(TestCase):
 
     def test_validate(self):
+        """GET Request for validate"""
         if not settings.ANONYMOUS_LOGIN_ENABLED :
             resp = self.client.get(reverse("validate"),follow=True,secure=True)
             self.assertNotEqual(resp.redirect_chain,[])
@@ -137,6 +145,7 @@ class ValidateViewsTestCase(TestCase):
         self.client.logout()
         
     def test_validate_post_without_login(self):
+        """POST Request for validate without login or ANONYMOUS_LOGIN_DISABLED """
         if not settings.ANONYMOUS_LOGIN_ENABLED :
             self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
             resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
@@ -146,6 +155,7 @@ class ValidateViewsTestCase(TestCase):
             self.assertEqual(resp.status_code,200)
 
     def test_validate_post_without_file(self):
+        """POST Request for validate without file upload"""
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         resp = self.client.post(reverse("validate"),{},follow=True,secure=True)
         self.assertEqual(resp.status_code,404)
@@ -154,6 +164,7 @@ class ValidateViewsTestCase(TestCase):
         self.client.logout()
 
     def test_upload_tv(self):
+        """POST Request for validate validating tag value files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
         resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
@@ -162,6 +173,7 @@ class ValidateViewsTestCase(TestCase):
         self.client.logout()
 
     def test_upload_rdf(self):
+        """POST Request for validate validating rdf files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
         resp = self.client.post(reverse("validate"),{'file' : self.rdf_file},follow=True,secure=True)
@@ -171,6 +183,7 @@ class ValidateViewsTestCase(TestCase):
         self.client.logout()
     
     def test_upload_other(self):
+        """POST Request for validate validating other files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         self.other_file = open("examples/Other.txt")
         resp = self.client.post(reverse("validate"),{'file' : self.other_file},follow=True,secure=True)
@@ -180,6 +193,7 @@ class ValidateViewsTestCase(TestCase):
         self.client.logout()
 
     def test_upload_inv_tv(self):
+        """POST Request for validate validating tag value files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         self.invalid_tv_file = open("examples/SPDXTagExample-v2.0_invalid.spdx")
         resp = self.client.post(reverse("validate"),{'file' : self.invalid_tv_file},follow=True)
@@ -189,6 +203,7 @@ class ValidateViewsTestCase(TestCase):
         self.client.logout()
 
     def test_upload_inv_rdf(self):
+        """POST Request for validate validating rdf files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         self.invalid_rdf_file = open("examples/SPDXRdfExample-v2.0_invalid.rdf")
         resp = self.client.post(reverse("validate"),{'file' : self.invalid_rdf_file},follow=True)
@@ -200,16 +215,19 @@ class ValidateViewsTestCase(TestCase):
 class CompareViewsTestCase(TestCase):
 
     def initialise(self):
+        """ Open files"""
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
         self.rdf_file2 = open("examples/SPDXRdfExample.rdf")
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
 
     def exit(self):
+        """ Close files"""
         self.rdf_file.close()
         self.rdf_file2.close()
         self.tv_file.close()
 
     def test_compare(self):
+        """GET Request for compare"""
         if not settings.ANONYMOUS_LOGIN_ENABLED :
             resp = self.client.get(reverse("compare"),follow=True,secure=True)
             self.assertNotEqual(resp.redirect_chain,[])
@@ -224,6 +242,7 @@ class CompareViewsTestCase(TestCase):
         self.client.logout()
 
     def test_compare_post_without_login(self):
+        """POST Request for compare without login or ANONYMOUS_LOGIN_ENABLED==False """
         if not settings.ANONYMOUS_LOGIN_ENABLED :
             self.initialise()
             resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': "2" ,'rfilename': "comparetest",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
@@ -233,6 +252,7 @@ class CompareViewsTestCase(TestCase):
             self.exit()
 
     def test_compare_post_without_file(self):
+        """POST Request for compare without file upload"""
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
         resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': "2" ,'rfilename': "comparetest"},follow=True,secure=True)
@@ -243,6 +263,7 @@ class CompareViewsTestCase(TestCase):
         self.client.logout()
 
     def test_compare_post_without_valid_compare_method(self):
+        """POST Request for compare without valid compare method-- compare one by one or compare all at once"""
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
         resp = self.client.post(reverse("compare"),{'nofile': "2" ,'rfilename': "comparetest",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
@@ -253,6 +274,7 @@ class CompareViewsTestCase(TestCase):
         self.client.logout()
 
     def test_compare_two_rdf(self):
+        """POST Request for comparing two rdf files"""
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
         resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': '2' ,'rfilename': 'comparetest','file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
@@ -266,6 +288,7 @@ class CompareViewsTestCase(TestCase):
         self.client.logout()
 
     def test_compare_invalid_rdf(self):
+        """POST Request for comparing two files"""
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
         resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': '2' ,'rfilename': 'comparetest','file1' : self.rdf_file, 'file2' : self.tv_file},follow=True,secure=True)
@@ -280,6 +303,7 @@ class CompareViewsTestCase(TestCase):
 class ConvertViewsTestCase(TestCase):
 
     def test_convert(self):
+        """GET Request for convert"""
         if not settings.ANONYMOUS_LOGIN_ENABLED :
             resp = self.client.get(reverse("convert"),follow=True,secure=True)
             self.assertEqual(resp.status_code,200)
@@ -294,6 +318,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.logout()
 
     def test_convert_tagtordf(self):
+        """POST Request for convert tag to rdf"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
         resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True,secure=True)
@@ -307,6 +332,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.logout()
 
     def test_convert_tagtoxlsx(self):
+        """POST Request for convert tag to spreadsheet"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
         resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".xlsx",'from_format' : "Tag", 'to_format' : "Spreadsheet", 'file' : self.tv_file},follow=True)
@@ -320,6 +346,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.logout()
 
     def test_convert_rdftotag(self):
+        """POST Request for convert rdf to tag"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
         resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".spdx",'from_format' : "RDF", 'to_format' : "Tag", 'file' : self.rdf_file},follow=True)
@@ -333,6 +360,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.logout()
 
     def test_convert_rdftoxlsx(self):
+        """POST Request for convert rdf to spreadsheet"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
         resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".xlsx",'from_format' : "RDF", 'to_format' : "Spreadsheet", 'file' : self.rdf_file},follow=True)
@@ -346,6 +374,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.logout()
 
     # def test_convert_rdftohtml(self):
+    #     """POST Request for convert rdf to html"""
     #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
     #     self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
     #     resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".html",'from_format' : "RDF", 'to_format' : "Html", 'file' : self.rdf_file},follow=True)
@@ -355,6 +384,7 @@ class ConvertViewsTestCase(TestCase):
     #     self.client.logout()
 
     def test_convert_xlsxtotag(self):
+        """POST Request for convert spreadsheet to tag"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
         resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".spdx",'from_format' : "Spreadsheet", 'to_format' : "Tag", 'file' : self.xls_file},follow=True)
@@ -368,6 +398,7 @@ class ConvertViewsTestCase(TestCase):
         self.client.logout()
 
     def test_convert_xlsxtordf(self):
+        """POST Request for convert spreadsheet to rdf"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
         resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".rdf",'from_format' : "Spreadsheet", 'to_format' : "RDF", 'file' : self.xls_file},follow=True)
@@ -380,12 +411,31 @@ class ConvertViewsTestCase(TestCase):
         self.xls_file.close()
         self.client.logout()
 
+    def test_other_convert_formats(self):
+        """POST Request for converting invalid formats"""
+        self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
+        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
+        resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".html",'from_format' : "Spreadsheet", 'to_format' : "HTML", 'file' : self.xls_file},follow=True)
+        self.assertEqual(resp.status_code,400)
+        self.assertIn("error", resp.context)
+        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".pdf",'from_format' : "RDF", 'to_format' : "PDF", 'file' : self.rdf_file},follow=True)
+        self.assertEqual(resp.status_code,400)
+        self.assertIn("error", resp.context)
+        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".txt",'from_format' : "Tag", 'to_format' : "text", 'file' : self.tv_file},follow=True,secure=True)
+        self.assertEqual(resp.status_code,400)
+        self.assertIn("error", resp.context)
+
+
 class CheckLicenseViewsTestCase(TestCase):
+
     def setUp(self):
         self.licensefile = open("examples/AFL-1.1.txt")
         self.licensetext = self.licensefile.read()
 
     def test_check_license(self):
+        """GET Request for check license"""
         if not settings.ANONYMOUS_LOGIN_ENABLED :
             resp = self.client.get(reverse("check-license"),follow=True,secure=True)
             self.assertEqual(resp.status_code,200)
@@ -433,6 +483,7 @@ class ProfileViewsTestCase(TestCase):
         UserID.objects.get_or_create({"user":self.user,"organisation":"spdx"})
 
     def test_profile(self):
+        """GET Request for profile"""
         resp = self.client.get(reverse("profile"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertNotEqual(resp.redirect_chain,[])
@@ -451,6 +502,7 @@ class ProfileViewsTestCase(TestCase):
         self.client.logout()
 
     def test_saveinfo(self):
+        """POST Request for saving information"""
         self.initialise()
         user = User.objects.get_or_create(username='profiletestuser')[0]
         userid = UserID.objects.get_or_create(user=user)[0]
@@ -473,6 +525,7 @@ class ProfileViewsTestCase(TestCase):
         self.client.logout()
 
     def test_changepwd(self):
+        """POST Request for changing password"""
         self.initialise()
         resp = self.client.login(username='profiletestuser', password='profiletestpass')
         self.assertTrue(resp)
@@ -499,6 +552,7 @@ class CheckUserNameTestCase(TestCase):
         User.objects.create_user(**self.credentials)
 
     def test_check_username(self):
+        """POST Request for checking username"""
         resp = self.client.post(reverse("check-username"),{"username":"spdx"},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         
