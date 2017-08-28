@@ -27,7 +27,6 @@ from django.contrib.auth.decorators import login_required
 
 import jpype
 from traceback import format_exc
-from os.path import abspath
 from json import dumps
 from time import time
 from urlparse import urljoin
@@ -63,7 +62,7 @@ def validate(request):
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it."""
-                classpath =abspath(".")+"/tool.jar"
+                classpath = settings.JAR_ABSOLUTE_PATH
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ Attach a Thread and start processing the request. """
             jpype.attachThreadToJVM()
@@ -176,7 +175,7 @@ def compare(request):
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =abspath(".")+"/tool.jar"
+                classpath =settings.JAR_ABSOLUTE_PATH
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -513,7 +512,7 @@ def convert(request):
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =abspath(".")+"/tool.jar"
+                classpath =settings.JAR_ABSOLUTE_PATH
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -702,7 +701,7 @@ def check_license(request):
             licensetext = request.POST.get('licensetext')
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =abspath(".")+"/tool.jar"
+                classpath =settings.JAR_ABSOLUTE_PATH
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -835,8 +834,6 @@ def register(request):
                 profile.save()
                 return HttpResponseRedirect(settings.REGISTER_REDIRECT_UTL)
             else:
-                print user_form.errors
-                print profile_form.errors
                 context_dict["error1"] = user_form.errors
                 context_dict["error2"] = user_form.errors
         else:

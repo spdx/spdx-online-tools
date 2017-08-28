@@ -66,7 +66,7 @@ def validate(request):
         if serializer.is_valid():
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =abspath(".")+"/tool.jar"
+                classpath =settings.JAR_ABSOLUTE_PATH
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -159,7 +159,7 @@ def convert(request):
         if serializer.is_valid():
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =abspath(".")+"/tool.jar"
+                classpath =settings.JAR_ABSOLUTE_PATH
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
@@ -322,7 +322,7 @@ def compare(request):
         if serializer.is_valid():
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =abspath(".")+"/tool.jar"
+                classpath =settings.JAR_ABSOLUTE_PATH
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
