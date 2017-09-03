@@ -5,3 +5,4 @@
     media/apifiles/<username>/<time>
     
 - API for check license
+- Implement scancode-toolkit in online tools ( Maybe using something similar to aboutcode-manager to display results)
