@@ -162,6 +162,9 @@ HOME_URL="/app/"
 # Online tool usage without login
 ANONYMOUS_LOGIN_ENABLED = True
 
+# Password reset link expiration limit (in days)
+PASSWORD_RESET_TIMEOUT_DAYS = 3
+
 # this will output emails in the console.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # change to EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

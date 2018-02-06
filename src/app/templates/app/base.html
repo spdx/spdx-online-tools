@@ -64,8 +64,11 @@
 .dropdown-menu > li > a {
     color: #0097C4;
 }
+.left-align {
+  text-align: left;
+}
 
-</style>	
+</style>
   <body>
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -86,7 +89,7 @@
             <li><a href="/app/convert/" id="convertpage">Convert</a></li>
 			<li><a href="/app/check_license/" id="checklicensepage">Check License</a></li>
 		  </ul>
-		  <ul class="nav navbar-nav navbar-right" style="margin-right: 25px;font-size: 16px;">	
+		  <ul class="nav navbar-nav navbar-right" style="margin-right: 25px;font-size: 16px;">
 			{% if user.is_authenticated %}
             <!--<li><a href="/app/profile/" id="profilepage">Profile</a></li>-->
             <li><a class="dropdown-toggle" data-toggle="dropdown" href="#">{{user}} <span class="caret"></span></a>
