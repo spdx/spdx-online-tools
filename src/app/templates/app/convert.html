@@ -9,7 +9,7 @@
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead"> Convert to other SPDX format</p> </div>
 <div class="panel-body">
-<form id="convertform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+<form id="convertform" enctype="multipart/form-data" action="{% url 'convert' %}" class = "form-horizontal dropzone" method = "post"  >
 		{% csrf_token %}
 		<div class = "form-group">
 		&nbsp; From &nbsp;
@@ -33,20 +33,27 @@
 		</div>
 		<div class = "form-group">
 			<div class="col-sm-12">
-			<label class="control-label col-sm-3" id="doclabel" >SPDX Document</label>
-				<div class="col-sm-3"> 
-				  <input type="file" id="file" placeholder="" name = "file"  >
-				</div>
-			</div>	
+				<label for="file" class="custom-file-upload-2">
+				    Drag spdx document here
+				</label>
+				<label for="file" class="custom-file-upload-3">
+				    or
+				</label>
+				<label for="file" class="custom-file-upload">
+				    Select file from your computer
+				</label>
+				<input id="file" type="file" name="file" style="width: 100%; display: none"/>
+			</div>
+			</div>
 		</div>
 		<div class = "form-group">
 			<div class="col-sm-12">
 			<label class="control-label col-sm-3" >Converted File Name</label>
-				<div class="col-sm-3"> 
+				<div class="col-sm-3">
 				  <input type="text" id="cfilename" placeholder="" name = "cfilename"  >
 				  <label class="control-label" id="convertdoclabel" ></label>
 				</div>
-			</div>	
+			</div>
 		</div>
     <hr>
 		<input type="hidden" id="cfileformat" name="cfileformat" value="">
@@ -173,7 +180,7 @@ function checkform() {
                   $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
                   $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   });
                   $("#convertbutton").text("Convert");
@@ -206,10 +213,10 @@ function checkform() {
                     $("#modal-title").html("Error!");
                     $("#modal-body").text("The application could not be connected. Please try later.");
               	  }
-                  
+
                   $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   });
                   $("#convertbutton").text("Convert");

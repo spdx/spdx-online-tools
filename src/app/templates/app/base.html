@@ -14,6 +14,7 @@
 
     <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/starter-template.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/dropzone.css' %}" type="text/css" rel="stylesheet"/>
     {% block head_block %}{% endblock %}
 	</head>
 <style>
@@ -64,8 +65,38 @@
 .dropdown-menu > li > a {
     color: #0097C4;
 }
+.custom-file-upload {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+}
 
-</style>	
+.custom-file-upload-2 {
+    display: inline-block;
+    padding: 6px 12px;
+    width: 100%;
+    font-size: 26px;
+    color: #999;
+}
+
+.custom-file-upload-3 {
+    display: inline-block;
+    padding: 6px 12px;
+    width: 100%;
+    font-size: 20px;
+    color: #999;
+}
+
+.btn-bottom {
+    margin-top: 9%;
+}
+.empty-margin {
+  height: 10px;
+  background-color: white;
+}
+
+</style>
   <body>
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -86,7 +117,7 @@
             <li><a href="/app/convert/" id="convertpage">Convert</a></li>
 			<li><a href="/app/check_license/" id="checklicensepage">Check License</a></li>
 		  </ul>
-		  <ul class="nav navbar-nav navbar-right" style="margin-right: 25px;font-size: 16px;">	
+		  <ul class="nav navbar-nav navbar-right" style="margin-right: 25px;font-size: 16px;">
 			{% if user.is_authenticated %}
             <!--<li><a href="/app/profile/" id="profilepage">Profile</a></li>-->
             <li><a class="dropdown-toggle" data-toggle="dropdown" href="#">{{user}} <span class="caret"></span></a>
@@ -117,6 +148,7 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/dropzone.js' %}"></script>
     {% block script_block %}{% endblock %}
   </body>
 </html>
