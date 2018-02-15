@@ -10,25 +10,38 @@
 <div class="panel-heading"> <p class="lead">Compare SPDX RDF Documents</p> </div>
 <div class="panel-body">
 <div class="col-md-6">
-<form id="compareform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+<form id="compareform" enctype="multipart/form-data" action="{% url 'compare' %}" class = "form-horizontal dropzone" method = "post"  >
 		{% csrf_token %}
 		<fieldset>
 			<legend>Upload one by one</legend>
 			<div class = "form-group">
 				<div class="col-sm-12">
-				<label class="control-label col-sm-3" >SPDX Document 1</label>
-					<div class="col-sm-3"> 
-					  <input type="file" id="file1" placeholder="" name = "file1"  >
-					</div>
-				</div>	
+						<label for="file1" class="custom-file-upload-2">
+						    Drag spdx document 1 here
+						</label>
+						<label for="file1" class="custom-file-upload-3">
+						    or
+						</label>
+						<label for="file1" class="custom-file-upload">
+						    Select file from your computer
+						</label>
+						<input id="file1" type="file" name="file1" style="width: 100%; display: none"/>
+				</div>
 			</div>
+			<div class="empty-margin"></div>
 			<div class = "form-group">
 				<div class="col-sm-12">
-				<label class="control-label col-sm-3" >SPDX Document 2</label>
-					<div class="col-sm-3"> 
-					  <input type="file" id="file2" placeholder="" name = "file2"  >
-					</div>
-				</div>	
+						<label for="file2" class="custom-file-upload-2">
+						    Drag spdx document 2 here
+						</label>
+						<label for="file2" class="custom-file-upload-3">
+						    or
+						</label>
+						<label for="file2" class="custom-file-upload">
+						    Select file from your computer
+						</label>
+						<input id="file2" type="file" name="file2" style="width: 100%; display: none"/>
+				</div>
 			</div>
 			<div id="morefiles">
 			</div>
@@ -36,16 +49,16 @@
 				<div class="col-sm-12">
 					<label id="addmore" class="btn btn-md btn-success"><span class="glyphicon glyphicon-plus"></span> Add More Files</label>
 				</div>
-			</div>	
+			</div>
 			<br>
 			<div class = "form-group">
 				<div class="col-sm-12">
 				<label class="control-label col-sm-3" >Result File Name</label>
-					<div class="col-sm-6"> 
+					<div class="col-sm-6">
 					  <input type="text" id="rfilename" placeholder="" name = "rfilename"  >
 					  <label class="control-label" id="convertdoclabel" >.xlsx</label>
 					</div>
-				</div>	
+				</div>
 			</div>
 		<input type="hidden" id="nofile" name="nofile" value="2">
 		<hr>
@@ -60,20 +73,26 @@
 			<legend>Upload all</legend>
 			<div class = "form-group">
 				<div class="col-sm-12">
-				<label class="control-label col-sm-3" >SPDX Document</label>
-					<div class="col-sm-3"> 
-					  <input type="file" id="files" placeholder="" name = "files" multiple>
-					</div>
-				</div>	
+						<label for="files" class="custom-file-upload-2">
+						    Drag spdx documents here
+						</label>
+						<label for="files" class="custom-file-upload-3">
+						    or
+						</label>
+						<label for="files" class="custom-file-upload">
+						    Select files from your computer
+						</label>
+						<input id="files" type="file" name="files" style="width: 100%; display: none" multiple/>
+				</div>
 			</div>
 			<div class = "form-group">
 				<div class="col-sm-12">
 				<label class="control-label col-sm-3" >Result File Name</label>
-					<div class="col-sm-6"> 
+					<div class="col-sm-6">
 					  <input type="text" id="rfilename2" placeholder="" name = "rfilename2"  >
 					  <label class="control-label" id="convertdoclabel" >.xlsx</label>
 					</div>
-				</div>	
+				</div>
 			</div>
 		<hr>
 		<button class=" btn btn-md btn-info" id="comparebutton2" type="submit" name="compareall">Compare</button>
@@ -147,7 +166,7 @@ function checkform2() {
 	                $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
 	                $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   	});
 	                $("#comparebutton1").text("Compare");
@@ -203,7 +222,7 @@ function checkform2() {
 
 	                $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   	});
 	                $("#comparebutton1").text("Compare");
@@ -249,7 +268,7 @@ function checkform2() {
 	                $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
 	                $("#myModal").modal({
 	                        backdrop: 'static',
-	                        keyboard: true, 
+	                        keyboard: true,
 	                        show: true
 	                });
 	                $("#comparebutton2").text("Compare");
@@ -304,7 +323,7 @@ function checkform2() {
 
 	                $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   	});
 	                $("#comparebutton2").text("Compare");
@@ -327,7 +346,7 @@ $(document).ready(function () {
 	$("#addmore").click(function(){
 		var no = parseInt($("#nofile").val());
 		// Limit the no. of files uploaded to 13
-		if (no < 13){ 
+		if (no < 13){
 			$("#nofile").val(no+1);
 			$("#morefiles").append('<div class = "form-group"><div class="col-sm-12"><label class="control-label col-sm-3" >SPDX Document '
 			 + (no+1)
@@ -339,7 +358,7 @@ $(document).ready(function () {
 	        $("#messages").html("");
 	      }, 5000);
 		}
-		
+
 	});
 
 });
