@@ -60,7 +60,7 @@ ROOT_URLCONF = 'src.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['app/templates'], # to enable registration templates overriding
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -148,7 +148,7 @@ REST_FRAMEWORK = {
 }
 
 # Absolute Path for tool.jar
-# The online tool uses spdx-tools-2.1.6-SNAPSHOT-jar-with-dependencies.jar from the compiled target folder of java tools 
+# The online tool uses spdx-tools-2.1.6-SNAPSHOT-jar-with-dependencies.jar from the compiled target folder of java tools
 # renamed (for now) as tool.jar in the main src directory of spdx-online tool
 
 JAR_ABSOLUTE_PATH =  os.path.abspath(".")+"/tool.jar"
@@ -161,3 +161,18 @@ HOME_URL="/app/"
 
 # Online tool usage without login
 ANONYMOUS_LOGIN_ENABLED = True
+
+# Password reset link expiration limit (in days)
+PASSWORD_RESET_TIMEOUT_DAYS = 3
+
+# this will output emails in the console.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# change to EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# after configuring the smtp correctly
+
+EMAIL_HOST = 'smtp.<smtp provider>.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'email@<smtp provider>.com'
+EMAIL_HOST_PASSWORD = 'password'
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'SPDX Team <noreply@spdx.com>'

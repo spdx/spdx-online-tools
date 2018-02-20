@@ -36,16 +36,17 @@
   </div>
 </form>
 <h6> Not a user? <a href="/app/register/">Sign up</a> now!</h6>
+<h6><a href="/app/password_reset/">Forgot password?</a></h6>
 </div>
 </div>
-</div>  
+</div>
 <div class="col-md-3">
 </div>
 {% include "app/modal.html" %}
 
 {% endblock %}
 {% block script_block %}
-<!-- 
+<!--
 <script type="text/javascript">
 // Ajax Login Submit
   $('#login_form').on('submit', function(event){
@@ -59,7 +60,7 @@
             timeout: 600000,
             data: form,
             success: function (data) {
-               window.location = data.next;  
+               window.location = data.next;
             },
             error: function (e) {
                 console.log("ERROR : ", e);
