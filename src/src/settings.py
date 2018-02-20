@@ -170,9 +170,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # change to EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # after configuring the smtp correctly
 
-EMAIL_HOST = 'smtp.<smtp provider>.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'email@<smtp provider>.com'
-EMAIL_HOST_PASSWORD = 'password'
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'SPDX Team <noreply@spdx.com>'
+# EMAIL_HOST = 'smtp.<smtp provider>.com'
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'email@<smtp provider>.com'
+# EMAIL_HOST_PASSWORD = 'password'
+# EMAIL_USE_TLS = True
+# DEFAULT_FROM_EMAIL = 'SPDX Team <noreply@spdx.com>'
