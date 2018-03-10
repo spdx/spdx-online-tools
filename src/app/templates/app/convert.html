@@ -9,7 +9,7 @@
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead"> Convert to other SPDX format</p> </div>
 <div class="panel-body">
-<form id="convertform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+<form id="convertform" enctype="multipart/form-data" class = "form-horizontal" method = "post" >
 		{% csrf_token %}
 		<div class = "form-group">
 		&nbsp; From &nbsp;
@@ -29,8 +29,17 @@
 				  <option value="Spreadsheet" data-value="RDF">Spreadsheet</option>
 				  <option value="Tag" data-value="Spreadsheet">Tag</option>
 				  <option value="RDF" data-value="Spreadsheet">RDF</option>
-			</select>
-		</div>
+      </select>
+    </div>
+    <div class="tagToRdfOptions" style="display:block; margin:10px auto; color:grey;">
+      <span id="tagToRdfText">&nbsp; RDF Output Format &nbsp;</span>
+      <select name="tagToRdfFormat" id="tagToRdfFormat" disabled="true">
+        <option value="RDF/XML-ABBREV" selected="">RDF/XML-ABBREV</option>
+        <option value="RDF/XML">RDF/XML</option>
+        <option value="N-TRIPLET">N-TRIPLET</option>
+        <option value="TURTLE">TURTLE</option>
+      </select>
+    </div>
 		<div class = "form-group">
 			<div class="col-sm-12">
 			<label class="control-label col-sm-3" id="doclabel" >SPDX Document</label>
@@ -62,6 +71,8 @@
 $(document).ready(function () {
   $("#convertpage").addClass('linkactive');
   $("#from_format").change(function() {
+    $("#tagToRdfFormat").prop("disabled",'disabled');
+    $(".tagToRdfOptions").css("color",'grey');
     if ($(this).data('options') === undefined) {
       /*Taking an array of all options-2 and kind of embedding it on the select1*/
       $(this).data('options', $('#to_format option').clone());
@@ -81,6 +92,10 @@ $(document).ready(function () {
       $('#cfileformat').val(".xlsx");
     }
     else if (id2=="RDF"){
+      if(id=="Tag"){
+        $("#tagToRdfFormat").prop("disabled", false);
+        $(".tagToRdfOptions").css("color",'black');
+      }
       $('#convertdoclabel').text(".rdf");
       $('#cfileformat').val(".rdf");
     }
@@ -98,12 +113,19 @@ $(document).ready(function () {
     }
   });
   $("#to_format").change(function() {
+    $("#tagToRdfFormat").prop("disabled",'disabled');
+    $(".tagToRdfOptions").css("color",'grey');
+    var id1 = $('#from_format').val();
     var id2 = $('#to_format').val();
     if (id2=="Spreadsheet"){
       $('#convertdoclabel').text(".xlsx");
       $('#cfileformat').val(".xlsx");
     }
     else if (id2=="RDF"){
+      if(id1=="Tag"){
+        $("#tagToRdfFormat").prop("disabled",false);
+        $(".tagToRdfOptions").css("color",'black');
+      }
       $('#convertdoclabel').text(".rdf");
       $('#cfileformat').val(".rdf");
     }
