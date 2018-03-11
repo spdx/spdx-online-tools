@@ -86,10 +86,21 @@ celerybeat-schedule
 .venv
 venv/
 ENV/
+bin/
+local/
+include/
+pip-selfcheck.json
 
 # Spyder project settings
 .spyderproject
 .spyproject
+
+# IDEs
+.project
+.pydevproject
+.idea
+org.eclipse.core.resources.prefs
+.vscode
 
 # Rope project settings
 .ropeproject
