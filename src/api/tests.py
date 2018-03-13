@@ -137,6 +137,7 @@ class ConvertFileUploadTests(APITestCase):
         self.assertTrue(resp.status_code==406 or resp.status_code == 201)
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
         self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
+        self.assertTrue(resp.data["tagToRdfFormat"]=="RDF/XML-ABBREV")
         self.client.logout()
 
     def test_convert_tagtoxlsx_api(self):

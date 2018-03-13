@@ -166,6 +166,7 @@ def convert(request):
             package = jpype.JPackage("org.spdx.tools")
             result = ""
             message = ""
+            tagToRdfFormat = None
             try :
                 if request.FILES["file"]:
                     """ Saving file to the media directory """
@@ -188,9 +189,10 @@ def convert(request):
                         print ("Verifing for Tag/Value Document")
                         if (option2=="RDF"):
                             try:
-                                option3 = request.POST["tagToRdfFormat"]
+                                tagToRdfFormat = request.POST["tagToRdfFormat"]
                             except:
-                                option3 = 'RDF/XML-ABBREV'
+                                tagToRdfFormat = 'RDF/XML-ABBREV'
+                            option3 = tagToRdfFormat
                             if option3 not in ['RDF/XML-ABBREV','RDF/XML','N-TRIPLET','TURTLE']:
                                 message, returnstatus, httpstatus = convertError('400')
                             tagtordfclass = package.TagToRDF
@@ -282,12 +284,15 @@ def convert(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM() 
+            if (message==""):
+                message = "Success"
             query = ConvertFileUpload.objects.create(
                 owner=request.user,
                 file=request.data.get('file'),
                 result=result,message=message,
                 from_format=request.POST["from_format"],
                 to_format=request.POST["to_format"],
+                tagToRdfFormat=tagToRdfFormat,
                 cfilename=request.POST["cfilename"],
                 status =httpstatus
                 )
@@ -311,6 +316,7 @@ def convertError(status):
         message = "File Not Found"
         returnstatus = status.HTTP_400_BAD_REQUEST
         httpstatus = 400
+    jpype.detachThreadFromJVM()
     return (message, returnstatus, httpstatus)
 
 
