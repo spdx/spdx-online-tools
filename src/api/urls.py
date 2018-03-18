@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^validate/$', views.validate, name='validate-api'),
     url(r'^convert/$', views.convert, name='convert-api'),
     url(r'^compare/$', views.compare, name='compare-api'),
+    url(r'^check_license/$', views.check_license, name='check_license-api'),
 ]

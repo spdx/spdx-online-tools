@@ -15,10 +15,13 @@ from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
 from django.db import models
+from time import time
 
 def user_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/<username>/<filename>
-    return 'apifiles/{0}/{1}'.format(instance.owner.username, filename)
+    #return 'apifiles/{0}/{1}'.format(instance.owner.username, filename)
+    return 'apifiles/{0}/{1}/{2}'.format(instance.owner.username, int(time()), filename)
+ 
 
 class ValidateFileUpload(models.Model):
 
@@ -49,4 +52,12 @@ class CompareFileUpload(models.Model):
     file1 = models.FileField(upload_to=user_directory_path)
     file2 = models.FileField(upload_to=user_directory_path)
     rfilename = models.CharField(max_length=32,null=False,blank=False)
+    status = models.IntegerField(default=200,blank=False)
+
+class CheckLicenseFileUpload(models.Model):
+
+    created = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, to_field='id')
+    file = models.FileField(upload_to=user_directory_path)
+    result = models.CharField(max_length=128,null=False,blank=False)
     status = models.IntegerField(default=200,blank=False)
