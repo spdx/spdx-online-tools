@@ -72,18 +72,16 @@ def validate(request):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
+            query = ValidateFileUpload.objects.create(
+                owner=request.user,
+                file=request.data.get('file')
+            )
+            uploaded_file = str(query.file)
+            uploaded_file_path = str(query.file.path)
             try :
                 if request.FILES["file"]:
-                    """ Saving file to the media directory """
-                    myfile = request.FILES['file']
-                    folder = "api/"+str(request.user) +"/"+ str(int(time()))
-                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
-                        base_url=urljoin(settings.MEDIA_URL, folder+'/')
-                        )
-                    filename = fs.save(myfile.name, myfile)
-                    uploaded_file_url = fs.url(filename)
                     """ Call the java function with parameter"""
-                    retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url)
+                    retval = verifyclass.verify(uploaded_file_path)
                     if (len(retval) > 0):
                         result = "The following error(s)/warning(s) were raised: " + str(retval)
                         returnstatus = status.HTTP_400_BAD_REQUEST
@@ -111,12 +109,9 @@ def validate(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM()
-            query = ValidateFileUpload.objects.create(
-                owner=request.user,
-                file=request.data.get('file'),
-                result=result,
-                status = httpstatus,
-                )
+            query.result=result
+            query.status=httpstatus
+            ValidateFileUpload.objects.filter(file=uploaded_file).update(result=result,status=httpstatus)
             serial = ValidateSerializerReturn(instance=query)
             return Response(
                 serial.data, status=returnstatus
@@ -165,17 +160,19 @@ def convert(request):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             result = ""
-            message = ""
+            message = "Success"
+            query = ConvertFileUpload.objects.create(
+                owner=request.user,
+                file=request.data.get('file'),
+                from_format=request.POST["from_format"],
+                to_format=request.POST["to_format"],
+                cfilename=request.POST["cfilename"],
+            )
+            uploaded_file = str(query.file)
+            uploaded_file_path = str(query.file.path)
             try :
                 if request.FILES["file"]:
-                    """ Saving file to the media directory """
-                    myfile = request.FILES['file']
-                    folder = "api/"+str(request.user) +"/"+ str(int(time()))
-                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
-                        base_url=urljoin(settings.MEDIA_URL, folder+'/')
-                        )
-                    filename = fs.save(myfile.name, myfile)
-                    uploaded_file_url = fs.url(filename)
+                    folder = "/".join(uploaded_file_path.split('/')[:-1])
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
                     convertfile =  request.POST["cfilename"]
@@ -189,16 +186,16 @@ def convert(request):
                         if (option2=="RDF"):
                             tagtordfclass = package.TagToRDF
                             retval = tagtordfclass.onlineFunction([
-                                settings.APP_DIR+uploaded_file_url,
-                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                uploaded_file_path,
+                                folder+"/"+convertfile
                                 ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="Spreadsheet"):
                             tagtosprdclass = package.TagToSpreadsheet
                             retval = tagtosprdclass.onlineFunction([
-                                settings.APP_DIR+uploaded_file_url,
-                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                uploaded_file_path,
+                                folder+"/"+convertfile
                                 ])
                             if (len(retval) > 0):
                                 warningoccurred = True
@@ -212,24 +209,24 @@ def convert(request):
                         if (option2=="Tag"):
                             rdftotagclass = package.RdfToTag
                             retval = rdftotagclass.onlineFunction([
-                                settings.APP_DIR+uploaded_file_url,
-                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                uploaded_file_path,
+                                folder+"/"+convertfile
                                 ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="Spreadsheet"):
                             rdftosprdclass = package.RdfToSpreadsheet
                             retval = rdftosprdclass.onlineFunction([
-                                settings.APP_DIR+uploaded_file_url,
-                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                uploaded_file_path,
+                                folder+"/"+convertfile
                                 ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="HTML"):
                             rdftohtmlclass = package.RdfToHtml
                             retval = rdftohtmlclass.onlineFunction([
-                                settings.APP_DIR+uploaded_file_url,
-                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                uploaded_file_path,
+                                folder+"/"+convertfile
                                 ])
                             if (len(retval) > 0):
                                 warningoccurred = True
@@ -243,16 +240,16 @@ def convert(request):
                         if (option2=="Tag"):
                             sprdtotagclass = package.SpreadsheetToTag
                             retval = sprdtotagclass.onlineFunction([
-                                settings.APP_DIR+uploaded_file_url,
-                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                uploaded_file_path,
+                                folder+"/"+convertfile
                                 ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="RDF"):
                             sprdtordfclass = package.SpreadsheetToRDF
                             retval = sprdtordfclass.onlineFunction([
-                                settings.APP_DIR+uploaded_file_url,
-                                settings.MEDIA_ROOT+"/"+ folder+"/"+convertfile
+                                uploaded_file_path,
+                                folder+"/"+convertfile
                                 ])
                             if (len(retval) > 0):
                                 warningoccurred = True
@@ -263,12 +260,15 @@ def convert(request):
                             jpype.detachThreadFromJVM()
                     if (warningoccurred == True ):
                         message = "The following error(s)/warning(s) were raised: " + str(retval)
-                        result = "/media/" + folder+"/"+ convertfile
+                        index = folder.split("/").index('media')
+                        result = "/"+"/".join(folder.split("/")[index:])+'/'+convertfile
                         returnstatus = status.HTTP_406_NOT_ACCEPTABLE
                         httpstatus = 406
                         jpype.detachThreadFromJVM()
                     else :
-                        result = "/media/" + folder+"/"+ convertfile
+                        """return only the path starting with MEDIA_URL"""
+                        index = folder.split("/").index('media')
+                        result = "/"+("/".join(folder.split("/")[index:]))+'/'+convertfile
                         returnstatus = status.HTTP_201_CREATED
                         httpstatus = 201
                         jpype.detachThreadFromJVM()
@@ -287,19 +287,14 @@ def convert(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM() 
-            query = ConvertFileUpload.objects.create(
-                owner=request.user,
-                file=request.data.get('file'),
-                result=result,message=message,
-                from_format=request.POST["from_format"],
-                to_format=request.POST["to_format"],
-                cfilename=request.POST["cfilename"],
-                status =httpstatus
-                )
+            query.message=message
+            query.status = httpstatus
+            query.result = result
+            ConvertFileUpload.objects.filter(file=uploaded_file).update(message=message, status=httpstatus, result=result)
             serial = ConvertSerializerReturn(instance=query)
             return Response(
                 serial.data,status=returnstatus
-                )   
+                )
         else:
             return Response(
                 serializer.errors,status=status.HTTP_400_BAD_REQUEST
@@ -330,39 +325,44 @@ def compare(request):
             verifyclass = package.Verify
             compareclass = package.CompareMultpleSpdxDocs
             result=""
-            message=""
+            message="Success"
             erroroccurred = False
+            rfilename = request.POST["rfilename"]
+            query = CompareFileUpload.objects.create(
+                owner=request.user,
+                file1=request.data.get('file1'),
+                file2=request.data.get('file2'),
+                rfilename = rfilename,
+            )
+            uploaded_file1 = str(query.file1)
+            uploaded_file2 = str(query.file2)
+            uploaded_file1_path = str(query.file1.path)
+            uploaded_file2_path = str(query.file2.path)
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     """ Saving file to the media directory """
-                    rfilename = request.POST["rfilename"]
                     if (extensionGiven(rfilename)==False):
                         rfilename = rfilename+".xlsx"
-                    folder = "api/"+str(request.user) +"/"+ str(int(time()))
-                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
-                        base_url=urljoin(settings.MEDIA_URL, folder+'/')
-                        )
-                    callfunc = [settings.MEDIA_ROOT+"/"+ folder+"/"+rfilename]
                     file1 = request.FILES["file1"]
                     file2 = request.FILES["file2"]
-                    filename1 = fs.save(file1.name, file1)
-                    uploaded_file_url1 = fs.url(filename1)
-                    filename2 = fs.save(file2.name, file2)
-                    uploaded_file_url2 = fs.url(filename2)
-                    callfunc.append(settings.APP_DIR+uploaded_file_url1)
-                    callfunc.append(settings.APP_DIR+uploaded_file_url2)
+                    folder = "/".join(uploaded_file1_path.split('/')[:-1])
+                    callfunc = [folder+"/"+rfilename]
+                    callfunc.append(uploaded_file1_path)
+                    callfunc.append(uploaded_file2_path)
                     """ Call the java function with parameters as list"""
-                    retval1 = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url1)
+                    retval1 = verifyclass.verifyRDFFile(uploaded_file1_path)
                     if (len(retval1) > 0):
                         erroroccurred = True
-                        message = "The following error(s)/warning(s) were raised by " + str(file1.name) + ": " +str(retval1)
-                    retval2 = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url2)
+                        message = "The following error(s)/warning(s) were raised by " + str(uploaded_file1) + ": " +str(retval1)
+                    retval2 = verifyclass.verifyRDFFile(uploaded_file2_path)
                     if (len(retval2) > 0):
                         erroroccurred = True
-                        message += "The following error(s)/warning(s) were raised by " + str(file1.name) + ": " +str(retval2)
+                        message += "The following error(s)/warning(s) were raised by " + str(uploaded_file2) + ": " +str(retval2)
                     try :
                         compareclass.onlineFunction(callfunc)
-                        result = "/media/" + folder+"/"+ rfilename
+                        """Return only the path starting with MEDIA_URL"""
+                        index = folder.split("/").index('media')
+                        result = "/"+("/".join(folder.split("/")[index:]))+'/'+rfilename
                         returnstatus = status.HTTP_201_CREATED
                         httpstatus = 201
                     except :
@@ -392,15 +392,11 @@ def compare(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM()
-            query = CompareFileUpload.objects.create(
-                owner=request.user,
-                message=message,
-                file1=request.data.get('file1'),
-                file2=request.data.get('file2'),
-                rfilename = rfilename,
-                result=result,
-                status=httpstatus
-                )
+
+            query.message=message
+            query.result=result
+            query.status=httpstatus
+            CompareFileUpload.objects.filter(file1=uploaded_file1).filter(file2=uploaded_file2).update(message=message, result=result, status=httpstatus)
             serial = CompareSerializerReturn(instance=query)
             return Response(
                 serial.data,status=returnstatus
