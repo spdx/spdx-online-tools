@@ -284,10 +284,11 @@ def convert(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM() 
+            query.tagToRdfFormat=tagToRdfFormat
             query.message=message
             query.status = httpstatus
             query.result = result
-            ConvertFileUpload.objects.filter(file=uploaded_file).update(message=message, status=httpstatus, result=result)
+            ConvertFileUpload.objects.filter(file=uploaded_file).update(tagToRdfFormat=tagToRdfFormat,message=message, status=httpstatus, result=result)
             serial = ConvertSerializerReturn(instance=query)
             return Response(
                 serial.data,status=returnstatus
