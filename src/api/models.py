@@ -15,10 +15,11 @@ from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
 from django.db import models
+from time import time
 
 def user_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/<username>/<filename>
-    return 'apifiles/{0}/{1}'.format(instance.owner.username, filename)
+    return 'apifiles/{0}/{1}/{2}'.format(instance.owner.username, int(time()), filename)
 
 class ValidateFileUpload(models.Model):
 
