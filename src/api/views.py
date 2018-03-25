@@ -160,6 +160,7 @@ def convert(request):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             result = ""
+            tagToRdfFormat = None
             message = "Success"
             query = ConvertFileUpload.objects.create(
                 owner=request.user,
@@ -184,11 +185,19 @@ def convert(request):
                     if (option1=="Tag"):
                         print ("Verifing for Tag/Value Document")
                         if (option2=="RDF"):
+                            try:
+                                tagToRdfFormat = request.POST["tagToRdfFormat"]
+                            except:
+                                tagToRdfFormat = 'RDF/XML-ABBREV'
+                            option3 = tagToRdfFormat
+                            if option3 not in ['RDF/XML-ABBREV','RDF/XML','N-TRIPLET','TURTLE']:
+                                message, returnstatus, httpstatus = convertError('400')
                             tagtordfclass = package.TagToRDF
                             retval = tagtordfclass.onlineFunction([
                                 uploaded_file_path,
-                                folder+"/"+convertfile
-                                ])
+                                folder+"/"+convertfile,
+                                option3
+                            ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="Spreadsheet"):
@@ -200,10 +209,7 @@ def convert(request):
                             if (len(retval) > 0):
                                 warningoccurred = True
                         else :
-                            message = "Select valid conversion types."
-                            returnstatus = status.HTTP_400_BAD_REQUEST
-                            httpstatus = 400
-                            jpype.detachThreadFromJVM()
+                            message, returnstatus, httpstatus = convertError('400')
                     elif (option1=="RDF"):
                         print ("Verifing for RDF Document")
                         if (option2=="Tag"):
@@ -231,10 +237,7 @@ def convert(request):
                             if (len(retval) > 0):
                                 warningoccurred = True
                         else :
-                            message = "Select valid conversion types."
-                            returnstatus = status.HTTP_400_BAD_REQUEST
-                            httpstatus = 400
-                            jpype.detachThreadFromJVM()
+                            message, returnstatus, httpstatus = convertError('400')
                     elif (option1=="Spreadsheet"):
                         print ("Verifing for Spreadsheet Document")
                         if (option2=="Tag"):
@@ -254,10 +257,7 @@ def convert(request):
                             if (len(retval) > 0):
                                 warningoccurred = True
                         else :
-                            message = "Select valid conversion types."
-                            returnstatus = status.HTTP_400_BAD_REQUEST
-                            httpstatus = 400
-                            jpype.detachThreadFromJVM()
+                            message, returnstatus, httpstatus = convertError('400')
                     if (warningoccurred == True ):
                         message = "The following error(s)/warning(s) were raised: " + str(retval)
                         index = folder.split("/").index('media')
@@ -273,10 +273,7 @@ def convert(request):
                         httpstatus = 201
                         jpype.detachThreadFromJVM()
                 else :
-                    message = "File Not Found"
-                    returnstatus = status.HTTP_400_BAD_REQUEST
-                    httpstatus = 400
-                    jpype.detachThreadFromJVM()
+                    message, returnstatus, httpstatus = convertError('404')
             except jpype.JavaException,ex :
                 message = jpype.JavaException.message(ex)
                 returnstatus = status.HTTP_400_BAD_REQUEST
@@ -287,10 +284,11 @@ def convert(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM() 
+            query.tagToRdfFormat=tagToRdfFormat
             query.message=message
             query.status = httpstatus
             query.result = result
-            ConvertFileUpload.objects.filter(file=uploaded_file).update(message=message, status=httpstatus, result=result)
+            ConvertFileUpload.objects.filter(file=uploaded_file).update(tagToRdfFormat=tagToRdfFormat,message=message, status=httpstatus, result=result)
             serial = ConvertSerializerReturn(instance=query)
             return Response(
                 serial.data,status=returnstatus
@@ -299,6 +297,20 @@ def convert(request):
             return Response(
                 serializer.errors,status=status.HTTP_400_BAD_REQUEST
                 )
+
+
+def convertError(status):
+    print("Error while converting file")
+    if status=='400':
+        message = "Select valid conversion types."
+        returnstatus = status.HTTP_400_BAD_REQUEST
+        httpstatus = 400
+    elif status=='404':
+        message = "File Not Found"
+        returnstatus = status.HTTP_400_BAD_REQUEST
+        httpstatus = 400
+    jpype.detachThreadFromJVM()
+    return (message, returnstatus, httpstatus)
 
 
 @api_view(['GET', 'POST'])

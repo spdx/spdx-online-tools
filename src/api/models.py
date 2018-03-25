@@ -35,6 +35,7 @@ class ConvertFileUpload(models.Model):
     owner = models.ForeignKey(User, to_field='id')
     from_format = models.CharField(max_length=16,null=False,blank=False)
     to_format = models.CharField(max_length=16,null=False,blank=False)
+    tagToRdfFormat = models.CharField(max_length=16,null=True,blank=True)
     cfilename = models.CharField(max_length=32,null=False,blank=False)
     result = models.CharField(max_length=32,null=False,blank=False)
     message = models.CharField(max_length=64,null=False,blank=False)

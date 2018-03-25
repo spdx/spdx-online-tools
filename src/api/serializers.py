@@ -13,7 +13,7 @@
 
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group          
 
 from rest_framework import serializers
 
@@ -44,13 +44,13 @@ class ConvertSerializer(serializers.HyperlinkedModelSerializer):
     )
     class Meta:
         model = ConvertFileUpload
-        fields = ('created', 'file', 'owner','cfilename','from_format','to_format')
+        fields = ('created', 'file', 'owner','cfilename','from_format','to_format','tagToRdfFormat')
 
 class ConvertSerializerReturn(serializers.ModelSerializer):
     """Response Fields to be returned to the user"""
     class Meta:
         model = ConvertFileUpload
-        fields = ('created', 'file', 'owner','result','from_format','to_format','cfilename','message','status')
+        fields = ('created', 'file', 'owner','result','from_format','to_format','tagToRdfFormat','cfilename','message','status')
 
 class CompareSerializer(serializers.HyperlinkedModelSerializer):
     """POST compare API request fields"""
