@@ -23,12 +23,12 @@ from django.urls import reverse
 from rest_framework.test import APITestCase,APIClient
 from rest_framework.authtoken.models import Token
 
-from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
+from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload
 
 
 class ValidateFileUploadTests(APITestCase):
     """ Test for validate api with all
-    possible combination of POST and GET 
+    possible combination of POST and GET
     request with login enabled.
     """
     def setUp(self):
@@ -60,7 +60,7 @@ class ValidateFileUploadTests(APITestCase):
         self.assertTrue(resp1.status_code,403)
         self.client.login(username=self.username,password=self.password)
         """ Access get after login"""
-        resp2 = self.client.get(reverse("validate-api")) 
+        resp2 = self.client.get(reverse("validate-api"))
         self.assertTrue(resp2.status_code,200)
         """ Valid Tag Value File"""
         resp3 = self.client.post(reverse("validate-api"),{"file":self.tv_file},format="multipart")
@@ -84,7 +84,7 @@ class ValidateFileUploadTests(APITestCase):
         self.assertNotEqual(resp6.data["result"],"This SPDX Document is valid.")
         self.client.logout()
         self.tearDown()
-        
+
     def test_validate_without_argument(self):
         self.client.login(username=self.username,password=self.password)
         resp7 = self.client.post(reverse("validate-api"),{},format="multipart")
@@ -94,7 +94,7 @@ class ValidateFileUploadTests(APITestCase):
 
 class ConvertFileUploadTests(APITestCase):
     """ Test for convert api with all
-    possible combination of POST and GET 
+    possible combination of POST and GET
     request with login enabled.
     """
     def setUp(self):
@@ -191,20 +191,20 @@ class ConvertFileUploadTests(APITestCase):
         self.client.login(username=self.username,password=self.password)
         resp = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"to_format":self.tag,"cfilename":"xlsxtotag-apitest"},format="multipart")
         self.assertEqual(resp.status_code,400)
-        
+
         resp2 = self.client.post(reverse("convert-api"),{"from_format":self.xlsx,"to_format":self.tag,"cfilename":"xlsxtotag-apitest"},format="multipart")
         self.assertEqual(resp2.status_code,400)
-        
+
         resp3 = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.tag},format="multipart")
         self.assertEqual(resp3.status_code,400)
-        
+
         resp4 = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"cfilename":"xlsxtotag-apitest"},format="multipart")
         self.assertEqual(resp4.status_code,400)
         self.client.logout()
 
 class CompareFileUploadTests(APITestCase):
     """ Test for compare api with all
-    possible combination of POST and GET 
+    possible combination of POST and GET
     request with login enabled.
     """
     def setUp(self):
@@ -245,16 +245,65 @@ class CompareFileUploadTests(APITestCase):
         self.assertEqual(resp4.status_code,400)
         self.client.logout()
         self.tearDown()
-        
+
     def test_compare_without_one_argument(self):
         self.client.login(username=self.username,password=self.password)
         resp5 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.rdf_file2},format="multipart")
         self.assertEqual(resp5.status_code,400)
-        
+
         resp6 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertEqual(resp6.status_code,400)
-        
+
         resp7 = self.client.post(reverse("compare-api"),{"file2":self.rdf_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertEqual(resp7.status_code,400)
+        self.client.logout()
+        self.tearDown()
+
+class CheckLicenseFileUploadTests(APITestCase):
+
+    def setUp(self):
+        self.username = "checklicenseapitestuser"
+        self.password = "checklicenseapitestpass"
+        self.tearDown()
+        self.credentials = {'username':self.username,
+            'password':self.password
+            }
+        u = User.objects.create_user(**self.credentials)
+        u.is_staff = True
+        u.save()
+        self.license_file = open("examples/AFL-1.1.txt")
+        self.invalid_license_file = open("examples/windows_license_invalid_SPDX.txt")
+
+    def tearDown(self):
+        try:
+            u = User.objects.get_by_natural_key(self.username)
+            u.delete()
+        except ObjectDoesNotExist:
+            pass
+        CheckLicenseFileUpload.objects.all().delete()
+
+    def test_checklicense_api(self):
+        """Access get without login"""
+        resp1 = self.client.get(reverse("check_license-api"))
+        self.assertTrue(resp1.status_code,403)
+        self.client.login(username=self.username,password=self.password)
+        """ Access get after login"""
+        resp2 = self.client.get(reverse("check_license-api"))
+        self.assertTrue(resp2.status_code,200)
+        """ Valid License File"""
+        resp3 = self.client.post(reverse("check_license-api"),{"file":self.license_file},format="multipart")
+        self.assertEqual(resp3.status_code,201)
+        self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
+        self.assertEqual(resp3.data["result"],"The following license ID(s) match: AFL-1.1")
+        """ Unsupported SPDX license File"""
+        resp4 = self.client.post(reverse("check_license-api"),{"file":self.other_file},format="multipart")
+        self.assertEqual(resp4.data['owner'],User.objects.get_by_natural_key(self.username).id)
+        self.assertEqual(resp4.status_code,400)
+        self.assertEqual(resp4.data["result"],"There are no matching SPDX listed licenses")
+
+    def test_checklicense_without_argument(self):
+        self.client.login(username=self.username,password=self.password)
+        resp5 = self.client.post(reverse("check_license-api"),{},format="multipart")
+        self.assertEqual(resp5.status_code,400)
         self.client.logout()
         self.tearDown()

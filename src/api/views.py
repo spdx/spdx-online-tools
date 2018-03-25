@@ -16,8 +16,8 @@ from __future__ import unicode_literals
 from rest_framework.parsers import FileUploadParser,FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
-from serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn
+from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload
+from serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,CheckLicenseSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn,CheckLicenseSerializerReturn
 from rest_framework import status
 from rest_framework.decorators import api_view,renderer_classes
 from rest_framework.renderers import BrowsableAPIRenderer,JSONRenderer
@@ -417,3 +417,88 @@ def compare(request):
             return Response(
                 serializer.errors,status=status.HTTP_400_BAD_REQUEST
                 )
+
+@api_view(['GET', 'POST'])
+@renderer_classes((JSONRenderer,))
+def check_license(request):
+    """ Handle License Check API request """
+    if request.method == 'GET':
+        """ Return all license check API request """
+        query = CheckLicenseFileUpload.objects.all()
+        serializer = CheckLicenseSerializer(query, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        """ Return license check tool result on the post file"""
+        serializer = CheckLicenseSerializer(data=request.data)
+        if serializer.is_valid():
+            if (jpype.isJVMStarted()==0):
+                """ If JVM not already started, start it, attach a Thread and start processing the request """
+                classpath =settings.JAR_ABSOLUTE_PATH
+                jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
+            """ Attach a Thread and start processing the request """
+            jpype.attachThreadToJVM()
+            package = jpype.JPackage("org.spdx.compare")
+            compareclass = package.LicenseCompareHelper
+            try :
+                if request.FILES["file"]:
+                    """ Saving file to the media directory """
+                    myfile = request.FILES['file']
+                    licensetext = myfile.read()
+                    folder = "api/"+str(request.user) +"/"+ str(int(time()))
+                    fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
+                        base_url=urljoin(settings.MEDIA_URL, folder+'/')
+                        )
+                    filename = fs.save(myfile.name, myfile)
+                    uploaded_file_url = fs.url(filename)
+                    """Call the java function with parameter"""
+                    matching_licenses = compareclass.matchingStandardLicenseIds(licensetext)
+                    if (matching_licenses and len(matching_licenses) > 0):
+                        matching_str = "The following license ID(s) match: "
+                        matching_str+= matching_licenses[0]
+                        for i in range(1,len(matching_licenses)):
+                            matching_str += ", "
+                            matching_str += matching_licenses[i]
+                        result = matching_str
+                        returnstatus = status.HTTP_201_CREATED
+                        httpstatus = 201
+                        jpype.detachThreadFromJVM()
+
+                    else:
+                        result = "There are no matching SPDX listed licenses."
+                        returnstatus = status.HTTP_400_BAD_REQUEST
+                        httpstatus = 400
+                        jpype.detachThreadFromJVM()
+
+                else :
+                    result = "No File Uploaded."
+                    returnstatus = status.HTTP_400_BAD_REQUEST
+                    httpstatus = 400
+                    jpype.detachThreadFromJVM()
+            
+            except jpype.JavaException,ex :
+                """ Java exception raised without exiting the application """
+                result = jpype.JavaException.message(ex) 
+                returnstatus = status.HTTP_400_BAD_REQUEST
+                httpstatus = 400
+                jpype.detachThreadFromJVM()
+            except :
+                """ Other errors raised"""
+                result = format_exc()
+                returnstatus = status.HTTP_400_BAD_REQUEST
+                httpstatus = 400
+                jpype.detachThreadFromJVM()
+            query = CheckLicenseFileUpload.objects.create(
+                owner=request.user,
+                file=request.data.get('file'),
+                result=result,
+                status = httpstatus,
+                )
+            serial = CheckLicenseSerializerReturn(instance=query)
+            return Response(
+                serial.data, status=returnstatus
+                )
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )        
