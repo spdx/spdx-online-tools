@@ -23,7 +23,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase,APIClient
 from rest_framework.authtoken.models import Token
 
-from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
+from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload
 
 
 class ValidateFileUploadTests(APITestCase):
@@ -256,5 +256,54 @@ class CompareFileUploadTests(APITestCase):
         
         resp7 = self.client.post(reverse("compare-api"),{"file2":self.rdf_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
         self.assertEqual(resp7.status_code,400)
+        self.client.logout()
+        self.tearDown()
+
+class CheckLicenseFileUploadTests(APITestCase):
+
+    def setUp(self):
+        self.username = "checklicenseapitestuser"
+        self.password = "checklicenseapitestpass"
+        self.tearDown()
+        self.credentials = {'username':self.username,
+            'password':self.password
+            }
+        u = User.objects.create_user(**self.credentials)
+        u.is_staff = True
+        u.save()
+        self.license_file = open("examples/AFL-1.1.txt")
+        self.other_file = open("examples/Other.txt")
+        
+    def tearDown(self):
+        try:
+            u = User.objects.get_by_natural_key(self.username)
+            u.delete()
+        except ObjectDoesNotExist:
+            pass
+        CheckLicenseFileUpload.objects.all().delete()
+
+    def test_checklicense_api(self):
+        """Access get without login"""
+        resp1 = self.client.get(reverse("check_license-api"))
+        self.assertTrue(resp1.status_code,403)
+        self.client.login(username=self.username,password=self.password)
+        """ Access get after login"""
+        resp2 = self.client.get(reverse("check_license-api")) 
+        self.assertTrue(resp2.status_code,200)
+        """ Valid License File"""
+        resp3 = self.client.post(reverse("check_license-api"),{"file":self.license_file},format="multipart")
+        self.assertEqual(resp3.status_code,201)
+        self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
+        self.assertEqual(resp3.data["result"],"The following license ID(s) match: AFL-1.1")
+        """ Other File"""
+        resp4 = self.client.post(reverse("check_license-api"),{"file":self.other_file},format="multipart")
+        self.assertEqual(resp4.data['owner'],User.objects.get_by_natural_key(self.username).id)
+        self.assertEqual(resp4.status_code,400)
+        self.assertEqual(resp4.data["result"],"There are no matching SPDX listed licenses")
+        
+    def test_checklicense_without_argument(self):
+        self.client.login(username=self.username,password=self.password)
+        resp5 = self.client.post(reverse("check_license-api"),{},format="multipart")
+        self.assertEqual(resp5.status_code,400)
         self.client.logout()
         self.tearDown()

@@ -81,6 +81,10 @@ python manage.py test
     ```bash
     curl -X POST -u <admin>:<password> -F "file=@<fileInput>" -F "cfilename=<resultFileNameWithExtension>" -F "from_format=<convertFrom>" -F "to_format=<convertTo>" -H "Accept: application/json" http://localhost:8000/api/convert/ | json_pp
     ```
+6. For license check tool, send the request to `/api/check_license/`.
+    ```bash
+    curl -X POST -u <admin>:<password> -F "file=@<fileInput>" -H "Accept: application/json" http://localhost:8000/api/check_license/ | json_pp
+    ```    
 
 ## Dependencies
 The project uses [spdx java tools](https://github.com/spdx/tools/) for various tools of the website.
