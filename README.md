@@ -13,7 +13,7 @@ The tool provides an easy all-in-one website to upload and parse SPDX documents 
 
 ## Requirements (Linux/Debian/Ubuntu)  
 
-Either the Sun/Oracle JDK/JRE Variant or OpenJDK. Python 2.6+ (including Python 3+).  
+Either the Sun/Oracle JDK/JRE Variant or OpenJDK. Python 2.6+. 
 
 Debian/Ubuntu users will have to install g++ and python-dev first:  
 ```
