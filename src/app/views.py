@@ -540,9 +540,10 @@ def convert(request):
                     if (option1=="Tag"):
                         print ("Verifing for Tag/Value Document")
                         if (option2=="RDF"):
+                            option3 = request.POST["tagToRdfFormat"]
                             content_type = "application/rdf+xml"
                             tagtordfclass = package.TagToRDF
-                            retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+convertfile])
+                            retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+convertfile, option3])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="Spreadsheet"):

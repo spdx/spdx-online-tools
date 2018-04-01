@@ -321,7 +321,7 @@ class ConvertViewsTestCase(TestCase):
         """POST Request for convert tag to rdf"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-        resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'file' : self.tv_file},follow=True,secure=True)
+        resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'tagToRdfFormat': "TURTLE",'file' : self.tv_file},follow=True,secure=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
         self.assertEqual(resp.redirect_chain,[])

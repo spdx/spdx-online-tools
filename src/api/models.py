@@ -35,6 +35,7 @@ class ConvertFileUpload(models.Model):
     owner = models.ForeignKey(User, to_field='id')
     from_format = models.CharField(max_length=16,null=False,blank=False)
     to_format = models.CharField(max_length=16,null=False,blank=False)
+    tagToRdfFormat = models.CharField(max_length=16,null=True,blank=True)
     cfilename = models.CharField(max_length=32,null=False,blank=False)
     result = models.CharField(max_length=32,null=False,blank=False)
     message = models.CharField(max_length=64,null=False,blank=False)
@@ -50,4 +51,12 @@ class CompareFileUpload(models.Model):
     file1 = models.FileField(upload_to=user_directory_path)
     file2 = models.FileField(upload_to=user_directory_path)
     rfilename = models.CharField(max_length=32,null=False,blank=False)
+    status = models.IntegerField(default=200,blank=False)
+
+class CheckLicenseFileUpload(models.Model):
+
+    created = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, to_field='id')
+    file = models.FileField(upload_to=user_directory_path)
+    result = models.CharField(max_length=128,null=False,blank=False)
     status = models.IntegerField(default=200,blank=False)

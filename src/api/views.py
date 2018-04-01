@@ -160,6 +160,7 @@ def convert(request):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             result = ""
+            tagToRdfFormat = None
             message = "Success"
             query = ConvertFileUpload.objects.create(
                 owner=request.user,
@@ -184,11 +185,19 @@ def convert(request):
                     if (option1=="Tag"):
                         print ("Verifing for Tag/Value Document")
                         if (option2=="RDF"):
+                            try:
+                                tagToRdfFormat = request.POST["tagToRdfFormat"]
+                            except:
+                                tagToRdfFormat = 'RDF/XML-ABBREV'
+                            option3 = tagToRdfFormat
+                            if option3 not in ['RDF/XML-ABBREV','RDF/XML','N-TRIPLET','TURTLE']:
+                                message, returnstatus, httpstatus = convertError('400')
                             tagtordfclass = package.TagToRDF
                             retval = tagtordfclass.onlineFunction([
                                 uploaded_file_path,
-                                folder+"/"+convertfile
-                                ])
+                                folder+"/"+convertfile,
+                                option3
+                            ])
                             if (len(retval) > 0):
                                 warningoccurred = True
                         elif (option2=="Spreadsheet"):
@@ -200,10 +209,7 @@ def convert(request):
                             if (len(retval) > 0):
                                 warningoccurred = True
                         else :
-                            message = "Select valid conversion types."
-                            returnstatus = status.HTTP_400_BAD_REQUEST
-                            httpstatus = 400
-                            jpype.detachThreadFromJVM()
+                            message, returnstatus, httpstatus = convertError('400')
                     elif (option1=="RDF"):
                         print ("Verifing for RDF Document")
                         if (option2=="Tag"):
@@ -231,10 +237,7 @@ def convert(request):
                             if (len(retval) > 0):
                                 warningoccurred = True
                         else :
-                            message = "Select valid conversion types."
-                            returnstatus = status.HTTP_400_BAD_REQUEST
-                            httpstatus = 400
-                            jpype.detachThreadFromJVM()
+                            message, returnstatus, httpstatus = convertError('400')
                     elif (option1=="Spreadsheet"):
                         print ("Verifing for Spreadsheet Document")
                         if (option2=="Tag"):
@@ -254,10 +257,7 @@ def convert(request):
                             if (len(retval) > 0):
                                 warningoccurred = True
                         else :
-                            message = "Select valid conversion types."
-                            returnstatus = status.HTTP_400_BAD_REQUEST
-                            httpstatus = 400
-                            jpype.detachThreadFromJVM()
+                            message, returnstatus, httpstatus = convertError('400')
                     if (warningoccurred == True ):
                         message = "The following error(s)/warning(s) were raised: " + str(retval)
                         index = folder.split("/").index('media')
@@ -273,10 +273,7 @@ def convert(request):
                         httpstatus = 201
                         jpype.detachThreadFromJVM()
                 else :
-                    message = "File Not Found"
-                    returnstatus = status.HTTP_400_BAD_REQUEST
-                    httpstatus = 400
-                    jpype.detachThreadFromJVM()
+                    message, returnstatus, httpstatus = convertError('404')
             except jpype.JavaException as ex :
                 message = jpype.JavaException.message(ex)
                 returnstatus = status.HTTP_400_BAD_REQUEST
@@ -287,10 +284,11 @@ def convert(request):
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM() 
+            query.tagToRdfFormat=tagToRdfFormat
             query.message=message
             query.status = httpstatus
             query.result = result
-            ConvertFileUpload.objects.filter(file=uploaded_file).update(message=message, status=httpstatus, result=result)
+            ConvertFileUpload.objects.filter(file=uploaded_file).update(tagToRdfFormat=tagToRdfFormat,message=message, status=httpstatus, result=result)
             serial = ConvertSerializerReturn(instance=query)
             return Response(
                 serial.data,status=returnstatus
@@ -299,6 +297,20 @@ def convert(request):
             return Response(
                 serializer.errors,status=status.HTTP_400_BAD_REQUEST
                 )
+
+
+def convertError(status):
+    print("Error while converting file")
+    if status=='400':
+        message = "Select valid conversion types."
+        returnstatus = status.HTTP_400_BAD_REQUEST
+        httpstatus = 400
+    elif status=='404':
+        message = "File Not Found"
+        returnstatus = status.HTTP_400_BAD_REQUEST
+        httpstatus = 400
+    jpype.detachThreadFromJVM()
+    return (message, returnstatus, httpstatus)
 
 
 @api_view(['GET', 'POST'])
@@ -405,3 +417,84 @@ def compare(request):
             return Response(
                 serializer.errors,status=status.HTTP_400_BAD_REQUEST
                 )
+
+@api_view(['GET', 'POST'])
+@renderer_classes((JSONRenderer,))
+def check_license(request):
+    """ Handle Check License api request """
+    if request.method == 'GET':
+        """ Return all check license api request """
+        query = CheckLicenseFileUpload.objects.all()
+        serializer = CheckLicenseSerializer(query, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        """ Return check license tool result on the post file"""
+        serializer = CheckLicenseSerializer(data=request.data)
+        if serializer.is_valid():
+            if (jpype.isJVMStarted()==0):
+                """ If JVM not already started, start it, attach a Thread and start processing the request """
+                classpath =settings.JAR_ABSOLUTE_PATH
+                jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
+            """ Attach a Thread and start processing the request """
+            jpype.attachThreadToJVM()
+            package = jpype.JPackage("org.spdx.compare")
+            compareclass = package.LicenseCompareHelper
+            query = CheckLicenseFileUpload.objects.create(
+                owner=request.user,
+                file=request.data.get('file')
+            )
+            uploaded_file = str(query.file)
+            uploaded_file_path = str(query.file.path)
+            """ Reading the license text file into a string variable """
+            licensetext = query.file.read()
+            try :
+                if request.FILES["file"]:
+                    """Call the java function with parameter"""
+                    matching_licenses = compareclass.matchingStandardLicenseIds(licensetext)
+                    if (matching_licenses and len(matching_licenses) > 0):
+                        matching_str = "The following license ID(s) match: "
+                        matching_str+= matching_licenses[0]
+                        for i in range(1,len(matching_licenses)):
+                            matching_str += ", "
+                            matching_str += matching_licenses[i]
+                        result = matching_str
+                        returnstatus = status.HTTP_201_CREATED
+                        httpstatus = 201
+                        jpype.detachThreadFromJVM()
+
+                    else:
+                        result = "There are no matching SPDX listed licenses"
+                        returnstatus = status.HTTP_400_BAD_REQUEST
+                        httpstatus = 400
+                        jpype.detachThreadFromJVM()
+
+                else :
+                    result = "File Not Uploaded"
+                    returnstatus = status.HTTP_400_BAD_REQUEST
+                    httpstatus = 400
+                    jpype.detachThreadFromJVM()
+            
+            except jpype.JavaException,ex :
+                """ Java exception raised without exiting the application """
+                result = jpype.JavaException.message(ex) 
+                returnstatus = status.HTTP_400_BAD_REQUEST
+                httpstatus = 400
+                jpype.detachThreadFromJVM()
+            except :
+                """ Other errors raised"""
+                result = format_exc()
+                returnstatus = status.HTTP_400_BAD_REQUEST
+                httpstatus = 400
+                jpype.detachThreadFromJVM()
+            query.result = result
+            query.status=httpstatus
+            CheckLicenseFileUpload.objects.filter(file=uploaded_file).update(result=result,status=httpstatus)
+            serial = CheckLicenseSerializerReturn(instance=query)
+            return Response(
+                serial.data, status=returnstatus
+                )
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )        
