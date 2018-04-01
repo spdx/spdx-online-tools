@@ -21,7 +21,7 @@ from django.contrib.auth.models import User
 
 
 class UserID(models.Model):
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     organisation = models.CharField("Organisation",max_length=64, null=False, blank=False)
     lastlogin = models.DateField("Last Login",default=datetime.now,blank=True)
     def __str__(self):
