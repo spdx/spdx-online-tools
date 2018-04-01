@@ -29,7 +29,7 @@ import jpype
 from traceback import format_exc
 from json import dumps
 from time import time
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
@@ -116,7 +116,7 @@ def validate(request):
                     return render(request, 
                         'app/validate.html',context_dict,status=404
                         )
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
                 if (request.is_ajax()):
                     ajaxdict=dict()
@@ -235,7 +235,7 @@ def compare(request):
                                 else :
                                     filelist.append(myfile.name)
                                     errorlist.append("No errors found")
-                            except jpype.JavaException,ex :
+                            except jpype.JavaException as ex :
                                 """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
                                 erroroccurred = True
                                 filelist.append(myfile.name)
@@ -373,7 +373,7 @@ def compare(request):
                                 else :
                                     filelist.append(myfile.name)
                                     errorlist.append("No errors found")
-                            except jpype.JavaException,ex :
+                            except jpype.JavaException as ex :
                                 """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
                                 erroroccurred = True
                                 filelist.append(myfile.name)
@@ -642,7 +642,7 @@ def convert(request):
                     return render(request, 
                         'app/convert.html',context_dict,status=404
                         )
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application"""
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
@@ -739,7 +739,7 @@ def check_license(request):
                     return render(request, 
                         'app/check_license.html',context_dict,status=404
                         )
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application """
                 if (request.is_ajax()):
                     ajaxdict=dict()

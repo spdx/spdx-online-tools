@@ -16,8 +16,8 @@ from __future__ import unicode_literals
 from rest_framework.parsers import FileUploadParser,FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
-from serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn
+from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
+from api.serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn
 from rest_framework import status
 from rest_framework.decorators import api_view,renderer_classes
 from rest_framework.renderers import BrowsableAPIRenderer,JSONRenderer
@@ -29,7 +29,7 @@ import jpype
 from traceback import format_exc
 from os.path import abspath
 from time import time
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 
 class ValidateViewSet(ModelViewSet):
@@ -97,7 +97,7 @@ def validate(request):
                     returnstatus = status.HTTP_400_BAD_REQUEST
                     httpstatus = 400
                     jpype.detachThreadFromJVM()
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
                 result = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
                 returnstatus = status.HTTP_400_BAD_REQUEST
@@ -277,7 +277,7 @@ def convert(request):
                     returnstatus = status.HTTP_400_BAD_REQUEST
                     httpstatus = 400
                     jpype.detachThreadFromJVM()
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 message = jpype.JavaException.message(ex)
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
@@ -381,7 +381,7 @@ def compare(request):
                     returnstatus = status.HTTP_400_BAD_REQUEST
                     httpstatus = 400
                     jpype.detachThreadFromJVM()
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
                 message = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
                 returnstatus = status.HTTP_400_BAD_REQUEST
