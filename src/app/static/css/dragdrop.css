@@ -1,0 +1,41 @@
+#drop-area {
+    border: 2px dashed #ccc;
+    border-radius: 20px;
+    width: 90%;
+    min-height: 200px;
+    font-family: sans-serif;
+    margin: 50px auto;
+    padding: 20px;
+}
+#drop-area.highlight {
+border-color: rgb(170, 170, 170);
+}
+p {
+margin-top: 0;
+}
+.my-form {
+margin-bottom: 10px;
+}
+.file-name{
+    margin-top:10px;
+}
+.success{
+    color:green;
+}
+.fail{
+    color:red;
+}
+.button {
+display: inline-block;
+padding: 10px;
+background: #ccc;
+cursor: pointer;
+border-radius: 5px;
+border: 1px solid #ccc;
+}
+.button:hover {
+background: #ddd;
+}
+#file {
+display: none;
+}

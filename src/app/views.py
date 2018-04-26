@@ -24,12 +24,16 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 
 import jpype
+import requests
+from bs4 import BeautifulSoup
 from traceback import format_exc
 from json import dumps
 from time import time
 from urlparse import urljoin
+import re
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
@@ -774,6 +778,154 @@ def check_license(request):
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
 
+def xml_upload(request):
+    """ View for uploading XML file
+    returns xml_upload.html
+    """
+    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+        context_dict={}
+        ajaxdict = {}
+        if request.method == 'POST':
+            if "xmlTextButton" in request.POST:
+                """ If user provides XML text using textarea """
+                page_id = request.POST['page_id']
+                request.session[page_id] = request.POST["xmltext"]
+                ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
+                response = dumps(ajaxdict)
+                return HttpResponse(response, status=200)
+
+            elif "licenseNameButton" in request.POST:
+                try:
+                    """ If license name is provided by the user """
+                    name = request.POST["licenseName"]
+                    url = "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/"
+                    """ If it is exception name """
+                    if re.search('exception', name, re.IGNORECASE ):
+                        source = requests.get("https://spdx.org/licenses/exceptions-index.html").text
+                        soup = BeautifulSoup(source, 'html.parser')
+                        """ Extracting exception identifier """
+                        if soup.find("td", text=name):
+                            url+= "exceptions/" +  soup.find("td", text=name).parent.code.text
+                        elif soup.find("code", text=name):
+                            url+= "exceptions/" + name
+                        else:
+                            if (request.is_ajax()):
+                                ajaxdict["type"] = "error"
+                                ajaxdict["data"] = "License or Exception name does not exist."
+                                response = dumps(ajaxdict)
+                                return HttpResponse(response,status=404)
+                    else:
+                        """ If it is license name """
+                        source = requests.get("https://spdx.org/licenses").text
+                        soup = BeautifulSoup(source, 'html.parser')
+                        """ Extracting license identifier """
+                        if soup.find("td", text=name):
+                            url+= soup.find("td", text=name).parent.code.text
+                        elif soup.find("code", text=name):
+                            url+= name
+                        else:
+                            if (request.is_ajax()):
+                                ajaxdict["type"] = "error"
+                                ajaxdict["data"] = "License or Exception name does not exist."
+                                response = dumps(ajaxdict)
+                                return HttpResponse(response,status=404)
+                            context_dict["error"] = "License or Exception name does not exist."
+                            return render(request, 
+                            'app/xml_upload.html',context_dict,status=404
+                            )
+
+                    url += ".xml"
+                    response = requests.get(url)
+                    if(response.status_code == 200):
+                        page_id = request.POST['page_id']
+                        request.session[page_id] = response.text
+                        ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response, status=200)
+                    else:
+                        return HttpResponse()
+                except:
+                    if (request.is_ajax()):
+                        ajaxdict["data"] = format_exc()
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response,status=404)
+                    context_dict["error"] = format_exc()
+                    return render(request, 
+                        'app/xml_upload.html',context_dict,status=404
+                        )
+
+            elif "uploadButton" in request.POST:
+                """ If user uploads the XML file """
+                try:
+                    if request.FILES["file"]:
+                        """ Saving XML file to the media directory """
+                        xml_file = request.FILES['file']
+                        folder = str(request.user) + "/" + str(int(time())) 
+                        fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
+                            base_url=urljoin(settings.MEDIA_URL, folder+'/')
+                            )
+                        filename = fs.save(xml_file.name, xml_file)
+                        uploaded_file_url = fs.url(filename)
+                        page_id = request.POST['page_id']
+                        with open(str(settings.APP_DIR+uploaded_file_url), 'r') as f:
+                            request.session[page_id] = f.read()
+                        ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response, status=200)
+                    else :
+                        """ If no file is uploaded """
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "error"
+                            ajaxdict["data"] = "No file uploaded"
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=404)
+                        context_dict["error"] = "No file uploaded"
+                        return render(request, 
+                            'app/xml_upload.html',context_dict,status=404
+                            )
+                except:
+                    """ If error is raised """
+                    if (request.is_ajax()):
+                        ajaxdict["type"] = "error"
+                        ajaxdict["data"] = format_exc() 
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response, status=400)
+                    context_dict["error"] = format_exc() 
+                    return render(request, 
+                        'app/xml_upload.html',context_dict,status=400
+                        )
+
+            elif "newButton" in request.POST:
+                """ If the user starts with new XML """
+                xml_text = """<?xml version="1.0" encoding="UTF-8"?>
+                <SPDXLicenseCollection xmlns="http://www.spdx.org/license">
+                <license>
+                </license>
+                </SPDXLicenseCollection>
+                """
+                page_id = request.POST['page_id']
+                request.session[page_id] = xml_text
+                ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
+                response = dumps(ajaxdict)
+                return HttpResponse(response, status=200)
+
+            else:
+                return HttpResponse()
+        else :
+            """ GET,HEAD Request """
+            return render(request, 'app/xml_upload.html', {})
+    else:
+        return HttpResponseRedirect(settings.LOGIN_URL)
+
+def xml_edit(request, page_id):
+    """View for editing the XML file
+    returns editor.html
+    """
+    if (page_id in request.session):
+        return render(request, 'app/editor.html',{"xml_text":request.session[page_id]})
+    else:
+        return HttpResponseRedirect('/app/xml_upload')
+    
 def loginuser(request):
     """ View for Login
     returns login.html template

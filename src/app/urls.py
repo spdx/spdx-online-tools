@@ -18,6 +18,7 @@ from django.conf.urls import url,handler400, handler403, handler404, handler500
 from app import views
 #from django.contrib.auth import views as auth_views
 
+app_name = "app"
 
 handler400 = 'views.handler400'
 handler403 = 'views.handler403'
@@ -36,6 +37,8 @@ urlpatterns = [
     url(r'^logout/$', views.logoutuser, name='logout'),
     url(r'^profile/$', views.profile, name='profile'),
     url(r'^checkusername/$', views.checkusername, name='check-username'),
+    url(r'^xml_upload/$',views.xml_upload, name='xml-upload'),
+    url(r'^edit/(?P<page_id>[0-9a-z]+)/$', views.xml_edit, name='editor'),
     #url(r'^password_reset/$', auth_views.password_reset, name='password_reset'),
     #url(r'^password_reset/done/$', auth_views.password_reset_done, name='password_reset_done'),
     #url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',

@@ -1,0 +1,21 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load staticfiles %}
+
+{% block body1 %}
+    <div class="container-fluid">
+        <div class="col-md-6">
+            <h2>XML Text Editor</h2>
+            <textarea rows="20" cols="50">{{xml_text}}</textarea>
+        </div>
+        <div class="col-md-6">
+            <h2>XML Tree View Editor</h2>
+        </div>
+    </div><hr>
+    <button type="button" class="btn btn-md btn-success">Download</button>
+    <button type="button" class="btn btn-md btn-info">Make Pull Request</button>
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}

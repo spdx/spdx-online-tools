@@ -1,0 +1,289 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load staticfiles %}
+
+{% block head_block %}
+  <link href="{% static 'css/dragdrop.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body1 %}
+
+<div id="messages" class="messages"> </div>
+<p class ="lead"> {{ error }} </p>
+
+<div class="panel panel-default">
+  <div class="panel-heading"> <p class="lead">Upload the XML File</p> </div>
+    <div class="panel-body">
+  
+      <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#text">XML Text</a></li>
+        <li><a data-toggle="tab" href="#upload">Upload File</a></li>
+        <li><a data-toggle="tab" href="#license-name">License Name</a></li>
+        <li><a data-toggle="tab" href="#new">New XML File</a></li>
+      </ul>
+
+      <div class="tab-content">
+        <div id="text" class="tab-pane fade in active">
+          <form id="form-text" enctype="multipart/form-data" class="form-horizontal" method="post">
+            {% csrf_token %}
+            <h4>Write the XML document text below: </h4>
+            <textarea id="xmltext" name="xmltext" rows="15" style="width: 90%; resize:none;"></textarea> <hr>
+            <button id="xmlTextButton" name="xmlTextButton" class=" btn btn-md btn-info" type="submit">Edit Document</button>
+          </form>
+        </div>
+        <div id="upload" class="tab-pane fade">
+          <div id="drop-area" class="container">
+            <form id="form-upload" enctype="multipart/form-data" class="form-horizontal" method="post">
+              {% csrf_token %}
+              <h4>Upload XML file using the button or by dragging and dropping onto the dashed region</h4>
+              <input type="file" id="file" accept="application/xml" onchange="handleFiles(this.files)">
+              <label class="button" for="file">Select XML file</label>
+              <div class="file-name">No file selected</div>
+            </form>
+          </div>
+          <button id="uploadButton" name="uploadButton" class="btn btn-md btn-info" type="submit">Edit Document</button>
+        </div>
+
+        <div id="license-name" class="tab-pane fade">
+          <form id="form-license-name" enctype="multipart/form-data" class="form-horizontal" method="post">
+            {% csrf_token %}
+            <div class="container" style="margin-top:20px;">
+              <label class="control-label col-sm-6" >License Full Name or Identifier as on SPDX License List:</label>
+              <div class="col-sm-4" style="text-align:left;"> 
+                <input type="text" id="licenseName" placeholder="License Name" name="licenseName" autofocus>
+              </div>
+            </div> <hr>
+            <button id="licenseNameButton" name="licenseNameButton" class="btn btn-md btn-info" type="submit">Edit Document</button>
+          </form>
+        </div>
+
+        <div id="new" class="tab-pane fade">
+          <form id="form-new" enctype="multipart/form-data" class="form-horizontal" method="post">
+            {% csrf_token %}
+            <h3>Make a new License XML file from scratch</h3><br>
+            <button id="new-button" name="new-button" class="btn btn-l btn-info" type="submit">Go</button>
+          </form>
+        </div>
+  </div>
+  {% include "app/modal.html" %} 
+  </div>
+</div>
+{% endblock %}
+
+{% block script_block %}
+
+<script type="text/javascript">
+  /* Javascript to handel drag and drop */
+  let dropArea = document.getElementById('drop-area');
+  var xml_file="", valid=false;
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false)
+  });
+  
+  function preventDefaults (e) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false)
+  });
+  
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false)
+  });
+  
+  function highlight(e) {
+    dropArea.classList.add('highlight')
+  }
+  
+  function unhighlight(e) {
+    dropArea.classList.remove('highlight')
+  }
+  
+  dropArea.addEventListener('drop', handleDrop, false)
+
+  function handleDrop(e) {
+    let dt = e.dataTransfer
+    let files = dt.files
+    handleFiles(files)
+  }
+
+  function handleFiles(files) {
+    ([...files]).forEach(checkFile)
+  }
+  
+  function checkFile(file){
+    if(file.type=="text/xml" || file.type=="application/xml"){
+      $(".file-name").html("<b>Selected File: </b>"+file.name);
+      $(".file-name").removeClass("fail");
+      $(".file-name").addClass("success");
+      valid = true;
+      xml_file = file;
+    }
+    else{
+      $(".file-name").html("<b>Selected File: </b>"+file.name);
+      $(".file-name").removeClass("success");
+      $(".file-name").addClass("fail");
+      valid = false;
+    }
+  }
+
+</script>
+
+<script type="text/javascript">
+  
+  function button_change(state){
+    /* to change the state of submit button */
+    if(state == 0){
+      $("#licenseNameButton,#uploadButton,#xmlTextButton,#new-button").text("Processing...");
+      $("#licenseNameButton,#uploadButton,#xmlTextButton,#new-button").prop('disabled', true);
+    }
+    else if(state==1){
+      $("#licenseNameButton,#uploadButton,#xmlTextButton,#new-button").text("Edit Document");
+      $("#licenseNameButton,#uploadButton,#xmlTextButton,#new-button").prop('disabled', false);
+    }
+  }
+
+  function random_string(){
+    return Math.random().toString(36).substring(2);
+  }
+
+  function send_request(form){
+    /* sending the request */
+    $.ajax({
+      type: "POST",
+      enctype: 'multipart/form-data',
+      url: "/app/xml_upload/",
+      processData: false,
+      contentType: false,
+      cache: false,
+      dataType: 'json',
+      timeout: 600000,
+      data: form,
+      success: function (data) {
+        window.location.href = data.redirect_url;
+      },
+      error: function (e) {
+        console.log("ERROR : ", e);
+        $("#modal-header").removeClass("green-modal");
+        try {
+          var obj = JSON.parse(e.responseText);
+          if (obj.type=="warning"){
+            $("#modal-header").removeClass("red-modal");
+            $("#modal-header").addClass("yellow-modal");
+            $("#modal-title").html("Warning!");
+        }
+          else if (obj.type=="error"){
+            $("#modal-header").removeClass("yellow-modal");
+            $("#modal-header").addClass("red-modal");
+            $("#modal-title").html("Error!");
+          }
+          $("#modal-body").text(obj.data);
+        }
+        catch (e){
+          $("#modal-header").removeClass("yellow-modal");
+          $("#modal-header").addClass("red-modal");
+          $("#modal-title").html("Error!");
+          $("#modal-body").text("The application could not be connected. Please try later.");
+        }
+        $("#myModal").modal({
+          backdrop: 'static',
+          keyboard: true, 
+          show: true
+        });
+        button_change(1);
+      }
+    });
+  }
+
+  $("#form-text").on('submit', function(event){
+    /* if user submits xml using the textarea */
+    event.preventDefault();
+    if($("#xmltext").val().length>0){
+      button_change(0);
+      $("#messages").html("");
+      var form = new FormData($("#form-text")[0]);
+      form.append("xmlTextButton","xmlTextButton");
+      form.append("page_id",random_string());
+      send_request(form);
+    }
+    else{
+      display_message("No input given.");
+      button_change(1);
+    }
+  })
+
+  function check_upload_form(){
+    if(valid==false){
+      return "Please select a XML file";
+    }
+    else if(xml_file==""){
+      return "No file selected";
+    }
+    else{
+      return 1;
+    }
+  }
+
+  $("#uploadButton").on('click', function(event){
+    /* if the user uploads the file */
+    event.preventDefault();
+    if(check_upload_form()==1){
+      button_change(0);
+      $("#messages").html("");
+      var form = new FormData($("#form-upload")[0]);
+      form.append("file",xml_file);
+      form.append("uploadButton","uploadButton");
+      form.append("page_id",random_string());
+      send_request(form);
+    }
+    else{
+      display_message(check_upload_form());
+      button_change(1);
+    }
+  })
+
+  $("#form-license-name").on('submit', function(event){
+    /* if the user enters license name */
+    event.preventDefault();
+    if($("#licenseName").val().length>0){
+      button_change(0);
+      $("#messages").html("");
+      var form = new FormData($("#form-license-name")[0]);
+      form.append("licenseNameButton","licenseNameButton");
+      form.append("page_id",random_string());
+      send_request(form);
+    }
+    else{
+      display_message("No input given");
+      $("#licenseName").focus();
+    }
+  })
+
+  $("#form-new").on('submit', function(event){
+    event.preventDefault();
+    button_change(0);
+    $("#messages").html("");
+    var form = new FormData($("#form-license-name")[0]);
+    form.append("newButton","newButton");
+    form.append("page_id",random_string());
+    send_request(form);
+  })
+
+  function display_message(message_text){
+    $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+message_text+'</div>');
+    setTimeout(function() {
+      $("#messages").html("");
+    }, 5000);
+  }
+
+</script>
+
+<script type="text/javascript">
+  $(document).ready(function () {
+    $("#xml-editor").addClass('linkactive');
+  });
+</script>
+
+{% endblock %}
