@@ -7,7 +7,6 @@
 {% endblock %}
 
 {% block body1 %}
-
 <div id="messages" class="messages">
 </div>
 <p class ="lead"> {{ error }}</p>
@@ -15,14 +14,14 @@
 <div class="panel-heading"> <p class="lead"> Tag-Value, RDF and XML SPDX Document</p> </div>
 <div class="panel-body">
   <div id="drop-area" class="container">
-      <form id="validateform" enctype="multipart/form-data" class="form-horizontal" method="post">
-        {% csrf_token %}
-        <h4>Upload file using the button or by dragging and dropping onto the dashed region</h4>
-        <input type="file" id="file" onchange="handleFiles(this.files)">
-        <label class="button" for="file">Select file</label>
-        <p class="file-name">No file selected</p>
-      </form>
-    </div>
+    <form id="validateform" enctype="multipart/form-data" class="form-horizontal" method="post">
+      {% csrf_token %}
+      <h4>Upload file using the button or by dragging and dropping onto the dashed region</h4>
+      <input type="file" id="file" onchange="handleFiles(this.files)">
+      <label class="button" for="file">Select file</label>
+      <p class="file-name">No file selected</p>
+    </form>
+  </div> <hr>
     <button id="validatebutton" name="validatebutton" class="btn btn-md btn-info" type="submit" disabled="true">Validate</button>
   {% include "app/modal.html" %} 
   <!--
