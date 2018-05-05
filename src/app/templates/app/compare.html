@@ -1,6 +1,11 @@
 {% extends 'app/base.html' %}
 {% load static %}
 {% load staticfiles %}
+
+{% block head_block %}
+  <link href="{% static 'css/dragdrop.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
 {% block body1 %}
 <div id="messages" class="messages">
 </div>
@@ -9,227 +14,126 @@
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">Compare SPDX RDF Documents</p> </div>
 <div class="panel-body">
-<div class="col-md-6">
-<form id="compareform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+<form id="compareform" enctype="multipart/form-data" class="form-horizontal" method="post">
 		{% csrf_token %}
-		<fieldset>
-			<legend>Upload one by one</legend>
-			<div class = "form-group">
-				<div class="col-sm-12">
-				<label class="control-label col-sm-3" >SPDX Document 1</label>
-					<div class="col-sm-3"> 
-					  <input type="file" id="file1" placeholder="" name = "file1"  >
-					</div>
-				</div>	
-			</div>
-			<div class = "form-group">
-				<div class="col-sm-12">
-				<label class="control-label col-sm-3" >SPDX Document 2</label>
-					<div class="col-sm-3"> 
-					  <input type="file" id="file2" placeholder="" name = "file2"  >
-					</div>
-				</div>	
-			</div>
-			<div id="morefiles">
-			</div>
-			<div class = "form-group">
-				<div class="col-sm-12">
-					<label id="addmore" class="btn btn-md btn-success"><span class="glyphicon glyphicon-plus"></span> Add More Files</label>
+		<div id="drop-area" class="container">
+      <h4 id="doclabel">Upload SPDX Documents using the button or by dragging and dropping onto the dashed region</h4>
+      <input type="file" id="file" onchange="handleFiles(this.files)" multiple>
+			<label class="button" for="file">Select files</label> &nbsp;
+			<label class="button reset">Reset Files</label>
+      <div class="file-name">No file selected</div>
+		</div>
+		<br>
+		<div class = "form-group">
+			<div class="col-sm-12">
+			<label class="control-label col-sm-3" >Result File Name</label>
+				<div class="col-sm-6"> 
+					<input type="text" id="rfilename" placeholder="" name = "rfilename">
+					<label class="control-label" id="convertdoclabel">.xlsx</label>
 				</div>
 			</div>	
-			<br>
-			<div class = "form-group">
-				<div class="col-sm-12">
-				<label class="control-label col-sm-3" >Result File Name</label>
-					<div class="col-sm-6"> 
-					  <input type="text" id="rfilename" placeholder="" name = "rfilename"  >
-					  <label class="control-label" id="convertdoclabel" >.xlsx</label>
-					</div>
-				</div>	
-			</div>
-		<input type="hidden" id="nofile" name="nofile" value="2">
+		</div>
 		<hr>
-		<button class=" btn btn-md btn-info" type="submit" id="comparebutton1" name="compare">Compare</button>
-		</fieldset>
+		<button class=" btn btn-md btn-info" type="submit" id="comparebutton" name="compare">Compare</button>
 </form>
-</div>
-<div class="col-md-6">
-<form id="compareform2" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
-		{% csrf_token %}
-		<fieldset>
-			<legend>Upload all</legend>
-			<div class = "form-group">
-				<div class="col-sm-12">
-				<label class="control-label col-sm-3" >SPDX Document</label>
-					<div class="col-sm-3"> 
-					  <input type="file" id="files" placeholder="" name = "files" multiple>
-					</div>
-				</div>	
-			</div>
-			<div class = "form-group">
-				<div class="col-sm-12">
-				<label class="control-label col-sm-3" >Result File Name</label>
-					<div class="col-sm-6"> 
-					  <input type="text" id="rfilename2" placeholder="" name = "rfilename2"  >
-					  <label class="control-label" id="convertdoclabel" >.xlsx</label>
-					</div>
-				</div>	
-			</div>
-		<hr>
-		<button class=" btn btn-md btn-info" id="comparebutton2" type="submit" name="compareall">Compare</button>
-		</fieldset>
-		<output id="list"></output>
-</form>
-</div>
 </div>
 </div>
 {% include "app/modal.html" %}
 {% endblock %}
 
 {% block script_block %}
+
 <script type="text/javascript">
+  /* Javascript to handel drag and drop */
+  let dropArea = document.getElementById('drop-area');
+  var selected_files = [];
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false)
+  });
+  
+  function preventDefaults (e) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false)
+  });
+  
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false)
+  });
+  
+  function highlight(e) {
+    dropArea.classList.add('highlight')
+  }
+  
+  function unhighlight(e) {
+    dropArea.classList.remove('highlight')
+  }
+  
+  dropArea.addEventListener('drop', handleDrop, false)
+
+  function handleDrop(e) {
+    let dt = e.dataTransfer
+    let files = dt.files
+    handleFiles(files)
+  }
+
+  function handleFiles(files) {
+    ([...files]).forEach(checkFile)
+  }
+  
+  function checkFile(file){
+    if(file && selected_files.length<13){
+      if ($(".file-name").text() == "No file selected"){
+				$(".file-name").html("<b>Selected Files: </b><ul>");
+				$(".file-name").append("<li>" + file.name + "</li>");
+			}
+			else{
+				$(".file-name").append("<li>" + file.name + "</li>");
+			}
+      selected_files.push(file);
+		}
+		else if(selected_files.length>=13){
+			$("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Maximum file upload limit reached.</strong></div>');
+	    setTimeout(function() {
+	        $("#messages").html("");
+	      }, 5000);
+		}
+  }
+
 function checkform() {
-	var nofile = parseInt($("#nofile").val());
-	for(i = 1; i <= nofile; i++){
-       if ($('#file'+i).get(0).files.length == 0) {
-    		return ("SPDX Document " + i + " not selected.");
-	  }
-    }
-  if (($('#rfilename').val() == "")){
-    return("Please choose a file name for the converted file.");
-  }
-  else {
-    return "1";
-  }
-}
-</script>
-<script type="text/javascript">
-function checkform2() {
-  if ($('#files').get(0).files.length < 2) {
-  	$('#files').focus();
+  if (selected_files.length<2){
     return ("Please select atleast 2 files.");
-  }
-  else if (($('#rfilename2').val() == "")){
-  	$('#rfilename2').focus();
+	}
+	else if($('#rfilename').val() == ""){
+		$('#rfilename').focus();
     return("Please choose a file name for the converted file.");
-  }
-  else {
-    return "1";
-  }
+	}
+	else{
+		return 1;
+	}
 }
+
+$(".reset").on("click", function(){
+	selected_files = [];
+	$(".file-name").html("No file selected");
+})
 </script>
+
 <script type="text/javascript">
   $('#compareform').on('submit', function(event){
     event.preventDefault();
     var check = checkform();
-    $("#comparebutton1").text("Comparing...");
-    $("#comparebutton1").prop('disabled', true);
     if (check=="1"){
-      $("#messages").html("");
-	    var form = new FormData($("#compareform")[0]);
-	    form.append("compare","compare");
-	    $.ajax({
-	            type: "POST",
-	            enctype: 'multipart/form-data',
-	            url: "/app/compare/",
-	            processData: false,
-	            contentType: false,
-	            dataType: 'json',
-	            cache: false,
-	            timeout: 600000,
-	            data: form,
-	            success: function (data) {
-	                console.log("SUCCESS : ", data);
-	                $("#modal-header").removeClass("red-modal");
-	                $("#modal-header").removeClass("yellow-modal");
-                    $("#modal-header").addClass("green-modal");
-                    $("#modal-title").html("Success!");
-	                $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
-	                $("#myModal").modal({
-                          backdrop: 'static',
-                          keyboard: true, 
-                          show: true
-                  	});
-	                $("#comparebutton1").text("Compare");
-    				$("#comparebutton1").prop('disabled', false);
-	            },
-	            error: function (e) {
-	                console.log("ERROR : ", e);
-	                var i;
-	                $("#modal-body").text("");
-	                $("#modal-header").removeClass("green-modal");
-	                try {
-                  		var obj = JSON.parse(e.responseText);
-		                if (obj.type=="warning"){
-		                    $("#modal-header").removeClass("red-modal");
-		                    $("#modal-header").addClass("yellow-modal");
-		                    $("#modal-title").html("Warning!");
-		                    for(i=0;i<obj["files"].length;i++){
-			                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
-			                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
-			                }
-			                $("#modal-body").append("Ignoring the warnings, the following file was generated<br>");
-			                $("#modal-body").append('<h3><a href="'+obj.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
-
-		                }
-		                else if (obj.type=="warning2"){
-		                    $("#modal-header").removeClass("red-modal");
-		                    $("#modal-header").addClass("yellow-modal");
-		                    $("#modal-title").html("Warning!");
-		                    for(i=0;i<obj["files"].length;i++){
-			                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
-			                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
-			                }
-			                $("#modal-body").append("Ignoring the warnings,the compare tool was run and the following error was generated:<br><hr>");
-			                $("#modal-body").append(obj["toolerror"]);
-
-		                }
-	                    else if (obj.type=="error"){
-		                    $("#modal-header").removeClass("yellow-modal");
-		                    $("#modal-header").addClass("red-modal");
-		                    $("#modal-title").html("Error!");
-		                    for(i=0;i<obj["files"].length;i++){
-			                	$("#modal-body").append("<b>" + obj["files"][i] + "</b><br>");
-			                	$("#modal-body").append(obj["errors"][i] + "<br><hr>");
-			                }
-	                    }
-	                }
-	                catch (e){
-	                  	$("#modal-header").removeClass("yellow-modal");
-	                    $("#modal-header").addClass("red-modal");
-	                    $("#modal-title").html("Error!");
-	                    $("#modal-body").text("The application could not be connected. Please try later.");
-	                  }
-
-	                $("#myModal").modal({
-                          backdrop: 'static',
-                          keyboard: true, 
-                          show: true
-                  	});
-	                $("#comparebutton1").text("Compare");
-    				$("#comparebutton1").prop('disabled', false);
-	            }
-	        });
-	}
-	else{
-		$("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
-	    setTimeout(function() {
-	        $("#messages").html("");
-	      }, 5000);
-	}
-});
-
-</script>
-<script type="text/javascript">
-  $('#compareform2').on('submit', function(event){
-    event.preventDefault();
-    var check = checkform2();
-    if (check=="1"){
-    	$("#comparebutton2").text("Comparing");
-	    $("#comparebutton2").prop('disabled', true);
+    	$("#comparebutton").text("Comparing");
+	    $("#comparebutton").prop('disabled', true);
         $("#messages").html("");
-	    var form = new FormData($("#compareform2")[0]);
-	    form.append("compareall","compareall");
+			var form = new FormData($("#compareform")[0]);
+			for(var i=0; i<selected_files.length; i++){
+				form.append('files', selected_files[i]);
+			}
 	    $.ajax({
 	            type: "POST",
 	            enctype: 'multipart/form-data',
@@ -252,8 +156,8 @@ function checkform2() {
 	                        keyboard: true, 
 	                        show: true
 	                });
-	                $("#comparebutton2").text("Compare");
-    				$("#comparebutton2").prop('disabled', false);
+	                $("#comparebutton").text("Compare");
+    				$("#comparebutton").prop('disabled', false);
 	            },
 	            error: function (e) {
 	                console.log("ERROR : ", e);
@@ -307,8 +211,8 @@ function checkform2() {
                           keyboard: true, 
                           show: true
                   	});
-	                $("#comparebutton2").text("Compare");
-    				$("#comparebutton2").prop('disabled', false);
+	                $("#comparebutton").text("Compare");
+    				$("#comparebutton").prop('disabled', false);
 	            }
 	        });
 	}
@@ -320,45 +224,11 @@ function checkform2() {
 	}
 });
 </script>
+
 <script type="text/javascript">
 $(document).ready(function () {
-    $("#comparepage").addClass('linkactive');
-	$("#nofile").val("2");
-	$("#addmore").click(function(){
-		var no = parseInt($("#nofile").val());
-		// Limit the no. of files uploaded to 13
-		if (no < 13){ 
-			$("#nofile").val(no+1);
-			$("#morefiles").append('<div class = "form-group"><div class="col-sm-12"><label class="control-label col-sm-3" >SPDX Document '
-			 + (no+1)
-			 + '</label><div class="col-sm-3"> <input type="file" id="file'+  (no+1) +'" placeholder="" name = "file'+ (no+1) + '"  ></div></div>	</div>');
-		}
-		else {
-			$("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Maximum file upload limit reached.</strong></div>');
-	    setTimeout(function() {
-	        $("#messages").html("");
-	      }, 5000);
-		}
-		
-	});
-
+	$("#comparepage").addClass('linkactive');
 });
 </script>
 
-<script>
-  function handleFileSelect(evt) {
-    var files = evt.target.files; // FileList object
-    // console.log(files);
-    // console.log(evt.target);
-    // console.log(evt.target.value);
-    // files is a FileList of File objects. List some properties.
-    var output = [];
-    for (var i = 0, f; f = files[i]; i++) {
-      output.push('<li><strong>', escape(f.name), '</strong>','</li>');
-    }
-    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';			//append
-  }
-
-  document.getElementById('files').addEventListener('change', handleFileSelect, false);
-</script>
 {% endblock %}
