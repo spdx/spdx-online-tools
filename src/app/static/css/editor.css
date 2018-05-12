@@ -1,0 +1,11 @@
+.container-fluid{
+    margin-top:-60px;
+}
+#xml-textarea{
+    width:96%;
+    resize:none;   
+    height:90%;
+}
+.tab-content{
+    margin-top:20px;
+}

@@ -2,20 +2,115 @@
 {% load static %}
 {% load staticfiles %}
 
-{% block body1 %}
-    <div class="container-fluid">
-        <div class="col-md-6">
-            <h2>XML Text Editor</h2>
-            <textarea rows="20" cols="50">{{xml_text}}</textarea>
-        </div>
-        <div class="col-md-6">
-            <h2>XML Tree View Editor</h2>
-        </div>
-    </div><hr>
-    <button type="button" class="btn btn-md btn-success">Download</button>
-    <button type="button" class="btn btn-md btn-info">Make Pull Request</button>
+{% block head_block %}
+  <link href="{% static 'css/editor.css' %}" rel="stylesheet" type="text/css">
 {% endblock %}
 
-{% block script %}
+{% block body2 %}
+<center>
+    <div class="container-fluid">
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#text">Text Editor</a></li>
+            <li><a data-toggle="tab" href="#tree">Tree Editor</a></li>
+            <li><a data-toggle="tab" href="#split">Split View</a></li>
+        </ul>
+            
+        <div class="tab-content">
+            <div id="text" class="tab-pane fade in active">
+                <textarea id="xml-textarea" rows="20">{{xml_text}}</textarea>
+            </div>
+            <div id="tree" class="tab-pane fade">
+                <h2>Tree View Editor</h2>
+            </div>
+            <div id="split" class="tab-pane fade">
+                <div class="col-md-6">
+                    <textarea id="xml-textarea" rows="20">{{xml_text}}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <h2>Tree View Editor</h2>
+                </div>
+            </div>
+        </div>
+    </div><hr>
+    <button class="btn btn-md btn-default" id="beautify">Beautify</button>
+    <button class="btn btn-md btn-success">Download</button>
+    <button class="btn btn-md btn-info">Make Pull Request</button>
+</center>
+{% endblock %}
 
+{% block script_block %}
+<script type="text/javascript">
+    function beautify(text){
+        var space = "    ";
+        var shift = ["\n"];
+        for(var i=0;i<100;i++){
+            shift.push(shift[i]+space);
+        }
+        var array = text.replace(/>\s{0,}</g,"><")
+                     .replace(/</g,"~::~<")
+                     .replace(/\s*xmlns\:/g,"~::~xmlns:")
+                     .replace(/\s*xmlns\=/g,"~::~xmlns=")
+                     .split('~::~')
+        var len = array.length
+        var inComment = false
+        var deep = 0
+        var str = ''
+            
+        for(var i=0;i<len;i++){
+            // if start comment or <![CDATA[...]]> or <!DOCTYPE //
+            if(array[i].search(/<!/) > -1){ 
+                str += shift[deep]+array[i];
+                inComment = true; 
+                // if end comment  or <![CDATA[...]]> //
+                if(array[i].search(/-->/) > -1 || array[i].search(/\]>/) > -1 || array[i].search(/!DOCTYPE/) > -1 ){ 
+                    inComment = false; 
+                }
+            } 
+            // end comment  or <![CDATA[...]]> //
+            else if(array[i].search(/-->/)>-1 || array[i].search(/\]>/) > -1){ 
+                str += array[i];
+                inComment = false; 
+            } 
+            // <elm></elm> //
+            else if( array[i-1].search(/^<\w/)>-1 && array[i].search(/^<\/\w/)>-1 &&
+                /^<[\w:\-\.\,]+/.exec(array[i-1]) == /^<\/[\w:\-\.\,]+/.exec(array[i])[0].replace('/','')){
+                str += array[i];
+                if(!inComment) deep--;
+            }
+            // <elm> //
+            else if(array[i].search(/<\w/) > -1 && array[i].search(/<\//) == -1 && array[i].search(/\/>/) == -1 ){
+                str = !inComment ? str += shift[deep++]+array[i] : str += array[i];
+            } 
+            // <elm>...</elm> //
+            else if(array[i].search(/<\w/) > -1 && array[i].search(/<\//) > -1){
+                str = !inComment ? str += shift[deep]+array[i] : str += array[i];
+            } 
+            // </elm> //
+            else if(array[i].search(/<\//) > -1){
+                str = !inComment ? str += shift[--deep]+array[i] : str += array[i];
+            }
+            // <elm/> //
+            else if(array[i].search(/\/>/) > -1 ){ 
+                str = !inComment ? str += shift[deep]+array[i] : str += array[i];
+            } 
+            // <? xml ... ?> //
+            else if(array[i].search(/<\?/) > -1){ 
+                str += shift[deep]+array[i];
+            } 
+            // xmlns //
+            else if( array[i].search(/xmlns\:/) > -1  || array[i].search(/xmlns\=/) > -1){ 
+                str += shift[deep]+array[i];
+            }
+            else {
+                str += array[i];
+            }
+        }
+        return  (str[0] == '\n') ? str.slice(1) : str;
+    }
+
+    $("#beautify").on("click",function(){
+        $("#xml-textarea").val(beautify($("#xml-textarea").val()));
+    })
+    
+</script>
 {% endblock %}
