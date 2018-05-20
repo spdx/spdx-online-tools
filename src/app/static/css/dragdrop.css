@@ -1,20 +1,21 @@
 #drop-area {
-    border: 2px dashed #ccc;
+    border: 2px dashed rgb(221, 221, 221);
     border-radius: 20px;
     width: 90%;
-    min-height: 200px;
+    min-height: 220px;
     font-family: sans-serif;
-    margin: 50px auto;
+    margin: 30px auto;
     padding: 20px;
+    transition: box-shadow 0.2s;
+    overflow: hidden;
 }
 #drop-area.highlight {
-border-color: rgb(170, 170, 170);
-}
-p {
-margin-top: 0;
+    -webkit-box-shadow: 0 0 12px 1px grey inset;
+    -moz-box-shadow: 0 0 12px 1px grey inset;
+    box-shadow: 0 0 12px 1px grey inset;
 }
 .my-form {
-margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 .file-name{
     margin-top:10px;
@@ -26,16 +27,22 @@ margin-bottom: 10px;
     color:red;
 }
 .button {
-display: inline-block;
-padding: 10px;
-background: #ccc;
-cursor: pointer;
-border-radius: 5px;
-border: 1px solid #ccc;
+    display: inline-block;
+    padding: 8px;
+    background: #ccc;
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1px solid #ccc;
 }
 .button:hover {
-background: #ddd;
+    background: #ddd;
+}
+.reset{
+    background: rgb(255, 62, 62) !important;
+}
+.reset:hover{
+    background: rgb(252, 98, 98) !important;
 }
 #file {
-display: none;
+    display: none;
 }

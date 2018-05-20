@@ -245,7 +245,7 @@ class CompareViewsTestCase(TestCase):
         """POST Request for compare without login or ANONYMOUS_LOGIN_ENABLED==False """
         if not settings.ANONYMOUS_LOGIN_ENABLED :
             self.initialise()
-            resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': "2" ,'rfilename': "comparetest",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
+            resp = self.client.post(reverse("compare"),{'rfilename': "comparetest", 'files' : [self.rdf_file,self.rdf_file2]},follow=True,secure=True)
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
             self.assertEqual(resp.status_code,200)
@@ -255,18 +255,18 @@ class CompareViewsTestCase(TestCase):
         """POST Request for compare without file upload"""
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
-        resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': "2" ,'rfilename': "comparetest"},follow=True,secure=True)
+        resp = self.client.post(reverse("compare"),{'rfilename': "comparetest"},follow=True,secure=True)
         self.assertEqual(resp.status_code,404)
         self.assertTrue('error' in resp.context)
         self.assertEqual(resp.redirect_chain,[])
         self.exit()
         self.client.logout()
 
-    def test_compare_post_without_valid_compare_method(self):
-        """POST Request for compare without valid compare method-- compare one by one or compare all at once"""
+    def test_compare_post_with_one_file(self):
+        """POST Request for compare with only one file"""
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
-        resp = self.client.post(reverse("compare"),{'nofile': "2" ,'rfilename': "comparetest",'file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
+        resp = self.client.post(reverse("compare"),{'rfilename': "comparetest", 'files':[self.rdf_file,]},follow=True,secure=True)
         self.assertEqual(resp.status_code,404)
         self.assertTrue('error' in resp.context)
         self.assertEqual(resp.redirect_chain,[])
@@ -277,7 +277,7 @@ class CompareViewsTestCase(TestCase):
         """POST Request for comparing two rdf files"""
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
-        resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': '2' ,'rfilename': 'comparetest','file1' : self.rdf_file, 'file2' : self.rdf_file2},follow=True,secure=True)
+        resp = self.client.post(reverse("compare"),{'rfilename': 'comparetest','files': [self.rdf_file,self.rdf_file2]},follow=True,secure=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
         self.assertEqual(resp.redirect_chain,[])
@@ -291,7 +291,7 @@ class CompareViewsTestCase(TestCase):
         """POST Request for comparing two files"""
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
-        resp = self.client.post(reverse("compare"),{'compare':'compare','nofile': '2' ,'rfilename': 'comparetest','file1' : self.rdf_file, 'file2' : self.tv_file},follow=True,secure=True)
+        resp = self.client.post(reverse("compare"),{'rfilename': 'comparetest','files' : [self.rdf_file,self.tv_file]},follow=True,secure=True)
         self.assertEqual(resp.status_code,400)
         self.assertTrue('error' in resp.context)
         self.assertEqual(resp.redirect_chain,[])
