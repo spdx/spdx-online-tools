@@ -27,6 +27,7 @@ from django.contrib.auth.decorators import login_required
 
 import jpype
 import requests
+import re
 from bs4 import BeautifulSoup
 from traceback import format_exc
 from json import dumps
@@ -790,9 +791,13 @@ def xml_upload(request):
                     if len(request.POST["xmltext"])>0 :
                         page_id = request.POST['page_id']
                         request.session[page_id] = request.POST["xmltext"]
-                        ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response, status=200)
+                        if(request.is_ajax()):
+                            ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response, status=200)
+                        return render(request, 
+                            'app/editor.html',context_dict,status=200
+                            )
                     else:
                         if (request.is_ajax()):
                             ajaxdict["type"] = "error"
@@ -805,6 +810,7 @@ def xml_upload(request):
                             )
                 except:
                     if (request.is_ajax()):
+                        ajaxdict["type"] = "error"
                         ajaxdict["data"] = format_exc()
                         response = dumps(ajaxdict)
                         return HttpResponse(response,status=404)
@@ -817,6 +823,16 @@ def xml_upload(request):
                 """ If license name is provided by the user """
                 try:
                     name = request.POST["licenseName"]
+                    if len(name) <= 0:
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "error"
+                            ajaxdict["data"] = "No input given."
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=404)
+                        context_dict["error"] = "No input given."
+                        return render(request, 
+                            'app/xml_upload.html',context_dict,status=404
+                                )                        
                     url = "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/"
                     """ If it is exception name """
                     if re.search('exception', name, re.IGNORECASE ):
@@ -854,25 +870,29 @@ def xml_upload(request):
                                 return HttpResponse(response,status=404)
                             context_dict["error"] = "License or Exception name does not exist."
                             return render(request, 
-                            'app/xml_upload.html',context_dict,status=404
-                            )
+                                'app/xml_upload.html',context_dict,status=404
+                                )
                     url += ".xml"
                     response = requests.get(url)
                     if(response.status_code == 200):
                         page_id = request.POST['page_id']
                         request.session[page_id] = response.text
-                        ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response, status=200)
+                        if (request.is_ajax()):
+                            ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response, status=200)
+                        return render(request, 
+                                'app/editor.html',context_dict,status=200
+                                )
                     else:
                         if (request.is_ajax()):
                             ajaxdict["type"] = "error"
                             ajaxdict["data"] = "The application could not be connected. Please try again."
                             response = dumps(ajaxdict)
-                            return HttpResponse(response,status=404)
+                            return HttpResponse(response,status=400)
                         context_dict["error"] = "The application could not be connected. Please try again."
                         return render(request, 
-                            'app/xml_upload.html',context_dict,status=404
+                            'app/xml_upload.html',context_dict,status=400
                             )
                 except:
                     if (request.is_ajax()):
@@ -890,6 +910,16 @@ def xml_upload(request):
                     if request.FILES["file"]:
                         """ Saving XML file to the media directory """
                         xml_file = request.FILES['file']
+                        if not xml_file.name.endswith(".xml"):
+                            if (request.is_ajax()):
+                                ajaxdict["type"] = "error"
+                                ajaxdict["data"] = "Please select a XML file."
+                                response = dumps(ajaxdict)
+                                return HttpResponse(response,status=400)
+                            context_dict["error"] = "Please select a XML file."
+                            return render(request, 
+                                'app/xml_upload.html',context_dict,status=400
+                                )
                         folder = str(request.user) + "/" + str(int(time())) 
                         fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
                             base_url=urljoin(settings.MEDIA_URL, folder+'/')
@@ -899,9 +929,13 @@ def xml_upload(request):
                         page_id = request.POST['page_id']
                         with open(str(settings.APP_DIR+uploaded_file_url), 'r') as f:
                             request.session[page_id] = f.read()
-                        ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response, status=200)
+                        if (request.is_ajax()):
+                            ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response, status=200)
+                        return render(request, 
+                            'app/xml_upload.html',context_dict,status=200
+                            )
                     else :
                         """ If no file is uploaded """
                         if (request.is_ajax()):
@@ -916,7 +950,7 @@ def xml_upload(request):
                 except:
                     if (request.is_ajax()):
                         ajaxdict["type"] = "error"
-                        ajaxdict["data"] = format_exc() 
+                        ajaxdict["data"] = format_exc()
                         response = dumps(ajaxdict)
                         return HttpResponse(response, status=400)
                     context_dict["error"] = format_exc() 
@@ -949,7 +983,10 @@ def xml_upload(request):
                         'app/xml_upload.html',context_dict,status=400
                         )
             else:
-                return HttpResponse()
+                ajaxdict["type"] = "error"
+                ajaxdict["data"] = "The application could not be connected. Please try later." 
+                response = dumps(ajaxdict)
+                return HttpResponse(response, status=400)
         else :
             """ GET,HEAD Request """
             return render(request, 'app/xml_upload.html', {})

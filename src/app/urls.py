@@ -18,7 +18,6 @@ from django.conf.urls import url,handler400, handler403, handler404, handler500
 from app import views
 #from django.contrib.auth import views as auth_views
 
-app_name = "app"
 
 handler400 = 'views.handler400'
 handler403 = 'views.handler403'
