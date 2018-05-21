@@ -53,6 +53,15 @@ def about(request):
         'app/about.html',context_dict
         )
 
+def submitNewLicense(request):
+    """ View for about
+    returns about.html template
+    """
+    context_dict={}
+    return render(request, 
+        'app/submit_new_license.html',context_dict
+        )
+
 def validate(request):
     """ View for validate tool
     returns validate.html template

@@ -1,0 +1,104 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load staticfiles %}
+{% block body1 %}
+<div id="messages" class="messages">
+</div>
+<p class ="lead"> {{ medialink }}</p>
+<p class ="lead"> {{ error }}</p>
+<div class="panel panel-default">
+<div class="panel-heading"> <p class="lead">Submit a New License to the SPDX Licenses List</p> </div>
+<div class="panel-body">
+<form id="newlicense" enctype="multipart/form-data" class = "form-horizontal" method = "post" >
+		{% csrf_token %}
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Full Name</label>
+        <div class="col-sm-3"> 
+          <input type="text" id="fullname" placeholder="" name = "fullname"  >
+          <label class="control-label" id="fullnamelabel" ></label>
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Short Identifier</label>
+        <div class="col-sm-3"> 
+          <input type="text" id="shortidentifier" placeholder="" name = "shortidentifier"  >
+          <label class="control-label" id="shortidentifierlabel" ></label>
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Source / URL</label>
+        <div class="col-sm-3"> 
+          <input type="text" id="sourceurl" placeholder="" name = "sourceurl"  >
+          <label class="control-label" id="sourceurllabel" ></label>
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">  
+      <label class="control-label col-sm-3" >&nbsp;OSI Approved&nbsp;</label>
+        <div class="col-sm-3">
+           <select name="osi_approved" id="osi_approved">
+              <option value="0" name ="here" selected="">-</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Notes</label>
+        <div class="col-sm-3"> 
+          <input type="text" id="notes" placeholder="" name = "notes"  >
+          <label class="control-label" id="noteslabel" ></label>
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Standard License Header</label>
+        <div class="col-sm-3">           
+          <textarea form ="newlicense" name="licenseheader" id="licenseheader" cols="40" wrap="soft" rows="2"></textarea>
+          <label class="control-label" id="licenseheaderlabel" ></label>
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Text</label>
+        <div class="col-sm-3">           
+          <textarea form ="newlicense" name="text" id="text" cols="40" wrap="soft" rows="3"></textarea>
+          <label class="control-label" id="noteslabel" ></label>
+        </div>
+      </div>  
+    </div>
+
+
+    <hr>
+		<input type="hidden" id="cfileformat" name="submit" value="">
+		<button class=" btn btn-md btn-info" id="submitbutton" type="submit" >Submit</button>
+</form>
+</div>
+</div>
+{% include "app/modal.html" %}
+{% endblock %}
+
+{% block script_block %}
+<script type="text/javascript">
+$(document).ready(function () {
+    $("#submitnewlicensepage").addClass('linkactive');
+    });
+</script>
+{% endblock %}
