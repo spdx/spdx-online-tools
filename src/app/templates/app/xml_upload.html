@@ -19,7 +19,7 @@
         <li class="active"><a data-toggle="tab" href="#text">XML Text</a></li>
         <li><a data-toggle="tab" href="#upload">Upload File</a></li>
         <li><a data-toggle="tab" href="#license-name">License Name</a></li>
-        <li><a data-toggle="tab" href="#new">New XML File</a></li>
+        <li><a data-toggle="tab" href="#new">New License XML</a></li>
       </ul>
 
       <div class="tab-content">
@@ -207,17 +207,17 @@
       send_request(form);
     }
     else{
-      display_message("No input given.");
+      display_message("No license XML text provided. Please input some license XML text to edit.");
       button_change(1);
     }
   })
 
   function check_upload_form(){
     if(valid==false){
-      return "Please select a XML file";
+      return "Please select a SPDX license XML file.";
     }
     else if(xml_file==""){
-      return "No file selected";
+      return "No file selected. Please select a SPDX license file to edit.";
     }
     else{
       return 1;
@@ -254,7 +254,7 @@
       send_request(form);
     }
     else{
-      display_message("No input given");
+      display_message("Please provide a SPDX license or exception name.");
       $("#licenseName").focus();
     }
   })

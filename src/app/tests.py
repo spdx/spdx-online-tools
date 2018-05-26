@@ -493,6 +493,10 @@ class XMLUploadTestCase(TestCase):
         self.assertEqual(resp.status_code,400)
         self.assertTrue('error' in resp.context)
         self.assertEqual(resp.redirect_chain,[])
+        resp = self.client.post(reverse("xml-upload"),{'uploadButton': 'uploadButton', 'page_id': 'afaw214a',"file": ""},follow=True,secure=True)
+        self.assertEqual(resp.status_code,400)
+        self.assertTrue('error' in resp.context)
+        self.assertEqual(resp.redirect_chain,[])
         self.client.logout()
 
     def test_xml_file_upload(self):
@@ -563,7 +567,7 @@ class XMLUploadTestCase(TestCase):
         """ POST request for xml input using invalid license name"""
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.post(reverse("xml-upload"),{'licenseName': '', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
-        self.assertEqual(resp.status_code,404)
+        self.assertEqual(resp.status_code,400)
         self.assertTrue('error' in resp.context)
         self.client.logout()
 
