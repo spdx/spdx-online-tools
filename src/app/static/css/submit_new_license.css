@@ -1,0 +1,12 @@
+.roundedButton {
+    color: white;
+    text-align: center;
+    display: inline-block;
+    border-radius: 50%;
+    font-size: 10px;
+}
+
+.alignedField {
+	float:left;
+	width:95%
+}

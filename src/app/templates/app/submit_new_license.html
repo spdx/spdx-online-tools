@@ -2,6 +2,8 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
+<link href="../../static/css/submit_new_license.css" rel="stylesheet" type="text/css" />
+
 <div id="messages" class="messages">
 </div>
 <p class ="lead"> {{ medialink }}</p>
@@ -16,7 +18,7 @@
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Full Name</label>
         <div class="col-sm-3"> 
-          <input type="text" id="fullname" placeholder="" name = "fullname"  >
+          <input type="text" id="fullname" placeholder="" name = "fullname" class="alignedField">
           <label class="control-label" id="fullnamelabel" ></label>
         </div>
       </div>  
@@ -26,7 +28,7 @@
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Short Identifier</label>
         <div class="col-sm-3"> 
-          <input type="text" id="shortidentifier" placeholder="" name = "shortidentifier"  >
+          <input type="text" id="shortidentifier" placeholder="" name = "shortidentifier" class="alignedField" >
           <label class="control-label" id="shortidentifierlabel" ></label>
         </div>
       </div>  
@@ -35,8 +37,9 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Source / URL</label>
-        <div class="col-sm-3"> 
-          <input type="text" id="sourceurl" placeholder="" name = "sourceurl"  >
+        <div class="col-sm-3" >
+          <button class="roundedButton btn btn-md btn-info" id="addSourceUrl" type="submit" >+</button>
+          <input type="text" id="sourceurl" placeholder="" name = "sourceurl">
           <label class="control-label" id="sourceurllabel" ></label>
         </div>
       </div>  
@@ -46,7 +49,7 @@
       <div class="col-sm-12">  
       <label class="control-label col-sm-3" >&nbsp;OSI Approved&nbsp;</label>
         <div class="col-sm-3">
-           <select name="osi_approved" id="osi_approved">
+           <select name="osi_approved" id="osi_approved" class="alignedField">
               <option value="0" name ="here" selected="">-</option>
               <option value="Yes">Yes</option>
               <option value="No">No</option>
@@ -59,7 +62,7 @@
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Notes</label>
         <div class="col-sm-3"> 
-          <input type="text" id="notes" placeholder="" name = "notes"  >
+          <input type="text" id="notes" placeholder="" name = "notes" class="alignedField">
           <label class="control-label" id="noteslabel" ></label>
         </div>
       </div>  
@@ -85,7 +88,6 @@
       </div>  
     </div>
 
-
     <hr>
 		<input type="hidden" id="cfileformat" name="submit" value="">
 		<button class=" btn btn-md btn-info" id="submitbutton" type="submit" >Submit</button>
@@ -100,5 +102,11 @@
 $(document).ready(function () {
     $("#submitnewlicensepage").addClass('linkactive');
     });
+</script>
+<script type="text/javascript">
+$(document).on('click', '.roundedButton', function(){
+    var html = '<div><input type="text" id="sourceurl" placeholder="" name = "sourceurl"></div>';
+  $(this).parent().append(html);
+});
 </script>
 {% endblock %}
