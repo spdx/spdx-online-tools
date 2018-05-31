@@ -690,6 +690,7 @@ def xml_upload(request):
                                 break
                             elif(exception["name"] == name):
                                 url+= "exceptions/" + exception["licenseExceptionId"]
+                                name = exception["licenseExceptionId"]
                                 found = 1
                                 break
                         if not found:
@@ -715,6 +716,7 @@ def xml_upload(request):
                                 break
                             elif(license["name"] == name):
                                 url+= license["licenseId"]
+                                name = license["licenseId"]
                                 found = 1
                                 break
                         else:
@@ -731,7 +733,7 @@ def xml_upload(request):
                     response = requests.get(url)
                     if(response.status_code == 200):
                         page_id = request.POST['page_id']
-                        request.session[page_id] = response.text
+                        request.session[page_id] = [response.text, name]
                         if (request.is_ajax()):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                             response = dumps(ajaxdict)
@@ -820,12 +822,7 @@ def xml_upload(request):
             elif "newButton" in request.POST:
                 """ If the user starts with new XML """
                 try:
-                    xml_text = """<?xml version="1.0" encoding="UTF-8"?>
-                    <SPDXLicenseCollection xmlns="http://www.spdx.org/license">
-                        <license>
-                        </license>
-                    </SPDXLicenseCollection>
-                    """
+                    xml_text = """<?xml version="1.0" encoding="UTF-8"?>\n<SPDXLicenseCollection xmlns="http://www.spdx.org/license">\n<license></license>\n</SPDXLicenseCollection>"""
                     page_id = request.POST['page_id']
                     request.session[page_id] = xml_text
                     ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
@@ -860,7 +857,13 @@ def xml_edit(request, page_id):
     """
     context_dict = {}
     if (page_id in request.session):
-        context_dict["xml_text"] = request.session[page_id]
+        if type(request.session[page_id]) == list:
+            """ XML input using license name"""
+            context_dict["xml_text"] = request.session[page_id][0]    
+            context_dict["license_name"] = request.session[page_id][1]
+        else:
+            """ Other XML input methods """
+            context_dict["xml_text"] = request.session[page_id]
         return render(request, 
             'app/editor.html',context_dict,status=200
             )
