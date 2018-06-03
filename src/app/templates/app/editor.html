@@ -1,0 +1,72 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load staticfiles %}
+
+{% block head_block %}
+    <link href="{% static 'css/editor.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/codemirror.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/fullscreen.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/show-hint.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/foldgutter.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body1 %}
+    {% include "app/modal.html" %}
+{% endblock %}
+
+{% block body2 %}
+    <div class="container-fluid">
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#text">Text Editor</a></li>
+            <li><a data-toggle="tab" href="#tree">Tree Editor</a></li>
+            <li><a data-toggle="tab" href="#split">Split View</a></li>
+        </ul>
+        <div class="tab-content">
+            <div id="text" class="tab-pane fade in active">
+                <div class="text-editor-options">
+                    <center>
+                    <button id="dec-fontsize" class="btn"> <b>-</b> </button> Font Size <button id="inc-fontsize" class="btn"> <b>+</b> </button>&nbsp;
+                    <button id="fullscreen" class="btn btn-default">Fullscreen</button>
+                    <button class="btn btn-md btn-default" id="beautify">Beautify</button>
+                    </center>
+                </div>
+                <textarea class="codemirror-textarea">{{xml_text}}</textarea>
+            </div>
+            <div id="tree" class="tab-pane fade">
+                <h2>Tree View Editor</h2>
+            </div>
+            <div id="split" class="tab-pane fade">
+                <div class="col-md-6">
+                    <textarea class="codemirror-textarea">{{xml_text}}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <h2>Tree View Editor</h2>
+                </div>
+            </div>
+        </div>
+    </div><hr>
+    <div class="document-options">
+        <center>
+            <button class="btn btn-success" id="download">Download</button>
+            <button class="btn btn-info">Make Pull Request</button>
+        </center>
+    </div>
+{% endblock %}
+
+{% block script_block %}
+
+<script type="text/javascript" src="{% static 'js/editor/codemirror.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/xml.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/fullscreen.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/foldgutter.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/foldcode.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/xml-fold.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/matchtags.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/closebrackets.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/closetag.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/trailingspace.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/show-hint.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/xml-hint.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/script.js' %}"></script>
+
+{% endblock %}

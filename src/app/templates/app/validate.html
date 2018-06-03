@@ -1,38 +1,32 @@
 {% extends 'app/base.html' %}
 {% load static %}
 {% load staticfiles %}
-{% block body1 %}
 
+{% block head_block %}
+  <link href="{% static 'css/dragdrop.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body1 %}
 <div id="messages" class="messages">
 </div>
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead"> Tag-Value, RDF and XML SPDX Document</p> </div>
 <div class="panel-body">
-<form id="validateform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
-		{% csrf_token %}
-			<div class = "form-group">
-			<div class="col-sm-12">
-			<label class="control-label col-sm-3" >SPDX Document</label>
-				<div class="col-sm-6"> 
-				  <input type="file" id="file" placeholder="" name = "file"  style="width: 100%;">
-				</div>
-			</div>	
-		</div>
-		<!--
-    <div class = "form-group">
-      <div class="col-sm-12">
-        <div id="drop_zone">or drop files here</div>
-      </div>
-    </div>
-    -->
-    <hr>
-		<button id="validatebutton" class=" btn btn-md btn-info" type="submit">Validate</button>
-</form>
-{% include "app/modal.html" %} 
-<!--
-<output id="list"></output>
--->
+  <div id="drop-area" class="container">
+    <form id="validateform" enctype="multipart/form-data" class="form-horizontal" method="post">
+      {% csrf_token %}
+      <h4>Upload file using the button or by dragging and dropping onto the dashed region</h4>
+      <input type="file" id="file" onchange="handleFiles(this.files)">
+      <label class="button" for="file">Select file</label>
+      <p class="file-name">No file selected</p>
+    </form>
+  </div> <hr>
+    <button id="validatebutton" name="validatebutton" class="btn btn-md btn-info" type="submit" disabled="true">Validate</button>
+  {% include "app/modal.html" %} 
+  <!--
+  <output id="list"></output>
+  -->
 </div>
 
 {% endblock %}
@@ -40,9 +34,60 @@
 {% block script_block %}
 
 <script type="text/javascript">
+  /* Javascript to handel drag and drop */
+  let dropArea = document.getElementById('drop-area');
+  var selected_file = "";
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false)
+  });
+  
+  function preventDefaults (e) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false)
+  });
+  
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false)
+  });
+  
+  function highlight(e) {
+    dropArea.classList.add('highlight')
+  }
+  
+  function unhighlight(e) {
+    dropArea.classList.remove('highlight')
+  }
+  
+  dropArea.addEventListener('drop', handleDrop, false)
+
+  function handleDrop(e) {
+    let dt = e.dataTransfer
+    let files = dt.files
+    handleFiles(files)
+  }
+
+  function handleFiles(files) {
+    ([...files]).forEach(checkFile)
+  }
+  
+  function checkFile(file){
+    if(file){
+      $(".file-name").html("<b>Selected File: </b>"+file.name);
+      $("#validatebutton").prop('disabled', false);
+      selected_file = file;
+    }
+    else{
+      $(".file-name").html("No file selected");
+      $("#validatebutton").prop('disabled', true);
+    }
+  }
+
 function checkform() {
-  if ($('#file').get(0).files.length === 0) {
-    $('#file').focus();
+  if (selected_file == "") {
     return ("No files selected.");
   }
   else {
@@ -50,8 +95,9 @@ function checkform() {
   }
 }
 </script>
+
 <script type="text/javascript">
-  $('#validateform').on('submit', function(event){
+  $('#validatebutton').on('click', function(event){
     event.preventDefault();
     var check = checkform();
     if (check=="1"){
@@ -59,6 +105,7 @@ function checkform() {
       $("#validatebutton").prop('disabled', true);
       $("#messages").html("");
       var form = new FormData($("#validateform")[0]);
+      form.append("file", selected_file);
       $.ajax({
               type: "POST",
               enctype: 'multipart/form-data',
