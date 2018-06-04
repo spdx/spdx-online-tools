@@ -47,14 +47,13 @@
     </div><hr>
     <div class="document-options">
         <center>
-            <button class="btn btn-success" id="download">Download</button>
-            <button class="btn btn-info">Make Pull Request</button>
+            <button class="btn btn-success" id="download" data-toggle="tooltip" data-placement="left" title="Download the XML Document" data-placement="top">Download</button>
+            <button class="btn btn-info" data-toggle="tooltip" title="Make a Pull Request in the SPDX XML License Repository to get your changes reviewed and merged" data-placement="right" data-placement="top">Submit Changes</button>
         </center>
     </div>
 {% endblock %}
 
 {% block script_block %}
-
 <script type="text/javascript" src="{% static 'js/editor/codemirror.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/xml.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/fullscreen.js' %}"></script>
@@ -68,5 +67,4 @@
 <script type="text/javascript" src="{% static 'js/editor/show-hint.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/xml-hint.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/script.js' %}"></script>
-
 {% endblock %}
