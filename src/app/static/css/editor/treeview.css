@@ -1,0 +1,102 @@
+.treeContainer{
+    padding: 15px 10px;
+    min-width: 300px;
+    height: 600px;
+    overflow: scroll;
+    border: solid 1px black;
+}
+#treeView{
+    margin-bottom: 40px;
+}
+ul.treeView .collapse,ul.treeView .expand{
+    cursor:pointer;
+    margin:0 5px;
+    height:14px;
+    width:14px;
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+ul.treeView .collapse{
+    display:inline-block;
+}
+ul.treeView .expand{
+    display:none;
+}
+ul.treeView, ul.treeView ul {
+    list-style-type: none;
+    background: #fff url(/static/images/vline.png) repeat-y;
+    margin: 0 10px;
+    padding: 0;
+}
+ul.treeView ul {
+    margin-left: 10px;
+}
+ul.treeView li {
+    margin: 0;
+    padding: 0 12px;
+    line-height: 20px;
+    background: url(/static/images/node.png) no-repeat;
+}
+ul.treeView li.last {
+    background: #fff url(/static/images/lastnode.png) no-repeat;
+}
+.nodeName{
+    color:rgb(23, 170, 23);
+    font-weight: bold;
+}
+.nodeText{
+    cursor:pointer;
+}
+.nodeText:hover{
+    color:rgb(162, 162, 162);
+}
+.emptyText{
+    font-size:14px;
+    color:grey;
+    cursor: pointer;
+}
+.emptyText:hover{
+    color: black;
+}
+.addChild{
+    color:rgb(0, 195, 255);
+    opacity: 0.5;
+    cursor: pointer;
+    font-size: 14px;
+}
+.addChild:hover{
+    opacity: 1;
+}
+ul.treeView textarea {
+    resize: none;
+    margin-left: 10px;
+}
+.attribute-name{
+    margin: 0 2px 0 5px;
+    color: rgb(66, 128, 244);
+}
+.attribute-value{
+    margin: 0 5px 0 2px;
+    color: rgb(247, 60, 60);
+    cursor: pointer;
+}
+.attribute-value:hover{
+    color: rgb(138, 0, 0);
+}
+.newAttributeContainer{
+    display:none;
+}
+.addAttribute, .deleteNode, .removeAttribute, .editAttribute{
+    margin: 0 4px;
+    height: 16px;
+    width: 16px;
+    opacity: 0.3;
+    cursor: pointer;
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+.addAttribute:hover, .deleteNode:hover, .removeAttribute:hover, .editAttribute:hover{
+    opacity: 0.8;
+}

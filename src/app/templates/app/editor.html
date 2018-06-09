@@ -8,6 +8,7 @@
     <link href="{% static 'css/editor/fullscreen.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/show-hint.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/foldgutter.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/treeview.css' %}" rel="stylesheet" type="text/css">
 {% endblock %}
 
 {% block body1 %}
@@ -16,6 +17,7 @@
 
 {% block body2 %}
     <div class="container-fluid">
+        <input type="hidden" id="xmlText" value="{{ xml_text }}">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#text">Text Editor</a></li>
             <li><a data-toggle="tab" href="#tree">Tree Editor</a></li>
@@ -34,6 +36,11 @@
             </div>
             <div id="tree" class="tab-pane fade">
                 <h2>Tree View Editor</h2>
+                <div class="treeContainer">
+                    <ul id="treeView" class="treeView">
+                        <li></li>
+                    </ul>
+                </div>
             </div>
             <div id="split" class="tab-pane fade">
                 <div class="col-md-6">
@@ -67,4 +74,5 @@
 <script type="text/javascript" src="{% static 'js/editor/show-hint.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/xml-hint.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/script.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/treeview.js' %}"></script>
 {% endblock %}
