@@ -2,87 +2,77 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css"> 
 <link href="../../static/css/license_requests.css" rel="stylesheet" type="text/css" />
+
 <div id="messages" class="messages">
 </div>
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">License Requests List</p> </div>
 <div class="panel-body">
-    <div class="container col-sm-12">
-          <div class="row">
-          <div class="col-md-12">
-            <div class="panel panel-primary">
-              <div class="panel-body">
-                <input type="text" class="form-control" id="dev-table-filter" data-action="filter" data-filters="#dev-table" placeholder="Search a license by its information" />
-              </div>
-              <table class="table table-hover" id="dev-table">
-                <thead>
-                  <tr>
-                    <th>Fullname</th>
-                    <th>Short Identifier</th>
-                    <th>State</th>
-                    <th>Submission Date</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <tr>
-                    <td>ExampleLicenseRequest</td>
-                    <td>0BCQE25</td>
-                    <td>reviewed</td>
-                    <td>may/25/2018</td>
-                  </tr>
-                  <tr>
-                    <td>SecondExample</td>
-                    <td>000QETF</td>
-                    <td>reviewed</td>
-                    <td>may/20/2018</td>
-                  </tr>
-                  <tr>
-                    <td>ExampleLicenseRequest</td>
-                    <td>0BCQE25</td>
-                    <td>non-reviewed</td>
-                    <td>april/30/2018</td>
-                  </tr>
-                  <tr>
-                    <td>ThisIsAnExample</td>
-                    <td>0BCQE25</td>
-                    <td>reviewed</td>
-                    <td>april/10/2018</td>
-                  </tr>
-                  <tr>
-                    <td>LastExampleRequest</td>
-                    <td>AQERTT20</td>
-                    <td>reviewed</td>
-                    <td>december/30/2017</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-      </div>
+    <table id="requests_table" class="display dataTable">
+      <thead>
+        <tr>
+          <th>Fullname</th>
+          <th>Short Identifier</th>
+          <th>Submission Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ExampleLicenseRequest</td>
+          <td>0BCQE25</td>
+          <td>may/25/2018</td>
+        </tr>
+        <tr>
+          <td>SecondExample</td>
+          <td>000QETF</td>
+          <td>may/20/2018</td>
+        </tr>
+        <tr>
+          <td>ExampleLicenseRequest</td>
+          <td>0BCQE25</td>
+          <td>april/30/2018</td>
+        </tr>
+        <tr>
+          <td>ThisIsAnExample</td>
+          <td>0BCQE25</td>
+          <td>april/10/2018</td>
+        </tr>
+        <tr>
+          <td>LastExampleRequest</td>
+          <td>AQERTT20</td>
+          <td>december/30/2017</td>
+        </tr>
+      </tbody>
+    </table>
 
 {% include "app/modal.html" %} 
 </div>
 {% endblock %}
 {% block script_block %}
 <script type="text/javascript">
-$(document).ready(function () {
-    $("#licenserequestspage").addClass('linkactive');
-    });
+  $(document).ready(function () {
+      $("#licenserequestspage").addClass('linkactive');
+      });
 </script>
 <script type="text/javascript">
-function checkform() {
-  if ($('#licensetext').val() == "") {
-    $('#licensetext').focus();
-    return ("No text entered.");
+  function checkform() {
+    if ($('#licensetext').val() == "") {
+      $('#licensetext').focus();
+      return ("No text entered.");
+    }
+    else {
+      return "1";
+    }
   }
-  else {
-    return "1";
-  }
-}
 </script>
-<script src="{% static 'js/table_filter.js' %}"></script>
+<script type="text/javascript">
+  $(document).ready( function () {
+      $('#requests_table').DataTable();
+  } );
+</script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.js"></script>
 {% endblock %}
