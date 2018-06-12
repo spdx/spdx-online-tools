@@ -69,6 +69,8 @@ var xml_schema = {
 }
 var editor = "";
 $(document).ready(function(){
+    /* initialize bootstrap tooltip */
+    $('[data-toggle="tooltip"]').tooltip();
     /* initialize the editor */
     var fontSize = 14, fullscreen = false;
     $(".starter-template").css('text-align','');
@@ -103,6 +105,7 @@ $(document).ready(function(){
     });
     $(".CodeMirror").css("font-size",fontSize+'px');
     editor.setSize(($(window).width)*(0.9), 500);
+
     /* Decrease editor font size */
     $("#dec-fontsize").click(function(){
         fontSize -= 1;
@@ -150,6 +153,7 @@ $(document).ready(function(){
         if (editor.getOption("fullScreen")) editor.setOption("fullScreen", false);
         fullscreen = false;
     }
+
     /* make editor responsive */
     $(window).resize(function(){
         editor.setSize(($(window).width)*(0.9), 500);
@@ -160,71 +164,75 @@ $(document).ready(function(){
     })
     /* beautify XML */
     $("#beautify").on("click",function(){
-        display_message("Under Construction");
-    })    
+        var xmlText = editor.getValue();
+        editor.setValue(beautify(xmlText));
+        editor.refresh();
+    })
+    editor.on("change",function(cm, change){
+        convertTextToTree();
+    })
 });
 
 /* XML beautify script */
 function beautify(text){
-    var space = "    ";
-    var shift = ["\n"];
-    for(var i=0;i<100;i++){
-        shift.push(shift[i]+space);
+    var shift = ['\n'], i;
+    for(i=0;i<100;i++){
+        shift.push(shift[i]+'    '); 
     }
     var array = text.replace(/>\s{0,}</g,"><")
-                 .replace(/</g,"~::~<")
+                 .replace(/\s{0,}</g,"~::~<")
                  .replace(/\s*xmlns\:/g,"~::~xmlns:")
                  .replace(/\s*xmlns\=/g,"~::~xmlns=")
-                 .split('~::~')
-    var len = array.length
-    var inComment = false
-    var deep = 0
-    var str = ''
+                 .split('~::~');
+    var len = array.length;
+    var inComment = false;
+    var deep = 0;
+    var str = "";
         
-    for(var i=0;i<len;i++){
-        // if start comment or <![CDATA[...]]> or <!DOCTYPE //
+    for(i=0;i<len;i++){
+        /* if start comment or <![CDATA[...]]> or <!DOCTYPE */
         if(array[i].search(/<!/) > -1){ 
             str += shift[deep]+array[i];
-            inComment = true; 
+            inComment = true;
             // if end comment  or <![CDATA[...]]> //
             if(array[i].search(/-->/) > -1 || array[i].search(/\]>/) > -1 || array[i].search(/!DOCTYPE/) > -1 ){ 
                 inComment = false; 
             }
         } 
-        // end comment  or <![CDATA[...]]> //
+        /* end comment  or <![CDATA[...]]> */
         else if(array[i].search(/-->/)>-1 || array[i].search(/\]>/) > -1){ 
             str += array[i];
             inComment = false; 
-        } 
-        // <elm></elm> //
-        else if( array[i-1].search(/^<\w/)>-1 && array[i].search(/^<\/\w/)>-1 &&
-            /^<[\w:\-\.\,]+/.exec(array[i-1]) == /^<\/[\w:\-\.\,]+/.exec(array[i])[0].replace('/','')){
+        }
+        /* <elm></elm> */
+        else if( /^<\w/.exec(array[i-1]) && /^<\/\w/.exec(array[i]) &&
+        /^<[\w:\-\.\,]+/.exec(array[i-1]) == /^<\/[\w:\-\.\,]+/.exec(array[i])[0].replace('/','')){
             str += array[i];
             if(!inComment) deep--;
         }
-        // <elm> //
+        /* <elm> */
         else if(array[i].search(/<\w/) > -1 && array[i].search(/<\//) == -1 && array[i].search(/\/>/) == -1 ){
             str = !inComment ? str += shift[deep++]+array[i] : str += array[i];
         } 
-        // <elm>...</elm> //
+        /* <elm>...</elm> */
         else if(array[i].search(/<\w/) > -1 && array[i].search(/<\//) > -1){
             str = !inComment ? str += shift[deep]+array[i] : str += array[i];
         } 
-        // </elm> //
+        /* </elm> */
         else if(array[i].search(/<\//) > -1){
             str = !inComment ? str += shift[--deep]+array[i] : str += array[i];
         }
-        // <elm/> //
+        /* <elm/> */
         else if(array[i].search(/\/>/) > -1 ){ 
             str = !inComment ? str += shift[deep]+array[i] : str += array[i];
         } 
-        // <? xml ... ?> //
+        /* <? xml ... ?> */
         else if(array[i].search(/<\?/) > -1){ 
             str += shift[deep]+array[i];
         } 
-        // xmlns //
+        /* xmlns */
         else if( array[i].search(/xmlns\:/) > -1  || array[i].search(/xmlns\=/) > -1){ 
-            str += shift[deep]+array[i];
+            str += ' '+array[i];
         }
         else {
             str += array[i];
@@ -267,11 +275,9 @@ function saveTextAsFile() {
     document.body.appendChild(downloadLink);
     downloadLink.click();
 }
-
 function destroyClickedElement(e){
     document.body.removeChild(e.target);
 }
-
 $("#download").click(function(e){
     e.preventDefault();
     saveTextAsFile();
