@@ -17,7 +17,7 @@
 
 {% block body2 %}
     <div class="container-fluid">
-        <input type="hidden" id="xmlText" value="{{ xml_text }}">
+        <input type="hidden" id="xmlText" value="{{xml_text}}">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#text">Text Editor</a></li>
             <li><a data-toggle="tab" href="#tree">Tree Editor</a></li>
@@ -35,7 +35,6 @@
                 <textarea class="codemirror-textarea">{{xml_text}}</textarea>
             </div>
             <div id="tree" class="tab-pane fade">
-                <h2>Tree View Editor</h2>
                 <div class="treeContainer">
                     <ul id="treeView" class="treeView">
                         <li></li>
@@ -44,10 +43,10 @@
             </div>
             <div id="split" class="tab-pane fade">
                 <div class="col-md-6">
-                    <textarea class="codemirror-textarea">{{xml_text}}</textarea>
+                    <h3>Text Editor</h3>
                 </div>
                 <div class="col-md-6">
-                    <h2>Tree View Editor</h2>
+                    <h3>Tree View Editor</h3>
                 </div>
             </div>
         </div>

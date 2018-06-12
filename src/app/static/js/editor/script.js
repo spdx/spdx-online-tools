@@ -164,10 +164,13 @@ $(document).ready(function(){
     })
     /* beautify XML */
     $("#beautify").on("click",function(){
-        var a = editor.getValue();
-        editor.setValue(beautify(a));
+        var xmlText = editor.getValue();
+        editor.setValue(beautify(xmlText));
         editor.refresh();
-    })    
+    })
+    editor.on("change",function(cm, change){
+        convertTextToTree();
+    })
 });
 
 /* XML beautify script */
@@ -184,7 +187,7 @@ function beautify(text){
     var len = array.length;
     var inComment = false;
     var deep = 0;
-    var str = '';
+    var str = "";
         
     for(i=0;i<len;i++){
         /* if start comment or <![CDATA[...]]> or <!DOCTYPE */

@@ -1,9 +1,9 @@
 .treeContainer{
     padding: 15px 10px;
-    min-width: 300px;
+    min-width: 900px;
     height: 600px;
     overflow: scroll;
-    border: solid 1px black;
+    border: solid 1px rgb(211, 211, 211);
 }
 #treeView{
     margin-bottom: 40px;
@@ -72,20 +72,20 @@ ul.treeView textarea {
     resize: none;
     margin-left: 10px;
 }
-.attribute-name{
+.attributeName{
     margin: 0 2px 0 5px;
     color: rgb(66, 128, 244);
 }
-.attribute-value{
+.attributeValue{
     margin: 0 5px 0 2px;
     color: rgb(247, 60, 60);
     cursor: pointer;
 }
-.attribute-value:hover{
+.attributeValue:hover{
     color: rgb(138, 0, 0);
 }
 .newAttributeContainer{
-    display:none;
+    display:inline-block;
 }
 .addAttribute, .deleteNode, .removeAttribute, .editAttribute{
     margin: 0 4px;
@@ -100,3 +100,24 @@ ul.treeView textarea {
 .addAttribute:hover, .deleteNode:hover, .removeAttribute:hover, .editAttribute:hover{
     opacity: 0.8;
 }
+h2.xmlParsingErrorMessage{
+    color:rgb(206, 0, 0);
+    margin: 10px auto;
+}
+.textbox{
+    margin: 3px 5px;
+    width: 180px;
+    border: 0;
+    border-bottom: 2px solid rgb(165, 165, 165);
+    background: rgba(80, 214, 255, 0.056);
+}
+.textbox:focus{
+    border-bottom: 2px solid rgb(73, 73, 73);
+}
+button{
+    margin: 2px 2px 2px 5px;
+}
+.editNodeText{
+    margin: 5px 5px 5px 20px;
+}
+
