@@ -84,6 +84,7 @@ $(document).ready(function(){
         showCursorWhenSelecting: true,
         lineWiseCopyCut: false,
         autofocus: true,
+        autoRefresh: true,
         cursorScrollMargin: 5,
         styleActiveLine: true,
         styleActiveSelected: true,
@@ -146,12 +147,13 @@ $(document).ready(function(){
     function fullScreen(){
         if (!editor.getOption("fullScreen")) editor.setOption("fullScreen", true);
         display_message("Press Esc to exit fullscreen");
-        $(".codemirror-textarea").focus();
         fullscreen = true;
+        editor.focus();
     }
     function exitFullScreen(){
         if (editor.getOption("fullScreen")) editor.setOption("fullScreen", false);
         fullscreen = false;
+        editor.focus();
     }
 
     /* make editor responsive */
@@ -166,10 +168,23 @@ $(document).ready(function(){
     $("#beautify").on("click",function(){
         var xmlText = editor.getValue();
         editor.setValue(beautify(xmlText));
-        editor.refresh();
+        editor.focus();
     })
-    editor.on("change",function(cm, change){
+    
+    $("#tabTextEditor").click(function(){
+        if(checkPendingChanges()){
+            refreshTextEditor();
+            setTimeout(function(){
+                editor.refresh();
+                editor.focus();
+            },200);
+        }
+    })
+    $("#tabTreeEditor").click(function(){
         convertTextToTree();
+    })
+    $("#split").click(function(){
+
     })
 });
 
@@ -248,6 +263,7 @@ function display_message(message){
     $("#modal-header").addClass("green-modal");
     $("#modal-title").html("SPDX License XML Editor");
     $("#modal-body").html("<h3>"+message+"</h3>");
+    $('#modal-footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
     $("#myModal").modal({
         backdrop: 'static',
         keyboard: true, 
@@ -256,9 +272,12 @@ function display_message(message){
     setTimeout(function() {
         $(".close").click();
     }, 2000);
+    $(".close").click(function(){
+        editor.focus();
+    })
 }
 
-/* File download script */
+/* File download functions */
 function saveTextAsFile() {
     var xmlText = editor.getValue();
     var textBlob = new Blob([xmlText], { type: 'application/xml' });

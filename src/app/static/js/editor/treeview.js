@@ -20,54 +20,56 @@ $(document).ready(function(){
     });
     /* edit atttribute value */
     $(document).on('click','span.attributeValue',function(){
+        if(!checkPendingChanges()) return;
         var value = $(this).text();
         $('<input type="text" placeholder="Attribute Value" class="textbox" value="'+value+'"><img src="/static/images/tick.png" class="editAttribute"><img src="/static/images/removeNode.png" class="removeAttribute">').insertAfter($(this));
         $(this).css("display","none");
         $(".editAttribute").on("click", function(){
             value = $(this).prev().val().trim();
             if(value == ""){
-                alert("The value cannot be empty. Please enter a valid attribute value.");
+                displayModal("The value cannot be empty. Please enter a valid attribute value.","alert");
             }
             else if((/<|>|;|&/).exec(value)){
-                alert("Attribute value cannot contain special symbols. Please enter a valid value.");
+                displayModal("Attribute value cannot contain special symbols. Please enter a valid value.","alert");
             }
             else{
                 $(this).prev().prev().css("display","inline-block").text(value);
                 $(this).prev().remove();
                 $(this).next().remove();
                 $(this).remove();
-                refreshTextEditor();
             }
         })
         $(".removeAttribute").on("click", function(){
-            if(confirm("Are you sure you want to delete this attribute? This action cannot be undone.")==true){
-                for(var i=0;i<5;i++) $(this).prev().remove();
-                $(this).remove();
-                refreshTextEditor();
-            }
+            var node = $(this);
+            displayModal("Are you sure you want to delete this attribute? This action cannot be undone.", "confirm");
+            $("#modalOk").click(function(){
+                node.prevUntil("span.attributeName").remove();
+                node.prev().remove();
+                node.remove();
+            })
         })
     });
     /* add new attribute */
     $(document).on('click',"img.addAttribute",function(){
+        if(!checkPendingChanges()) return;
         $('<div class="newAttributeContainer"> <input type="text" placeholder="Attribute Name" class="newAttributeName textbox"> = <input type="text" placeholder="Attribute Value" class="newAttributeValue textbox"><button class="addNewAttribute btn btn-success btn-sm">Add Attribute</button><button class="cancel btn btn-sm">Cancel</button></div>').insertAfter($(this));
         $(this).css("display","none");
         $("button.addNewAttribute").click(function(){
             var name = $(this).siblings(".newAttributeName").val().trim();
             var value = $(this).siblings(".newAttributeValue").val().trim();
             if(name=="" || value==""){
-                alert("Please enter valid attribute name and value");
+                displayModal("Please enter valid attribute name and value","alert");
             }
             else if((/<|>|\s|;|&/).exec(name)){
-                alert("Attribute name cannot contain spaces or special symbols. Please enter valid attribute name.");
+                displayModal("Attribute name cannot contain spaces or special symbols. Please enter valid attribute name.","alert");
             }
             else if((/<|>|;|&/).exec(value)){
-                alert("Attribute value cannot contain special symbols. Please enter valid attribute value.");
+                displayModal("Attribute value cannot contain special symbols. Please enter valid attribute value.","alert");
             }
             else{
                 $(this).parent().prev().css("display","inline-block");
                 $('<span class="attributeName">'+name+'</span><span class="equal">=</span><span class="attributeValue">'+value+'</span>').insertBefore($(this).parent().siblings(".addAttribute"));
                 $(this).parent().remove();
-                refreshTextEditor();
             }
         })
         $("button.cancel").click(function(){
@@ -77,14 +79,16 @@ $(document).ready(function(){
     });
     /* delete a tag */
     $(document).on('click','img.deleteNode',function(){
-        if(confirm("Are you sure you want to delete this tag? This cannot be undone.")==true){
-            $(this).parent().empty();
-            $(this).parent().remove();
-            refreshTextEditor();
-        }
+        var node = $(this);
+        displayModal("Are you sure you want to delete this tag? This cannot be undone.", "confirm");
+        $('#modalOk').click(function(){
+            node.parent().empty();
+            node.parent().remove();
+        })
     })
     /* edit text value inside a tag */
     $(document).on('click','li.nodeText',function(){
+        if(!checkPendingChanges()) return;
         var value = $(this).text();
         $('<textarea rows="5" cols="70">'+value+'</textarea><br><button class="editNodeText btn btn-success">Save</button><button class="cancelEditNodeText btn">Cancel</button>').insertAfter($(this));
         $(this).next().focus();
@@ -92,7 +96,7 @@ $(document).ready(function(){
         $(".editNodeText").on("click", function(){
             value = $(this).prevUntil("textarea").prev().val().trim();
             if((/<|>|&|;/).exec(value)){
-                alert("Please remove the special symbols from the text.");
+                displayModal("Please remove the special symbols from the text.", "alert");
             }
             else if(value == ""){
                 $(this).prevUntil("li.nodeText").remove();
@@ -100,14 +104,12 @@ $(document).ready(function(){
                 $(this).next("button.cancelEditNodeText").remove();
                 $('<li class="emptyText">(No text value. Click to edit.)</li>').insertAfter($(this));
                 $(this).remove();
-                refreshTextEditor();
             }
             else{
                 $(this).prevUntil("li.nodeText").remove();
                 $(this).prev("li.nodeText").css("display","inline-block").text(value);
                 $(this).next("button.cancelEditNodeText").remove();
                 $(this).remove();
-                refreshTextEditor();
             }
         })
         $(".cancelEditNodeText").on("click", function(){
@@ -118,6 +120,7 @@ $(document).ready(function(){
     })
     /* edit empty text value inside a tag */
     $(document).on('click','li.emptyText',function(){
+        if(!checkPendingChanges()) return;
         var value = "";
         $('<textarea rows="5" cols="70"></textarea><br><button class="editNodeText btn btn-success">Save</button><button class="cancelEditNodeText btn">Cancel</button>').insertAfter($(this));
         $(this).next().focus();
@@ -125,14 +128,13 @@ $(document).ready(function(){
         $(".editNodeText").on("click", function(){
             value = $(this).prevUntil("textarea").prev().val().trim();
             if((/<|>|&|;/).exec(value)){
-                alert("Please remove the special symbols from the text.");
+                displayModal("Please remove the special symbols from the text.", "alert");
             }
             else if(value == ""){
                 $(this).prevUntil("li.emptyText").remove();
                 $(this).prev("li.emptyText").css("display","inline-block");
                 $(this).next("button.cancelEditNodeText").remove();
                 $(this).remove();
-                refreshTextEditor();
             }
             else{
                 $(this).prevUntil("li.emptyText").remove();
@@ -140,7 +142,6 @@ $(document).ready(function(){
                 $(this).next("button.cancelEditNodeText").remove();
                 $('<li class="nodeText">'+value+'</li>').insertAfter($(this));
                 $(this).remove();
-                refreshTextEditor();
             }
         })
         $(".cancelEditNodeText").on("click", function(){
@@ -151,32 +152,28 @@ $(document).ready(function(){
     })
     /* add new child tag */
     $(document).on('click','li.addChild',function(){
-        $('<input type="text" placeholder="Node Name" class="textbox"><button class="buttonAddChild btn btn-success">Create Child</button><button class="cancelAddChild btn">Cancel</button>').insertAfter($(this));
+        if(!checkPendingChanges()) return 0;
+        $('<li><input type="text" placeholder="Node Name" class="textbox"><button class="buttonAddChild btn btn-success">Create Child</button><button class="cancelAddChild btn">Cancel</button></li>').insertAfter($(this));
         $(this).css("display","none");
         $(".buttonAddChild").click(function(){
             var value = $(this).prev().val();
             if(value==""){
-                alert("The tag name cannot be empty. Please enter a valid node name.");
+                displayModal("The tag name cannot be empty. Please enter a valid node name.", "alert");
             }
             else if((/<|>|\s|;|&/).exec(value)){
-                alert("Tag name cannot contain spaces or special symbols. Please enter valid tag name.");
+                displayModal("Tag name cannot contain spaces or special symbols. Please enter valid tag name.", "alert");
             }
             else{
-                $(this).parent().append('<li><img src="/static/images/plus.png" class="expand"><img src="/static/images/minus.png" class="collapse"><span class="nodeName">'+value+'</span><img class="addAttribute" src="/static/images/addAttribute.png"><img class="deleteNode" src="/static/images/removeNode.png"><ul><li class="emptyText">(No text value. Click to edit.)</li><li class="addChild last">Add Child Node</li></ul></li>');
-                $(this).prev().remove();
-                $(this).next().remove();
-                $(this).prev().css("display","block");
-                $(this).remove();
-                refreshTextEditor();
+                $(this).parent().parent().append('<li><img src="/static/images/plus.png" class="expand"><img src="/static/images/minus.png" class="collapse"><span class="nodeName">'+value+'</span><img class="addAttribute" src="/static/images/addAttribute.png"><img class="deleteNode" src="/static/images/removeNode.png"><ul><li class="emptyText">(No text value. Click to edit.)</li><li class="addChild last">Add Child Node</li></ul></li>');
+                $(this).parent().prev('li.addChild').css("display","block");
+                $(this).parent().remove();
             }
         })
         $(".cancelAddChild").click(function(){
-            $(this).prevUntil("li.addChild").remove();
-            $(this).prev().css("display","block");
-            $(this).remove();
+            $(this).parent().prev('li.addChild').css("display","block");
+            $(this).parent().remove();
         })
     })
-
 });
 
 function convertTextToTree(){
@@ -233,10 +230,8 @@ function refreshTextEditor(){
     new_xml = '<?xml version="1.0" encoding="UTF-8"?>', arr=[];
     if($(".treeContainer").find("ul")){
         convertTreeToText($("#treeView"));
-        console.log($("#treeView"));
     }
     editor.setValue(beautify(new_xml));
-    editor.refresh();
 }
 
 function convertTreeToText(tree){
@@ -274,4 +269,63 @@ function convertTreeToText(tree){
             new_xml += "</"+arr.pop()+">";
         }
     }
+}
+/* check for open textboxes */
+function checkPendingChanges(){
+    var res = 1;
+    $(".editAttribute").each(function(){
+        $(this).click();
+        if($(document).find(this).length){
+            $(this).prev().css("border-bottom", "2px solid rgb(255, 0, 0)");
+            res = 0;
+        }
+    })
+    $(".addNewAttribute").each(function(){
+        $(this).click();
+        if($(document).find(this).length){
+            $(this).prev('.newAttributeValue').css("border-bottom", "2px solid rgb(255, 0, 0)");
+            $(this).prev().prev('.newAttributeName').css("border-bottom", "2px solid rgb(255, 0, 0)");
+            res = 0;
+        }
+    })
+    $(".editNodeText").each(function(){
+        $(this).click();
+        if($(document).find(this).length){
+            res = 0;
+        }
+    })
+    $(".buttonAddChild").each(function(){
+        $(this).click();
+        if($(document).find(this).length){
+            $(this).prev().css("background","rgba(255, 0, 0, 0.1)");
+            res = 0;
+        }
+    })
+    return res;
+}
+
+function displayModal(message, mode){
+    if(mode=="confirm"){
+        $("#modal-header").removeClass("red-modal");
+        $("#modal-header").removeClass("green-modal");
+        $("#modal-header").addClass("yellow-modal");
+        $("#modal-title").html("SPDX License XML Editor");
+        $('button.close').remove();
+        $(".modal-footer").html('<button class="btn btn-default pull-left" id="modalCancel" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><button class="btn btn-success" id="modalOk" data-dismiss="modal"><span class="glyphicon glyphicon-ok"></span> Confirm</button>')
+    }
+    else if(mode=="alert"){
+        $("#modal-header").removeClass("red-modal");
+        $("#modal-header").removeClass("green-modal");
+        $("#modal-header").addClass("yellow-modal");
+        $("#modal-title").html("SPDX License XML Editor");
+        $('button.close').remove();
+        $('<button type="button" class="close" data-dismiss="modal">&times;</button>').insertBefore($("h4.modal-title"));
+        $(".modal-footer").html('<button class="btn btn-default" data-dismiss="modal">OK</button>')
+    }
+    $("#modal-body").html("<h3>"+message+"</h3>");
+    $("#myModal").modal({
+        backdrop: 'static',
+        keyboard: true, 
+        show: true
+    });
 }
