@@ -19,9 +19,9 @@
     <div class="container-fluid">
         <input type="hidden" id="xmlText" value="{{xml_text}}">
         <ul class="nav nav-tabs">
-            <li class="active" id="tabTextEditor"><a href="#text">Text Editor</a></li>
-            <li id="tabTreeEditor"><a data-toggle="tab" href="#tree">Tree Editor</a></li>
-            <li id="tabSplitView"><a href="#split">Split View</a></li>
+            <li class="active"><a href="#text" id="tabTextEditor">Text Editor</a></li>
+            <li><a data-toggle="tab" href="#tree" id="tabTreeEditor">Tree Editor</a></li>
+            <li><a data-toggle="tab" href="#split" id="tabSplitView">Split View</a></li>
         </ul>
         <div class="tab-content">
             <div id="text" class="tab-pane fade in active">
@@ -42,10 +42,10 @@
                 </div>
             </div>
             <div id="split" class="tab-pane fade">
-                <div class="col-md-6">
-                    <h3>Text Editor</h3>
+                <div class="col-md-6 splitTextEditorContainer">
+                    <textarea class="codemirror-textarea">{{xml_text}}</textarea>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-6 splitTreeEditorContainer">
                     <h3>Tree View Editor</h3>
                 </div>
             </div>

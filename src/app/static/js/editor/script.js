@@ -67,15 +67,14 @@ var xml_schema = {
         children: ["p", "bullet", "br"]
     }
 }
-var editor = "";
+var editor = "", splitTextEditor = "";
 $(document).ready(function(){
     /* initialize bootstrap tooltip */
     $('[data-toggle="tooltip"]').tooltip();
     /* initialize the editor */
     var fontSize = 14, fullscreen = false;
     $(".starter-template").css('text-align','');
-    var code = $(".codemirror-textarea")[0];
-    editor = CodeMirror.fromTextArea(code, {
+    editor = CodeMirror.fromTextArea($(".codemirror-textarea")[0], {
         lineNumbers: true,
         mode: "xml",
         indentUnit: 4,
@@ -84,7 +83,34 @@ $(document).ready(function(){
         showCursorWhenSelecting: true,
         lineWiseCopyCut: false,
         autofocus: true,
-        autoRefresh: true,
+        cursorScrollMargin: 5,
+        styleActiveLine: true,
+        styleActiveSelected: true,
+        autoCloseBrackets: true,
+        matchTags: {bothTags: true},
+        extraKeys: {
+            "F11": fullScreen,
+            "Esc": exitFullScreen,
+            "Ctrl-J": "toMatchingTag",
+            "'<'": completeAfter,
+            "'/'": completeIfAfterLt,
+            "' '": completeIfInTag,
+            "'='": completeIfInTag,
+        },
+        hintOptions: {schemaInfo: xml_schema},
+        showTrailingSpace: true,
+        autoCloseTags: true,
+        foldGutter: true,
+    });
+    splitTextEditor = CodeMirror.fromTextArea($(".codemirror-textarea")[1], {
+        lineNumbers: true,
+        mode: "xml",
+        indentUnit: 4,
+        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+        lineWrapping: true,
+        showCursorWhenSelecting: true,
+        lineWiseCopyCut: false,
+        autofocus: true,
         cursorScrollMargin: 5,
         styleActiveLine: true,
         styleActiveSelected: true,
@@ -106,7 +132,7 @@ $(document).ready(function(){
     });
     $(".CodeMirror").css("font-size",fontSize+'px');
     editor.setSize(($(window).width)*(0.9), 500);
-
+    splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 500);
     /* Decrease editor font size */
     $("#dec-fontsize").click(function(){
         fontSize -= 1;
@@ -158,10 +184,12 @@ $(document).ready(function(){
 
     /* make editor responsive */
     $(window).resize(function(){
+        splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 500);
         editor.setSize(($(window).width)*(0.9), 500);
         if (fullscreen){
             $(".CodeMirror-fullscreen").css("height","auto");   
         }
+        splitTextEditor.refresh();
         editor.refresh();
     })
     /* beautify XML */
@@ -171,8 +199,9 @@ $(document).ready(function(){
         editor.focus();
     })
     
-    $("#tabTextEditor").click(function(){
+    $("#tabTextEditor").on('click', function(){
         if(checkPendingChanges()){
+            $(this).attr("data-toggle","tab");
             refreshTextEditor();
             setTimeout(function(){
                 editor.refresh();
@@ -181,10 +210,15 @@ $(document).ready(function(){
         }
     })
     $("#tabTreeEditor").click(function(){
+        $("#tabTextEditor").removeAttr("data-toggle");
         convertTextToTree();
     })
-    $("#split").click(function(){
-
+    $("#tabSplitView").click(function(){
+        $("#tabTextEditor").removeAttr("data-toggle");
+        setTimeout(function(){
+            splitTextEditor.refresh();
+            splitTextEditor.focus();
+        },200);
     })
 });
 
@@ -301,3 +335,7 @@ $("#download").click(function(e){
     e.preventDefault();
     saveTextAsFile();
 });
+
+window.onbeforeunload = function (e) {
+    return "Are you sure you want to leave. All the changes will be lost. You can either download the XML document or submit changes for review.";
+}

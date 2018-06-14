@@ -158,7 +158,7 @@ $(document).ready(function(){
         $(".buttonAddChild").click(function(){
             var value = $(this).prev().val();
             if(value==""){
-                displayModal("The tag name cannot be empty. Please enter a valid node name.", "alert");
+                displayModal("The tag name cannot be empty. Please enter a valid tag name.", "alert");
             }
             else if((/<|>|\s|;|&/).exec(value)){
                 displayModal("Tag name cannot contain spaces or special symbols. Please enter valid tag name.", "alert");
