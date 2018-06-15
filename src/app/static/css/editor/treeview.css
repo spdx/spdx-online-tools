@@ -1,14 +1,16 @@
-.treeContainer{
+.treeContainer, .splitTreeEditorContainer{
     padding: 15px 10px;
-    min-width: 900px;
-    height: 600px;
+    height: 500px;
     overflow: scroll;
     border: solid 1px rgb(211, 211, 211);
 }
-#treeView{
+.treeContainer{
+    min-width: 900px;
+}
+#treeView, #splitTreeView{
     margin-bottom: 40px;
 }
-ul.treeView .collapse,ul.treeView .expand{
+ul.treeView .collapse, ul.treeView .expand, ul.splitTreeView .collapse, ul.splitTreeView .expand{
     cursor:pointer;
     margin:0 5px;
     height:14px;
@@ -17,28 +19,28 @@ ul.treeView .collapse,ul.treeView .expand{
     -moz-user-select: none;
     -ms-user-select: none;
 }
-ul.treeView .collapse{
+ul.treeView .collapse, ul.splitTreeView .collapse{
     display:inline-block;
 }
-ul.treeView .expand{
+ul.treeView .expand, ul.splitTreeView .expand{
     display:none;
 }
-ul.treeView, ul.treeView ul {
+ul.treeView, ul.treeView ul, ul.splitTreeView, ul.splitTreeView ul{
     list-style-type: none;
     background: #fff url(/static/images/vline.png) repeat-y;
     margin: 0 10px;
     padding: 0;
 }
-ul.treeView ul {
+ul.treeView ul, ul.splitTreeView ul {
     margin-left: 10px;
 }
-ul.treeView li {
+ul.treeView li, ul.splitTreeView li {
     margin: 0;
     padding: 0 12px;
     line-height: 20px;
     background: url(/static/images/node.png) no-repeat;
 }
-ul.treeView li.last {
+ul.treeView li.last, ul.splitTreeView li.last {
     background: #fff url(/static/images/lastnode.png) no-repeat;
 }
 .nodeName{
@@ -103,6 +105,10 @@ ul.treeView textarea {
 h2.xmlParsingErrorMessage{
     color:rgb(206, 0, 0);
     margin: 10px auto;
+}
+span.xmlParsingErrorMessage{
+    color:rgb(206, 0, 0);
+    font-size: 20px;
 }
 .textbox{
     margin: 3px 5px;

@@ -194,24 +194,43 @@ $(document).ready(function(){
     })
     /* beautify XML */
     $("#beautify").on("click",function(){
-        var xmlText = editor.getValue();
+        var xmlText = editor.getValue().trim();
         editor.setValue(beautify(xmlText));
         editor.focus();
     })
     
-    $("#tabTextEditor").on('click', function(){
-        if(checkPendingChanges()){
-            $(this).attr("data-toggle","tab");
-            refreshTextEditor();
-            setTimeout(function(){
-                editor.refresh();
-                editor.focus();
-            },200);
+    $("#tabTextEditor").click(function(){
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
+        if(activeTab=='tabTreeEditor'){
+            if(checkPendingChanges("#treeView")){
+                $(this).attr("data-toggle","tab");
+                refreshTextEditor(editor, 'treeView');
+                setTimeout(function(){
+                    editor.refresh();
+                    editor.focus();
+                },200);
+            }
+        }
+        else if(activeTab=='tabSplitView'){
+            if(checkPendingChanges("#splitTreeView")){
+                $(this).attr("data-toggle","tab");
+                refreshTextEditor(editor, 'splitTreeView');
+                setTimeout(function(){
+                    editor.refresh();
+                    editor.focus();
+                },200);
+            }
         }
     })
     $("#tabTreeEditor").click(function(){
-        $("#tabTextEditor").removeAttr("data-toggle");
-        convertTextToTree();
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
+        //$('#'+activeTab).removeAttr("data-toggle");
+        if(activeTab=='tabTextEditor'){
+            convertTextToTree(editor, 'treeView');
+        }
+        else{
+            convertTextToTree(splitTextEditor, 'treeView');
+        }
     })
     $("#tabSplitView").click(function(){
         $("#tabTextEditor").removeAttr("data-toggle");
@@ -313,7 +332,24 @@ function display_message(message){
 
 /* File download functions */
 function saveTextAsFile() {
-    var xmlText = editor.getValue();
+    var xmlText = "";
+    var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
+    if(activeTab=="tabTextEditor"){
+        if(!convertTextToTree()){
+            displayModal("The file you are downloading is not a valid XML.", "alert");
+        }
+        xmlText = editor.getValue().trim();
+    } 
+    else if(activeTab=="tabTreeEditor"){
+        xmlText = refreshTextEditor()
+        if(xmlText==0){
+            displayModal("The file you are downloading is not a valid XML.", "alert");
+            xmlText = editor.getValue().trim();
+        }
+    }
+    else if(activeTab=="tabSplitView"){
+        xmlText = splitTextEditor.getValue().trim();
+    }
     var textBlob = new Blob([xmlText], { type: 'application/xml' });
     var fileName = "license.xml";
     
@@ -335,7 +371,7 @@ $("#download").click(function(e){
     e.preventDefault();
     saveTextAsFile();
 });
-
+/* alert before leaving the page */
 window.onbeforeunload = function (e) {
     return "Are you sure you want to leave. All the changes will be lost. You can either download the XML document or submit changes for review.";
 }

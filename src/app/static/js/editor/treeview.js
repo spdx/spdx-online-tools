@@ -1,7 +1,8 @@
 var new_xml="", arr=[];
 $(document).ready(function(){
     
-    convertTextToTree();
+    convertTextToTree(editor, "treeView");
+    convertTextToTree(editor, "splitTreeView");
     /* expand and collapse tree */
     $(document).on('click','img.expand, img.collapse',function(){
         var sign=$(this).attr('class');
@@ -176,19 +177,33 @@ $(document).ready(function(){
     })
 });
 
-function convertTextToTree(){
-    var xml = editor.getValue();
+function convertTextToTree(textEditor, treeEditor){
+    var xml = textEditor.getValue().trim();
     xml = xml.replace(/>\s{0,}</g,"><");
     try{
         var tree = $.parseXML(xml);
     }
     catch(err){
-        $(".treeContainer").html('<center><h2 class="xmlParsingErrorMessage">Invalid XML.<br> Please use the text editor to correct the error. Tree editor can only be used with valid XML.</h2></center>');
+        var newParser = new DOMParser();
+        var DOM = newParser.parseFromString(xml, "application/xml");
+        var errorData = DOM.childNodes[1].firstChild.data;
+        var errorMessage = errorData.slice(0,errorData.indexOf('Location')).replace('<','&lt;').replace('>','&gt;')
+        if(treeEditor=="treeView"){
+            $(".treeContainer").html('<center><h2 class="xmlParsingErrorMessage">Invalid XML.</h2><br><span class="xmlParsingErrorMessage">'+errorMessage+'<br> Please use the text editor to correct the error. Tree editor can only be used with valid XML.</span></center>');
+        }
+        else{
+            $(".splitTreeEditorContainer").html('<center><h2 class="xmlParsingErrorMessage">Invalid XML.</h2><br><span class="xmlParsingErrorMessage">'+errorMessage+'<br> Please use the text editor to correct the error. Tree editor can only be used with valid XML.</span></center>');
+        }
         return 0;
     }
-    $('.treeContainer').html('<ul id="treeView" class="treeView"><li></li></ul>');
-    traverse($('.treeView li'),tree.firstChild)
-    $('<img src="/static/images/plus.png" class="expand"><img src="/static/images/minus.png" class="collapse">').prependTo('.treeView li:has(li)');
+    if(treeEditor=="treeView"){
+        $('.treeContainer').html('<ul id="treeView" class="treeView"><li></li></ul>');
+    }
+    else{
+        $('.splitTreeEditorContainer').html('<ul id="splitTreeView" class="splitTreeView"><li></li></ul>');
+    }
+    traverse($('.'+treeEditor+' li'),tree.firstChild);
+    $('<img src="/static/images/plus.png" class="expand"><img src="/static/images/minus.png" class="collapse">').prependTo('.'+treeEditor+' li:has(li)');
     return 1;
 }
 
@@ -226,12 +241,19 @@ function traverse(node,tree) {
     }
 }
 
-function refreshTextEditor(){
-    new_xml = '<?xml version="1.0" encoding="UTF-8"?>', arr=[];
-    if($(".treeContainer").find("ul")){
-        convertTreeToText($("#treeView"));
+function refreshTextEditor(textEditor, treeEditor){
+    var container = "";
+    if(treeEditor=='treeView') container = '.treeContainer';
+    else container = '.splitTreeEditorContainer';
+    if($(container).find("ul").length){
+        new_xml = '<?xml version="1.0" encoding="UTF-8"?>', arr=[];
+        convertTreeToText($("#"+treeEditor));
+        textEditor.setValue(beautify(new_xml));
+        return new_xml;
     }
-    editor.setValue(beautify(new_xml));
+    else{
+        return 0;
+    }
 }
 
 function convertTreeToText(tree){
@@ -270,17 +292,17 @@ function convertTreeToText(tree){
         }
     }
 }
-/* check for open textboxes */
-function checkPendingChanges(){
+/* check for open textboxes in tree editor */
+function checkPendingChanges(treeEditorId){
     var res = 1;
-    $(".editAttribute").each(function(){
+    $(treeEditorId).find(".editAttribute").each(function(){
         $(this).click();
         if($(document).find(this).length){
             $(this).prev().css("border-bottom", "2px solid rgb(255, 0, 0)");
             res = 0;
         }
     })
-    $(".addNewAttribute").each(function(){
+    $(treeEditorId).find(".addNewAttribute").each(function(){
         $(this).click();
         if($(document).find(this).length){
             $(this).prev('.newAttributeValue').css("border-bottom", "2px solid rgb(255, 0, 0)");
@@ -288,13 +310,13 @@ function checkPendingChanges(){
             res = 0;
         }
     })
-    $(".editNodeText").each(function(){
+    $(treeEditorId).find(".editAttribute").each(function(){
         $(this).click();
         if($(document).find(this).length){
             res = 0;
         }
     })
-    $(".buttonAddChild").each(function(){
+    $(treeEditorId).find(".buttonAddChild").each(function(){
         $(this).click();
         if($(document).find(this).length){
             $(this).prev().css("background","rgba(255, 0, 0, 0.1)");
