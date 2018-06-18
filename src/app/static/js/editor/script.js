@@ -67,7 +67,7 @@ var xml_schema = {
         children: ["p", "bullet", "br"]
     }
 }
-var editor = "", splitTextEditor = "";
+var editor = "", splitTextEditor = "", latestXmlText = '';
 $(document).ready(function(){
     /* initialize bootstrap tooltip */
     $('[data-toggle="tooltip"]').tooltip();
@@ -132,7 +132,8 @@ $(document).ready(function(){
     });
     $(".CodeMirror").css("font-size",fontSize+'px');
     editor.setSize(($(window).width)*(0.9), 500);
-    splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 500);
+    splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 550);
+    latestXmlText = editor.getValue().trim();
     /* Decrease editor font size */
     $("#dec-fontsize").click(function(){
         fontSize -= 1;
@@ -181,7 +182,6 @@ $(document).ready(function(){
         fullscreen = false;
         editor.focus();
     }
-
     /* make editor responsive */
     $(window).resize(function(){
         splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 500);
@@ -198,13 +198,20 @@ $(document).ready(function(){
         editor.setValue(beautify(xmlText));
         editor.focus();
     })
-    
+    /* update split tree editor when split text editor loses focus */
+    splitTextEditor.on('blur', function(){
+        convertTextToTree(splitTextEditor, 'splitTreeView');
+    })
+
     $("#tabTextEditor").click(function(){
         var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
         if(activeTab=='tabTreeEditor'){
             if(checkPendingChanges("#treeView")){
+                $('#tabSplitView, #tabTreeEditor').removeAttr("data-toggle");
                 $(this).attr("data-toggle","tab");
-                refreshTextEditor(editor, 'treeView');
+                var temp = updateTextEditor(editor, 'treeView');
+                if(temp===0) editor.setValue(latestXmlText);
+                else latestXmlText = temp;
                 setTimeout(function(){
                     editor.refresh();
                     editor.focus();
@@ -213,8 +220,10 @@ $(document).ready(function(){
         }
         else if(activeTab=='tabSplitView'){
             if(checkPendingChanges("#splitTreeView")){
+                $('#tabSplitView, #tabTreeEditor').removeAttr("data-toggle");
                 $(this).attr("data-toggle","tab");
-                refreshTextEditor(editor, 'splitTreeView');
+                latestXmlText = beautify(splitTextEditor.getValue().trim());
+                editor.setValue(latestXmlText);
                 setTimeout(function(){
                     editor.refresh();
                     editor.focus();
@@ -224,20 +233,49 @@ $(document).ready(function(){
     })
     $("#tabTreeEditor").click(function(){
         var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
-        //$('#'+activeTab).removeAttr("data-toggle");
         if(activeTab=='tabTextEditor'){
-            convertTextToTree(editor, 'treeView');
+            $('#tabSplitView, #tabTextEditor').removeAttr("data-toggle");
+            $(this).attr("data-toggle","tab");
+            convertTextToTree(editor, 'treeView')
+            latestXmlText = beautify(editor.getValue().trim());
+            console.log(latestXmlText);
         }
-        else{
-            convertTextToTree(splitTextEditor, 'treeView');
+        else if(activeTab=='tabSplitView'){
+            if(checkPendingChanges("#splitTreeView")){
+                $('#tabSplitView, #tabTextEditor').removeAttr("data-toggle");
+                $(this).attr("data-toggle","tab");
+                convertTextToTree(splitTextEditor, 'treeView')
+                latestXmlText = beautify(splitTextEditor.getValue().trim());
+            }
         }
     })
     $("#tabSplitView").click(function(){
-        $("#tabTextEditor").removeAttr("data-toggle");
-        setTimeout(function(){
-            splitTextEditor.refresh();
-            splitTextEditor.focus();
-        },200);
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
+        if(activeTab=='tabTreeEditor'){
+            if(checkPendingChanges("#treeView")){
+                $('#tabTreeEditor, #tabTextEditor').removeAttr("data-toggle");
+                $(this).attr("data-toggle","tab");
+                var temp = updateTextEditor(splitTextEditor, 'treeView');
+                if(temp===0) splitTextEditor.setValue(latestXmlText);
+                else latestXmlText = temp;
+                convertTextToTree(splitTextEditor, 'splitTreeView');
+                setTimeout(function(){
+                    splitTextEditor.refresh();
+                    splitTextEditor.focus();
+                },200);
+            }
+        }
+        else if(activeTab=='tabTextEditor'){
+            $('#tabTreeEditor, #tabTextEditor').removeAttr("data-toggle");
+            $(this).attr("data-toggle","tab");
+            latestXmlText = beautify(editor.getValue().trim());
+            splitTextEditor.setValue(latestXmlText);
+            convertTextToTree(splitTextEditor, 'splitTreeView');
+            setTimeout(function(){
+                splitTextEditor.refresh();
+                splitTextEditor.focus();
+            },200);
+        }
     })
 });
 
@@ -335,19 +373,22 @@ function saveTextAsFile() {
     var xmlText = "";
     var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
     if(activeTab=="tabTextEditor"){
-        if(!convertTextToTree()){
+        if(!convertTextToTree(editor, 'treeView')){
             displayModal("The file you are downloading is not a valid XML.", "alert");
         }
         xmlText = editor.getValue().trim();
     } 
     else if(activeTab=="tabTreeEditor"){
-        xmlText = refreshTextEditor()
+        xmlText = updateTextEditor(editor, 'treeView');
         if(xmlText==0){
             displayModal("The file you are downloading is not a valid XML.", "alert");
-            xmlText = editor.getValue().trim();
+            xmlText = latestXmlText;
         }
     }
     else if(activeTab=="tabSplitView"){
+        if(!convertTextToTree(splitTextEditor, 'splitTreeView')){
+            displayModal("The file you are downloading is not a valid XML.", "alert");
+        }
         xmlText = splitTextEditor.getValue().trim();
     }
     var textBlob = new Blob([xmlText], { type: 'application/xml' });
@@ -373,5 +414,5 @@ $("#download").click(function(e){
 });
 /* alert before leaving the page */
 window.onbeforeunload = function (e) {
-    return "Are you sure you want to leave. All the changes will be lost. You can either download the XML document or submit changes for review.";
+    return "Are you sure you want to leave? All the changes will be lost. You can either download the XML document or submit changes for review.";
 }

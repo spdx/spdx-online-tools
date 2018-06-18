@@ -1,6 +1,6 @@
 .treeContainer, .splitTreeEditorContainer{
     padding: 15px 10px;
-    height: 500px;
+    height: 550px;
     overflow: scroll;
     border: solid 1px rgb(211, 211, 211);
 }

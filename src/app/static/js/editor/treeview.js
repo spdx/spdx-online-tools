@@ -21,9 +21,12 @@ $(document).ready(function(){
     });
     /* edit atttribute value */
     $(document).on('click','span.attributeValue',function(){
-        if(!checkPendingChanges()) return;
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id"), treeEditorId;
+        activeTab == "tabTreeEditor" ? treeEditorId = "#treeView" : treeEditorId = "#splitTreeView";
+        if(!checkPendingChanges(treeEditorId)) return;
         var value = $(this).text();
-        $('<input type="text" placeholder="Attribute Value" class="textbox" value="'+value+'"><img src="/static/images/tick.png" class="editAttribute"><img src="/static/images/removeNode.png" class="removeAttribute">').insertAfter($(this));
+        $('<input type="text" placeholder="Attribute Value" class="textbox" value="'+value+'"><img src="/static/images/tick.png" class="editAttribute" title="Save Attribute Value" data-placement="top" data-toggle="tooltip"><img src="/static/images/removeNode.png" class="removeAttribute" title="Delete Attribute" data-placement="top" data-toggle="tooltip">').insertAfter($(this));
+        $('[data-toggle="tooltip"]').tooltip();
         $(this).css("display","none");
         $(".editAttribute").on("click", function(){
             value = $(this).prev().val().trim();
@@ -36,8 +39,10 @@ $(document).ready(function(){
             else{
                 $(this).prev().prev().css("display","inline-block").text(value);
                 $(this).prev().remove();
+                $(this).nextUntil('.removeAttribute').remove();
                 $(this).next().remove();
                 $(this).remove();
+                if(activeTab=="tabSplitView") updateTextEditor(splitTextEditor, 'splitTreeView');
             }
         })
         $(".removeAttribute").on("click", function(){
@@ -47,12 +52,15 @@ $(document).ready(function(){
                 node.prevUntil("span.attributeName").remove();
                 node.prev().remove();
                 node.remove();
+                if(activeTab=="tabSplitView") updateTextEditor(splitTextEditor, 'splitTreeView');
             })
         })
     });
     /* add new attribute */
     $(document).on('click',"img.addAttribute",function(){
-        if(!checkPendingChanges()) return;
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id"), treeEditorId;
+        activeTab == "tabTreeEditor" ? treeEditorId = "#treeView" : treeEditorId = "#splitTreeView";
+        if(!checkPendingChanges(treeEditorId)) return;
         $('<div class="newAttributeContainer"> <input type="text" placeholder="Attribute Name" class="newAttributeName textbox"> = <input type="text" placeholder="Attribute Value" class="newAttributeValue textbox"><button class="addNewAttribute btn btn-success btn-sm">Add Attribute</button><button class="cancel btn btn-sm">Cancel</button></div>').insertAfter($(this));
         $(this).css("display","none");
         $("button.addNewAttribute").click(function(){
@@ -71,6 +79,7 @@ $(document).ready(function(){
                 $(this).parent().prev().css("display","inline-block");
                 $('<span class="attributeName">'+name+'</span><span class="equal">=</span><span class="attributeValue">'+value+'</span>').insertBefore($(this).parent().siblings(".addAttribute"));
                 $(this).parent().remove();
+                if(activeTab=="tabSplitView") updateTextEditor(splitTextEditor, 'splitTreeView');
             }
         })
         $("button.cancel").click(function(){
@@ -80,16 +89,20 @@ $(document).ready(function(){
     });
     /* delete a tag */
     $(document).on('click','img.deleteNode',function(){
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
         var node = $(this);
         displayModal("Are you sure you want to delete this tag? This cannot be undone.", "confirm");
         $('#modalOk').click(function(){
             node.parent().empty();
             node.parent().remove();
+            if(activeTab=="tabSplitView") updateTextEditor(splitTextEditor, 'splitTreeView');
         })
     })
     /* edit text value inside a tag */
     $(document).on('click','li.nodeText',function(){
-        if(!checkPendingChanges()) return;
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id"), treeEditorId;
+        activeTab == "tabTreeEditor" ? treeEditorId = "#treeView" : treeEditorId = "#splitTreeView";
+        if(!checkPendingChanges(treeEditorId)) return;
         var value = $(this).text();
         $('<textarea rows="5" cols="70">'+value+'</textarea><br><button class="editNodeText btn btn-success">Save</button><button class="cancelEditNodeText btn">Cancel</button>').insertAfter($(this));
         $(this).next().focus();
@@ -105,12 +118,14 @@ $(document).ready(function(){
                 $(this).next("button.cancelEditNodeText").remove();
                 $('<li class="emptyText">(No text value. Click to edit.)</li>').insertAfter($(this));
                 $(this).remove();
+                if(activeTab=="tabSplitView") updateTextEditor(splitTextEditor, 'splitTreeView');
             }
             else{
                 $(this).prevUntil("li.nodeText").remove();
                 $(this).prev("li.nodeText").css("display","inline-block").text(value);
                 $(this).next("button.cancelEditNodeText").remove();
                 $(this).remove();
+                if(activeTab=="tabSplitView") updateTextEditor(splitTextEditor, 'splitTreeView');
             }
         })
         $(".cancelEditNodeText").on("click", function(){
@@ -121,7 +136,9 @@ $(document).ready(function(){
     })
     /* edit empty text value inside a tag */
     $(document).on('click','li.emptyText',function(){
-        if(!checkPendingChanges()) return;
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id"), treeEditorId;
+        activeTab == "tabTreeEditor" ? treeEditorId = "#treeView" : treeEditorId = "#splitTreeView";
+        if(!checkPendingChanges(treeEditorId)) return;
         var value = "";
         $('<textarea rows="5" cols="70"></textarea><br><button class="editNodeText btn btn-success">Save</button><button class="cancelEditNodeText btn">Cancel</button>').insertAfter($(this));
         $(this).next().focus();
@@ -143,6 +160,7 @@ $(document).ready(function(){
                 $(this).next("button.cancelEditNodeText").remove();
                 $('<li class="nodeText">'+value+'</li>').insertAfter($(this));
                 $(this).remove();
+                if(activeTab=="tabSplitView") updateTextEditor(splitTextEditor, 'splitTreeView');
             }
         })
         $(".cancelEditNodeText").on("click", function(){
@@ -153,7 +171,9 @@ $(document).ready(function(){
     })
     /* add new child tag */
     $(document).on('click','li.addChild',function(){
-        if(!checkPendingChanges()) return 0;
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id"), treeEditorId;
+        activeTab == "tabTreeEditor" ? treeEditorId = "#treeView" : treeEditorId = "#splitTreeView";
+        if(!checkPendingChanges(treeEditorId)) return 0;
         $('<li><input type="text" placeholder="Node Name" class="textbox"><button class="buttonAddChild btn btn-success">Create Child</button><button class="cancelAddChild btn">Cancel</button></li>').insertAfter($(this));
         $(this).css("display","none");
         $(".buttonAddChild").click(function(){
@@ -165,9 +185,11 @@ $(document).ready(function(){
                 displayModal("Tag name cannot contain spaces or special symbols. Please enter valid tag name.", "alert");
             }
             else{
-                $(this).parent().parent().append('<li><img src="/static/images/plus.png" class="expand"><img src="/static/images/minus.png" class="collapse"><span class="nodeName">'+value+'</span><img class="addAttribute" src="/static/images/addAttribute.png"><img class="deleteNode" src="/static/images/removeNode.png"><ul><li class="emptyText">(No text value. Click to edit.)</li><li class="addChild last">Add Child Node</li></ul></li>');
+                $(this).parent().parent().append('<li><img src="/static/images/plus.png" class="expand"><img src="/static/images/minus.png" class="collapse"><span class="nodeName">'+value+'</span><img class="addAttribute" src="/static/images/addAttribute.png" title="Add New Attribute" data-placement="top" data-toggle="tooltip"><img class="deleteNode" src="/static/images/removeNode.png" title="Delete Node" data-placement="top" data-toggle="tooltip"><ul><li class="emptyText">(No text value. Click to edit.)</li><li class="addChild last">Add Child Node</li></ul></li>');
                 $(this).parent().prev('li.addChild').css("display","block");
                 $(this).parent().remove();
+                $('[data-toggle="tooltip"]').tooltip();
+                if(activeTab=="tabSplitView") updateTextEditor(splitTextEditor, 'splitTreeView');
             }
         })
         $(".cancelAddChild").click(function(){
@@ -203,6 +225,7 @@ function convertTextToTree(textEditor, treeEditor){
         $('.splitTreeEditorContainer').html('<ul id="splitTreeView" class="splitTreeView"><li></li></ul>');
     }
     traverse($('.'+treeEditor+' li'),tree.firstChild);
+    $('[data-toggle="tooltip"]').tooltip();
     $('<img src="/static/images/plus.png" class="expand"><img src="/static/images/minus.png" class="collapse">').prependTo('.'+treeEditor+' li:has(li)');
     return 1;
 }
@@ -215,7 +238,7 @@ function traverse(node,tree) {
             node.append('<span class="attributeName">'+attrib.name+'</span><span class="equal">=</span><span class="attributeValue">'+attrib.value+"</span>");
         })
     }
-    node.append('<img class="addAttribute" src="/static/images/addAttribute.png"><img class="deleteNode" src="/static/images/removeNode.png">')
+    node.append('<img class="addAttribute" src="/static/images/addAttribute.png" title="Add New Attribute" data-placement="top" data-toggle="tooltip"><img class="deleteNode" src="/static/images/removeNode.png" title="Delete Node" data-placement="top" data-toggle="tooltip">')
     if (children.length){
         var ul=$("<ul>").appendTo(node);
         var nodeText = $(tree).clone().children().remove().end().text();
@@ -241,7 +264,7 @@ function traverse(node,tree) {
     }
 }
 
-function refreshTextEditor(textEditor, treeEditor){
+function updateTextEditor(textEditor, treeEditor){
     var container = "";
     if(treeEditor=='treeView') container = '.treeContainer';
     else container = '.splitTreeEditorContainer';
@@ -249,6 +272,7 @@ function refreshTextEditor(textEditor, treeEditor){
         new_xml = '<?xml version="1.0" encoding="UTF-8"?>', arr=[];
         convertTreeToText($("#"+treeEditor));
         textEditor.setValue(beautify(new_xml));
+        textEditor.refresh();
         return new_xml;
     }
     else{
@@ -298,6 +322,7 @@ function checkPendingChanges(treeEditorId){
     $(treeEditorId).find(".editAttribute").each(function(){
         $(this).click();
         if($(document).find(this).length){
+            $(this).prev().css("background","rgba(255, 0, 0, 0.1)");
             $(this).prev().css("border-bottom", "2px solid rgb(255, 0, 0)");
             res = 0;
         }
@@ -306,20 +331,20 @@ function checkPendingChanges(treeEditorId){
         $(this).click();
         if($(document).find(this).length){
             $(this).prev('.newAttributeValue').css("border-bottom", "2px solid rgb(255, 0, 0)");
+            $(this).prev('.newAttributeValue').css("background","rgba(255, 0, 0, 0.1)");
             $(this).prev().prev('.newAttributeName').css("border-bottom", "2px solid rgb(255, 0, 0)");
+            $(this).prev().prev('.newAttributeName').css("background","rgba(255, 0, 0, 0.1)");
             res = 0;
         }
     })
-    $(treeEditorId).find(".editAttribute").each(function(){
+    $(treeEditorId).find(".editNodeText").each(function(){
         $(this).click();
-        if($(document).find(this).length){
-            res = 0;
-        }
     })
     $(treeEditorId).find(".buttonAddChild").each(function(){
         $(this).click();
         if($(document).find(this).length){
             $(this).prev().css("background","rgba(255, 0, 0, 0.1)");
+            $(this).prev().css("border-bottom", "2px solid rgb(255, 0, 0)");
             res = 0;
         }
     })
