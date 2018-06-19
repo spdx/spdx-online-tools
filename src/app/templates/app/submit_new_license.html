@@ -109,4 +109,106 @@ $(document).on('click', '.roundedButton', function(){
   $(this).parent().append(html);
 });
 </script>
+
+
+<script type="text/javascript">
+function checkform() {
+  if ($('#fullname').val().trim() === "") {
+    $('#fullname').focus();
+    return ("Please enter the license fullname.");
+  }
+  else if (($('#shortidentifier').val().trim() == "")){
+    $('#shortidentifier').focus();
+    return("Please enter the identifier.");
+  }
+  else if (($('#osi_approved').val() == "0")){
+    $('#osi_approved').focus();
+    return("Please select if the OSI is approved or not.");
+  }
+  else if (($('#text').val().trim() == "")){
+    $('#cfilename').focus();
+    return("Please enter the license text.");
+  }
+  else {
+    return "1";
+  }
+}
+</script>
+
+
+<script type="text/javascript">
+  $('#newlicense').on('submit', function(event){
+    event.preventDefault();
+    var check = checkform();
+    if (check=="1"){
+      $("#submitbutton").text("Submitting...");
+      $("#submitbutton").prop('disabled', true);
+      $("#messages").html("");
+      var form = new FormData($("#newlicense")[0]);
+      $.ajax({
+              type: "POST",
+              enctype: 'multipart/form-data',
+              url: "/app/validate/",
+              processData: false,
+              contentType: false,
+              cache: false,
+              dataType: 'json',
+              timeout: 600000,
+              data: form,
+              success: function (data) {
+                  console.log("SUCCESS : ", data);
+                  $("#modal-header").removeClass("red-modal");
+                  $("#modal-header").removeClass("yellow-modal");
+                  $("#modal-header").addClass("green-modal");
+                  $("#modal-title").html("Success!");
+                  $("#modal-body").html("<h3>"+data.data+"</h3>");
+                  $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true, 
+                          show: true
+                  });
+                  $("#validatebutton").text("Validate");
+                  $("#validatebutton").prop('disabled', false);
+              },
+              error: function (e) {
+                  console.log("ERROR : ", e);
+                  $("#modal-header").removeClass("green-modal");
+                  try {
+                    var obj = JSON.parse(e.responseText);
+                    if (obj.type=="warning"){
+                      $("#modal-header").removeClass("red-modal");
+                      $("#modal-header").addClass("yellow-modal");
+                      $("#modal-title").html("Warning!");
+                    }
+                  else if (obj.type=="error"){
+                      $("#modal-header").removeClass("yellow-modal");
+                      $("#modal-header").addClass("red-modal");
+                      $("#modal-title").html("Error!");
+                    }
+                  $("#modal-body").text(obj.data);
+                  }
+                  catch (e){
+                    $("#modal-header").removeClass("yellow-modal");
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Error!");
+                    $("#modal-body").text("The application could not be connected. Please try later.");
+                  }
+                  $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true, 
+                          show: true
+                  });
+                  $("#submitbutton").text("Submit");
+                  $("#submitbutton").prop('disabled', false);
+              }
+          });
+    }
+    else{
+      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+      setTimeout(function() {
+        $("#messages").html("");
+      }, 5000);
+    }
+});
+</script>
 {% endblock %}
