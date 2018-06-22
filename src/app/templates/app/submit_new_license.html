@@ -11,14 +11,15 @@
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">Submit a New License to the SPDX Licenses List</p> </div>
 <div class="panel-body">
-<form id="newlicense" enctype="multipart/form-data" class = "form-horizontal" method = "post" >
+<form id="newlicense" enctype="multipart/form-data" class = "form-horizontal" method = "post" action='/submit_new_license/'>
 		{% csrf_token %}
 
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Full Name</label>
         <div class="col-sm-3"> 
-          <input type="text" id="fullname" placeholder="" name = "fullname" class="alignedField">
+          <!-- <input type="text" id="fullname" placeholder="" name = "fullname" class="alignedField"> -->
+          {{ form.fullname }}
           <label class="control-label" id="fullnamelabel" ></label>
         </div>
       </div>  
@@ -28,7 +29,8 @@
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Short Identifier</label>
         <div class="col-sm-3"> 
-          <input type="text" id="shortidentifier" placeholder="" name = "shortidentifier" class="alignedField" >
+          <!-- <input type="text" id="shortidentifier" placeholder="" name = "shortidentifier" class="alignedField" > -->
+          {{ form.shortIdentifier }}
           <label class="control-label" id="shortidentifierlabel" ></label>
         </div>
       </div>  
@@ -38,8 +40,9 @@
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Source / URL</label>
         <div class="col-sm-3" >
-          <button class="roundedButton btn btn-md btn-info" id="addSourceUrl" type="submit" >+</button>
-          <input type="text" id="sourceurl" placeholder="" name = "sourceurl">
+          <button class="roundedButton btn btn-md btn-info" id="addSourceUrl"  type="button">+</button>
+          <!-- <input type="text" id="sourceurl" placeholder="" name = "sourceurl"> -->
+          {{ form.sourceUrl }}
           <label class="control-label" id="sourceurllabel" ></label>
         </div>
       </div>  
@@ -49,11 +52,12 @@
       <div class="col-sm-12">  
       <label class="control-label col-sm-3" >&nbsp;OSI Approved&nbsp;</label>
         <div class="col-sm-3">
-           <select name="osi_approved" id="osi_approved" class="alignedField">
+          {{ form.osiApproved }}
+           <!-- <select name="osi_approved" id="osi_approved" class="alignedField">
               <option value="0" name ="here" selected="">-</option>
               <option value="Yes">Yes</option>
               <option value="No">No</option>
-          </select>
+          </select> -->
         </div>
       </div>
     </div>
@@ -61,8 +65,9 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Notes</label>
-        <div class="col-sm-3"> 
-          <input type="text" id="notes" placeholder="" name = "notes" class="alignedField">
+        <div class="col-sm-3">
+          {{ form.notes }}
+          <!-- <input type="text" id="notes" placeholder="" name = "notes" class="alignedField"> -->
           <label class="control-label" id="noteslabel" ></label>
         </div>
       </div>  
@@ -71,8 +76,9 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Standard License Header</label>
-        <div class="col-sm-3">           
-          <textarea form ="newlicense" name="licenseheader" id="licenseheader" cols="40" wrap="soft" rows="2"></textarea>
+        <div class="col-sm-3">
+          {{ form.licenseHeader }}        
+          <!-- <textarea form ="newlicense" name="licenseheader" id="licenseheader" cols="40" wrap="soft" rows="2"></textarea> -->
           <label class="control-label" id="licenseheaderlabel" ></label>
         </div>
       </div>  
@@ -81,9 +87,20 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Text</label>
-        <div class="col-sm-3">           
-          <textarea form ="newlicense" name="text" id="text" cols="40" wrap="soft" rows="3"></textarea>
+        <div class="col-sm-3">
+          {{ form.text }}          
+          <!-- <textarea form ="newlicense" name="text" id="text" cols="40" wrap="soft" rows="3"></textarea> -->
           <label class="control-label" id="noteslabel" ></label>
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Email address</label>
+        <div class="col-sm-3">
+          {{ form.userEmail }}          
+          <label class="control-label" id="emaillabel" ></label>
         </div>
       </div>  
     </div>
@@ -117,11 +134,11 @@ function checkform() {
     $('#fullname').focus();
     return ("Please enter the license fullname.");
   }
-  else if (($('#shortidentifier').val().trim() == "")){
+  else if (($('#shortIdentifier').val().trim() == "")){
     $('#shortidentifier').focus();
     return("Please enter the identifier.");
   }
-  else if (($('#osi_approved').val() == "0")){
+  else if (($('#osiApproved').val() == "0")){
     $('#osi_approved').focus();
     return("Please select if the OSI is approved or not.");
   }
@@ -167,8 +184,8 @@ function checkform() {
                           keyboard: true, 
                           show: true
                   });
-                  $("#validatebutton").text("Validate");
-                  $("#validatebutton").prop('disabled', false);
+                  $("#submitbutton").text("Submit");
+                  $("#submitbutton").prop('disabled', false);
               },
               error: function (e) {
                   console.log("ERROR : ", e);

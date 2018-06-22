@@ -34,6 +34,7 @@ from urlparse import urljoin
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 
+from .forms import LicenseRequestForm
 
 def index(request):
     """ View for index
@@ -57,9 +58,18 @@ def submitNewLicense(request):
     """ View for submit new licenses
     returns submit_new_license.html template
     """
-    context_dict={}
+    if request.method == 'POST':
+        form = LicenseRequestForm(request.POST, auto_id='%s')
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+#            return HttpResponseRedirect('/submit_new_license/')
+    else:
+        form = LicenseRequestForm(auto_id='%s')
+    context_dict={'form': form}
     return render(request, 
-        'app/submit_new_license.html',context_dict
+        'app/submit_new_license.html', context_dict
         )
 
 def licenseRequests(request):

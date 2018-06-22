@@ -19,6 +19,11 @@ from django.contrib.admin import widgets
 
 from app.models import UserID
 
+OSI_CHOICES = (
+    (0, "-"),
+    ("yes", "Yes"),
+    ("no", "No"),
+)
 
 class UserRegisterForm(forms.ModelForm):
 
@@ -56,3 +61,13 @@ class OrgInfoForm(forms.ModelForm):
     class Meta:
         model = UserID
         fields = ('organisation',)
+
+class LicenseRequestForm(forms.Form):
+    fullname = forms.CharField(label='Fullname', max_length=70)
+    shortIdentifier = forms.CharField(label='Short identifier', max_length=25)
+    sourceUrl = forms.CharField(label='Source / URL')
+    osiApproved = forms.CharField(label="OSI Approved", widget=forms.Select(choices=OSI_CHOICES))
+    notes = forms.CharField(label='Notes', )
+    licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 2, 'cols': 40}))
+    text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
+    userEmail = forms.EmailField(label='Email', max_length=35)
