@@ -30,6 +30,7 @@ from traceback import format_exc
 from json import dumps
 from time import time
 from urlparse import urljoin
+import xml.etree.cElementTree as ET
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
@@ -71,6 +72,17 @@ def submitNewLicense(request):
     return render(request, 
         'app/submit_new_license.html', context_dict
         )
+
+def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
+    root = ET.Element("SPDXLicenseCollection", xmlns="http://www.spdx.org/license")
+    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName)
+    crossRefs = ET.SubElement(license, "crossRefs")
+    for sourceUrl in licenseSourceUrls:
+        crossRef = ET.SubElement(crossRefs, "crossRef").text = sourceUrl
+    standardLicenseHeader = ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
+    notes = ET.SubElement(license, "notes").text = licenseNotes
+    text = ET.SubElement(license, "text").text = licenseText
+    xmlString = ET.tostring(root, encoding='utf8', method='xml')
 
 def licenseRequests(request):
     """ View for license requests
