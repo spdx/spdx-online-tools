@@ -19,9 +19,9 @@
     <div class="container-fluid">
         <input type="hidden" id="xmlText" value="{{xml_text}}">
         <ul class="nav nav-tabs">
-            <li class="active"><a data-toggle="tab" href="#text">Text Editor</a></li>
-            <li><a data-toggle="tab" href="#tree">Tree Editor</a></li>
-            <li><a data-toggle="tab" href="#split">Split View</a></li>
+            <li class="active"><a href="#text" id="tabTextEditor">Text Editor</a></li>
+            <li><a data-toggle="tab" href="#tree" id="tabTreeEditor">Tree Editor</a></li>
+            <li><a data-toggle="tab" href="#split" id="tabSplitView">Split View</a></li>
         </ul>
         <div class="tab-content">
             <div id="text" class="tab-pane fade in active">
@@ -42,19 +42,21 @@
                 </div>
             </div>
             <div id="split" class="tab-pane fade">
-                <div class="col-md-6">
-                    <h3>Text Editor</h3>
+                <div class="col-md-6 splitTextEditorContainer">
+                    <textarea class="codemirror-textarea">{{xml_text}}</textarea>
                 </div>
-                <div class="col-md-6">
-                    <h3>Tree View Editor</h3>
+                <div class="col-md-6 splitTreeEditorContainer">
+                    <ul id="splitTreeView" class="splitTreeView">
+                        <li></li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div><hr>
     <div class="document-options">
         <center>
-            <button class="btn btn-success" id="download" data-toggle="tooltip" data-placement="left" title="Download the XML Document" data-placement="top">Download</button>
-            <button class="btn btn-info" data-toggle="tooltip" title="Make a Pull Request in the SPDX XML License Repository to get your changes reviewed and merged" data-placement="right" data-placement="top">Submit Changes</button>
+            <button class="btn btn-success" id="download" data-toggle="tooltip" data-placement="left" title="Download the XML Document">Download</button>
+            <button class="btn btn-info" id="makePullRequest" data-toggle="tooltip" title="Make a Pull Request in the SPDX XML License Repository to get your changes reviewed and merged" data-placement="right">Submit Changes</button>
         </center>
     </div>
 {% endblock %}
