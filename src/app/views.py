@@ -869,7 +869,7 @@ def xml_edit(request, page_id):
             )
     else:
         return HttpResponseRedirect('/app/xml_upload')
-    
+
 def loginuser(request):
     """ View for Login
     returns login.html template

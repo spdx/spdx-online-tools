@@ -360,6 +360,15 @@ function displayModal(message, mode){
         $('button.close').remove();
         $(".modal-footer").html('<button class="btn btn-default pull-left" id="modalCancel" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><button class="btn btn-success" id="modalOk" data-dismiss="modal"><span class="glyphicon glyphicon-ok"></span> Confirm</button>')
     }
+    else if(mode="success"){
+        $("#modal-header").removeClass("yellow-modal");
+        $("#modal-header").removeClass("red-modal");
+        $("#modal-header").addClass("green-modal");
+        $("#modal-title").html("SPDX License XML Editor");
+        $('button.close').remove();
+        $('<button type="button" class="close" data-dismiss="modal">&times;</button>').insertBefore($("h4.modal-title"));
+        $(".modal-footer").html('<button class="btn btn-default" data-dismiss="modal">OK</button>')
+    }
     else if(mode=="alert"){
         $("#modal-header").removeClass("red-modal");
         $("#modal-header").removeClass("green-modal");
@@ -369,7 +378,16 @@ function displayModal(message, mode){
         $('<button type="button" class="close" data-dismiss="modal">&times;</button>').insertBefore($("h4.modal-title"));
         $(".modal-footer").html('<button class="btn btn-default" data-dismiss="modal">OK</button>')
     }
-    $("#modal-body").html("<h3>"+message+"</h3>");
+    else if(mode="error"){
+        $("#modal-header").removeClass("yellow-modal");
+        $("#modal-header").removeClass("green-modal");
+        $("#modal-header").addClass("red-modal");
+        $("#modal-title").html("SPDX License XML Editor");
+        $('button.close').remove();
+        $('<button type="button" class="close" data-dismiss="modal">&times;</button>').insertBefore($("h4.modal-title"));
+        $(".modal-footer").html('<button class="btn btn-default" data-dismiss="modal">OK</button>')
+    }
+    $("#modal-body").html(message);
     $("#myModal").modal({
         backdrop: 'static',
         keyboard: true, 

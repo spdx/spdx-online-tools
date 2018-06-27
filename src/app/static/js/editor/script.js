@@ -67,7 +67,7 @@ var xml_schema = {
         children: ["p", "bullet", "br"]
     }
 }
-var editor = "", splitTextEditor = "", latestXmlText = '';
+var editor = "", splitTextEditor = "", initialXmlText = "", latestXmlText = '';
 $(document).ready(function(){
     /* initialize bootstrap tooltip */
     $('[data-toggle="tooltip"]').tooltip();
@@ -133,7 +133,8 @@ $(document).ready(function(){
     $(".CodeMirror").css("font-size",fontSize+'px');
     editor.setSize(($(window).width)*(0.9), 500);
     splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 550);
-    latestXmlText = editor.getValue().trim();
+    initialXmlText = beautify(editor.getValue().trim());
+    latestXmlText = beautify(editor.getValue().trim());
     /* Decrease editor font size */
     $("#dec-fontsize").click(function(){
         fontSize -= 1;
@@ -277,7 +278,54 @@ $(document).ready(function(){
             },200);
         }
     })
+
+    $("#makePullRequest").click(function(event){
+        event.preventDefault();
+        $("#messages").html("");
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
+        if(activeTab=="tabTextEditor"){
+            temp = editor.getValue().trim();
+        }
+        else if(activeTab=="tabTreeEditor"){
+            temp = updateTextEditor(editor, 'treeView');
+            if(temp==0){
+                temp = latestXmlText
+            }
+        }
+        else if(activeTab=="tabSplitView"){
+            temp = splitTextEditor.getValue().trim()
+        }
+        else{
+            temp = latestXmlText
+        }
+        generate_diff(initialXmlText.replace(/>\s{0,}</g,"><").replace(/\s{0,}</g,"~::~<").split('~::~'),temp.replace(/>\s{0,}</g,"><").replace(/\s{0,}</g,"~::~<").split('~::~'));
+        $("div.tooltip").remove();
+    })
 });
+
+function generate_diff(base, newtxt){
+    var sm = new difflib.SequenceMatcher(base, newtxt);
+    var opcodes = sm.get_opcodes();
+    
+    // build the diff view and add it to the current DOM
+    var diff = $(diffview.buildView({
+        baseTextLines: base,
+        newTextLines: newtxt,
+        opcodes: opcodes,
+        // set the display titles for each resource
+        baseTextName: "Base Text",
+        newTextName: "New Text",
+        contextSize: null,
+        viewType: 1
+    }))
+    diff.children().remove("thead");
+    diff.children().children().remove("th");
+    displayModal("","success");
+    $("#modal-body").html(diff);
+    $("#modal-title").text("Diff between initial and current XML");
+    $("#modal-body").css({"font-size":"15px", "text-align":"left"});
+    $(".modal-dialog").css({"width":"800px"});
+}
 
 /* XML beautify script */
 function beautify(text){
