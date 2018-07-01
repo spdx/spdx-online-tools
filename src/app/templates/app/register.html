@@ -62,10 +62,11 @@ function validateEmail(email) {
 }
 function validateUserName(username){
   var form = new FormData();
+  var result = false;
   form.append("username",username);
+  form.append("csrfmiddlewaretoken",document.getElementsByName('csrfmiddlewaretoken')[0].value);
   $.ajax({
             type: "POST",
-            csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
             enctype: 'multipart/form-data',
             url: "/app/checkusername/",
             processData: false,
@@ -74,15 +75,17 @@ function validateUserName(username){
             dataType: 'json',
             timeout: 600000,
             data: form,
+            async: false,
             success: function (data) {
-                //console.log("Username does not exist");
-                return "1";
+              //console.log("Username does not exist");
+              result = true;
             },
             error: function (e) {
-                //console.log("Username exist");
-                return "This username already exists."
+              //console.log("Username exist");
+              result = false;
             }
         });
+    return result;
 }
 function validateForm() {
     var letters = /^[A-Za-z ]+$/;
@@ -116,7 +119,7 @@ function validateForm() {
     }
     var username = $("#id_username").val();
     var checkuser = validateUserName(username);
-    if (checkuser=="1"){
+    if (checkuser==true){
     }
     else{
       return "Username already exists."
