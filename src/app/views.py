@@ -103,7 +103,8 @@ def licenseRequests(request):
     """ View for license requests
     returns license_requests.html template
     """
-    context_dict={}
+    licenserequests = LicenseRequest.objects.all()
+    context_dict={'licenseRequests': licenserequests}
     return render(request, 
         'app/license_requests.html',context_dict
         )
