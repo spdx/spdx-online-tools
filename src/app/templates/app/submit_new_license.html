@@ -18,7 +18,6 @@
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Full Name</label>
         <div class="col-sm-3"> 
-          <!-- <input type="text" id="fullname" placeholder="" name = "fullname" class="alignedField"> -->
           {{ form.fullname }}
           <label class="control-label" id="fullnamelabel" ></label>
         </div>
@@ -29,7 +28,6 @@
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Short Identifier</label>
         <div class="col-sm-3"> 
-          <!-- <input type="text" id="shortidentifier" placeholder="" name = "shortidentifier" class="alignedField" > -->
           {{ form.shortIdentifier }}
           <label class="control-label" id="shortidentifierlabel" ></label>
         </div>
@@ -53,11 +51,6 @@
       <label class="control-label col-sm-3" >&nbsp;OSI Approved&nbsp;</label>
         <div class="col-sm-3">
           {{ form.osiApproved }}
-           <!-- <select name="osi_approved" id="osi_approved" class="alignedField">
-              <option value="0" name ="here" selected="">-</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-          </select> -->
         </div>
       </div>
     </div>
@@ -78,7 +71,6 @@
       <label class="control-label col-sm-3" >Standard License Header</label>
         <div class="col-sm-3">
           {{ form.licenseHeader }}        
-          <!-- <textarea form ="newlicense" name="licenseheader" id="licenseheader" cols="40" wrap="soft" rows="2"></textarea> -->
           <label class="control-label" id="licenseheaderlabel" ></label>
         </div>
       </div>  
@@ -89,7 +81,6 @@
       <label class="control-label col-sm-3" >Text</label>
         <div class="col-sm-3">
           {{ form.text }}          
-          <!-- <textarea form ="newlicense" name="text" id="text" cols="40" wrap="soft" rows="3"></textarea> -->
           <label class="control-label" id="noteslabel" ></label>
         </div>
       </div>  
@@ -165,11 +156,10 @@ function checkform() {
       $.ajax({
               type: "POST",
               enctype: 'multipart/form-data',
-              url: "/app/validate/",
+              url: "/app/submit_new_license/",
               processData: false,
               contentType: false,
               cache: false,
-              dataType: 'json',
               timeout: 600000,
               data: form,
               success: function (data) {
@@ -178,7 +168,7 @@ function checkform() {
                   $("#modal-header").removeClass("yellow-modal");
                   $("#modal-header").addClass("green-modal");
                   $("#modal-title").html("Success!");
-                  $("#modal-body").html("<h3>"+data.data+"</h3>");
+                  $("#modal-body").html("<h3>SUCCESS!!</h3>");
                   $("#myModal").modal({
                           backdrop: 'static',
                           keyboard: true, 

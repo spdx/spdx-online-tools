@@ -31,11 +31,13 @@ from json import dumps
 from time import time
 from urlparse import urljoin
 import xml.etree.cElementTree as ET
+import datetime
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 
 from .forms import LicenseRequestForm
+from .models import LicenseRequest
 
 def index(request):
     """ View for index
@@ -60,12 +62,24 @@ def submitNewLicense(request):
     returns submit_new_license.html template
     """
     if request.method == 'POST':
+        context_dict = {}
         form = LicenseRequestForm(request.POST, auto_id='%s')
-        if form.is_valid():
-            # process the data in form.cleaned_data as required
-            # ...
-            # redirect to a new URL:
-#            return HttpResponseRedirect('/submit_new_license/')
+        if form.is_valid() and request.is_ajax():
+            licenseName = form.cleaned_data['fullname']
+            licenseIdentifier = form.cleaned_data['shortIdentifier']
+            licenseOsi = form.cleaned_data['osiApproved']
+            licenseSourceUrls = [form.cleaned_data['sourceUrl']]
+            licenseHeader = form.cleaned_data['licenseHeader']
+            licenseNotes = form.cleaned_data['notes']
+            licenseText = form.cleaned_data['text']
+            userEmail = form.cleaned_data['userEmail']
+            xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+            now = datetime.datetime.now()
+            print xml
+            licenseRequest = LicenseRequest(fullname=licenseName,shortIdentifier=licenseIdentifier,
+                submissionDatetime=now, userEmail=userEmail, xml=xml)
+            licenseRequest.save()
     else:
         form = LicenseRequestForm(auto_id='%s')
     context_dict={'form': form}
@@ -83,6 +97,7 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     notes = ET.SubElement(license, "notes").text = licenseNotes
     text = ET.SubElement(license, "text").text = licenseText
     xmlString = ET.tostring(root, encoding='utf8', method='xml')
+    return xmlString
 
 def licenseRequests(request):
     """ View for license requests
