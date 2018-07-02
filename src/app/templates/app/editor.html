@@ -57,9 +57,14 @@
     <div class="document-options">
         <center>
             <button class="btn btn-success" id="download" data-toggle="tooltip" data-placement="left" title="Download the XML Document">Download</button>
+            <button class="btn btn-primary" id="generateDiff" data-toggle="tooltip" title="Generate a diff to see all the changes made" data-placement="top">Generate Diff</button>
+            <button class="btn btn-warning" id="validateXML" data-toggle="tooltip" title="Validate the XML against the SPDX License Schema" data-placement="top">Validate</button>
             <button class="btn btn-info" id="makePullRequest" data-toggle="tooltip" title="Make a Pull Request in the SPDX XML License Repository to get your changes reviewed and merged" data-placement="right">Submit Changes</button>
         </center>
     </div>
+    <form style="display:none" id="form">
+        {% csrf_token %}
+    </form>
 {% endblock %}
 
 {% block script_block %}

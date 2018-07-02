@@ -27,7 +27,9 @@ from django.contrib.auth.decorators import login_required
 
 import jpype
 import requests
+from lxml import etree
 import re
+import os
 import logging
 from traceback import format_exc
 from json import dumps, loads
@@ -168,6 +170,83 @@ def validate(request):
             return render(request,
              'app/validate.html',context_dict
              )
+    else :
+        return HttpResponseRedirect(settings.LOGIN_URL)
+
+def validate_xml(request):
+    """ View to validate xml text, used in the xml editor """
+    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+        context_dict={}
+        if request.method == 'POST':
+            ajaxdict=dict()
+            try :
+                if "xmlText" in request.POST:
+                    """ Saving file to the media directory """
+                    xmlText = request.POST['xmlText']
+                    folder = str(request.user) + "/" + str(int(time()))
+                    os.makedirs(str(settings.MEDIA_ROOT +"/"+ folder))
+                    uploaded_file_url = settings.MEDIA_ROOT + '/' + folder + '/' + 'xmlFile.xml'
+                    with open(uploaded_file_url,'w') as f:
+                        f.write(xmlText)
+                    """ Get schema text from GitHub,
+                    if it fails use the file in examples folder """
+                    try:
+                        schema_url = 'https://raw.githubusercontent.com/spdx/license-list-XML/master/schema/ListedLicense.xsd'
+                        schema_text = requests.get(schema_url, timeout=5).text
+                        xmlschema_doc = etree.fromstring(schema_text)
+                    except:
+                        schema_url = settings.BASE_DIR + "/examples/xml-schema.xsd"
+                        with open(schema_url) as f:
+                            xmlschema_doc = etree.parse(f)
+                    """ Using the lxml etree functions """
+                    xmlschema = etree.XMLSchema(xmlschema_doc)
+                    with open(uploaded_file_url) as f:
+                        xml_input = etree.parse(f)
+
+                    try:
+                        xmlschema.assertValid(xml_input)
+                        """ If the xml is valid """
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "valid"
+                            ajaxdict["data"] = "This XML is valid against SPDX License Schema."
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=200)
+                        return HttpResponse("This XML is valid against SPDX License Schema.",status=200)
+                    except Exception as e:
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "invalid"
+                            ajaxdict["data"] = "This XML is not valid against SPDX License Schema.\n"+str(e)
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=200)
+                        return HttpResponse("This XML is not valid against SPDX License Schema.\n"+str(e),status=200)
+                else :
+                    """ If no xml text is given."""
+                    if (request.is_ajax()):
+                        ajaxdict["type"] = "error"
+                        ajaxdict["data"] = "No XML text given."
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response,status=400)
+                    return HttpResponse("No XML text given.", status=400)
+            except etree.XMLSyntaxError as e:
+                """ XML not valid """
+                if (request.is_ajax()):
+                    ajaxdict["type"] = "error"
+                    ajaxdict["data"] = "XML Parsing Error.\n The XML is not valid. Please correct the XML text and try again." 
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response,status=400)
+                return HttpResponse("XML Parsing Error.\n The XML is not valid. Please correct the XML text and try again.", status=400)
+            except :
+                """ Other error raised """
+                if (request.is_ajax()):
+                    ajaxdict["type"] = "error"
+                    ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                    logger.error(str(format_exc()))
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response,status=500)
+                return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
+        else :
+            """ GET,HEAD """
+            return HttpResponseRedirect(settings.HOME_URL)
     else :
         return HttpResponseRedirect(settings.LOGIN_URL)
 
