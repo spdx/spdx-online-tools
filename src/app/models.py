@@ -32,9 +32,9 @@ class LicenseRequest(models.Model):
     xml = models.TextField()
 
     def __unicode__(self):
-        return "%s %s %s %s %s" % (self.fullname, self.shortIdentifier, self.submissionDatetime, self.userEmail, self.xml)
+        return "%s" % (self.fullname)
     def __str__(self):
-        return "%s %s %s %s %s" % (self.fullname, self.shortIdentifier, self.submissionDatetime, self.userEmail, self.xml)
+        return "%s" % (self.fullname)
 
     class Meta:
         verbose_name = "LicenseRequest"

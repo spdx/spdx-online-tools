@@ -76,7 +76,6 @@ def submitNewLicense(request):
             xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                 licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
             now = datetime.datetime.now()
-            print xml
             licenseRequest = LicenseRequest(fullname=licenseName,shortIdentifier=licenseIdentifier,
                 submissionDatetime=now, userEmail=userEmail, xml=xml)
             licenseRequest.save()
