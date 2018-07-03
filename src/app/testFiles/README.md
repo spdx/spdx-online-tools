@@ -4,7 +4,7 @@ This folder contains files used for general testing purposes.
 
 ## License Requests
 
-The file [licenseRequests.json](licenseRequests.json) contains LicenseRequest database records. This file is used to load data and test functionalities that use license requests data that have been already submitted to the tool.
+The file [licenseRequests.json](licenseRequests.json) contains LicenseRequest model records. This file is used to load data and test functionalities that use license requests data that have been already submitted to the tool.
 
 ### Loading data
 
