@@ -111,12 +111,19 @@ def licenseRequests(request):
         'app/license_requests.html',context_dict
         )
 
-def licenseInformation(request):
+def licenseInformation(request, licenseId):
     """ View for license request information
     returns license_information.html template
     """
-    context_dict={}
-    print request.get_full_path().split('/')[-1]
+    licenseRequest = LicenseRequest.objects.get(id=licenseId)
+    licenseInformation = {}
+    licenseInformation['fullname'] = licenseRequest.fullname
+    licenseInformation['shortIdentifier'] = licenseRequest.shortIdentifier
+    licenseInformation['submissionDatetime'] = licenseRequest.submissionDatetime
+    licenseInformation['userEmail'] = licenseRequest.userEmail
+    xmlString = licenseRequest.xml
+    
+    context_dict={'licenseInformation': licenseInformation}
     return render(request, 
         'app/license_information.html',context_dict
         )
