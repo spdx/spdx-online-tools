@@ -3,3 +3,4 @@ jpype1==0.6.2
 djangorestframework==3.6.3
 bs4==0.0.1
 requests==2.18.4
+lxml==4.2.3

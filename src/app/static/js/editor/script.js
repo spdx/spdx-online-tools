@@ -67,7 +67,7 @@ var xml_schema = {
         children: ["p", "bullet", "br"]
     }
 }
-var editor = "", splitTextEditor = "", latestXmlText = '';
+var editor = "", splitTextEditor = "", initialXmlText = "", latestXmlText = '';
 $(document).ready(function(){
     /* initialize bootstrap tooltip */
     $('[data-toggle="tooltip"]').tooltip();
@@ -133,7 +133,8 @@ $(document).ready(function(){
     $(".CodeMirror").css("font-size",fontSize+'px');
     editor.setSize(($(window).width)*(0.9), 500);
     splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 550);
-    latestXmlText = editor.getValue().trim();
+    initialXmlText = beautify(editor.getValue().trim());
+    latestXmlText = beautify(editor.getValue().trim());
     /* Decrease editor font size */
     $("#dec-fontsize").click(function(){
         fontSize -= 1;
@@ -238,7 +239,6 @@ $(document).ready(function(){
             $(this).attr("data-toggle","tab");
             convertTextToTree(editor, 'treeView')
             latestXmlText = beautify(editor.getValue().trim());
-            console.log(latestXmlText);
         }
         else if(activeTab=='tabSplitView'){
             if(checkPendingChanges("#splitTreeView")){
@@ -277,7 +277,119 @@ $(document).ready(function(){
             },200);
         }
     })
+
+    $("#generateDiff").click(function(event){
+        event.preventDefault();
+        $("#messages").html("");
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
+        if(activeTab=="tabTextEditor"){
+            text2 = editor.getValue().trim();
+        }
+        else if(activeTab=="tabTreeEditor"){
+            text2 = updateTextEditor(editor, 'treeView');
+            if(text2==0){
+                text2 = latestXmlText
+            }
+        }
+        else if(activeTab=="tabSplitView"){
+            text2 = splitTextEditor.getValue().trim()
+        }
+        else{
+            text2 = latestXmlText
+        }
+        /* removing extra sapces from text */
+        initialXmlText = initialXmlText.replace(/\s{2,}/g,' ').replace(/\n/g,' ');
+        text2 = text2.replace(/\s{2,}/g,' ').replace(/\n/g,' ');
+        generate_diff(initialXmlText.replace(/>\s{0,}</g,"><").replace(/\s{0,}</g,"~::~<").split('~::~'),text2.replace(/>\s{0,}</g,"><").replace(/\s{0,}</g,"~::~<").split('~::~'));
+        $("div.tooltip").remove();
+    })
+
+    $("#validateXML").click(function(event){
+        event.preventDefault();
+        $("#validateXML").text("Validating...");
+        $("#validateXML").prop('disabled', true);
+        var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
+        if(activeTab=="tabTextEditor"){
+            xmlText = editor.getValue().trim();
+        }
+        else if(activeTab=="tabTreeEditor"){
+            xmlText = updateTextEditor(editor, 'treeView');
+            if(xmlText==0){
+                xmlText = latestXmlText
+            }
+        }
+        else if(activeTab=="tabSplitView"){
+            xmlText = splitTextEditor.getValue().trim()
+        }
+        else{
+            xmlText = latestXmlText
+        }
+        var form = new FormData($("#form")[0]);
+        form.append("xmlText", xmlText);
+        $.ajax({
+            type: "POST",
+            enctype: 'multipart/form-data',
+            url: "/app/validate_xml/",
+            processData: false,
+            contentType: false,
+            cache: false,
+            dataType: 'json',
+            timeout: 600000,
+            data: form,
+            success: function (data) {
+                if(data.type=="valid"){
+                    displayModal("<h3>"+data.data+"</h3>","success");
+                }
+                else{
+                    displayModal("<h3>"+data.data+"</h3>","alert");
+                }
+                $("#validateXML").text("Validate");
+                $("#validateXML").prop('disabled', false);
+            },
+            error: function (e) {
+                try {
+                    var obj = JSON.parse(e.responseText);
+                    if (obj.type=="warning"){
+                        displayModal(obj.data, "alert");
+                    }
+                    else if (obj.type=="error"){
+                        displayModal(obj.data, "error");
+                    }
+                }
+                catch (e){
+                    displayModal("The application could not be connected. Please try later.","error");
+                }
+                $("#validateXML").text("Validate");
+                $("#validateXML").prop('disabled', false);
+            }
+        });
+    })
 });
+
+/* generate diff of initial xml and current xml text */
+function generate_diff(base, newtxt){
+    var sm = new difflib.SequenceMatcher(base, newtxt);
+    var opcodes = sm.get_opcodes();
+    
+    // build the diff view and add it to the current DOM
+    var diff = $(diffview.buildView({
+        baseTextLines: base,
+        newTextLines: newtxt,
+        opcodes: opcodes,
+        // set the display titles for each resource
+        baseTextName: "Base Text",
+        newTextName: "New Text",
+        contextSize: null,
+        viewType: 1
+    }))
+    diff.children().remove("thead");
+    diff.children().children().remove("th");
+    displayModal("","success");
+    $("#modal-body").html(diff);
+    $("#modal-title").text("Diff between initial and current XML");
+    $("#modal-body").addClass("diff-modal-body");
+    $(".modal-dialog").addClass("diff-modal-dialog");
+}
 
 /* XML beautify script */
 function beautify(text){
@@ -354,7 +466,9 @@ function display_message(message){
     $("#modal-header").addClass("green-modal");
     $("#modal-title").html("SPDX License XML Editor");
     $("#modal-body").html("<h3>"+message+"</h3>");
-    $('#modal-footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
+    $('button.close').remove();
+    $('<button type="button" class="close" data-dismiss="modal">&times;</button>').insertBefore($("h4.modal-title"));
+    $(".modal-footer").html('<button class="btn btn-default" data-dismiss="modal">OK</button>')
     $("#myModal").modal({
         backdrop: 'static',
         keyboard: true, 

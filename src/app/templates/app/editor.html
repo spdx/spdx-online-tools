@@ -9,6 +9,7 @@
     <link href="{% static 'css/editor/show-hint.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/foldgutter.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/treeview.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/diffview.css' %}" rel="stylesheet" type="text/css">
 {% endblock %}
 
 {% block body1 %}
@@ -56,9 +57,14 @@
     <div class="document-options">
         <center>
             <button class="btn btn-success" id="download" data-toggle="tooltip" data-placement="left" title="Download the XML Document">Download</button>
+            <button class="btn btn-primary" id="generateDiff" data-toggle="tooltip" title="Generate a diff to see all the changes made" data-placement="top">Generate Diff</button>
+            <button class="btn btn-warning" id="validateXML" data-toggle="tooltip" title="Validate the XML against the SPDX License Schema" data-placement="top">Validate</button>
             <button class="btn btn-info" id="makePullRequest" data-toggle="tooltip" title="Make a Pull Request in the SPDX XML License Repository to get your changes reviewed and merged" data-placement="right">Submit Changes</button>
         </center>
     </div>
+    <form style="display:none" id="form">
+        {% csrf_token %}
+    </form>
 {% endblock %}
 
 {% block script_block %}
@@ -76,4 +82,6 @@
 <script type="text/javascript" src="{% static 'js/editor/xml-hint.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/script.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/treeview.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
 {% endblock %}
