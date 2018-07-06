@@ -1,0 +1,25 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load staticfiles %}
+{% block body1 %}
+
+<div id="messages" class="messages">
+</div>
+<p class ="lead"> {{ medialink }}</p>
+<p class ="lead"> {{ error }}</p>
+<div class="panel panel-default">
+<div class="panel-heading"> <p class="lead">License Inormation</p> </div>
+<div class="panel-body">
+
+<!-- CONTENT HERE-->
+
+</div>
+</div>
+{% endblock %}
+{% block script_block %}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#licenserequestspage").addClass('linkactive');
+        });
+  </script>
+{% endblock %}

@@ -21,8 +21,8 @@
       </thead>
       <tbody>
         {% if licenseRequests %}
-        {% for elem in licenseRequests %}
-          <tr>
+        {% for elem in licenseRequests %}    
+          <tr class='clickableRow' id={{elem.id}}>
             <td>{{elem.fullname}}</td>
             <td>{{elem.shortIdentifier}}</td>
             <td>{{elem.submissionDatetime}}</td>
@@ -45,7 +45,14 @@
 <script type="text/javascript">
   $(document).ready( function () {
       $('#requests_table').DataTable();
-  } );
+});
 </script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.js"></script>
+
+<script type="text/javascript">
+$(".clickableRow").click(function() {
+    var $licenseId = $(this).closest("tr").attr('id');
+    location.href="/app/license_requests/" + $licenseId;
+});
+</script>
 {% endblock %}

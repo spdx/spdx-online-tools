@@ -87,6 +87,9 @@ def submitNewLicense(request):
         )
 
 def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
+    """ View for generating a spdx license xml
+    returns the license xml as a string
+    """
     root = ET.Element("SPDXLicenseCollection", xmlns="http://www.spdx.org/license")
     license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName)
     crossRefs = ET.SubElement(license, "crossRefs")
@@ -106,6 +109,16 @@ def licenseRequests(request):
     context_dict={'licenseRequests': licenserequests}
     return render(request, 
         'app/license_requests.html',context_dict
+        )
+
+def licenseInformation(request):
+    """ View for license request information
+    returns license_information.html template
+    """
+    context_dict={}
+    print request.get_full_path().split('/')[-1]
+    return render(request, 
+        'app/license_information.html',context_dict
         )
 
 def validate(request):

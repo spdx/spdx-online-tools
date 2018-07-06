@@ -38,6 +38,7 @@ urlpatterns = [
     url(r'^checkusername/$', views.checkusername, name='check-username'),
     url(r'^submit_new_license/$', views.submitNewLicense, name='submit-new-license'),
     url(r'^license_requests/$', views.licenseRequests, name='license-requests'),
+    url(r'^license_requests/.+$', views.licenseInformation, name='license-information'),
     #url(r'^password_reset/$', auth_views.password_reset, name='password_reset'),
     #url(r'^password_reset/done/$', auth_views.password_reset_done, name='password_reset_done'),
     #url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
