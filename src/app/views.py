@@ -31,12 +31,13 @@ from lxml import etree
 import re
 import os
 import logging
+import json
 from traceback import format_exc
 from json import dumps, loads
 from time import time
 from urlparse import urljoin
 
-from app.models import UserID
+from app.models import UserID, LicenseNames
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 
 logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
@@ -929,6 +930,12 @@ def xml_upload(request):
             return render(request, 'app/xml_upload.html', {})
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
+
+def autocompleteModel(request):
+    if 'term' in request.GET:
+        result = LicenseNames.objects.filter(name__icontains=request.GET['term']).values_list('name',flat=True)
+        return HttpResponse( json.dumps( [ name for name in result ] ) )
+    return HttpResponse()
 
 def xml_edit(request, page_id):
     """View for editing the XML file
