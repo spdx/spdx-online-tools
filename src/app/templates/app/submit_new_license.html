@@ -39,7 +39,6 @@
       <label class="control-label col-sm-3" >Source / URL</label>
         <div class="col-sm-3" >
           <button class="roundedButton btn btn-md btn-info" id="addSourceUrl"  type="button">+</button>
-          <!-- <input type="text" id="sourceurl" placeholder="" name = "sourceurl"> -->
           {{ form.sourceUrl }}
           <label class="control-label" id="sourceurllabel" ></label>
         </div>
@@ -164,16 +163,14 @@ function checkform() {
               data: form,
               success: function (data) {
                   console.log("SUCCESS : ", data);
-                  $("#modal-header").removeClass("red-modal");
-                  $("#modal-header").removeClass("yellow-modal");
-                  $("#modal-header").addClass("green-modal");
-                  $("#modal-title").html("Success!");
-                  $("#modal-body").html("<h3>The license request has been successfully submitted.</h3>");
-                  $("#myModal").modal({
-                          backdrop: 'static',
-                          keyboard: true, 
-                          show: true
-                  });
+                  $("#shortIdentifier").text("Submit");
+                  $("#submitbutton").text("Submit");
+                  $("#submitbutton").text("Submit");
+                  $("#submitbutton").text("Submit");
+                  $("#submitbutton").text("Submit");
+
+
+
                   $("#submitbutton").text("Submit");
                   $("#submitbutton").prop('disabled', false);
               },

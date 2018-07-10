@@ -62,7 +62,6 @@ def submitNewLicense(request):
     returns submit_new_license.html template
     """
     if request.method == 'POST':
-        context_dict = {}
         form = LicenseRequestForm(request.POST, auto_id='%s')
         if form.is_valid() and request.is_ajax():
             licenseName = form.cleaned_data['fullname']
@@ -79,6 +78,7 @@ def submitNewLicense(request):
             licenseRequest = LicenseRequest(fullname=licenseName,shortIdentifier=licenseIdentifier,
                 submissionDatetime=now, userEmail=userEmail, xml=xml)
             licenseRequest.save()
+            form = LicenseRequestForm()
     else:
         form = LicenseRequestForm(auto_id='%s')
     context_dict={'form': form}
@@ -94,10 +94,10 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName)
     crossRefs = ET.SubElement(license, "crossRefs")
     for sourceUrl in licenseSourceUrls:
-        crossRef = ET.SubElement(crossRefs, "crossRef").text = sourceUrl
-    standardLicenseHeader = ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
-    notes = ET.SubElement(license, "notes").text = licenseNotes
-    text = ET.SubElement(license, "text").text = licenseText
+        ET.SubElement(crossRefs, "crossRef").text = sourceUrl
+    ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
+    ET.SubElement(license, "notes").text = licenseNotes
+    ET.SubElement(license, "text").text = licenseText
     xmlString = ET.tostring(root, encoding='utf8', method='xml')
     return xmlString
 
@@ -122,11 +122,57 @@ def licenseInformation(request, licenseId):
     licenseInformation['submissionDatetime'] = licenseRequest.submissionDatetime
     licenseInformation['userEmail'] = licenseRequest.userEmail
     xmlString = licenseRequest.xml
-    
+    data = parseXmlString(xmlString)
+    licenseInformation['osiApproved'] = data['osiApproved']
+    licenseInformation['crossRefs'] = data['crossRefs']
+    licenseInformation['notes'] = data['notes']
+    licenseInformation['standardLicenseHeader'] = data['standardLicenseHeader']
     context_dict={'licenseInformation': licenseInformation}
+    print xmlString
     return render(request, 
         'app/license_information.html',context_dict
         )
+
+def parseXmlString(xmlString):
+    """ View for generating a spdx license xml
+    returns a dictionary with the xmlString license fields values
+    """
+    data = {}
+    tree = ET.ElementTree(ET.fromstring(xmlString))
+    try:
+        root = tree.getroot()
+    except Exception as e:
+        return
+    try:
+        if(len(root) > 0 and 'isOsiApproved' in root[0].attrib):
+            data['osiApproved'] = root[0].attrib['isOsiApproved']
+        else:
+            data['osiApproved'] = '-'
+    except Exception as e:
+        data['osiApproved'] = '-'
+    data['crossRefs'] = []
+    try:
+        if(len(('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')) > 0):
+            crossRefs = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')[0]
+            for crossRef in crossRefs:
+                data['crossRefs'].append(crossRef.text)
+    except Exception as e:
+        data['crossRefs'] = []
+    try:
+        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')) > 0):
+            data['notes'] = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')[0].text
+        else:
+            data['notes'] = ''
+    except Exception as e:
+        data['notes'] = ''
+    try:
+        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')) > 0):
+            data['standardLicenseHeader'] = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')[0].text
+        else:
+            data['standardLicenseHeader'] = ''
+    except Exception as e:
+        data['standardLicenseHeader'] = ''
+    return data
 
 def validate(request):
     """ View for validate tool

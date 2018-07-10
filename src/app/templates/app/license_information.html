@@ -8,11 +8,42 @@
 <p class ="lead"> {{ medialink }}</p>
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead">License Inormation</p> </div>
+    {% if licenseInformation %}
+<div class="panel-heading"> <p class="lead">{{licenseInformation.fullname}}</p> </div>
+    {% endif %}
 <div class="panel-body">
-
-<!-- CONTENT HERE-->
-
+    {% if licenseInformation %}
+    <div>
+        <p>Fullname</p>
+        <p>{{licenseInformation.fullname}}</p>
+    </div>
+    <div>
+        <p>Short Identifier</p>
+        <p>{{licenseInformation.shortIdentifier}}</p>
+    </div>
+    <div>
+        <p>Source/URL</p>
+        {% for crossRef in licenseInformation.crossRefs %}
+        <p>{{crossRef}}</p>
+        {% endfor %}
+    </div>
+    <div>
+        <p>Osi Approved</p>
+        <p>{{licenseInformation.osiApproved}}</p>
+    </div>
+    <div>
+        <p>Notes</p>
+        <p>{{licenseInformation.notes}}</p>
+    </div>
+    <div>
+        <p>Standard License Header</p>
+        <p>{{licenseInformation.standardLicenseHeader}}</p>
+    </div>
+    <div>
+        <p>Submission Date</p>
+        <p>{{licenseInformation.submissionDatetime}}</p>
+    </div>
+    {% endif %}
 </div>
 </div>
 {% endblock %}
