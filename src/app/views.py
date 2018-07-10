@@ -128,7 +128,6 @@ def licenseInformation(request, licenseId):
     licenseInformation['notes'] = data['notes']
     licenseInformation['standardLicenseHeader'] = data['standardLicenseHeader']
     context_dict={'licenseInformation': licenseInformation}
-    print xmlString
     return render(request, 
         'app/license_information.html',context_dict
         )
