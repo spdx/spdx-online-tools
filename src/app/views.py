@@ -127,6 +127,7 @@ def licenseInformation(request, licenseId):
     licenseInformation['crossRefs'] = data['crossRefs']
     licenseInformation['notes'] = data['notes']
     licenseInformation['standardLicenseHeader'] = data['standardLicenseHeader']
+    licenseInformation['text'] = data['text']
     context_dict={'licenseInformation': licenseInformation}
     return render(request, 
         'app/license_information.html',context_dict
@@ -171,6 +172,16 @@ def parseXmlString(xmlString):
             data['standardLicenseHeader'] = ''
     except Exception as e:
         data['standardLicenseHeader'] = ''
+    try:
+        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')) > 0):
+            textElem = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')[0]
+            ET.register_namespace('', "http://www.spdx.org/license")
+            textStr = ET.tostring(textElem)
+            data['text'] = textStr
+        else:
+            data['text'] = ''
+    except Exception as e:
+        data['text'] = ''
     return data
 
 def validate(request):
