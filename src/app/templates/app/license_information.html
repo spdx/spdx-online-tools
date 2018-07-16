@@ -47,6 +47,18 @@
         <p>Submission Date</p>
         <p>{{licenseInformation.submissionDatetime}}</p>
     </div>
+    <div>
+        <div>
+            <a href="" class="btn">Go Back</a>
+        </div>
+        <div>
+            <form name="download_xml" method="post" action=''>
+                {% csrf_token %}
+                <input type="hidden" name="supporttype" />
+                <input type="submit" value="Download the XML file" />
+            </form>
+        </div>
+    </div>
     {% endif %}
 </div>
 </div>

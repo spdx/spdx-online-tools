@@ -32,6 +32,8 @@ from time import time
 from urlparse import urljoin
 import xml.etree.cElementTree as ET
 import datetime
+from wsgiref.util import FileWrapper
+import os
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
@@ -116,6 +118,7 @@ def licenseInformation(request, licenseId):
     returns license_information.html template
     """
     licenseRequest = LicenseRequest.objects.get(id=licenseId)
+    context_dict = {}
     licenseInformation = {}
     licenseInformation['fullname'] = licenseRequest.fullname
     licenseInformation['shortIdentifier'] = licenseRequest.shortIdentifier
@@ -128,7 +131,20 @@ def licenseInformation(request, licenseId):
     licenseInformation['notes'] = data['notes']
     licenseInformation['standardLicenseHeader'] = data['standardLicenseHeader']
     licenseInformation['text'] = data['text']
-    context_dict={'licenseInformation': licenseInformation}
+    context_dict ={'licenseInformation': licenseInformation}
+    if request.method == 'POST':
+        tempFilename = 'output.xml'
+        xmlFile = open(tempFilename, 'w')
+        xmlFile.write(xmlString)
+        xmlFile.close()
+        xmlFile = open(tempFilename, 'r')
+        myfile = FileWrapper(xmlFile)
+        response = HttpResponse(myfile, content_type='application/xml')
+        response['Content-Disposition'] = 'attachment; filename=' + licenseRequest.shortIdentifier + '.xml'
+        xmlFile.close()
+        os.remove(tempFilename)
+        return response
+
     return render(request, 
         'app/license_information.html',context_dict
         )
@@ -183,6 +199,19 @@ def parseXmlString(xmlString):
     except Exception as e:
         data['text'] = ''
     return data
+
+def get_xml():
+    my_xml = ET.Element('foo', attrib={'bar': 'bla'})
+    my_str = ET.tostring(my_xml, 'utf-8', short_empty_elements=False)
+    enc = '<?xml version="1.0" encoding="utf-8"?>'
+    enc = enc + my_str.decode('utf-8')
+    return enc
+
+def download_xml_file(request, licenseId):
+    #licenseRequest = LicenseRequest.objects.get(id=licenseId)
+    response = HttpResponse(get_xml(), content_type="application/xml")
+    response['Content-Disposition'] = 'inline; filename=myfile.xml'
+    return response
 
 def validate(request):
     """ View for validate tool
