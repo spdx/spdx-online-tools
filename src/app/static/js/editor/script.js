@@ -364,7 +364,142 @@ $(document).ready(function(){
             }
         });
     })
+
+    $("#makePullRequest").click(function(){
+        var githubLogin = $("#githubLogin").text();
+        if(githubLogin == "False"){
+            $("#modal-body").removeClass("diff-modal-body");
+            $(".modal-dialog").removeClass("diff-modal-dialog");
+            $("#modal-header").removeClass("red-modal green-modal");
+            $("#modal-header").addClass("yellow-modal");
+            $("#modal-title").html("SPDX License XML Editor");
+            $('button.close').remove();
+            var githubLoginLink = $("#githubLoginLink").text();
+            githubLoginLink += "?next=" + window.location.href;
+            $(".modal-footer").html('<button class="btn btn-default pull-left" id="prCancel" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><a href="'+githubLoginLink+'"><button class="btn btn-success" id="prOk"><span class="glyphicon glyphicon-ok"></span> Confirm</button></a>');
+            $("#modal-body").html("You will now be redirected to the GitHub website to authenticate with the SPDX GitHub App. Please allow all the requested permissions for the app to work properly. After coming back to this page please click the Submit Changes button again to create a Pull Request.");
+        }
+        else if(githubLogin == "True"){
+            $("#modal-body").removeClass("diff-modal-body");
+            $(".modal-dialog").removeClass("diff-modal-dialog");
+            $("#modal-header").removeClass("red-modal yellow-modal");
+            $("#modal-header").addClass("green-modal");
+            $("#modal-title").html("SPDX License XML Editor");
+            $('button.close').remove();
+            $(".modal-footer").html('<button class="btn btn-default pull-left" id="prCancel" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><button class="btn btn-success" id="prOk"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
+            $("#modal-body").html($("#prFormContainer").html());
+            $("#modal-body").addClass("pr-modal-body");
+        }
+        $("#prOk").click(function(event){
+            event.preventDefault();
+            var response = makePR();
+            if(response!=true){
+                $('<div class="alert alert-danger" style="font-size:15px;"><strong>Error! </strong>'+response+'</div>').insertBefore("#githubPRForm");
+                setTimeout(function() {
+                    $(".alert").remove();
+                }, 3000);
+            }
+            $("#prOk").html('<span class="glyphicon glyphicon-ok"></span> Confirm');
+            $("#prCancel").html('<span class="glyphicon glyphicon-remove"></span> Cancel');
+            $("#prOk, #prCancel").prop('disabled', false);
+        });
+        $("div.tooltip").remove();
+        $('[data-toggle="tooltip"]').tooltip();
+        $("#myModal").modal({
+            backdrop: 'static',
+            keyboard: true,
+            show: true
+        });
+    })
 });
+
+function checkPRForm(){
+    var branchName = $("#branchName").val();
+    if(branchName=="" || branchName.search(/^[\./]|\.\.|@{|[\/\.]$|^@$|[~^:\x00-\x20\x7F\s?*[\\]/g)>-1){
+        return "Invalid branch name";
+    }
+    if(/^\s*$/.test($("#fileName").val())){
+        return "Invalid file name";
+    }
+    if(/^\s*$/.test($("#commitMessage").val())){
+        return "Invalid commit message";
+    }
+    if(/^\s*$/.test($("#prTitle").val())){
+        return "Invalid pull request title"
+    }
+    return true;
+}
+
+function makePR(){
+    var check = checkPRForm();
+    if(check!=true) return check;
+    $("#prOk, #prCancel").text("Processing...");
+    $("#prOk, #prCancel").prop('disabled', true);
+    var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
+    if(activeTab=="tabTextEditor"){
+        xmlText = editor.getValue().trim();
+    }
+    else if(activeTab=="tabTreeEditor"){
+        xmlText = updateTextEditor(editor, 'treeView');
+        if(xmlText==0){
+            xmlText = latestXmlText
+        }
+    }
+    else if(activeTab=="tabSplitView"){
+        xmlText = splitTextEditor.getValue().trim()
+    }
+    else{
+        xmlText = latestXmlText
+    }
+    var form = new FormData($("#githubPRForm")[0]);
+    form.append("branchName", $("#branchName").val());
+    form.append("fileName", $("#fileName").val());
+    form.append("commitMessage", $("#commitMessage").val());
+    form.append("prTitle", $("#prTitle").val());
+    form.append("prBody", $("#prBody").val());
+    form.append("xmlText", xmlText);
+    $.ajax({
+        type: "POST",
+        enctype: 'multipart/form-data',
+        url: "/app/make_pr/",
+        processData: false,
+        contentType: false,
+        cache: false,
+        dataType: 'json',
+        timeout: 600000,
+        data: form,
+        async: false,
+        success: function (data) {
+            if(data.type=="success"){
+                displayModal('<h3>Your Pull Request was created successfully <a href="'+data.data+'">here</a></h3>',"success");
+            }
+            $("#prOk").html('<span class="glyphicon glyphicon-ok"></span> Confirm');
+            $("#prCancel").html('<span class="glyphicon glyphicon-remove"></span> Cancel');
+            $("#prOk, #prCancel").prop('disabled', false);
+        },
+        error: function (e) {
+            try {
+                var obj = JSON.parse(e.responseText);
+                if (obj.type=="pr_error"){
+                    displayModal(obj.data, "error");
+                }
+                else if (obj.type=="auth_error"){
+                    displayModal(obj.data, "alert");
+                }
+                else if (obj.type=="error"){
+                    displayModal(obj.data, "error");
+                }
+            }
+            catch (e){
+                displayModal("The application could not be connected. Please try later.","error");
+            }
+            $("#prOk").html('<span class="glyphicon glyphicon-ok"></span> Confirm');
+            $("#prCancel").html('<span class="glyphicon glyphicon-remove"></span> Cancel');
+            $("#prOk, #prCancel").prop('disabled', false);
+        }
+    });
+    return true;
+}
 
 /* generate diff of initial xml and current xml text */
 function generate_diff(base, newtxt){
@@ -461,6 +596,7 @@ function beautify(text){
 
 /* display message using modal */
 function display_message(message){
+    $("#modal-body").removeClass("diff-modal-body pr-modal-body");
     $("#modal-header").removeClass("red-modal");
     $("#modal-header").removeClass("yellow-modal");
     $("#modal-header").addClass("green-modal");

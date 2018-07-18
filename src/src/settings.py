@@ -120,8 +120,9 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-SOCIAL_AUTH_GITHUB_KEY = '<>'
-SOCIAL_AUTH_GITHUB_SECRET = '<>'
+SOCIAL_AUTH_GITHUB_KEY = '88bb1137f0c45ce07a5d'
+SOCIAL_AUTH_GITHUB_SECRET = 'af8c7a95d8578705778e4d115259d15058f82293'
+SOCIAL_AUTH_GITHUB_SCOPE = ['repo']
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/

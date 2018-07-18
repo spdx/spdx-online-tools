@@ -65,6 +65,43 @@
     <form style="display:none" id="form">
         {% csrf_token %}
     </form>
+    <p id="githubLoginLink" hidden> {% url 'social:begin' 'github' %}</p>
+    {% if github_login %}
+    <p id="githubLogin" hidden>True</p>
+    <div id="prFormContainer" hidden>
+        <form id="githubPRForm" class="form-inline">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="branchName">Branch Name:</label>
+                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Pull Request will be made from this branch to master branch" style="font-size:12px;"></span>
+                <input type="text" class="form-control" id="branchName" name="branchName">
+            </div><br>
+            <div class="form-group">
+                <label for="fileName">File Name:</label>
+                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Name of the XML file" style="font-size:12px;"></span>
+                <input type="text" class="form-control" id="fileName" name="fileName"> .xml
+            </div><br>
+            <div class="form-group">
+                <label for="commitMessage">Commit Message:</label>
+                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Git commit message, a brief description of your changes" style="font-size:12px;"></span>
+                <input type="text" class="form-control" id="commitMessage" name="commitMessage">
+            </div><br>
+            <div class="form-group">
+                <label for="prTitle">Pull Request Title:</label>
+                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request title, can be edited later." style="font-size:12px;"></span>
+                <input type="text" class="form-control" id="prTitle" name="prTitle">
+            </div><br>
+            <div class="form-group">
+                <label for="prBody">Pull Request Body:</label>
+                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request body, can be edited later." style="font-size:12px;"></span>
+                <textarea class="form-control" rows="5" id="prBody" name="prBody" style="resize:none; width:200px;"></textarea>
+            </div><br>
+            </textarea>
+        </form>
+    </div>
+    {% else %}
+    <p id="githubLogin" hidden>False</p>
+    {% endif %}
 {% endblock %}
 
 {% block script_block %}

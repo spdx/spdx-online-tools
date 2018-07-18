@@ -349,7 +349,7 @@ function checkPendingChanges(treeEditorId){
 }
 
 function displayModal(message, mode){
-    $("#modal-body").removeClass("diff-modal-body");
+    $("#modal-body").removeClass("diff-modal-body pr-modal-body");
     $(".modal-dialog").removeClass("diff-modal-dialog");
     if(mode=="confirm"){
         $("#modal-header").removeClass("red-modal");
