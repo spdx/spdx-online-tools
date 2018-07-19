@@ -39,3 +39,9 @@
 .pr-modal-body .form-group{
     margin:5px;
 }
+.ajax-loader{
+    display:none;
+    height:100px;
+    width:100px;
+    margin: 20px auto;
+}

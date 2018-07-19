@@ -367,42 +367,23 @@ $(document).ready(function(){
 
     $("#makePullRequest").click(function(){
         var githubLogin = $("#githubLogin").text();
+        $("#modal-body").removeClass("diff-modal-body");
+        $(".modal-dialog").removeClass("diff-modal-dialog");
+        $("#modal-title").html("SPDX License XML Editor");
+        $('button.close').remove();
         if(githubLogin == "False"){
-            $("#modal-body").removeClass("diff-modal-body");
-            $(".modal-dialog").removeClass("diff-modal-dialog");
             $("#modal-header").removeClass("red-modal green-modal");
             $("#modal-header").addClass("yellow-modal");
-            $("#modal-title").html("SPDX License XML Editor");
-            $('button.close').remove();
-            var githubLoginLink = $("#githubLoginLink").text();
-            githubLoginLink += "?next=" + window.location.href;
-            $(".modal-footer").html('<button class="btn btn-default pull-left" id="prCancel" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><a href="'+githubLoginLink+'"><button class="btn btn-success" id="prOk"><span class="glyphicon glyphicon-ok"></span> Confirm</button></a>');
+            $(".modal-footer").html('<button class="btn btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><button class="btn btn-success" id="github_auth_begin"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
             $("#modal-body").html("You will now be redirected to the GitHub website to authenticate with the SPDX GitHub App. Please allow all the requested permissions for the app to work properly. After coming back to this page please click the Submit Changes button again to create a Pull Request.");
         }
         else if(githubLogin == "True"){
-            $("#modal-body").removeClass("diff-modal-body");
-            $(".modal-dialog").removeClass("diff-modal-dialog");
             $("#modal-header").removeClass("red-modal yellow-modal");
             $("#modal-header").addClass("green-modal");
-            $("#modal-title").html("SPDX License XML Editor");
-            $('button.close').remove();
             $(".modal-footer").html('<button class="btn btn-default pull-left" id="prCancel" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><button class="btn btn-success" id="prOk"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
             $("#modal-body").html($("#prFormContainer").html());
             $("#modal-body").addClass("pr-modal-body");
         }
-        $("#prOk").click(function(event){
-            event.preventDefault();
-            var response = makePR();
-            if(response!=true){
-                $('<div class="alert alert-danger" style="font-size:15px;"><strong>Error! </strong>'+response+'</div>').insertBefore("#githubPRForm");
-                setTimeout(function() {
-                    $(".alert").remove();
-                }, 3000);
-            }
-            $("#prOk").html('<span class="glyphicon glyphicon-ok"></span> Confirm');
-            $("#prCancel").html('<span class="glyphicon glyphicon-remove"></span> Cancel');
-            $("#prOk, #prCancel").prop('disabled', false);
-        });
         $("div.tooltip").remove();
         $('[data-toggle="tooltip"]').tooltip();
         $("#myModal").modal({
@@ -411,6 +392,66 @@ $(document).ready(function(){
             show: true
         });
     })
+});
+
+$(document).on('click','button#prOk',function(event){
+    event.preventDefault();
+    var response = makePR();
+    if(response!=true){
+        $('<div class="alert alert-danger" style="font-size:15px;"><strong>Error! </strong>'+response+'</div>').insertBefore("#githubPRForm");
+        setTimeout(function() {
+            $(".alert").remove();
+        }, 3000);
+    }
+    $("#prOk").html('<span class="glyphicon glyphicon-ok"></span> Confirm');
+    $("#prCancel").html('<span class="glyphicon glyphicon-remove"></span> Cancel');
+    $("#prOk, #prCancel").prop('disabled', false);
+});
+
+$(document).on('click','button#github_auth_begin',function(event){
+    event.preventDefault();
+    var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
+    if(activeTab=="tabTextEditor"){
+        xmlText = editor.getValue().trim();
+    }
+    else if(activeTab=="tabTreeEditor"){
+        xmlText = updateTextEditor(editor, 'treeView');
+        if(xmlText==0){
+            xmlText = latestXmlText
+        }
+    }
+    else if(activeTab=="tabSplitView"){
+        xmlText = splitTextEditor.getValue().trim()
+    }
+    else{
+        xmlText = latestXmlText
+    }
+    var githubLoginLink = $("#githubLoginLink").text();
+    var page_url = window.location.href;
+    githubLoginLink += "?next=" + page_url;
+    page_id = page_url.split("/");
+    page_id = page_id[page_id.length-2];
+    var form = new FormData($("#form")[0]);
+    form.append("xml_text",xmlText);
+    form.append("page_id",page_id);
+    $.ajax({
+        type: "POST",
+        enctype: 'multipart/form-data',
+        url: "/app/update_session/",
+        processData: false,
+        contentType: false,
+        cache: false,
+        dataType: 'json',
+        timeout: 600000,
+        data: form,
+        async: false,
+        success: function (data) {
+            window.location = githubLoginLink;
+        },
+        error: function(e){
+            displayModal("The application could not be connected. Please try later.","error");
+        }
+    });
 });
 
 function checkPRForm(){
@@ -433,8 +474,10 @@ function checkPRForm(){
 function makePR(){
     var check = checkPRForm();
     if(check!=true) return check;
-    $("#prOk, #prCancel").text("Processing...");
+    $("#prOk, #prCancel").html("Processing...");
     $("#prOk, #prCancel").prop('disabled', true);
+    $("#githubPRForm").css("display","none");
+    $(".ajax-loader").css("display","block");
     var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
     if(activeTab=="tabTextEditor"){
         xmlText = editor.getValue().trim();

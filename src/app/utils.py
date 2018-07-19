@@ -12,12 +12,16 @@ def makePullRequest(username, token, branchName, fileName, commitMessage, prTitl
 
     """ Making a fork """
     fork_url = url+"repos/spdx/license-list-XML/forks"
-    response = requests.post(fork_url, headers=headers)
-    if response.status_code != 202:
-        return {
-            "type":"error",
-            "message":"Error occured while creating a fork of the repo. You might have not given required permissions to the app. Please contact the SPDX Team."
-        }
+    response = requests.get(fork_url, headers=headers)
+    data = json.loads(response.text)
+    if(len(data)==0):
+        """ If user has not forked the repo """
+        response = requests.post(fork_url, headers=headers)
+        if response.status_code != 202:
+            return {
+                "type":"error",
+                "message":"Error occured while creating a fork of the repo. You might have not given required permissions to the app. Please contact the SPDX Team."
+            }
 
     """ Getting ref of master branch """
     ref_url = url + "repos/%s/license-list-XML/git/refs/heads/master"%(username)
@@ -64,6 +68,8 @@ def makePullRequest(username, token, branchName, fileName, commitMessage, prTitl
     branch_sha = data["object"]["sha"]
 
     """ Creating Commit """
+    if fileName[-4:] == ".xml":
+        fileName = fileName[:-4]
     commit_url = url + "repos/%s/license-list-XML/contents/src/%s"%(username, fileName)
     fileContent = base64.b64encode(xmlText)
     body = {

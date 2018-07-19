@@ -964,6 +964,20 @@ def xml_edit(request, page_id):
     else:
         return HttpResponseRedirect('/app/xml_upload')
 
+def update_session_variables(request):
+    if request.method == "POST" and request.is_ajax():
+        page_id = request.POST["page_id"]
+        request.session[page_id] = request.POST["xml_text"]
+        ajaxdict={}
+        ajaxdict["type"] = "success"
+        response = dumps(ajaxdict)
+        return HttpResponse(response, status=200)
+    else:
+        ajaxdict={}
+        ajaxdict["type"] = "error"
+        response = dumps(ajaxdict)
+        return HttpResponse(status=400)
+
 def pull_request(request):
     """ View that handels pull request """
     if request.user.is_authenticated():

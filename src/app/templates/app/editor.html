@@ -69,6 +69,7 @@
     {% if github_login %}
     <p id="githubLogin" hidden>True</p>
     <div id="prFormContainer" hidden>
+        <img src={% static "images/ajax-loader.gif" %} alt="Loading GIF" class="ajax-loader">
         <form id="githubPRForm" class="form-inline">
             {% csrf_token %}
             <div class="form-group">
