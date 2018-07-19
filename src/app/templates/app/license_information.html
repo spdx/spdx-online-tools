@@ -13,49 +13,49 @@
     {% endif %}
 <div class="panel-body">
     {% if licenseInformation %}
-    <div>
-        <p>Fullname</p>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Fullname</p>
         <p>{{licenseInformation.fullname}}</p>
     </div>
-    <div>
-        <p>Short Identifier</p>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Short Identifier</p>
         <p>{{licenseInformation.shortIdentifier}}</p>
     </div>
-    <div>
-        <p>Source/URL</p>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Source/URL</p>
         {% for crossRef in licenseInformation.crossRefs %}
         <p>{{crossRef}}</p>
         {% endfor %}
     </div>
-    <div>
-        <p>Osi Approved</p>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Osi Approved</p>
         <p>{{licenseInformation.osiApproved}}</p>
     </div>
-    <div>
-        <p>Notes</p>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Notes</p>
         <p>{{licenseInformation.notes}}</p>
     </div>
-    <div>
-        <p>Standard License Header</p>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Standard License Header</p>
         <p>{{licenseInformation.standardLicenseHeader}}</p>
     </div>
-    <div>
-        <p>Text</p>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Text</p>
         <p>{{licenseInformation.text}}</p>
     </div>
-    <div>
-        <p>Submission Date</p>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Submission Date</p>
         <p>{{licenseInformation.submissionDatetime}}</p>
     </div>
-    <div>
-        <div>
-            <a href="" class="btn">Go Back</a>
+    <div class"col-sm-12">
+        <div class="col-sm-12">
+            <a href="/app/license_requests/" class="btn">Go Back</a>
         </div>
-        <div>
+        <div class="col-sm-12">
             <form name="download_xml" method="post" action=''>
                 {% csrf_token %}
                 <input type="hidden" name="supporttype" />
-                <input type="submit" value="Download the XML file" />
+                <input type="submit" id="downloadBtn" value="Download the XML" />
             </form>
         </div>
     </div>
@@ -64,6 +64,18 @@
 </div>
 {% endblock %}
 {% block script_block %}
+
+<style>
+    .licenseField {float: left;
+                margin-top: 1.5em;}
+    .fieldName {
+                font-size: 1.4em;
+                color: #3197c4;}
+    div p {text-align: left;}
+    .lead {text-align: center;}
+    #downloadBtn {padding: 0.2em;}
+</style>
+
 <script type="text/javascript">
     $(document).ready(function () {
         $("#licenserequestspage").addClass('linkactive');

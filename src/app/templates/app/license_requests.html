@@ -16,7 +16,7 @@
         <tr>
           <th>Fullname</th>
           <th>Short Identifier</th>
-          <th>Submission Date</th>
+          <th>Submission Date (UTC)</th>
         </tr>
       </thead>
       <tbody>
@@ -36,6 +36,11 @@
 </div>
 {% endblock %}
 {% block script_block %}
+
+<style>
+    th {text-align: center;} 
+</style>
+
 <script type="text/javascript">
   $(document).ready(function () {
       $("#licenserequestspage").addClass('linkactive');
