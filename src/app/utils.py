@@ -2,7 +2,7 @@ import requests
 import json
 import base64
 
-def makePullRequest(username, token, branchName, fileName, commitMessage, prTitle, prBody, xmlText):
+def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
     url = "https://api.github.com/"
     headers = {
         "Accept":"application/vnd.github.machine-man-preview+json",
@@ -22,6 +22,25 @@ def makePullRequest(username, token, branchName, fileName, commitMessage, prTitl
                 "type":"error",
                 "message":"Error occured while creating a fork of the repo. You might have not given required permissions to the app. Please contact the SPDX Team."
             }
+    else:
+        if(updateUpstream=="true"):
+            """ If user wants to update the forked repo with upstream master """
+            update_url = url+"repos/spdx/license-list-XML/git/refs/heads/master"
+            response = requests.get(update_url, headers=headers)
+            data = json.loads(response.text)
+            sha = data["object"]["sha"]
+            body = {
+                "sha":sha,
+                "force": True
+            }
+            update_url = url+"repos/%s/license-list-XML/git/refs/heads/master"%(username)
+            response = requests.patch(update_url, headers=headers, data=json.dumps(body))
+            if response.status_code!=200:
+                return {
+                    "type":"error",
+                    "message":"Error occured while updating fork with the upstream master. You might have not given required permissions to the app. Please contact the SPDX Team."
+                }
+
 
     """ Getting ref of master branch """
     ref_url = url + "repos/%s/license-list-XML/git/refs/heads/master"%(username)

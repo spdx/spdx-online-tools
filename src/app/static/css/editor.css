@@ -40,7 +40,7 @@
     margin:5px;
 }
 .ajax-loader{
-    display:none;
+    display:none !important;
     height:100px;
     width:100px;
     margin: 20px auto;

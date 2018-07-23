@@ -408,6 +408,7 @@ $(document).on('click','button#prOk',function(event){
     $("#prOk, #prCancel").prop('disabled', false);
 });
 
+/* update session variables */
 $(document).on('click','button#github_auth_begin',function(event){
     event.preventDefault();
     var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
@@ -496,6 +497,7 @@ function makePR(){
     }
     var form = new FormData($("#githubPRForm")[0]);
     form.append("branchName", $("#branchName").val());
+    form.append("updateUpstream", $("#updateUpstream").is(":checked"));
     form.append("fileName", $("#fileName").val());
     form.append("commitMessage", $("#commitMessage").val());
     form.append("prTitle", $("#prTitle").val());
@@ -541,6 +543,8 @@ function makePR(){
             $("#prOk, #prCancel").prop('disabled', false);
         }
     });
+    $("#githubPRForm").css("display","block");
+    $(".ajax-loader").css("display","none");
     return true;
 }
 
