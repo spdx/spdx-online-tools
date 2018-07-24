@@ -37,6 +37,7 @@ from json import dumps, loads
 from time import time
 from urlparse import urljoin
 
+from social_django.models import UserSocialAuth
 from app.models import UserID, LicenseNames
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 from app.utils import makePullRequest

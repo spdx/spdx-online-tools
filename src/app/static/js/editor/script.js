@@ -382,7 +382,10 @@ $(document).ready(function(){
             $("#modal-header").addClass("green-modal");
             $(".modal-footer").html('<button class="btn btn-default pull-left" id="prCancel" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><button class="btn btn-success" id="prOk"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
             $("#modal-body").html($("#prFormContainer").html());
+            $("#githubPRForm").css("display","block");
+            $(".ajax-loader").css("display","none");
             $("#modal-body").addClass("pr-modal-body");
+            $("#prOk, #prCancel").prop('disabled', false);
         }
         $("div.tooltip").remove();
         $('[data-toggle="tooltip"]').tooltip();
@@ -403,9 +406,6 @@ $(document).on('click','button#prOk',function(event){
             $(".alert").remove();
         }, 3000);
     }
-    $("#prOk").html('<span class="glyphicon glyphicon-ok"></span> Confirm');
-    $("#prCancel").html('<span class="glyphicon glyphicon-remove"></span> Cancel');
-    $("#prOk, #prCancel").prop('disabled', false);
 });
 
 /* update session variables */
@@ -471,14 +471,14 @@ function checkPRForm(){
     }
     return true;
 }
-
+/* checks pr form and sends ajax request to pr view */
 function makePR(){
     var check = checkPRForm();
     if(check!=true) return check;
     $("#prOk, #prCancel").html("Processing...");
     $("#prOk, #prCancel").prop('disabled', true);
     $("#githubPRForm").css("display","none");
-    $(".ajax-loader").css("display","block");
+    $(".ajax-loader").css({"display":"block"});
     var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
     if(activeTab=="tabTextEditor"){
         xmlText = editor.getValue().trim();
@@ -513,7 +513,6 @@ function makePR(){
         dataType: 'json',
         timeout: 600000,
         data: form,
-        async: false,
         success: function (data) {
             if(data.type=="success"){
                 displayModal('<h3>Your Pull Request was created successfully <a href="'+data.data+'">here</a></h3>',"success");
@@ -543,8 +542,6 @@ function makePR(){
             $("#prOk, #prCancel").prop('disabled', false);
         }
     });
-    $("#githubPRForm").css("display","block");
-    $(".ajax-loader").css("display","none");
     return true;
 }
 
