@@ -34,6 +34,7 @@ import xml.etree.cElementTree as ET
 import datetime
 from wsgiref.util import FileWrapper
 import os
+from requests import post
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
@@ -102,6 +103,16 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     ET.SubElement(license, "text").text = licenseText
     xmlString = ET.tostring(root, encoding='utf8', method='xml')
     return xmlString
+
+def generateLicenseXml():
+    """ View for creating an GitbHub issue
+    when submitting a new license request
+    """
+    myToken = 'MY_GITHUB_TOKEN'
+    payload = {'title' : 'GitHub API Test', 'body': 'This is just a test', 'labels': ['testLabel']}
+    headers = {'Authorization': 'token ' + myToken}
+    url = 'https://api.github.com/repos/SOME_USERNAME/SOME_REPO/issues'
+    r = post(url, data=dumps(payload), headers=headers)
 
 def licenseRequests(request):
     """ View for license requests
