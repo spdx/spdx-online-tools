@@ -81,6 +81,7 @@ def submitNewLicense(request):
             licenseRequest = LicenseRequest(fullname=licenseName,shortIdentifier=licenseIdentifier,
                 submissionDatetime=now, userEmail=userEmail, xml=xml)
             licenseRequest.save()
+            createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi)
             form = LicenseRequestForm()
     else:
         form = LicenseRequestForm(auto_id='%s')
@@ -108,17 +109,19 @@ def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
-    myToken = 'MY_GITHUB_TOKEN'
-    body = '1. License Name: ' + licenseName + '\n2. Short identifier: ' + licenseIdentifier + '\n3. URL: '
+    myToken = ''
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** URL: '
+    print 'longitud: ' + str(licenseSourceUrls)
     for url in licenseSourceUrls:
         body += url
         body += '\n'
-    body += '\n4. OSI Approval: ' + licenseOsi
-    title = 'New license request: ' + licenseIdentifier
+    body += '**4.** OSI Approval: ' + licenseOsi
+    title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + myToken}
     url = 'https://api.github.com/repos/spdx/license-list-XML/issues'
     r = post(url, data=dumps(payload), headers=headers)
+    print r.status_code
 
 def licenseRequests(request):
     """ View for license requests
