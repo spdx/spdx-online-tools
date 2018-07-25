@@ -104,14 +104,14 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     xmlString = ET.tostring(root, encoding='utf8', method='xml')
     return xmlString
 
-def generateLicenseXml():
+def createIssue():
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
     myToken = 'MY_GITHUB_TOKEN'
     payload = {'title' : 'GitHub API Test', 'body': 'This is just a test', 'labels': ['testLabel']}
     headers = {'Authorization': 'token ' + myToken}
-    url = 'https://api.github.com/repos/SOME_USERNAME/SOME_REPO/issues'
+    url = 'https://api.github.com/repos/spdx/license-list-XML/issues'
     r = post(url, data=dumps(payload), headers=headers)
 
 def licenseRequests(request):
