@@ -14,8 +14,12 @@
 import requests
 import json
 import base64
+import logging
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
+    logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
+    logger = logging.getLogger()
+
     url = "https://api.github.com/"
     headers = {
         "Accept":"application/vnd.github.machine-man-preview+json",
@@ -31,6 +35,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         """ If user has not forked the repo """
         response = requests.post(fork_url, headers=headers)
         if response.status_code != 202:
+            logger.error("[Pull Request] Error occured while creating fork, for %s user. "%(username)+response.text)
             return {
                 "type":"error",
                 "message":"Error occured while creating a fork of the repo. Please try again later or contact the SPDX Team."
@@ -49,6 +54,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
             update_url = url+"repos/%s/license-list-XML/git/refs/heads/master"%(username)
             response = requests.patch(update_url, headers=headers, data=json.dumps(body))
             if response.status_code!=200:
+                logger.error("[Pull Request] Error occured while updating fork, for %s user. "%(username)+response.text)
                 return {
                     "type":"error",
                     "message":"Error occured while updating fork with the upstream master. Please try again later or contact the SPDX Team."
@@ -59,6 +65,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     ref_url = url + "repos/%s/license-list-XML/git/refs/heads/master"%(username)
     response = requests.get(ref_url, headers=headers)
     if response.status_code != 200:
+        logger.error("[Pull Request] Error occured while getting ref of master branch, for %s user. "%(username)+response.text)
         return {
             "type":"error",
             "message":"Some error occured while getting the ref of master branch. Please try again later or contact the SPDX Team."
@@ -70,6 +77,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     branch_url = url + "repos/%s/license-list-XML/branches"%(username)
     response = requests.get(branch_url, headers=headers)
     if response.status_code != 200:
+        logger.error("[Pull Request] Error occured while getting branch names, for %s user. "%(username)+response.text)
         return {
             "type":"error",
             "message":"Some error occured while getting branch names. Please try again later or contact the SPDX Team."
@@ -78,13 +86,14 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     branch_names = [i["name"] for i in data]
     
     """ Creating branch """
-    i=1
-    while True:
-        if(branchName in branch_names):
-            branchName += str(i)
-            i+=1 
-        else:
-            break
+    if branchName in branch_names:
+        count=1
+        while True:
+            if((branchName+str(count)) in branch_names):
+                count+=1
+            else:
+                branchName = branchName+str(count)
+                break
     create_branch_url = url + "repos/%s/license-list-XML/git/refs"%(username)
     body = {
         "ref":"refs/heads/"+branchName,
@@ -92,6 +101,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     }
     response = requests.post(create_branch_url, headers=headers, data=json.dumps(body))
     if response.status_code != 201:
+        logger.error("[Pull Request] Error occured while creating branch, for %s user. "%(username)+response.text)
         return {
             "type":"error",
             "message":"Some error occured while creating the branch. Please try again later or contact the SPDX Team."
@@ -114,6 +124,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     }
     response = requests.put(commit_url, headers=headers, data=json.dumps(body))
     if response.status_code != 201:
+        logger.error("[Pull Request] Error occured while making commit, for %s user. "%(username)+response.text)
         return {
             "type":"error",
             "message":"Some error occured while making commit. Please try again later or contact the SPDX Team."
@@ -129,6 +140,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     }
     response = requests.post(pr_url, headers=headers, data=json.dumps(body))
     if response.status_code != 201:
+        logger.error("[Pull Request] Error occured while making pull request, for %s user. "%(username)+response.text)
         return {
             "type":"error",
             "message":"Some error occured while making the pull request. Please try again later or contact the SPDX Team."

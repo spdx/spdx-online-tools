@@ -177,7 +177,8 @@ def validate(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def validate_xml(request):
-    """ View to validate xml text, used in the xml editor """
+    """ View to validate xml text against SPDX License XML Schema,
+         used in the xml editor """
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
@@ -186,8 +187,10 @@ def validate_xml(request):
                 if "xmlText" in request.POST:
                     """ Saving file to the media directory """
                     xmlText = request.POST['xmlText']
+                    xmlText = xmlText.encode('utf-8')
                     folder = str(request.user) + "/" + str(int(time()))
-                    os.makedirs(str(settings.MEDIA_ROOT +"/"+ folder))
+                    if not os.path.isdir(str(settings.MEDIA_ROOT +"/"+ folder)):
+                        os.makedirs(str(settings.MEDIA_ROOT +"/"+ folder))
                     uploaded_file_url = settings.MEDIA_ROOT + '/' + folder + '/' + 'xmlFile.xml'
                     with open(uploaded_file_url,'w') as f:
                         f.write(xmlText)
@@ -240,10 +243,10 @@ def validate_xml(request):
                 return HttpResponse("XML Parsing Error.\n The XML is not valid. Please correct the XML text and try again.", status=400)
             except :
                 """ Other error raised """
+                logger.error(str(format_exc()))
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    logger.error(str(format_exc()))
                     response = dumps(ajaxdict)
                     return HttpResponse(response,status=500)
                 return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
@@ -730,13 +733,12 @@ def xml_upload(request):
                             'app/xml_upload.html',context_dict,status=404
                             )
                 except:
+                    logger.error(str(format_exc()))
                     if (request.is_ajax()):
                         ajaxdict["type"] = "error"
                         ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        logger.error(str(format_exc()))
                         response = dumps(ajaxdict)
                         return HttpResponse(response,status=500)
-                    logger.error(str(format_exc()))    
                     context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
                     return render(request, 
                         'app/xml_upload.html',context_dict,status=500
@@ -834,12 +836,11 @@ def xml_upload(request):
                             'app/xml_upload.html',context_dict,status=500
                             )
                 except:
+                    logger.error(str(format_exc()))
                     if (request.is_ajax()):
                         ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        logger.error(str(format_exc()))
                         response = dumps(ajaxdict)
                         return HttpResponse(response,status=500)
-                    logger.error(str(format_exc()))
                     context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
                     return render(request, 
                         'app/xml_upload.html',context_dict,status=500
@@ -889,13 +890,12 @@ def xml_upload(request):
                             'app/xml_upload.html',context_dict,status=400
                             )
                 except:
+                    logger.error(str(format_exc()))
                     if (request.is_ajax()):
                         ajaxdict["type"] = "error"
                         ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        logger.error(str(format_exc()))
                         response = dumps(ajaxdict)
                         return HttpResponse(response, status=500)
-                    logger.error(str(format_exc()))
                     context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
                     return render(request, 
                         'app/xml_upload.html',context_dict,status=500
@@ -911,13 +911,12 @@ def xml_upload(request):
                     response = dumps(ajaxdict)
                     return HttpResponse(response, status=200)
                 except:
+                    logger.error(str(format_exc()))
                     if (request.is_ajax()):
                         ajaxdict["type"] = "error"
                         ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        logger.error(str(format_exc()))
                         response = dumps(ajaxdict)
                         return HttpResponse(response, status=500)
-                    logger.error(str(format_exc()))
                     context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
                     return render(request, 
                         'app/xml_upload.html',context_dict,status=500
@@ -966,6 +965,7 @@ def xml_edit(request, page_id):
         return HttpResponseRedirect('/app/xml_upload')
 
 def update_session_variables(request):
+    """ View for updating the XML text in the session variable """
     if request.method == "POST" and request.is_ajax():
         page_id = request.POST["page_id"]
         request.session[page_id] = request.POST["xml_text"]
@@ -977,7 +977,8 @@ def update_session_variables(request):
         ajaxdict={}
         ajaxdict["type"] = "error"
         response = dumps(ajaxdict)
-        return HttpResponse(status=400)
+        return HttpResponse(response, status=400)
+    return HttpResponse("Bad Request", status=400)
 
 def pull_request(request):
     """ View that handels pull request """
@@ -1020,10 +1021,10 @@ def pull_request(request):
                     return HttpResponse("Please login using GitHub to use this feature.",status=401)
             except:
                 """ Other errors raised """
+                logger.error(str(format_exc()))
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    logger.error(str(format_exc()))
                     response = dumps(ajaxdict)
                     return HttpResponse(response,status=500)
                 return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)

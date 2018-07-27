@@ -298,8 +298,7 @@ class CompareViewsTestCase(TestCase):
         self.exit()
         self.client.logout()
 
-    
-    
+
 class ConvertViewsTestCase(TestCase):
 
     def test_convert(self):
@@ -576,6 +575,89 @@ class XMLUploadTestCase(TestCase):
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.post(reverse("xml-upload"),{'newButton': 'newButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
+        self.client.logout()
+
+
+class ValidateXMLViewsTestCase(TestCase):
+
+    def test_validate_xml(self):
+        """GET Request for validate_xml"""
+        if not settings.ANONYMOUS_LOGIN_ENABLED :
+            resp = self.client.get(reverse("validate-xml"),follow=True,secure=True)
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+            self.assertEqual(resp.status_code,200)
+
+        self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
+        resp2 = self.client.get(reverse("validate-xml"),follow=True,secure=True)
+        self.assertEqual(resp2.status_code,200)
+        self.assertNotEqual(resp2.redirect_chain,[])
+        self.assertIn(settings.HOME_URL, (i[0] for i in resp2.redirect_chain))
+        self.assertEqual(resp2.resolver_match.func.__name__,"index")
+        self.client.logout()
+
+    def test_validate_xml_post_without_login(self):
+        """POST Request for validate xml without login or ANONYMOUS_LOGIN_DISABLED """
+        if not settings.ANONYMOUS_LOGIN_ENABLED :
+            self.xml_text = open("examples/Adobe-Glyph.xml").read()
+            resp = self.client.post(reverse("validate-xml"),{'xmlText' : self.xml_text},follow=True,secure=True)
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+            self.assertEqual(resp.status_code,200)
+
+    def test_validate_xml_post_without_xmlText(self):
+        """POST Request for validate xml without any xml text"""
+        self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
+        resp = self.client.post(reverse("validate-xml"),{},follow=True,secure=True)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, "No XML text given.")
+        self.assertEqual(resp.redirect_chain,[])
+        self.client.logout()
+
+    def test_valid_xml(self):
+        """POST Request for validating a valid XML text """
+        self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
+        self.xml_text = open("examples/Adobe-Glyph.xml").read()
+        resp = self.client.post(reverse("validate-xml"),{'xmlText': self.xml_text},follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.content,"This XML is valid against SPDX License Schema.")
+        self.client.logout()
+
+    def test_invalid_xml(self):
+        """POST Request for validating an invalid XML text """
+        self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
+        self.xml_text = open("examples/invalid_license.xml").read()
+        resp = self.client.post(reverse("validate-xml"),{'xmlText' : self.xml_text},follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.client.logout()
+
+
+class PullRequestTestCase(TestCase):
+
+    def test_pull_request_get_without_login(self):
+        """GET request for pull request feature without login """
+        resp = self.client.get(reverse("pull-request"),follow=True,secure=True)
+        self.assertNotEqual(resp.redirect_chain,[])
+        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+        self.assertEqual(resp.status_code,200)
+
+    def test_pull_request_get_with_login(self):
+        """GET request for pull request feature with login"""
+        self.client.force_login(User.objects.get_or_create(username='pullRequestTestUser')[0])
+        resp = self.client.get(reverse("pull-request"),follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertNotEqual(resp.redirect_chain,[])
+        self.assertIn(settings.HOME_URL, (i[0] for i in resp.redirect_chain))
+        self.assertEqual(resp.resolver_match.func.__name__,"index")
+        self.client.logout()
+
+    def test_pull_request_post_with_login(self):
+        """POST request for pull request feature with login"""
+        self.client.force_login(User.objects.get_or_create(username='pullRequestTestUser')[0])
+        resp = self.client.post(reverse("pull-request"),{},follow=True,secure=True)
+        self.assertEqual(resp.status_code,401)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertEqual(resp.content, "Please login using GitHub to use this feature.")
         self.client.logout()
 
 
