@@ -42,6 +42,8 @@ from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 from .forms import LicenseRequestForm
 from .models import LicenseRequest
 
+from utils.github_utils import getGithubToken
+
 def index(request):
     """ View for index
     returns index.html template
@@ -109,9 +111,8 @@ def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
-    myToken = ''
+    myToken = getGithubToken()
     body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** URL: '
-    print 'longitud: ' + str(licenseSourceUrls)
     for url in licenseSourceUrls:
         body += url
         body += '\n'
@@ -121,7 +122,6 @@ def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi):
     headers = {'Authorization': 'token ' + myToken}
     url = 'https://api.github.com/repos/spdx/license-list-XML/issues'
     r = post(url, data=dumps(payload), headers=headers)
-    print r.status_code
 
 def licenseRequests(request):
     """ View for license requests
