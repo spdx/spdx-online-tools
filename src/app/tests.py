@@ -5,8 +5,15 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.urls import reverse
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 import jpype
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
 
 from app.models import UserID
 
@@ -632,6 +639,157 @@ class ValidateXMLViewsTestCase(TestCase):
         self.client.logout()
 
 
+class XMLEditorTestCase(StaticLiveServerTestCase):
+
+    def setUp(self):
+        self.selenium = webdriver.Firefox()
+        self.initialXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license></SPDXLicenseCollection>'
+        self.invalidXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license>'
+        super(XMLEditorTestCase, self).setUp()
+
+    def tearDown(self):
+        self.selenium.quit()
+        super(XMLEditorTestCase, self).tearDown()
+
+    def test_tree_editor_attributes(self):
+        """ Test for adding, editing and deleting attributes using tree editor """
+        driver = self.selenium
+        """ Opening the editor and navigating to tree editor """
+        driver.get(self.live_server_url+'/app/xml_upload/')
+        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element_by_id("new-button").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
+        )
+        driver.find_element_by_id("tabTreeEditor").click()
+        """ Adding attribute """
+        driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
+        driver.find_element_by_class_name("newAttributeName").send_keys("firstAttribute")
+        driver.find_element_by_class_name("newAttributeValue").send_keys("firstValue")
+        driver.find_element_by_class_name("addNewAttribute").click()
+        """ Adding Invalid attribute """
+        driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
+        driver.find_element_by_class_name("newAttributeName").send_keys("secondAttribute")
+        driver.find_element_by_class_name("addNewAttribute").click()
+        modal_text = driver.find_element_by_id("modal-body").text
+        self.assertEquals(modal_text, "Please enter valid attribute name and value")
+        driver.find_element_by_css_selector("div.modal-footer button.btn").click()
+        time.sleep(0.5)
+        driver.find_element_by_class_name("newAttributeValue").send_keys("secondValue")
+        driver.find_element_by_class_name("cancel").click()
+        """ Editing attribute """
+        driver.find_elements_by_css_selector("span.attributeValue")[1].click()
+        driver.find_element_by_css_selector("input.textbox").clear()
+        driver.find_element_by_css_selector("input.textbox").send_keys("Edited Value")
+        driver.find_element_by_css_selector("img.editAttribute").click()
+        editedValue = driver.find_elements_by_css_selector("span.attributeValue")[1].text
+        self.assertEquals(editedValue, "Edited Value")
+        """ Delete attribute """
+        driver.find_elements_by_css_selector("span.attributeValue")[1].click()
+        driver.find_element_by_css_selector("img.removeAttribute").click()
+        modal_text = driver.find_element_by_id("modal-body").text
+        self.assertEquals(modal_text, "Are you sure you want to delete this attribute? This action cannot be undone.")
+        driver.find_element_by_id("modalOk").click()
+        time.sleep(0.5)
+        driver.find_element_by_id("tabTextEditor").click()
+        codemirror = driver.find_elements_by_css_selector("pre.CodeMirror-line")
+        time.sleep(0.2)
+        finalXML = ""
+        for i in codemirror:
+            finalXML += i.text.strip()
+        self.assertEquals(self.initialXML, finalXML)
+
+    def test_tree_editor_nodes(self):
+        """ Test for adding and deleting nodes(tags) using tree editor """
+        driver = self.selenium
+        """ Opening the editor and navigating to tree editor """
+        driver.get(self.live_server_url+'/app/xml_upload/')
+        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element_by_id("new-button").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
+        )
+        driver.find_element_by_id("tabTreeEditor").click()
+        """ Adding node """
+        driver.find_element_by_css_selector("li.addChild.last").click()
+        driver.find_element_by_css_selector("input.textbox").send_keys("newNode")
+        driver.find_element_by_class_name("buttonAddChild").click()
+        """ Adding invalid node """
+        driver.find_element_by_css_selector("li.addChild.last").click()
+        driver.find_element_by_class_name("buttonAddChild").click()
+        modal_text = driver.find_element_by_id("modal-body").text
+        self.assertEquals(modal_text, "The tag name cannot be empty. Please enter a valid tag name.")
+        driver.find_element_by_css_selector("div.modal-footer button.btn").click()
+        time.sleep(0.5)
+        driver.find_element_by_class_name("cancelAddChild").click()
+        """ Delete attribute """
+        driver.find_elements_by_css_selector("img.deleteNode")[2].click()
+        modal_text = driver.find_element_by_id("modal-body").text
+        self.assertEquals(modal_text, "Are you sure you want to delete this tag? This cannot be undone.")
+        driver.find_element_by_id("modalOk").click()
+        time.sleep(0.5)
+        driver.find_element_by_id("tabTextEditor").click()
+        codemirror = driver.find_elements_by_css_selector("pre.CodeMirror-line")
+        finalXML = ""
+        for i in codemirror:
+            finalXML += i.text.strip()
+        self.assertEquals(self.initialXML, finalXML)
+
+    def test_tree_editor_text(self):
+        """ Test for adding, editing and deleting text inside tags using tree editor """
+        driver = self.selenium
+        """ Opening the editor and navigating to tree editor """
+        driver.get(self.live_server_url+'/app/xml_upload/')
+        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element_by_id("new-button").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
+        )
+        driver.find_element_by_id("tabTreeEditor").click()
+        """ Adding text """
+        driver.find_element_by_css_selector("li.emptyText").click()
+        driver.find_element_by_css_selector("div.treeContainer textarea").send_keys("This is some sample text.")
+        driver.find_element_by_class_name("editNodeText").click()
+        nodeText = driver.find_element_by_css_selector("li.nodeText").text
+        self.assertEquals(nodeText, "This is some sample text.")
+        """ Editing text """
+        driver.find_element_by_css_selector("li.nodeText").click()
+        driver.find_element_by_css_selector("div.treeContainer textarea").clear()
+        driver.find_element_by_css_selector("div.treeContainer textarea").send_keys("Edited text.")
+        driver.find_element_by_class_name("editNodeText").click()
+        nodeText = driver.find_element_by_css_selector("li.nodeText").text
+        self.assertEquals(nodeText, "Edited text.")
+        """ Delete text """
+        driver.find_element_by_css_selector("li.nodeText").click()
+        driver.find_element_by_css_selector("div.treeContainer textarea").clear()
+        driver.find_element_by_class_name("editNodeText").click()
+        nodeText = driver.find_element_by_css_selector("li.emptyText").text
+        self.assertEquals(nodeText, "(No text value. Click to edit.)")
+        driver.find_element_by_id("tabTextEditor").click()
+        codemirror = driver.find_elements_by_css_selector("pre.CodeMirror-line")
+        finalXML = ""
+        for i in codemirror:
+            finalXML += i.text.strip()
+        self.assertEquals(self.initialXML, finalXML)
+
+    def test_tree_editor_invalid_xml(self):
+        """ Test for invalid XML text provided """
+        driver = self.selenium
+        """ Opening the editor and navigating to tree editor """
+        driver.get(self.live_server_url+'/app/xml_upload/')
+        driver.find_element_by_id("xmltext").send_keys(self.invalidXML)
+        driver.find_element_by_id("xmlTextButton").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
+        )
+        driver.find_element_by_id("tabTreeEditor").click()
+        """ Checking for error message """
+        error_title = driver.find_element_by_css_selector("h2.xmlParsingErrorMessage").text
+        error_message = driver.find_element_by_css_selector("span.xmlParsingErrorMessage").text
+        self.assertEquals(error_title, "Invalid XML.")
+        assert "XML Parsing Error" in error_message
+
+
 class PullRequestTestCase(TestCase):
 
     def test_pull_request_get_without_login(self):
@@ -668,6 +826,7 @@ class LogoutViewsTestCase(TestCase):
         resp = self.client.get(reverse("logout"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+
 
 class RootViewsTestCase(TestCase):
 
