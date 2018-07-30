@@ -118,4 +118,4 @@ org.eclipse.core.resources.prefs
 .DS_Store
 
 #GitHub token
-github_utils.py
+*/github_utils.py
