@@ -24,6 +24,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 import jpype
 from traceback import format_exc
@@ -66,6 +67,7 @@ def submitNewLicense(request):
     """ View for submit new licenses
     returns submit_new_license.html template
     """
+    context_dict={}
     if request.method == 'POST':
         form = LicenseRequestForm(request.POST, auto_id='%s')
         if form.is_valid() and request.is_ajax():
@@ -83,11 +85,12 @@ def submitNewLicense(request):
             licenseRequest = LicenseRequest(fullname=licenseName,shortIdentifier=licenseIdentifier,
                 submissionDatetime=now, userEmail=userEmail, xml=xml)
             licenseRequest.save()
-            createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi)
-            form = LicenseRequestForm()
+            statusCode = createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi)
+            data = {'statusCode' : str(statusCode)}
+            return JsonResponse(data)
     else:
         form = LicenseRequestForm(auto_id='%s')
-    context_dict={'form': form}
+    context_dict['form'] = form
     return render(request, 
         'app/submit_new_license.html', context_dict
         )
@@ -122,6 +125,7 @@ def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi):
     headers = {'Authorization': 'token ' + myToken}
     url = 'https://api.github.com/repos/spdx/license-list-XML/issues'
     r = post(url, data=dumps(payload), headers=headers)
+    return r.status_code
 
 def licenseRequests(request):
     """ View for license requests

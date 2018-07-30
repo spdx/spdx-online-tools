@@ -162,27 +162,37 @@ function checkform() {
               timeout: 600000,
               data: form,
               success: function (data) {
+                var githubCode = data.statusCode;
+                if(githubCode == '201'){
                   var successMessage = "The license request has been successfully submitted.";
                   $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
-                        setTimeout(function() {
-                          $("#messages").html("");
-                        }, 7000);
-                  $("#fullname").val("");
-                  $("#shortIdentifier").val("");
-                  $("#sourceUrl").val("");
-                  $("#osiApproved").val(0);
-                  $("#notes").val("");
-                  $("#licenseHeader").val("");
-                  $("#text").val("");
-                  $("#userEmail").val("");
-                  var sources = $('[id="sourceUrl"]');
-                  if(sources.length > 1){
-                    for (var i = 3; i < sources.length + 2; i++) {
-                      $("#addSourceUrl").parent().parent().children(i.toString()).remove();
-                    }
-                  } 
-                  $("#submitbutton").text("Submit");
-                  $("#submitbutton").prop('disabled', false);
+                      setTimeout(function() {
+                        $("#messages").html("");
+                      }, 7000);
+                }
+                else{
+                  var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org with SPDX ID for the license you are submitting";
+                  $("#messages").html('<div class="alert alert-warning alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Warning! </strong>'+ warningMessage +'</div>');
+                      setTimeout(function() {
+                        $("#messages").html("");
+                      }, 7000);
+                }
+                $("#fullname").val("");
+                $("#shortIdentifier").val("");
+                $("#sourceUrl").val("");
+                $("#osiApproved").val(0);
+                $("#notes").val("");
+                $("#licenseHeader").val("");
+                $("#text").val("");
+                $("#userEmail").val("");
+                var sources = $('[id="sourceUrl"]');
+                if(sources.length > 1){
+                  for (var i = 3; i < sources.length + 2; i++) {
+                    $("#addSourceUrl").parent().parent().children(i.toString()).remove();
+                  }
+                }
+                $("#submitbutton").text("Submit");
+                $("#submitbutton").prop('disabled', false);
               },
               error: function (e) {
                   console.log("ERROR : ", e);
