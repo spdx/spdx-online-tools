@@ -15,6 +15,8 @@ import requests
 import json
 import base64
 import logging
+from app.models import UserID, User
+
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
     logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
@@ -150,3 +152,16 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         "type":"success",
         "pr_url": data["html_url"],
     }
+
+def save_profile(backend, user, response, *args, **kwargs):
+    """ Pipeline for saving user's info in UserID model when register using GitHub """
+    if backend.name == 'github':
+        try:
+            profile = UserID()
+            username = response.get('login')
+            user = User.objects.filter(username=username)[0]
+            profile.user_id=user.id
+            profile.organisation='none'
+            profile.save()
+        except:
+            pass
