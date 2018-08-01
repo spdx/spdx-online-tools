@@ -1,7 +1,6 @@
-  <?xml version="1.0" encoding="UTF-8"?>
-  <SPDXLicenseCollection xmlns="http://www.spdx.org/license">
-    <license isOsiApproved="true" licenseId="BSD-2-Clause"
-              name="BSD 2-Clause &#34;Simplified&#34; License">
+<?xml version="1.0" encoding="UTF-8"?>
+  <SPDXLicenseCollection>
+    <license>
         <crossRefs>
           <crossRef>http://www.opensource.org/licenses/BSD-2-Clause</crossRef>
         </crossRefs>
@@ -40,4 +39,4 @@
         </p>
       </text>
     </license>
-  </SPDXLicenseCollection>
+</SPDXLicenseCollection>

@@ -5,8 +5,15 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.urls import reverse
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 import jpype
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
 
 from app.models import UserID
 
@@ -298,8 +305,7 @@ class CompareViewsTestCase(TestCase):
         self.exit()
         self.client.logout()
 
-    
-    
+
 class ConvertViewsTestCase(TestCase):
 
     def test_convert(self):
@@ -479,7 +485,7 @@ class XMLUploadTestCase(TestCase):
     def test_xml_file_upload_post_without_login(self):
         """POST Request for XML file upload without login or ANONYMOUS_LOGIN_DISABLED """
         if not settings.ANONYMOUS_LOGIN_ENABLED :
-            self.xml_file = open("examples/license.xml")
+            self.xml_file = open("examples/Adobe-Glyph.xml")
             resp = self.client.post(reverse("xml-upload"),{'file': self.xml_file, 'uploadButton': 'uploadButton', 'page_id': 'asfw2432'},follow=True,secure=True)
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
@@ -502,7 +508,7 @@ class XMLUploadTestCase(TestCase):
     def test_xml_file_upload(self):
         """POST request for XML file upload"""
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
-        self.xml_file = open("examples/license.xml")
+        self.xml_file = open("examples/Adobe-Glyph.xml")
         resp = self.client.post(reverse("xml-upload"),{'file': self.xml_file, 'uploadButton': 'uploadButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.xml_file.close()
@@ -579,6 +585,240 @@ class XMLUploadTestCase(TestCase):
         self.client.logout()
 
 
+class ValidateXMLViewsTestCase(TestCase):
+
+    def test_validate_xml(self):
+        """GET Request for validate_xml"""
+        if not settings.ANONYMOUS_LOGIN_ENABLED :
+            resp = self.client.get(reverse("validate-xml"),follow=True,secure=True)
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+            self.assertEqual(resp.status_code,200)
+
+        self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
+        resp2 = self.client.get(reverse("validate-xml"),follow=True,secure=True)
+        self.assertEqual(resp2.status_code,200)
+        self.assertNotEqual(resp2.redirect_chain,[])
+        self.assertIn(settings.HOME_URL, (i[0] for i in resp2.redirect_chain))
+        self.assertEqual(resp2.resolver_match.func.__name__,"index")
+        self.client.logout()
+
+    def test_validate_xml_post_without_login(self):
+        """POST Request for validate xml without login or ANONYMOUS_LOGIN_DISABLED """
+        if not settings.ANONYMOUS_LOGIN_ENABLED :
+            self.xml_text = open("examples/Adobe-Glyph.xml").read()
+            resp = self.client.post(reverse("validate-xml"),{'xmlText' : self.xml_text},follow=True,secure=True)
+            self.assertNotEqual(resp.redirect_chain,[])
+            self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+            self.assertEqual(resp.status_code,200)
+
+    def test_validate_xml_post_without_xmlText(self):
+        """POST Request for validate xml without any xml text"""
+        self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
+        resp = self.client.post(reverse("validate-xml"),{},follow=True,secure=True)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, "No XML text given.")
+        self.assertEqual(resp.redirect_chain,[])
+        self.client.logout()
+
+    def test_valid_xml(self):
+        """POST Request for validating a valid XML text """
+        self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
+        self.xml_text = open("examples/Adobe-Glyph.xml").read()
+        resp = self.client.post(reverse("validate-xml"),{'xmlText': self.xml_text},follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.content,"This XML is valid against SPDX License Schema.")
+        self.client.logout()
+
+    def test_invalid_xml(self):
+        """POST Request for validating an invalid XML text """
+        self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
+        self.xml_text = open("examples/invalid_license.xml").read()
+        resp = self.client.post(reverse("validate-xml"),{'xmlText' : self.xml_text},follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.client.logout()
+
+
+class XMLEditorTestCase(StaticLiveServerTestCase):
+
+    def setUp(self):
+        self.selenium = webdriver.Firefox()
+        self.initialXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license></SPDXLicenseCollection>'
+        self.invalidXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license>'
+        super(XMLEditorTestCase, self).setUp()
+
+    def tearDown(self):
+        self.selenium.quit()
+        super(XMLEditorTestCase, self).tearDown()
+
+    def test_tree_editor_attributes(self):
+        """ Test for adding, editing and deleting attributes using tree editor """
+        driver = self.selenium
+        """ Opening the editor and navigating to tree editor """
+        driver.get(self.live_server_url+'/app/xml_upload/')
+        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element_by_id("new-button").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
+        )
+        driver.find_element_by_id("tabTreeEditor").click()
+        """ Adding attribute """
+        driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
+        driver.find_element_by_class_name("newAttributeName").send_keys("firstAttribute")
+        driver.find_element_by_class_name("newAttributeValue").send_keys("firstValue")
+        driver.find_element_by_class_name("addNewAttribute").click()
+        """ Adding Invalid attribute """
+        driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
+        driver.find_element_by_class_name("newAttributeName").send_keys("secondAttribute")
+        driver.find_element_by_class_name("addNewAttribute").click()
+        modal_text = driver.find_element_by_id("modal-body").text
+        self.assertEquals(modal_text, "Please enter valid attribute name and value")
+        driver.find_element_by_css_selector("div.modal-footer button.btn").click()
+        time.sleep(0.5)
+        driver.find_element_by_class_name("newAttributeValue").send_keys("secondValue")
+        driver.find_element_by_class_name("cancel").click()
+        """ Editing attribute """
+        driver.find_elements_by_css_selector("span.attributeValue")[1].click()
+        driver.find_element_by_css_selector("input.textbox").clear()
+        driver.find_element_by_css_selector("input.textbox").send_keys("Edited Value")
+        driver.find_element_by_css_selector("img.editAttribute").click()
+        editedValue = driver.find_elements_by_css_selector("span.attributeValue")[1].text
+        self.assertEquals(editedValue, "Edited Value")
+        """ Delete attribute """
+        driver.find_elements_by_css_selector("span.attributeValue")[1].click()
+        driver.find_element_by_css_selector("img.removeAttribute").click()
+        modal_text = driver.find_element_by_id("modal-body").text
+        self.assertEquals(modal_text, "Are you sure you want to delete this attribute? This action cannot be undone.")
+        driver.find_element_by_id("modalOk").click()
+        time.sleep(0.5)
+        driver.find_element_by_id("tabTextEditor").click()
+        codemirror = driver.find_elements_by_css_selector("pre.CodeMirror-line")
+        time.sleep(0.2)
+        finalXML = ""
+        for i in codemirror:
+            finalXML += i.text.strip()
+        self.assertEquals(self.initialXML, finalXML)
+
+    def test_tree_editor_nodes(self):
+        """ Test for adding and deleting nodes(tags) using tree editor """
+        driver = self.selenium
+        """ Opening the editor and navigating to tree editor """
+        driver.get(self.live_server_url+'/app/xml_upload/')
+        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element_by_id("new-button").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
+        )
+        driver.find_element_by_id("tabTreeEditor").click()
+        """ Adding node """
+        driver.find_element_by_css_selector("li.addChild.last").click()
+        driver.find_element_by_css_selector("input.textbox").send_keys("newNode")
+        driver.find_element_by_class_name("buttonAddChild").click()
+        """ Adding invalid node """
+        driver.find_element_by_css_selector("li.addChild.last").click()
+        driver.find_element_by_class_name("buttonAddChild").click()
+        modal_text = driver.find_element_by_id("modal-body").text
+        self.assertEquals(modal_text, "The tag name cannot be empty. Please enter a valid tag name.")
+        driver.find_element_by_css_selector("div.modal-footer button.btn").click()
+        time.sleep(0.5)
+        driver.find_element_by_class_name("cancelAddChild").click()
+        """ Delete attribute """
+        driver.find_elements_by_css_selector("img.deleteNode")[2].click()
+        modal_text = driver.find_element_by_id("modal-body").text
+        self.assertEquals(modal_text, "Are you sure you want to delete this tag? This cannot be undone.")
+        driver.find_element_by_id("modalOk").click()
+        time.sleep(0.5)
+        driver.find_element_by_id("tabTextEditor").click()
+        codemirror = driver.find_elements_by_css_selector("pre.CodeMirror-line")
+        finalXML = ""
+        for i in codemirror:
+            finalXML += i.text.strip()
+        self.assertEquals(self.initialXML, finalXML)
+
+    def test_tree_editor_text(self):
+        """ Test for adding, editing and deleting text inside tags using tree editor """
+        driver = self.selenium
+        """ Opening the editor and navigating to tree editor """
+        driver.get(self.live_server_url+'/app/xml_upload/')
+        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element_by_id("new-button").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
+        )
+        driver.find_element_by_id("tabTreeEditor").click()
+        """ Adding text """
+        driver.find_element_by_css_selector("li.emptyText").click()
+        driver.find_element_by_css_selector("div.treeContainer textarea").send_keys("This is some sample text.")
+        driver.find_element_by_class_name("editNodeText").click()
+        nodeText = driver.find_element_by_css_selector("li.nodeText").text
+        self.assertEquals(nodeText, "This is some sample text.")
+        """ Editing text """
+        driver.find_element_by_css_selector("li.nodeText").click()
+        driver.find_element_by_css_selector("div.treeContainer textarea").clear()
+        driver.find_element_by_css_selector("div.treeContainer textarea").send_keys("Edited text.")
+        driver.find_element_by_class_name("editNodeText").click()
+        nodeText = driver.find_element_by_css_selector("li.nodeText").text
+        self.assertEquals(nodeText, "Edited text.")
+        """ Delete text """
+        driver.find_element_by_css_selector("li.nodeText").click()
+        driver.find_element_by_css_selector("div.treeContainer textarea").clear()
+        driver.find_element_by_class_name("editNodeText").click()
+        nodeText = driver.find_element_by_css_selector("li.emptyText").text
+        self.assertEquals(nodeText, "(No text value. Click to edit.)")
+        driver.find_element_by_id("tabTextEditor").click()
+        codemirror = driver.find_elements_by_css_selector("pre.CodeMirror-line")
+        finalXML = ""
+        for i in codemirror:
+            finalXML += i.text.strip()
+        self.assertEquals(self.initialXML, finalXML)
+
+    def test_tree_editor_invalid_xml(self):
+        """ Test for invalid XML text provided """
+        driver = self.selenium
+        """ Opening the editor and navigating to tree editor """
+        driver.get(self.live_server_url+'/app/xml_upload/')
+        driver.find_element_by_id("xmltext").send_keys(self.invalidXML)
+        driver.find_element_by_id("xmlTextButton").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
+        )
+        driver.find_element_by_id("tabTreeEditor").click()
+        """ Checking for error message """
+        error_title = driver.find_element_by_css_selector("h2.xmlParsingErrorMessage").text
+        error_message = driver.find_element_by_css_selector("span.xmlParsingErrorMessage").text
+        self.assertEquals(error_title, "Invalid XML.")
+        assert "XML Parsing Error" in error_message
+
+
+class PullRequestTestCase(TestCase):
+
+    def test_pull_request_get_without_login(self):
+        """GET request for pull request feature without login """
+        resp = self.client.get(reverse("pull-request"),follow=True,secure=True)
+        self.assertNotEqual(resp.redirect_chain,[])
+        self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+        self.assertEqual(resp.status_code,200)
+
+    def test_pull_request_get_with_login(self):
+        """GET request for pull request feature with login"""
+        self.client.force_login(User.objects.get_or_create(username='pullRequestTestUser')[0])
+        resp = self.client.get(reverse("pull-request"),follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertNotEqual(resp.redirect_chain,[])
+        self.assertIn(settings.HOME_URL, (i[0] for i in resp.redirect_chain))
+        self.assertEqual(resp.resolver_match.func.__name__,"index")
+        self.client.logout()
+
+    def test_pull_request_post_with_login(self):
+        """POST request for pull request feature with login"""
+        self.client.force_login(User.objects.get_or_create(username='pullRequestTestUser')[0])
+        resp = self.client.post(reverse("pull-request"),{},follow=True,secure=True)
+        self.assertEqual(resp.status_code,401)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertEqual(resp.content, "Please login using GitHub to use this feature.")
+        self.client.logout()
+
+
 class LogoutViewsTestCase(TestCase):
 
     def test_logout(self):
@@ -586,6 +826,7 @@ class LogoutViewsTestCase(TestCase):
         resp = self.client.get(reverse("logout"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
+
 
 class RootViewsTestCase(TestCase):
 

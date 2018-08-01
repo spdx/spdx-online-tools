@@ -33,3 +33,15 @@
 .diff-modal-dialog{
     width: 800px;
 }
+.pr-modal-body{
+    font-size: 20px !important;
+}
+.pr-modal-body .form-group{
+    margin:5px;
+}
+.ajax-loader{
+    display:none;
+    height:100px;
+    width:100px;
+    margin: 20px auto;
+}

@@ -31,13 +31,16 @@ from lxml import etree
 import re
 import os
 import logging
+import json
 from traceback import format_exc
 from json import dumps, loads
 from time import time
 from urlparse import urljoin
 
-from app.models import UserID
+from social_django.models import UserSocialAuth
+from app.models import UserID, LicenseNames
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
+import app.utils as utils
 
 logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
 logger = logging.getLogger()
@@ -174,7 +177,8 @@ def validate(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def validate_xml(request):
-    """ View to validate xml text, used in the xml editor """
+    """ View to validate xml text against SPDX License XML Schema,
+         used in the xml editor """
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
@@ -183,8 +187,10 @@ def validate_xml(request):
                 if "xmlText" in request.POST:
                     """ Saving file to the media directory """
                     xmlText = request.POST['xmlText']
+                    xmlText = xmlText.encode('utf-8')
                     folder = str(request.user) + "/" + str(int(time()))
-                    os.makedirs(str(settings.MEDIA_ROOT +"/"+ folder))
+                    if not os.path.isdir(str(settings.MEDIA_ROOT +"/"+ folder)):
+                        os.makedirs(str(settings.MEDIA_ROOT +"/"+ folder))
                     uploaded_file_url = settings.MEDIA_ROOT + '/' + folder + '/' + 'xmlFile.xml'
                     with open(uploaded_file_url,'w') as f:
                         f.write(xmlText)
@@ -237,10 +243,10 @@ def validate_xml(request):
                 return HttpResponse("XML Parsing Error.\n The XML is not valid. Please correct the XML text and try again.", status=400)
             except :
                 """ Other error raised """
+                logger.error(str(format_exc()))
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    logger.error(str(format_exc()))
                     response = dumps(ajaxdict)
                     return HttpResponse(response,status=500)
                 return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
@@ -703,9 +709,9 @@ def xml_upload(request):
         context_dict={}
         ajaxdict = {}
         if request.method == 'POST':
-            if "xmlTextButton" in request.POST:
-                """ If user provides XML text using textarea """
-                try:
+            try:
+                if "xmlTextButton" in request.POST:
+                    """ If user provides XML text using textarea """
                     if len(request.POST["xmltext"])>0 :
                         page_id = request.POST['page_id']
                         request.session[page_id] = request.POST["xmltext"]
@@ -726,22 +732,9 @@ def xml_upload(request):
                         return render(request, 
                             'app/xml_upload.html',context_dict,status=404
                             )
-                except:
-                    if (request.is_ajax()):
-                        ajaxdict["type"] = "error"
-                        ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        logger.error(str(format_exc()))
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response,status=500)
-                    logger.error(str(format_exc()))    
-                    context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    return render(request, 
-                        'app/xml_upload.html',context_dict,status=500
-                        )
 
-            elif "licenseNameButton" in request.POST:
-                """ If license name is provided by the user """
-                try:
+                elif "licenseNameButton" in request.POST:
+                    """ If license name is provided by the user """
                     name = request.POST["licenseName"]
                     if len(name) <= 0:
                         if (request.is_ajax()):
@@ -753,61 +746,18 @@ def xml_upload(request):
                         return render(request, 
                             'app/xml_upload.html',context_dict,status=400
                                 )                        
-                    url = "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/"
-                    license_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json"
-                    exceptions_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/exceptions.json"
-                    """ If it is exception name """
-                    if re.search('exception', name, re.IGNORECASE):
-                        data = requests.get(exceptions_json).text
-                        data = loads(data)
-                        """ Extracting exception identifier """
-                        found = 0
-                        for exception in data["exceptions"]:
-                            if(exception["licenseExceptionId"] == name):
-                                url+= "exceptions/" + name
-                                found = 1
-                                break
-                            elif(exception["name"] == name):
-                                url+= "exceptions/" + exception["licenseExceptionId"]
-                                name = exception["licenseExceptionId"]
-                                found = 1
-                                break
-                        if not found:
-                            if (request.is_ajax()):
-                                ajaxdict["type"] = "error"
-                                ajaxdict["data"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
-                                response = dumps(ajaxdict)
-                                return HttpResponse(response,status=404)
-                            context_dict["error"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
-                            return render(request, 
-                                'app/xml_upload.html',context_dict,status=404
-                                )
-                    else:
-                        """ If it is license name """
-                        data = requests.get(license_json).text
-                        data = loads(data)
-                        """ Extracting license identifier """
-                        found = 0
-                        for license in data["licenses"]:
-                            if(license["licenseId"] == name):
-                                url+= name
-                                found = 1
-                                break
-                            elif(license["name"] == name):
-                                url+= license["licenseId"]
-                                name = license["licenseId"]
-                                found = 1
-                                break
-                        else:
-                            if (request.is_ajax()):
-                                ajaxdict["type"] = "error"
-                                ajaxdict["data"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
-                                response = dumps(ajaxdict)
-                                return HttpResponse(response,status=404)
-                            context_dict["error"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
-                            return render(request, 
-                                'app/xml_upload.html',context_dict,status=404
-                                )
+
+                    url = utils.check_license_name(name)
+                    if url is False:
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "error"
+                            ajaxdict["data"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=404)
+                        context_dict["error"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
+                        return render(request, 
+                            'app/xml_upload.html',context_dict,status=404
+                            )
                     url += ".xml"
                     response = requests.get(url)
                     if(response.status_code == 200):
@@ -830,21 +780,9 @@ def xml_upload(request):
                         return render(request, 
                             'app/xml_upload.html',context_dict,status=500
                             )
-                except:
-                    if (request.is_ajax()):
-                        ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        logger.error(str(format_exc()))
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response,status=500)
-                    logger.error(str(format_exc()))
-                    context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    return render(request, 
-                        'app/xml_upload.html',context_dict,status=500
-                        )
 
-            elif "uploadButton" in request.POST:
-                """ If user uploads the XML file """
-                try:
+                elif "uploadButton" in request.POST:
+                    """ If user uploads the XML file """
                     if "file" in request.FILES and len(request.FILES["file"])>0:
                         """ Saving XML file to the media directory """
                         xml_file = request.FILES['file']
@@ -885,50 +823,43 @@ def xml_upload(request):
                         return render(request, 
                             'app/xml_upload.html',context_dict,status=400
                             )
-                except:
-                    if (request.is_ajax()):
-                        ajaxdict["type"] = "error"
-                        ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        logger.error(str(format_exc()))
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response, status=500)
-                    logger.error(str(format_exc()))
-                    context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    return render(request, 
-                        'app/xml_upload.html',context_dict,status=500
-                        )
 
-            elif "newButton" in request.POST:
-                """ If the user starts with new XML """
-                try:
+                elif "newButton" in request.POST:
+                    """ If the user starts with new XML """
                     xml_text = """<?xml version="1.0" encoding="UTF-8"?>\n<SPDXLicenseCollection xmlns="http://www.spdx.org/license">\n<license></license>\n</SPDXLicenseCollection>"""
                     page_id = request.POST['page_id']
                     request.session[page_id] = xml_text
                     ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                     response = dumps(ajaxdict)
                     return HttpResponse(response, status=200)
-                except:
-                    if (request.is_ajax()):
-                        ajaxdict["type"] = "error"
-                        ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        logger.error(str(format_exc()))
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response, status=500)
-                    logger.error(str(format_exc()))
-                    context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    return render(request, 
-                        'app/xml_upload.html',context_dict,status=500
-                        )
-            else:
-                ajaxdict["type"] = "error"
-                ajaxdict["data"] = "Bad Request." 
-                response = dumps(ajaxdict)
-                return HttpResponse(response, status=400)
+
+                else:
+                    ajaxdict["type"] = "error"
+                    ajaxdict["data"] = "Bad Request." 
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response, status=400)
+            except:
+                logger.error(str(format_exc()))
+                if (request.is_ajax()):
+                    ajaxdict["type"] = "error"
+                    ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response, status=500)
+                context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                return render(request, 
+                    'app/xml_upload.html',context_dict,status=500
+                    )
         else :
             """ GET,HEAD Request """
             return render(request, 'app/xml_upload.html', {})
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
+
+def autocompleteModel(request):
+    if 'term' in request.GET:
+        result = LicenseNames.objects.filter(name__icontains=request.GET['term']).values_list('name',flat=True)
+        return HttpResponse( json.dumps( [ name for name in result ] ) )
+    return HttpResponse()
 
 def xml_edit(request, page_id):
     """View for editing the XML file
@@ -936,6 +867,13 @@ def xml_edit(request, page_id):
     """
     context_dict = {}
     if (page_id in request.session):
+        if request.user.is_authenticated():
+            user = request.user
+            try:
+                github_login = user.social_auth.get(provider='github')
+            except UserSocialAuth.DoesNotExist:
+                github_login = None
+            context_dict["github_login"] = github_login
         if type(request.session[page_id]) == list:
             """ XML input using license name"""
             context_dict["xml_text"] = request.session[page_id][0]    
@@ -948,6 +886,75 @@ def xml_edit(request, page_id):
             )
     else:
         return HttpResponseRedirect('/app/xml_upload')
+
+def update_session_variables(request):
+    """ View for updating the XML text in the session variable """
+    if request.method == "POST" and request.is_ajax():
+        page_id = request.POST["page_id"]
+        request.session[page_id] = request.POST["xml_text"]
+        ajaxdict={}
+        ajaxdict["type"] = "success"
+        response = dumps(ajaxdict)
+        return HttpResponse(response, status=200)
+    else:
+        ajaxdict={}
+        ajaxdict["type"] = "error"
+        response = dumps(ajaxdict)
+        return HttpResponse(response, status=400)
+    return HttpResponse("Bad Request", status=400)
+
+def pull_request(request):
+    """ View that handels pull request """
+    if request.user.is_authenticated():
+        if request.method=="POST":
+            context_dict = {}
+            ajaxdict = {}
+            try:
+                if request.user.is_authenticated():
+                    user = request.user
+                try:
+                    """ Getting user info and calling the makePullRequest function """
+                    github_login = user.social_auth.get(provider='github')
+                    token = github_login.extra_data["access_token"]
+                    username = github_login.extra_data["login"]
+                    response = utils.makePullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"])
+                    if(response["type"]=="success"):
+                        """ PR made successfully """
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "success"
+                            ajaxdict["data"] = response["pr_url"]
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=200)
+                        return HttpResponse(response["pr_url"],status=200)
+                    else:
+                        """ Error while making PR """
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "pr_error"
+                            ajaxdict["data"] = response["message"]
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=500)
+                        return HttpResponse(response["message"],status=500)
+                except UserSocialAuth.DoesNotExist:
+                    """ User not authenticated with GitHub """
+                    if (request.is_ajax()):
+                        ajaxdict["type"] = "auth_error"
+                        ajaxdict["data"] = "Please login using GitHub to use this feature."
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response,status=401)
+                    return HttpResponse("Please login using GitHub to use this feature.",status=401)
+            except:
+                """ Other errors raised """
+                logger.error(str(format_exc()))
+                if (request.is_ajax()):
+                    ajaxdict["type"] = "error"
+                    ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response,status=500)
+                return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
+        else:
+            return HttpResponseRedirect(settings.HOME_URL)
+    else:
+        return HttpResponseRedirect(settings.LOGIN_URL)
 
 def loginuser(request):
     """ View for Login
