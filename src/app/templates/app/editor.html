@@ -83,7 +83,11 @@
             <div class="form-group">
                 <label for="fileName">File Name:</label>
                 <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Name of the XML file" style="font-size:12px;"></span>
+                {% if license_name %}
+                <input type="text" class="form-control" id="fileName" name="fileName" value={{license_name}}> .xml
+                {% else %}
                 <input type="text" class="form-control" id="fileName" name="fileName"> .xml
+                {% endif %}
             </div><br>
             <div class="form-group">
                 <label for="commitMessage">Commit Message:</label>

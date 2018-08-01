@@ -408,7 +408,7 @@ $(document).on('click','button#prOk',function(event){
     }
 });
 
-/* update session variables and login with GitHub */
+/* update XML in session variables and login with GitHub */
 $(document).on('click','button#github_auth_begin',function(event){
     event.preventDefault();
     var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
@@ -495,6 +495,7 @@ function makePR(){
     else{
         xmlText = latestXmlText
     }
+    xmlText = beautify(xmlText);
     var form = new FormData($("#githubPRForm")[0]);
     form.append("branchName", $("#branchName").val());
     form.append("updateUpstream", $("#updateUpstream").is(":checked"));

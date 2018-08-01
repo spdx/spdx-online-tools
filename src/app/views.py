@@ -40,7 +40,7 @@ from urlparse import urljoin
 from social_django.models import UserSocialAuth
 from app.models import UserID, LicenseNames
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
-from app.utils import makePullRequest
+import app.utils as utils
 
 logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
 logger = logging.getLogger()
@@ -709,9 +709,9 @@ def xml_upload(request):
         context_dict={}
         ajaxdict = {}
         if request.method == 'POST':
-            if "xmlTextButton" in request.POST:
-                """ If user provides XML text using textarea """
-                try:
+            try:
+                if "xmlTextButton" in request.POST:
+                    """ If user provides XML text using textarea """
                     if len(request.POST["xmltext"])>0 :
                         page_id = request.POST['page_id']
                         request.session[page_id] = request.POST["xmltext"]
@@ -732,21 +732,9 @@ def xml_upload(request):
                         return render(request, 
                             'app/xml_upload.html',context_dict,status=404
                             )
-                except:
-                    logger.error(str(format_exc()))
-                    if (request.is_ajax()):
-                        ajaxdict["type"] = "error"
-                        ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response,status=500)
-                    context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    return render(request, 
-                        'app/xml_upload.html',context_dict,status=500
-                        )
 
-            elif "licenseNameButton" in request.POST:
-                """ If license name is provided by the user """
-                try:
+                elif "licenseNameButton" in request.POST:
+                    """ If license name is provided by the user """
                     name = request.POST["licenseName"]
                     if len(name) <= 0:
                         if (request.is_ajax()):
@@ -758,61 +746,18 @@ def xml_upload(request):
                         return render(request, 
                             'app/xml_upload.html',context_dict,status=400
                                 )                        
-                    url = "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/"
-                    license_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json"
-                    exceptions_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/exceptions.json"
-                    """ If it is exception name """
-                    if re.search('exception', name, re.IGNORECASE):
-                        data = requests.get(exceptions_json).text
-                        data = loads(data)
-                        """ Extracting exception identifier """
-                        found = 0
-                        for exception in data["exceptions"]:
-                            if(exception["licenseExceptionId"] == name):
-                                url+= "exceptions/" + name
-                                found = 1
-                                break
-                            elif(exception["name"] == name):
-                                url+= "exceptions/" + exception["licenseExceptionId"]
-                                name = exception["licenseExceptionId"]
-                                found = 1
-                                break
-                        if not found:
-                            if (request.is_ajax()):
-                                ajaxdict["type"] = "error"
-                                ajaxdict["data"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
-                                response = dumps(ajaxdict)
-                                return HttpResponse(response,status=404)
-                            context_dict["error"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
-                            return render(request, 
-                                'app/xml_upload.html',context_dict,status=404
-                                )
-                    else:
-                        """ If it is license name """
-                        data = requests.get(license_json).text
-                        data = loads(data)
-                        """ Extracting license identifier """
-                        found = 0
-                        for license in data["licenses"]:
-                            if(license["licenseId"] == name):
-                                url+= name
-                                found = 1
-                                break
-                            elif(license["name"] == name):
-                                url+= license["licenseId"]
-                                name = license["licenseId"]
-                                found = 1
-                                break
-                        else:
-                            if (request.is_ajax()):
-                                ajaxdict["type"] = "error"
-                                ajaxdict["data"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
-                                response = dumps(ajaxdict)
-                                return HttpResponse(response,status=404)
-                            context_dict["error"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
-                            return render(request, 
-                                'app/xml_upload.html',context_dict,status=404
-                                )
+
+                    url = utils.check_license_name(name)
+                    if url is False:
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "error"
+                            ajaxdict["data"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=404)
+                        context_dict["error"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
+                        return render(request, 
+                            'app/xml_upload.html',context_dict,status=404
+                            )
                     url += ".xml"
                     response = requests.get(url)
                     if(response.status_code == 200):
@@ -835,20 +780,9 @@ def xml_upload(request):
                         return render(request, 
                             'app/xml_upload.html',context_dict,status=500
                             )
-                except:
-                    logger.error(str(format_exc()))
-                    if (request.is_ajax()):
-                        ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response,status=500)
-                    context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    return render(request, 
-                        'app/xml_upload.html',context_dict,status=500
-                        )
 
-            elif "uploadButton" in request.POST:
-                """ If user uploads the XML file """
-                try:
+                elif "uploadButton" in request.POST:
+                    """ If user uploads the XML file """
                     if "file" in request.FILES and len(request.FILES["file"])>0:
                         """ Saving XML file to the media directory """
                         xml_file = request.FILES['file']
@@ -889,43 +823,32 @@ def xml_upload(request):
                         return render(request, 
                             'app/xml_upload.html',context_dict,status=400
                             )
-                except:
-                    logger.error(str(format_exc()))
-                    if (request.is_ajax()):
-                        ajaxdict["type"] = "error"
-                        ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response, status=500)
-                    context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    return render(request, 
-                        'app/xml_upload.html',context_dict,status=500
-                        )
 
-            elif "newButton" in request.POST:
-                """ If the user starts with new XML """
-                try:
+                elif "newButton" in request.POST:
+                    """ If the user starts with new XML """
                     xml_text = """<?xml version="1.0" encoding="UTF-8"?>\n<SPDXLicenseCollection xmlns="http://www.spdx.org/license">\n<license></license>\n</SPDXLicenseCollection>"""
                     page_id = request.POST['page_id']
                     request.session[page_id] = xml_text
                     ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                     response = dumps(ajaxdict)
                     return HttpResponse(response, status=200)
-                except:
-                    logger.error(str(format_exc()))
-                    if (request.is_ajax()):
-                        ajaxdict["type"] = "error"
-                        ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response, status=500)
-                    context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    return render(request, 
-                        'app/xml_upload.html',context_dict,status=500
-                        )
-            else:
-                ajaxdict["type"] = "error"
-                ajaxdict["data"] = "Bad Request." 
-                response = dumps(ajaxdict)
-                return HttpResponse(response, status=400)
+
+                else:
+                    ajaxdict["type"] = "error"
+                    ajaxdict["data"] = "Bad Request." 
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response, status=400)
+            except:
+                logger.error(str(format_exc()))
+                if (request.is_ajax()):
+                    ajaxdict["type"] = "error"
+                    ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response, status=500)
+                context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                return render(request, 
+                    'app/xml_upload.html',context_dict,status=500
+                    )
         else :
             """ GET,HEAD Request """
             return render(request, 'app/xml_upload.html', {})
@@ -940,8 +863,7 @@ def autocompleteModel(request):
 
 def xml_edit(request, page_id):
     """View for editing the XML file
-    returns editor.html
-    """
+    returns editor.html """
     context_dict = {}
     if (page_id in request.session):
         if request.user.is_authenticated():
@@ -994,7 +916,7 @@ def pull_request(request):
                     github_login = user.social_auth.get(provider='github')
                     token = github_login.extra_data["access_token"]
                     username = github_login.extra_data["login"]
-                    response = makePullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"])
+                    response = utils.makePullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"])
                     if(response["type"]=="success"):
                         """ PR made successfully """
                         if (request.is_ajax()):
