@@ -485,7 +485,7 @@ class XMLUploadTestCase(TestCase):
     def test_xml_file_upload_post_without_login(self):
         """POST Request for XML file upload without login or ANONYMOUS_LOGIN_DISABLED """
         if not settings.ANONYMOUS_LOGIN_ENABLED :
-            self.xml_file = open("examples/license.xml")
+            self.xml_file = open("examples/Adobe-Glyph.xml")
             resp = self.client.post(reverse("xml-upload"),{'file': self.xml_file, 'uploadButton': 'uploadButton', 'page_id': 'asfw2432'},follow=True,secure=True)
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
@@ -508,7 +508,7 @@ class XMLUploadTestCase(TestCase):
     def test_xml_file_upload(self):
         """POST request for XML file upload"""
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
-        self.xml_file = open("examples/license.xml")
+        self.xml_file = open("examples/Adobe-Glyph.xml")
         resp = self.client.post(reverse("xml-upload"),{'file': self.xml_file, 'uploadButton': 'uploadButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.xml_file.close()

@@ -165,3 +165,32 @@ def save_profile(backend, user, response, *args, **kwargs):
             profile.save()
         except:
             pass
+
+def check_license_name(name):
+    """ Check if a license name exists """
+    license_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json"
+    data = requests.get(license_json).text
+    data = json.loads(data)
+    url= "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/"
+    for license in data["licenses"]:
+        if(license["licenseId"] == name):
+            url+=name
+            return url
+        elif(license["name"] == name):
+            url+=license["licenseId"]
+            return url
+
+    """ Check if an exception name exists """
+    exceptions_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/exceptions.json"
+    data = requests.get(exceptions_json).text
+    data = json.loads(data)
+    url= "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/exceptions/"
+    for exception in data["exceptions"]:
+        if(exception["licenseExceptionId"] == name):
+            url += name
+            return url
+        elif(exception["name"] == name):
+            url += exception["licenseExceptionId"]
+            return url
+
+    return False
