@@ -55,7 +55,7 @@
             <form name="download_xml" method="post" action=''>
                 {% csrf_token %}
                 <input type="hidden" name="supporttype" />
-                <input type="submit" id="downloadBtn" value="Download the XML" />
+                <button type="submit" class="btn btn-md btn-info" id="downloadBtn">Download the XML</button>
             </form>
         </div>
     </div>
@@ -73,7 +73,15 @@
                 color: #3197c4;}
     div p {text-align: left;}
     .lead {text-align: center;}
-    #downloadBtn {padding: 0.2em;}
+    #downloadBtn {padding: 0.4em 0.4em;
+        background-color: #3197c4;
+        color: white;
+        border: none;}
+        #downloadBtn:hover {
+  background-color: RoyalBlue;
+}
+
+    
 </style>
 
 <script type="text/javascript">
