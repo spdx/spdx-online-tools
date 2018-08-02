@@ -126,10 +126,8 @@ def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi):
     headers = {'Authorization': 'token ' + myToken}
     url = 'https://api.github.com/repos/spdx/license-list-XML/issues'
     r = post(url, data=dumps(payload), headers=headers)
-<<<<<<< HEAD
     return r.status_code
-=======
->>>>>>> c40bd705c4a9cf86510cf680da0912e9ec650223
+
 
 def licenseRequests(request):
     """ View for license requests
