@@ -68,6 +68,6 @@ class LicenseRequestForm(forms.Form):
     sourceUrl = forms.CharField(label='Source / URL', required=False)
     osiApproved = forms.CharField(label="OSI Approved", widget=forms.Select(choices=OSI_CHOICES))
     notes = forms.CharField(label='Notes', required=False)
-    licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 2, 'cols': 40}), required=False)
-    text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
+    licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)
+    text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
     userEmail = forms.EmailField(label='Email', max_length=35)

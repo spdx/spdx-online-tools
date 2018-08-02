@@ -2,7 +2,6 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
-<link href="../../static/css/submit_new_license.css" rel="stylesheet" type="text/css" />
 
 <div id="messages" class="messages">
 </div>
@@ -17,9 +16,8 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Full Name</label>
-        <div class="col-sm-3"> 
+        <div class="col-sm-4"> 
           {{ form.fullname }}
-          <label class="control-label" id="fullnamelabel" ></label>
         </div>
       </div>  
     </div>
@@ -27,9 +25,8 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Short Identifier</label>
-        <div class="col-sm-3"> 
+        <div class="col-sm-4"> 
           {{ form.shortIdentifier }}
-          <label class="control-label" id="shortidentifierlabel" ></label>
         </div>
       </div>  
     </div>
@@ -37,10 +34,9 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Source / URL</label>
-        <div class="col-sm-3" >
-          <button class="roundedButton btn btn-md btn-info" id="addSourceUrl"  type="button">+</button>
+        <div class="col-sm-4">
           {{ form.sourceUrl }}
-          <label class="control-label" id="sourceurllabel" ></label>
+          <span class="help-block" id="addSourceUrl" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add a source</span>
         </div>
       </div>  
     </div>
@@ -48,7 +44,7 @@
     <div class = "form-group">
       <div class="col-sm-12">  
       <label class="control-label col-sm-3" >&nbsp;OSI Approved&nbsp;</label>
-        <div class="col-sm-3">
+        <div class="col-sm-4">
           {{ form.osiApproved }}
         </div>
       </div>
@@ -57,10 +53,8 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Notes</label>
-        <div class="col-sm-3">
+        <div class="col-sm-6">
           {{ form.notes }}
-          <!-- <input type="text" id="notes" placeholder="" name = "notes" class="alignedField"> -->
-          <label class="control-label" id="noteslabel" ></label>
         </div>
       </div>  
     </div>
@@ -68,9 +62,8 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Standard License Header</label>
-        <div class="col-sm-3">
+        <div class="col-sm-6">
           {{ form.licenseHeader }}        
-          <label class="control-label" id="licenseheaderlabel" ></label>
         </div>
       </div>  
     </div>
@@ -78,9 +71,8 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Text</label>
-        <div class="col-sm-3">
+        <div class="col-sm-6">
           {{ form.text }}          
-          <label class="control-label" id="noteslabel" ></label>
         </div>
       </div>  
     </div>
@@ -88,13 +80,11 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Email address</label>
-        <div class="col-sm-3">
+        <div class="col-sm-4">
           {{ form.userEmail }}          
-          <label class="control-label" id="emaillabel" ></label>
         </div>
       </div>  
     </div>
-
     <hr>
 		<input type="hidden" id="cfileformat" name="submit" value="">
 		<button class=" btn btn-md btn-info" id="submitbutton" type="submit" >Submit</button>
@@ -108,15 +98,17 @@
 <script type="text/javascript">
 $(document).ready(function () {
     $("#submitnewlicensepage").addClass('linkactive');
+    $('input').addClass('form-control');
+    $('select').addClass('form-control');
+    $('textarea').addClass('form-control');
     });
 </script>
 <script type="text/javascript">
-$(document).on('click', '.roundedButton', function(){
-    var html = '<div><input type="text" id="sourceUrl" placeholder="" name = "sourceurl"></div>';
-  $(this).parent().append(html);
+$(document).on('click', '#addSourceUrl', function(){
+    var html = '<div class="col-sm-12 btn-group" style="padding:6px 0; margin-top:2"><input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceurl"></div>';
+  $('#addSourceUrl').before(html);
 });
 </script>
-
 
 <script type="text/javascript">
 function checkform() {
@@ -141,7 +133,6 @@ function checkform() {
   }
 }
 </script>
-
 
 <script type="text/javascript">
   $('#newlicense').on('submit', function(event){
