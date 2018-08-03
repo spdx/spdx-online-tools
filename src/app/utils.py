@@ -124,8 +124,16 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         "content":fileContent,
         "branch":branchName,
     }
+    """ Check if file already exists """
+    file_url = url + "repos/spdx/license-list-XML/contents/src/%s"%(fileName)
+    response = requests.get(file_url, headers=headers)
+    if response.status_code == 200:
+        """ Creating Commit by updating the file """
+        data = json.loads(response.text)
+        file_sha = data["sha"]
+        body["sha"] = file_sha
     response = requests.put(commit_url, headers=headers, data=json.dumps(body))
-    if response.status_code != 201:
+    if not (response.status_code==201 or response.status_code==200):
         logger.error("[Pull Request] Error occured while making commit, for %s user. "%(username)+response.text)
         return {
             "type":"error",

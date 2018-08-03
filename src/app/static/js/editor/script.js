@@ -495,6 +495,7 @@ function makePR(){
     else{
         xmlText = latestXmlText
     }
+    xmlText = beautify(xmlText);
     var form = new FormData($("#githubPRForm")[0]);
     form.append("branchName", $("#branchName").val());
     form.append("updateUpstream", $("#updateUpstream").is(":checked"));

@@ -863,8 +863,7 @@ def autocompleteModel(request):
 
 def xml_edit(request, page_id):
     """View for editing the XML file
-    returns editor.html
-    """
+    returns editor.html """
     context_dict = {}
     if (page_id in request.session):
         if request.user.is_authenticated():
