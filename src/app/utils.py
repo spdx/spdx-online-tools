@@ -33,7 +33,8 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     fork_url = url+"repos/spdx/license-list-XML/forks"
     response = requests.get(fork_url, headers=headers)
     data = json.loads(response.text)
-    if(len(data)==0):
+    forks = [fork["owner"]["login"] for fork in data]
+    if not username in forks:
         """ If user has not forked the repo """
         response = requests.post(fork_url, headers=headers)
         if response.status_code != 202:
