@@ -24,6 +24,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 import jpype
 from traceback import format_exc
@@ -34,12 +35,15 @@ import xml.etree.cElementTree as ET
 import datetime
 from wsgiref.util import FileWrapper
 import os
+from requests import post
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 
 from .forms import LicenseRequestForm
 from .models import LicenseRequest
+
+from utils.github_utils import getGithubToken
 
 def index(request):
     """ View for index
@@ -63,6 +67,7 @@ def submitNewLicense(request):
     """ View for submit new licenses
     returns submit_new_license.html template
     """
+    context_dict={}
     if request.method == 'POST':
         form = LicenseRequestForm(request.POST, auto_id='%s')
         if form.is_valid() and request.is_ajax():
@@ -80,10 +85,13 @@ def submitNewLicense(request):
             licenseRequest = LicenseRequest(fullname=licenseName,shortIdentifier=licenseIdentifier,
                 submissionDatetime=now, userEmail=userEmail, xml=xml)
             licenseRequest.save()
-            form = LicenseRequestForm()
+            statusCode = createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi)
+            data = {'statusCode' : str(statusCode)}
+            return JsonResponse(data)
+
     else:
         form = LicenseRequestForm(auto_id='%s')
-    context_dict={'form': form}
+    context_dict['form'] = form
     return render(request, 
         'app/submit_new_license.html', context_dict
         )
@@ -102,6 +110,24 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     ET.SubElement(license, "text").text = licenseText
     xmlString = ET.tostring(root, encoding='utf8', method='xml')
     return xmlString
+
+def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi):
+    """ View for creating an GitbHub issue
+    when submitting a new license request
+    """
+    myToken = getGithubToken()
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** URL: '
+    for url in licenseSourceUrls:
+        body += url
+        body += '\n'
+    body += '**4.** OSI Approval: ' + licenseOsi
+    title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
+    payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
+    headers = {'Authorization': 'token ' + myToken}
+    url = 'https://api.github.com/repos/spdx/license-list-XML/issues'
+    r = post(url, data=dumps(payload), headers=headers)
+    return r.status_code
+
 
 def licenseRequests(request):
     """ View for license requests
