@@ -576,8 +576,23 @@ class LicenseRequestsViewsTestCase(TestCase):
 
 class SubmitNewLicenseViewsTestCase(TestCase):
 
+    def initialise(self):
+        self.fullname = "BSD Zero Clause License"
+        self.shortIdentifier = "0BSD"
+        self.sourceUrl = "http://landley.net/toybox/license.html"
+        self.urls = [self.sourceUrl]
+        self.osiApproved = "no"
+        self.notes = ""
+        self.licenseHeader = ""
+        self.text ="<text> <copyrightText> <p>Copyright (C) 2006 by Rob Landley &lt;rob@landley.net&gt;</p> </copyrightText> <p>Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.</p> <p>THE SOFTWARE IS PROVIDED 'AS IS' AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</p> </text>"
+        self.userEmail = "test@mail.com"
+        self.xml = "<?xml version='1.0' encoding='UTF-8'?> <SPDXLicenseCollection xmlns='http://www.spdx.org/license'> <license isOsiApproved='false' licenseId='0BSD' name='BSD Zero Clause License'> <crossRefs> <crossRef>http://landley.net/toybox/license.html</crossRef> </crossRefs> <text> <copyrightText> <p>Copyright (C) 2006 by Rob Landley &lt;rob@landley.net&gt;</p> </copyrightText> <p>Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.</p> <p>THE SOFTWARE IS PROVIDED 'AS IS' AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</p> </text> </license> </SPDXLicenseCollection>"
+        self.data = {"fullname": self.fullname, "shortIdentifier": self.shortIdentifier, 
+                    "sourceUrl": self.sourceUrl,'osiApproved': self.osiApproved, 'notes': self.notes,
+                    "licenseHeader": self.licenseHeader, "text": self.text, "userEmail": self.userEmail }
+
     def test_submit_new_license(self):
-        """GET Request for submit new licenses"""
+        """GET Request for submit a new license"""
         resp = self.client.get(reverse("submit-new-license"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.redirect_chain,[])
@@ -593,3 +608,17 @@ class SubmitNewLicenseViewsTestCase(TestCase):
             self.assertIn("licenseHeader",resp.context.form)
             self.assertIn("text",resp.context.form)
             self.assertIn("userEmail",resp.context.form)
+
+    def test_post_submit(self):
+        """POST Request for submit a new license"""
+        self.initialise()
+        resp = self.client.post(reverse("register"), self.data, follow=True, secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertNotEqual(resp.redirect_chain,[])
+
+    def test_generate_xml(self):
+        """View for generating an xml from license submittal form fields"""
+        self.initialise()
+        xml = generateLicenseXml(self.osiApproved, self.shortIdentifier, self.fullname, self.urls, 
+                                self.licenseHeader, self.notes, self.text)
+        self.assertEqual(self.xml, xml)
