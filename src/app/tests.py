@@ -9,6 +9,7 @@ from django.urls import reverse
 import jpype
 
 from app.models import UserID
+from app.models import LicenseRequest
 
 
 class IndexViewsTestCase(TestCase):
@@ -562,3 +563,33 @@ class CheckUserNameTestCase(TestCase):
         self.initialise()
         resp3 = self.client.post(reverse("check-username"),{"username":"checktestuser"},follow=True,secure=True)
         self.assertEqual(resp3.status_code,404)
+
+class LicenseRequestsViewsTestCase(TestCase):
+
+    def test_license_requests(self):
+        """GET Request for license requests list"""
+        resp = self.client.get(reverse("license-requests"),follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertIn("app/license_requests.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"license_requests")
+
+class SubmitNewLicenseViewsTestCase(TestCase):
+
+    def test_submit_new_license(self):
+        """GET Request for submit new licenses"""
+        resp = self.client.get(reverse("submit-new-license"),follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertIn("app/submit_new_license.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"license_requests")
+        self.assertIn("form",resp.context)
+        if "form" in resp.context:
+            self.assertIn("fullname",resp.context.form)
+            self.assertIn("shortIdentifier",resp.context.form)
+            self.assertIn("sourceUrl",resp.context.form)
+            self.assertIn("osiApproved",resp.context.form)
+            self.assertIn("notes",resp.context.form)
+            self.assertIn("licenseHeader",resp.context.form)
+            self.assertIn("text",resp.context.form)
+            self.assertIn("userEmail",resp.context.form)
