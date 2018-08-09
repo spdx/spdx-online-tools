@@ -1,4 +1,21 @@
-/* Object for autosuggestions based on SPDX license schema*/
+/**
+ * Copyright (c) 2018 Tushar Mittal
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Object for autosuggestions while typing, based on SPDX license schema.
+ * children: The tags which can be inside that tag
+ * attrs: The attributes of that tag
+ */
 var xml_schema = {
     "!top": ["SPDXLicenseCollection"],
     SPDXLicenseCollection: {
@@ -67,6 +84,13 @@ var xml_schema = {
         children: ["p", "bullet", "br"]
     }
 }
+
+/**
+ * editor: object of main text editor, global variable
+ * splitTextEditor: object of text editor in split view, global variable
+ * initialXmlText: contains initial xml text, global variable
+ * latestXmlText: contains updated and valid xml text , global variable
+ */
 var editor = "", splitTextEditor = "", initialXmlText = "", latestXmlText = '';
 $(document).ready(function(){
     /* initialize bootstrap tooltip */
@@ -74,6 +98,7 @@ $(document).ready(function(){
     /* initialize the editor */
     var fontSize = 14, fullscreen = false;
     $(".starter-template").css('text-align','');
+    /* main text editor object */
     editor = CodeMirror.fromTextArea($(".codemirror-textarea")[0], {
         lineNumbers: true,
         mode: "xml",
@@ -102,6 +127,7 @@ $(document).ready(function(){
         autoCloseTags: true,
         foldGutter: true,
     });
+    /* object of text editor in split view */
     splitTextEditor = CodeMirror.fromTextArea($(".codemirror-textarea")[1], {
         lineNumbers: true,
         mode: "xml",
@@ -135,19 +161,23 @@ $(document).ready(function(){
     splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 550);
     initialXmlText = beautify(editor.getValue().trim());
     latestXmlText = beautify(editor.getValue().trim());
+
     /* Decrease editor font size */
     $("#dec-fontsize").click(function(){
         fontSize -= 1;
         $(".CodeMirror").css("font-size",fontSize+'px');
         editor.refresh();
     })
+
     /* Increase editor font size */
     $("#inc-fontsize").click(function(){
         fontSize += 1;
         $(".CodeMirror").css("font-size",fontSize+'px');
         editor.refresh();
     })
-    /* Show autocomplete hints */
+
+    /* Show autocomplete hints while typing based
+       on the XML Schema object */
     function completeAfter(cm, pred) {
         var cur = cm.getCursor();
         if (!pred || pred()) setTimeout(function() {
@@ -170,6 +200,7 @@ $(document).ready(function(){
           return inner.tagName;
         });
     }
+
     /* Enter and Exit fullscreen */
     $("#fullscreen").click(fullScreen);
     function fullScreen(){
@@ -183,7 +214,9 @@ $(document).ready(function(){
         fullscreen = false;
         editor.focus();
     }
-    /* make editor responsive */
+
+    /* make editor responsive, whenever browser is resized,
+       set the editor width to 90% of window width */
     $(window).resize(function(){
         splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 500);
         editor.setSize(($(window).width)*(0.9), 500);
@@ -193,26 +226,35 @@ $(document).ready(function(){
         splitTextEditor.refresh();
         editor.refresh();
     })
+
     /* beautify XML */
     $("#beautify").on("click",function(){
         var xmlText = editor.getValue().trim();
         editor.setValue(beautify(xmlText));
         editor.focus();
     })
+
     /* update split tree editor when split text editor loses focus */
     splitTextEditor.on('blur', function(){
         convertTextToTree(splitTextEditor, 'splitTreeView');
     })
 
+    /* Syncs the XML text in all 3 views */
     $("#tabTextEditor").click(function(){
+        /* activeTab: currently active tab, from which the user is switching to text editor view */
         var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
         if(activeTab=='tabTreeEditor'){
+            /* check for open textboxes */
             if(checkPendingChanges("#treeView")){
+                /* switch to text editor view */
                 $('#tabSplitView, #tabTreeEditor').removeAttr("data-toggle");
                 $(this).attr("data-toggle","tab");
+                /* update the text editor with content of tree editor */
                 var temp = updateTextEditor(editor, 'treeView');
+                /* if xml is invalid, use the latestXmlText variable */
                 if(temp===0) editor.setValue(latestXmlText);
                 else latestXmlText = temp;
+                /* refresh and focus on the editor */
                 setTimeout(function(){
                     editor.refresh();
                     editor.focus();
@@ -220,11 +262,15 @@ $(document).ready(function(){
             }
         }
         else if(activeTab=='tabSplitView'){
+            /* check for open textboxes */
             if(checkPendingChanges("#splitTreeView")){
+                /* switch to text editor view */
                 $('#tabSplitView, #tabTreeEditor').removeAttr("data-toggle");
                 $(this).attr("data-toggle","tab");
+                /* update the text editor with the value of split view editor */
                 latestXmlText = beautify(splitTextEditor.getValue().trim());
                 editor.setValue(latestXmlText);
+                /* refresh and focus on the editor */
                 setTimeout(function(){
                     editor.refresh();
                     editor.focus();
@@ -233,17 +279,23 @@ $(document).ready(function(){
         }
     })
     $("#tabTreeEditor").click(function(){
+        /* activeTab: currently active tab, from which the user is switching to tree editor view */
         var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
         if(activeTab=='tabTextEditor'){
+            /* switch to tree editor view */
             $('#tabSplitView, #tabTextEditor').removeAttr("data-toggle");
             $(this).attr("data-toggle","tab");
+            /* convert the xml text to tree and update latestXmlText */
             convertTextToTree(editor, 'treeView')
             latestXmlText = beautify(editor.getValue().trim());
         }
         else if(activeTab=='tabSplitView'){
+            /* check for any open textboxes */
             if(checkPendingChanges("#splitTreeView")){
+                /* switch to tree editor view */
                 $('#tabSplitView, #tabTextEditor').removeAttr("data-toggle");
                 $(this).attr("data-toggle","tab");
+                /* convert the xml text in split editor to tree and update latestXmlText */
                 convertTextToTree(splitTextEditor, 'treeView')
                 latestXmlText = beautify(splitTextEditor.getValue().trim());
             }
@@ -252,12 +304,17 @@ $(document).ready(function(){
     $("#tabSplitView").click(function(){
         var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
         if(activeTab=='tabTreeEditor'){
+            /* check for any open textboxes */
             if(checkPendingChanges("#treeView")){
+                /* switch to split view */
                 $('#tabTreeEditor, #tabTextEditor').removeAttr("data-toggle");
                 $(this).attr("data-toggle","tab");
+                /* update split text editor with content of tree editor */
                 var temp = updateTextEditor(splitTextEditor, 'treeView');
+                /* if xml is invalid, use the latestXmlText variable */
                 if(temp===0) splitTextEditor.setValue(latestXmlText);
                 else latestXmlText = temp;
+                /* use the text in split text editor to updated split tree editor */
                 convertTextToTree(splitTextEditor, 'splitTreeView');
                 setTimeout(function(){
                     splitTextEditor.refresh();
@@ -266,10 +323,13 @@ $(document).ready(function(){
             }
         }
         else if(activeTab=='tabTextEditor'){
+            /* switch to text editor view */
             $('#tabTreeEditor, #tabTextEditor').removeAttr("data-toggle");
             $(this).attr("data-toggle","tab");
+            /* update the split text editor with the value of text editor */
             latestXmlText = beautify(editor.getValue().trim());
             splitTextEditor.setValue(latestXmlText);
+            /* use the text in split text editor to updated split tree editor */
             convertTextToTree(splitTextEditor, 'splitTreeView');
             setTimeout(function(){
                 splitTextEditor.refresh();
@@ -278,9 +338,11 @@ $(document).ready(function(){
         }
     })
 
+    /* calls generate_diff when generate diff button is clicked */
     $("#generateDiff").click(function(event){
         event.preventDefault();
         $("#messages").html("");
+        /* find the view user is working on and extract the text from that editor */
         var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
         if(activeTab=="tabTextEditor"){
             text2 = editor.getValue().trim();
@@ -297,17 +359,19 @@ $(document).ready(function(){
         else{
             text2 = latestXmlText
         }
-        /* removing extra sapces from text */
+        /* removing extra sapces from xml text */
         initialXmlText = initialXmlText.replace(/\s{2,}/g,' ').replace(/\n/g,' ');
         text2 = text2.replace(/\s{2,}/g,' ').replace(/\n/g,' ');
         generate_diff(initialXmlText.replace(/>\s{0,}</g,"><").replace(/\s{0,}</g,"~::~<").split('~::~'),text2.replace(/>\s{0,}</g,"><").replace(/\s{0,}</g,"~::~<").split('~::~'));
         $("div.tooltip").remove();
     })
 
+    /* calls the validate_xml view using ajax and displays result */
     $("#validateXML").click(function(event){
         event.preventDefault();
         $("#validateXML").text("Validating...");
         $("#validateXML").prop('disabled', true);
+        /* find the view user is working on and extract the text from that editor */
         var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
         if(activeTab=="tabTextEditor"){
             xmlText = editor.getValue().trim();
@@ -324,6 +388,7 @@ $(document).ready(function(){
         else{
             xmlText = latestXmlText
         }
+        /* call ajax with xml text */
         var form = new FormData($("#form")[0]);
         form.append("xmlText", xmlText);
         $.ajax({
@@ -371,12 +436,14 @@ $(document).ready(function(){
         $(".modal-dialog").removeClass("diff-modal-dialog");
         $("#modal-title").html("SPDX License XML Editor");
         $('button.close').remove();
+        /* if user not authenticated using GitHub, display modal with login button */
         if(githubLogin == "False"){
             $("#modal-header").removeClass("red-modal green-modal");
             $("#modal-header").addClass("yellow-modal");
             $(".modal-footer").html('<button class="btn btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><button class="btn btn-success" id="github_auth_begin"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
             $("#modal-body").html("You will now be redirected to the GitHub website to authenticate with the SPDX GitHub App. Please allow all the requested permissions for the app to work properly. After coming back to this page please click the Submit Changes button again to create a Pull Request.");
         }
+        /* if user logged in using GitHub, display the pull request form */
         else if(githubLogin == "True"){
             $("#modal-header").removeClass("red-modal yellow-modal");
             $("#modal-header").addClass("green-modal");
@@ -397,8 +464,10 @@ $(document).ready(function(){
     })
 });
 
+/* if user submits the pull request form */
 $(document).on('click','button#prOk',function(event){
     event.preventDefault();
+    /* call the makePR function, display error message if invalid value in form */
     var response = makePR();
     if(response!=true){
         $('<div class="alert alert-danger" style="font-size:15px;"><strong>Error! </strong>'+response+'</div>').insertBefore("#githubPRForm");
@@ -408,7 +477,7 @@ $(document).on('click','button#prOk',function(event){
     }
 });
 
-/* update XML in session variables and login with GitHub */
+/* update XML text in session variables and login with GitHub */
 $(document).on('click','button#github_auth_begin',function(event){
     event.preventDefault();
     var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
@@ -432,9 +501,12 @@ $(document).on('click','button#github_auth_begin',function(event){
     githubLoginLink += "?next=" + page_url;
     page_id = page_url.split("/");
     page_id = page_id[page_id.length-2];
+    license_name = $("#licenseName").text();
+    /* call update_session_variable view using ajax with latest xml text */
     var form = new FormData($("#form")[0]);
     form.append("xml_text",xmlText);
     form.append("page_id",page_id);
+    form.append("license_name", license_name);
     $.ajax({
         type: "POST",
         enctype: 'multipart/form-data',
@@ -446,6 +518,7 @@ $(document).on('click','button#github_auth_begin',function(event){
         timeout: 600000,
         data: form,
         async: false,
+        /* if session variable updated successfully, redirect to GitHub login page */
         success: function (data) {
             window.location = githubLoginLink;
         },
@@ -455,6 +528,7 @@ $(document).on('click','button#github_auth_begin',function(event){
     });
 });
 
+/* validates values in pull request form */
 function checkPRForm(){
     var branchName = $("#branchName").val();
     if(branchName=="" || branchName.search(/^[\./]|\.\.|@{|[\/\.]$|^@$|[~^:\x00-\x20\x7F\s?*[\\]/g)>-1){
@@ -471,14 +545,17 @@ function checkPRForm(){
     }
     return true;
 }
-/* checks pr form and sends ajax request to pr view */
+/* sends ajax request to pull_request view */
 function makePR(){
+    /* if invalid values in form return */
     var check = checkPRForm();
     if(check!=true) return check;
+    /* hide form and display loding animation */
     $("#prOk, #prCancel").html("Processing...");
     $("#prOk, #prCancel").prop('disabled', true);
     $("#githubPRForm").css("display","none");
     $(".ajax-loader").css({"display":"block"});
+    /* find the view user is working on and extract the text from that editor */
     var activeTab = $(".nav-tabs").find("li.active").find("a").attr("id");
     if(activeTab=="tabTextEditor"){
         xmlText = editor.getValue().trim();
@@ -495,6 +572,7 @@ function makePR(){
     else{
         xmlText = latestXmlText
     }
+    /* send ajax request with form data */
     xmlText = beautify(xmlText);
     var form = new FormData($("#githubPRForm")[0]);
     form.append("branchName", $("#branchName").val());
@@ -564,6 +642,7 @@ function generate_diff(base, newtxt){
     }))
     diff.children().remove("thead");
     diff.children().children().remove("th");
+    /* display result in modal */
     displayModal("","success");
     $("#modal-body").html(diff);
     $("#modal-title").text("Diff between initial and current XML");
@@ -707,6 +786,7 @@ $("#download").click(function(e){
     e.preventDefault();
     saveTextAsFile();
 });
+
 /* alert before leaving the page */
 window.onbeforeunload = function (e) {
     return "Are you sure you want to leave? All the changes will be lost. You can either download the XML document or submit changes for review.";

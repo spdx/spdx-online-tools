@@ -33,7 +33,8 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     fork_url = url+"repos/spdx/license-list-XML/forks"
     response = requests.get(fork_url, headers=headers)
     data = json.loads(response.text)
-    if(len(data)==0):
+    forks = [fork["owner"]["login"] for fork in data]
+    if not username in forks:
         """ If user has not forked the repo """
         response = requests.post(fork_url, headers=headers)
         if response.status_code != 202:
@@ -183,10 +184,10 @@ def check_license_name(name):
     for license in data["licenses"]:
         if(license["licenseId"] == name):
             url+=name
-            return url
+            return [url, name]
         elif(license["name"] == name):
             url+=license["licenseId"]
-            return url
+            return [url, license["licenseId"]]
 
     """ Check if an exception name exists """
     exceptions_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/exceptions.json"
@@ -196,9 +197,9 @@ def check_license_name(name):
     for exception in data["exceptions"]:
         if(exception["licenseExceptionId"] == name):
             url += name
-            return url
+            return [url, name]
         elif(exception["name"] == name):
             url += exception["licenseExceptionId"]
-            return url
+            return [url, exception["licenseExceptionId"]]
 
     return False
