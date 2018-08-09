@@ -714,7 +714,7 @@ def xml_upload(request):
                     """ If user provides XML text using textarea """
                     if len(request.POST["xmltext"])>0 :
                         page_id = request.POST['page_id']
-                        request.session[page_id] = request.POST["xmltext"]
+                        request.session[page_id] = [request.POST["xmltext"], ""]
                         if(request.is_ajax()):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                             response = dumps(ajaxdict)
@@ -748,7 +748,7 @@ def xml_upload(request):
                                 )                        
 
                     url = utils.check_license_name(name)
-                    if url is False:
+                    if url[0] is False:
                         if (request.is_ajax()):
                             ajaxdict["type"] = "error"
                             ajaxdict["data"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
@@ -758,11 +758,11 @@ def xml_upload(request):
                         return render(request, 
                             'app/xml_upload.html',context_dict,status=404
                             )
-                    url += ".xml"
-                    response = requests.get(url)
+                    url[0] += ".xml"
+                    response = requests.get(url[0])
                     if(response.status_code == 200):
                         page_id = request.POST['page_id']
-                        request.session[page_id] = [response.text, name]
+                        request.session[page_id] = [response.text, url[1]]
                         if (request.is_ajax()):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                             response = dumps(ajaxdict)
@@ -804,7 +804,7 @@ def xml_upload(request):
                         uploaded_file_url = fs.url(filename)
                         page_id = request.POST['page_id']
                         with open(str(settings.APP_DIR+uploaded_file_url), 'r') as f:
-                            request.session[page_id] = f.read()
+                            request.session[page_id] = [f.read(), ""]
                         if (request.is_ajax()):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                             response = dumps(ajaxdict)
@@ -828,7 +828,7 @@ def xml_upload(request):
                     """ If the user starts with new XML """
                     xml_text = """<?xml version="1.0" encoding="UTF-8"?>\n<SPDXLicenseCollection xmlns="http://www.spdx.org/license">\n<license></license>\n</SPDXLicenseCollection>"""
                     page_id = request.POST['page_id']
-                    request.session[page_id] = xml_text
+                    request.session[page_id] = [xml_text, ""]
                     ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                     response = dumps(ajaxdict)
                     return HttpResponse(response, status=200)
@@ -873,13 +873,8 @@ def xml_edit(request, page_id):
             except UserSocialAuth.DoesNotExist:
                 github_login = None
             context_dict["github_login"] = github_login
-        if type(request.session[page_id]) == list:
-            """ XML input using license name"""
-            context_dict["xml_text"] = request.session[page_id][0]    
-            context_dict["license_name"] = request.session[page_id][1]
-        else:
-            """ Other XML input methods """
-            context_dict["xml_text"] = request.session[page_id]
+        context_dict["xml_text"] = request.session[page_id][0]
+        context_dict["license_name"] = request.session[page_id][1]
         return render(request, 
             'app/editor.html',context_dict,status=200
             )
@@ -890,7 +885,7 @@ def update_session_variables(request):
     """ View for updating the XML text in the session variable """
     if request.method == "POST" and request.is_ajax():
         page_id = request.POST["page_id"]
-        request.session[page_id] = request.POST["xml_text"]
+        request.session[page_id] = [request.POST["xml_text"], request.POST["license_name"]]
         ajaxdict={}
         ajaxdict["type"] = "success"
         response = dumps(ajaxdict)

@@ -501,10 +501,12 @@ $(document).on('click','button#github_auth_begin',function(event){
     githubLoginLink += "?next=" + page_url;
     page_id = page_url.split("/");
     page_id = page_id[page_id.length-2];
+    license_name = $("#licenseName").text();
     /* call update_session_variable view using ajax with latest xml text */
     var form = new FormData($("#form")[0]);
     form.append("xml_text",xmlText);
     form.append("page_id",page_id);
+    form.append("license_name", license_name);
     $.ajax({
         type: "POST",
         enctype: 'multipart/form-data',

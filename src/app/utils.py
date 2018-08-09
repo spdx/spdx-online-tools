@@ -184,10 +184,10 @@ def check_license_name(name):
     for license in data["licenses"]:
         if(license["licenseId"] == name):
             url+=name
-            return url
+            return [url, name]
         elif(license["name"] == name):
             url+=license["licenseId"]
-            return url
+            return [url, license["licenseId"]]
 
     """ Check if an exception name exists """
     exceptions_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/exceptions.json"
@@ -197,9 +197,9 @@ def check_license_name(name):
     for exception in data["exceptions"]:
         if(exception["licenseExceptionId"] == name):
             url += name
-            return url
+            return [url, name]
         elif(exception["name"] == name):
             url += exception["licenseExceptionId"]
-            return url
+            return [url, exception["licenseExceptionId"]]
 
     return False
