@@ -289,30 +289,40 @@ function convertTextToTree(textEditor, treeEditor){
  * tree: the jQuery xml object
  */
 function traverse(node,tree) {
-    var children=$(tree).children();
+    var children=tree.childNodes;
     /* add node and its attributes */
-    node.append('<span class="nodeName">'+tree.nodeName+'</span>');
-    if(tree.attributes){
-        $.each(tree.attributes, function(i, attrib){
-            node.append('<span class="attributeName">'+attrib.name+'</span><span class="equal">=</span><span class="attributeValue">'+attrib.value+"</span>");
-        })
+    if(tree.nodeType==1){
+        node.append('<span class="nodeName">'+tree.nodeName+'</span>');
+        /* add node attributes */
+        if(tree.attributes){
+            $.each(tree.attributes, function(i, attrib){
+                node.append('<span class="attributeName">'+attrib.name+'</span><span class="equal">=</span><span class="attributeValue">'+attrib.value+"</span>");
+            })
+        }
+        /* add 'new attribute' and 'delete node' buttons */
+        node.append('<img class="addAttribute" src="/static/images/addAttribute.png" title="Add New Attribute" data-placement="top" data-toggle="tooltip"><img class="deleteNode" src="/static/images/removeNode.png" title="Delete Node" data-placement="top" data-toggle="tooltip">')
     }
-    /* add 'new attribute' and 'delete node' buttons */
-    node.append('<img class="addAttribute" src="/static/images/addAttribute.png" title="Add New Attribute" data-placement="top" data-toggle="tooltip"><img class="deleteNode" src="/static/images/removeNode.png" title="Delete Node" data-placement="top" data-toggle="tooltip">')
     /* if node has children call traverse for every child */
-    if (children.length){
+    if (tree.childElementCount>0){
         var ul=$("<ul>").appendTo(node);
-        /* extract node text and add to the editor */
+        /* extract node text */
         var nodeText = $(tree).clone().children().remove().end().text();
         if(nodeText==""){
             $('<li class="emptyText">(No text value. Click to edit.)</li><li class="addChild last">Add Child Node</li>').appendTo(ul);
         }
-        else{
-            $('<ul><li class="nodeText">'+ nodeText +'</li><li class="addChild last">Add Child Node</li></ul>').appendTo(ul);
-        }
-        children.each(function(){
-            var li=$('<li>').appendTo(ul);
-            traverse(li,this);
+        children.forEach(function(child){
+            /* if node contains only text */
+            if(child.nodeType==3){
+                /* check if the text contain only spaces and newline characters */
+                if(child.nodeValue.search(/^(\s*|\n*)*$/)==-1){
+                    $('<ul><li class="nodeText">'+ child.nodeValue +'</li></ul>').appendTo(ul);
+                }
+            }
+            /* if node contains a tag */
+            else if(child.nodeType==1){
+                var li=$('<li>').appendTo(ul);
+                traverse(li,child);
+            }
         })
     }
     /* if no child then only add node text */
@@ -362,7 +372,8 @@ function convertTreeToText(tree){
         $.each(children, function(){
             /* append node name */
             if(this.nodeName=="SPAN" && this.attributes['class'] && this.attributes['class'].nodeValue=="nodeName"){
-                new_xml+= "<"+this.innerText;
+                if(this.innerText=="br") new_xml += "<br/";
+                else new_xml+= "<"+this.innerText;
                 /* store node names in array to use for closing tags */
                 arr.push(this.innerText);
             }
@@ -396,7 +407,8 @@ function convertTreeToText(tree){
             if($(tree).prop('firstChild').className=='nodeText'){
                 new_xml += $(tree).prop('firstChild').innerText;
             }
-            new_xml += "</"+arr.pop()+">";
+            if(arr[arr.length-1]=="br") arr.pop();
+            else new_xml += "</"+arr.pop()+">";
         }
     }
 }
