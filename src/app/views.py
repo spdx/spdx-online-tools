@@ -78,6 +78,11 @@ def submitNewLicense(request):
             licenseHeader = form.cleaned_data['licenseHeader']
             licenseNotes = form.cleaned_data['notes']
             licenseText = form.cleaned_data['text']
+            if '\n' in licenseText:
+                licenseText = '<![CDATA[' + licenseText
+                licenseText = licenseText + ']]>'
+                licenseText = licenseText.replace('\r', '')
+                licenseText = licenseText.replace('\n', '<br>')
             userEmail = form.cleaned_data['userEmail']
             xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                 licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
@@ -218,8 +223,14 @@ def parseXmlString(xmlString):
         if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')) > 0):
             textElem = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')[0]
             ET.register_namespace('', "http://www.spdx.org/license")
-            textStr = ET.tostring(textElem)
-            data['text'] = textStr
+            textStr = ET.tostring(textElem).strip()
+            if(len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>'):
+                textStr = textStr[42:]
+                textStr = textStr[:-7].strip().replace('&lt;', '<').replace('&gt;', '>').strip()
+            if(len(textStr) >= 12 and textStr[0:9] == '<![CDATA[' and textStr[-3:] == ']]>'):
+                textStr = textStr[9:]
+                textStr = textStr[:-3]
+            data['text'] = textStr.strip()
         else:
             data['text'] = ''
     except Exception as e:
