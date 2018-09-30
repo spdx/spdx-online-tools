@@ -24,16 +24,28 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 import jpype
 from traceback import format_exc
 from json import dumps
 from time import time
 from urlparse import urljoin
+import xml.etree.cElementTree as ET
+import datetime
+from wsgiref.util import FileWrapper
+import os
+from requests import post
 
 from app.models import UserID
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 
+from .forms import LicenseRequestForm
+from .models import LicenseRequest
+
+from utils.github_utils import getGithubToken
+
+import cgi
 
 def index(request):
     """ View for index
@@ -52,6 +64,188 @@ def about(request):
     return render(request, 
         'app/about.html',context_dict
         )
+
+def submitNewLicense(request):
+    """ View for submit new licenses
+    returns submit_new_license.html template
+    """
+    context_dict={}
+    if request.method == 'POST':
+        form = LicenseRequestForm(request.POST, auto_id='%s')
+        if form.is_valid() and request.is_ajax():
+            licenseName = form.cleaned_data['fullname']
+            licenseIdentifier = form.cleaned_data['shortIdentifier']
+            licenseOsi = form.cleaned_data['osiApproved']
+            licenseSourceUrls = [form.cleaned_data['sourceUrl']]
+            licenseHeader = form.cleaned_data['licenseHeader']
+            licenseNotes = form.cleaned_data['notes']
+            licenseText = form.cleaned_data['text']
+            userEmail = form.cleaned_data['userEmail']
+            xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+            now = datetime.datetime.now()
+            licenseRequest = LicenseRequest(fullname=licenseName,shortIdentifier=licenseIdentifier,
+                submissionDatetime=now, userEmail=userEmail, xml=xml)
+            licenseRequest.save()
+            statusCode = createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi)
+            data = {'statusCode' : str(statusCode)}
+            return JsonResponse(data)
+
+    else:
+        form = LicenseRequestForm(auto_id='%s')
+    context_dict['form'] = form
+    return render(request, 
+        'app/submit_new_license.html', context_dict
+        )
+
+def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
+    """ View for generating a spdx license xml
+    returns the license xml as a string
+    """
+    root = ET.Element("SPDXLicenseCollection", xmlns="http://www.spdx.org/license")
+    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName)
+    crossRefs = ET.SubElement(license, "crossRefs")
+    for sourceUrl in licenseSourceUrls:
+        ET.SubElement(crossRefs, "crossRef").text = sourceUrl
+    ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
+    ET.SubElement(license, "notes").text = licenseNotes
+    licenseTextElement = ET.SubElement(license, "text")
+    licenseLines = licenseText.replace('\r','').split('\n')
+    for licenseLine in licenseLines:
+        ET.SubElement(licenseTextElement, "p").text = licenseLine
+    xmlString = ET.tostring(root, encoding='utf8', method='xml').replace('>','>\n')
+    return xmlString
+
+def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi):
+    """ View for creating an GitbHub issue
+    when submitting a new license request
+    """
+    myToken = getGithubToken()
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** URL: '
+    for url in licenseSourceUrls:
+        body += url
+        body += '\n'
+    body += '**4.** OSI Approval: ' + licenseOsi
+    title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
+    payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
+    headers = {'Authorization': 'token ' + myToken}
+    url = 'https://api.github.com/repos/spdx/license-list-XML/issues'
+    r = post(url, data=dumps(payload), headers=headers)
+    return r.status_code
+
+
+def licenseRequests(request):
+    """ View for license requests
+    returns license_requests.html template
+    """
+    licenserequests = LicenseRequest.objects.all()
+    context_dict={'licenseRequests': licenserequests}
+    return render(request, 
+        'app/license_requests.html',context_dict
+        )
+
+def licenseInformation(request, licenseId):
+    """ View for license request information
+    returns license_information.html template
+    """
+    licenseRequest = LicenseRequest.objects.get(id=licenseId)
+    context_dict = {}
+    licenseInformation = {}
+    licenseInformation['fullname'] = licenseRequest.fullname
+    licenseInformation['shortIdentifier'] = licenseRequest.shortIdentifier
+    licenseInformation['submissionDatetime'] = licenseRequest.submissionDatetime
+    licenseInformation['userEmail'] = licenseRequest.userEmail
+    xmlString = licenseRequest.xml
+    data = parseXmlString(xmlString)
+    licenseInformation['osiApproved'] = data['osiApproved']
+    licenseInformation['crossRefs'] = data['crossRefs']
+    licenseInformation['notes'] = data['notes']
+    licenseInformation['standardLicenseHeader'] = data['standardLicenseHeader']
+    licenseInformation['text'] = data['text']
+    context_dict ={'licenseInformation': licenseInformation}
+    if request.method == 'POST':
+        tempFilename = 'output.xml'
+        xmlFile = open(tempFilename, 'w')
+        xmlFile.write(xmlString)
+        xmlFile.close()
+        xmlFile = open(tempFilename, 'r')
+        myfile = FileWrapper(xmlFile)
+        response = HttpResponse(myfile, content_type='application/xml')
+        response['Content-Disposition'] = 'attachment; filename=' + licenseRequest.shortIdentifier + '.xml'
+        xmlFile.close()
+        os.remove(tempFilename)
+        return response
+
+    return render(request, 
+        'app/license_information.html',context_dict
+        )
+
+def parseXmlString(xmlString):
+    """ View for generating a spdx license xml
+    returns a dictionary with the xmlString license fields values
+    """
+    data = {}
+    tree = ET.ElementTree(ET.fromstring(xmlString))
+    try:
+        root = tree.getroot()
+    except Exception as e:
+        return
+    try:
+        if(len(root) > 0 and 'isOsiApproved' in root[0].attrib):
+            data['osiApproved'] = root[0].attrib['isOsiApproved']
+        else:
+            data['osiApproved'] = '-'
+    except Exception as e:
+        data['osiApproved'] = '-'
+    data['crossRefs'] = []
+    try:
+        if(len(('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')) > 0):
+            crossRefs = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')[0]
+            for crossRef in crossRefs:
+                data['crossRefs'].append(crossRef.text)
+    except Exception as e:
+        data['crossRefs'] = []
+    try:
+        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')) > 0):
+            data['notes'] = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')[0].text
+        else:
+            data['notes'] = ''
+    except Exception as e:
+        data['notes'] = ''
+    try:
+        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')) > 0):
+            data['standardLicenseHeader'] = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')[0].text
+        else:
+            data['standardLicenseHeader'] = ''
+    except Exception as e:
+        data['standardLicenseHeader'] = ''
+    try:
+        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')) > 0):
+            textElem = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')[0]
+            ET.register_namespace('', "http://www.spdx.org/license")
+            textStr = ET.tostring(textElem).strip()
+            if(len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>'):
+                textStr = textStr[42:]
+                textStr = textStr[:-7].strip().replace('&lt;', '<').replace('&gt;', '>').strip()
+            data['text'] = textStr.strip()
+        else:
+            data['text'] = ''
+    except Exception as e:
+        data['text'] = ''
+    return data
+
+def get_xml():
+    my_xml = ET.Element('foo', attrib={'bar': 'bla'})
+    my_str = ET.tostring(my_xml, 'utf-8', short_empty_elements=False)
+    enc = '<?xml version="1.0" encoding="utf-8"?>'
+    enc = enc + my_str.decode('utf-8')
+    return enc
+
+def download_xml_file(request, licenseId):
+    #licenseRequest = LicenseRequest.objects.get(id=licenseId)
+    response = HttpResponse(get_xml(), content_type="application/xml")
+    response['Content-Disposition'] = 'inline; filename=myfile.xml'
+    return response
 
 def validate(request):
     """ View for validate tool
