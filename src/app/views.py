@@ -45,6 +45,8 @@ from .models import LicenseRequest
 
 from utils.github_utils import getGithubToken
 
+import cgi
+
 def index(request):
     """ View for index
     returns index.html template
@@ -78,11 +80,6 @@ def submitNewLicense(request):
             licenseHeader = form.cleaned_data['licenseHeader']
             licenseNotes = form.cleaned_data['notes']
             licenseText = form.cleaned_data['text']
-            if '\n' in licenseText:
-                licenseText = '<![CDATA[' + licenseText
-                licenseText = licenseText + ']]>'
-                licenseText = licenseText.replace('\r', '')
-                licenseText = licenseText.replace('\n', '<br>')
             userEmail = form.cleaned_data['userEmail']
             xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                 licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
@@ -112,8 +109,11 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
         ET.SubElement(crossRefs, "crossRef").text = sourceUrl
     ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
     ET.SubElement(license, "notes").text = licenseNotes
-    ET.SubElement(license, "text").text = licenseText
-    xmlString = ET.tostring(root, encoding='utf8', method='xml')
+    licenseTextElement = ET.SubElement(license, "text")
+    licenseLines = licenseText.replace('\r','').split('\n')
+    for licenseLine in licenseLines:
+        ET.SubElement(licenseTextElement, "p").text = licenseLine
+    xmlString = ET.tostring(root, encoding='utf8', method='xml').replace('>','>\n')
     return xmlString
 
 def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi):
@@ -227,9 +227,6 @@ def parseXmlString(xmlString):
             if(len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>'):
                 textStr = textStr[42:]
                 textStr = textStr[:-7].strip().replace('&lt;', '<').replace('&gt;', '>').strip()
-            if(len(textStr) >= 12 and textStr[0:9] == '<![CDATA[' and textStr[-3:] == ']]>'):
-                textStr = textStr[9:]
-                textStr = textStr[:-3]
             data['text'] = textStr.strip()
         else:
             data['text'] = ''
