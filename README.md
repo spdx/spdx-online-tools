@@ -45,13 +45,17 @@ Windows users need a Python installation and C++ compiler:
     ```bash
     python manage.py migrate
     ```
-5. Start the application.
+5. (Optional) If you want use xml-editor with licenses/exceptions from [spdx license list](https://github.com/spdx/license-list-data/), download the license name database.
+    ```bash
+    python populate.py
+    ```
+6. Start the application.
     ```bash
     python manage.py runserver
     ```
-6. Open `localhost:8000/` in the browser.
+7. Open `localhost:8000/` in the browser.
 
-7. Register and login to use the tools.
+8. Register and login to use the tools.
     
 ## How to Run Tests
     
