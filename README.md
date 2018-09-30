@@ -47,7 +47,7 @@ Windows users need a Python installation and C++ compiler:
     ```
 5. (Optional) If you want use xml-editor with licenses/exceptions from [spdx license list](https://github.com/spdx/license-list-data/), download the license name database.
     ```bash
-    python populate.py
+    python src/populate.py
     ```
 6. Start the application.
     ```bash
