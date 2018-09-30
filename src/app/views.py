@@ -45,6 +45,8 @@ from .models import LicenseRequest
 
 from utils.github_utils import getGithubToken
 
+import cgi
+
 def index(request):
     """ View for index
     returns index.html template
@@ -107,8 +109,11 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
         ET.SubElement(crossRefs, "crossRef").text = sourceUrl
     ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
     ET.SubElement(license, "notes").text = licenseNotes
-    ET.SubElement(license, "text").text = licenseText
-    xmlString = ET.tostring(root, encoding='utf8', method='xml')
+    licenseTextElement = ET.SubElement(license, "text")
+    licenseLines = licenseText.replace('\r','').split('\n')
+    for licenseLine in licenseLines:
+        ET.SubElement(licenseTextElement, "p").text = licenseLine
+    xmlString = ET.tostring(root, encoding='utf8', method='xml').replace('>','>\n')
     return xmlString
 
 def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi):
@@ -218,8 +223,11 @@ def parseXmlString(xmlString):
         if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')) > 0):
             textElem = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')[0]
             ET.register_namespace('', "http://www.spdx.org/license")
-            textStr = ET.tostring(textElem)
-            data['text'] = textStr
+            textStr = ET.tostring(textElem).strip()
+            if(len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>'):
+                textStr = textStr[42:]
+                textStr = textStr[:-7].strip().replace('&lt;', '<').replace('&gt;', '>').strip()
+            data['text'] = textStr.strip()
         else:
             data['text'] = ''
     except Exception as e:
