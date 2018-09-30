@@ -1,0 +1,63 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load staticfiles %}
+{% block body1 %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css"> 
+
+<div id="messages" class="messages">
+</div>
+<p class ="lead"> {{ error }}</p>
+<div class="panel panel-default">
+<div class="panel-heading"> <p class="lead">License Requests List</p> </div>
+<div class="panel-body">
+    <table id="requests_table" class="display dataTable">
+      <thead>
+        <tr>
+          <th>Fullname</th>
+          <th>Short Identifier</th>
+          <th>Submission Date (UTC)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if licenseRequests %}
+        {% for elem in licenseRequests %}    
+          <tr class='clickableRow' id={{elem.id}}>
+            <td>{{elem.fullname}}</td>
+            <td>{{elem.shortIdentifier}}</td>
+            <td>{{elem.submissionDatetime}}</td>
+          </tr>
+        {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+
+{% include "app/modal.html" %} 
+</div>
+{% endblock %}
+{% block script_block %}
+
+<style>
+    th {text-align: center;} 
+</style>
+
+<script type="text/javascript">
+  $(document).ready(function () {
+      $("#licenserequestspage").addClass('linkactive');
+      });
+</script>
+
+<script type="text/javascript">
+  $(document).ready( function () {
+      $('#requests_table').DataTable();
+});
+</script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.js"></script>
+
+<script type="text/javascript">
+$(".clickableRow").click(function() {
+    var $licenseId = $(this).closest("tr").attr('id');
+    location.href="/app/license_requests/" + $licenseId;
+});
+</script>
+{% endblock %}

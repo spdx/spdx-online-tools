@@ -1,0 +1,229 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load staticfiles %}
+{% block body1 %}
+
+<div id="messages" class="messages">
+</div>
+<p class ="lead"> {{ medialink }}</p>
+<p class ="lead"> {{ error }}</p>
+<div class="panel panel-default">
+<div class="panel-heading"> <p class="lead">Submit a New License to the SPDX Licenses List</p> </div>
+<div class="panel-body">
+<form id="newlicense" enctype="multipart/form-data" class = "form-horizontal" method = "post" action='/submit_new_license/'>
+		{% csrf_token %}
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Full Name</label>
+        <div class="col-sm-4"> 
+          {{ form.fullname }}
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Short Identifier</label>
+        <div class="col-sm-4"> 
+          {{ form.shortIdentifier }}
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Source / URL</label>
+        <div class="col-sm-4">
+          {{ form.sourceUrl }}
+          <span class="help-block" id="addSourceUrl" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add a source</span>
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">  
+      <label class="control-label col-sm-3" >&nbsp;OSI Approved&nbsp;</label>
+        <div class="col-sm-4">
+          {{ form.osiApproved }}
+        </div>
+      </div>
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Notes</label>
+        <div class="col-sm-6">
+          {{ form.notes }}
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Standard License Header</label>
+        <div class="col-sm-6">
+          {{ form.licenseHeader }}        
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Text</label>
+        <div class="col-sm-6">
+          {{ form.text }}          
+        </div>
+      </div>  
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Email address</label>
+        <div class="col-sm-4">
+          {{ form.userEmail }}          
+        </div>
+      </div>  
+    </div>
+    <hr>
+		<input type="hidden" id="cfileformat" name="submit" value="">
+		<button class=" btn btn-md btn-info" id="submitbutton" type="submit" >Submit</button>
+</form>
+</div>
+</div>
+{% include "app/modal.html" %}
+{% endblock %}
+
+{% block script_block %}
+<script type="text/javascript">
+$(document).ready(function () {
+    $("#submitnewlicensepage").addClass('linkactive');
+    $('input').addClass('form-control');
+    $('select').addClass('form-control');
+    $('textarea').addClass('form-control');
+    });
+</script>
+<script type="text/javascript">
+$(document).on('click', '#addSourceUrl', function(){
+    var html = '<div class="col-sm-12 btn-group" style="padding:6px 0; margin-top:2"><input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceurl"></div>';
+  $('#addSourceUrl').before(html);
+});
+</script>
+
+<script type="text/javascript">
+function checkform() {
+  if ($('#fullname').val().trim() === "") {
+    $('#fullname').focus();
+    return ("Please enter the license fullname.");
+  }
+  else if (($('#shortIdentifier').val().trim() == "")){
+    $('#shortidentifier').focus();
+    return("Please enter the identifier.");
+  }
+  else if (($('#osiApproved').val() == "0")){
+    $('#osi_approved').focus();
+    return("Please select if the OSI is approved or not.");
+  }
+  else if (($('#text').val().trim() == "")){
+    $('#cfilename').focus();
+    return("Please enter the license text.");
+  }
+  else {
+    return "1";
+  }
+}
+</script>
+
+<script type="text/javascript">
+  $('#newlicense').on('submit', function(event){
+    event.preventDefault();
+    var check = checkform();
+    if (check=="1"){
+      $("#submitbutton").text("Submitting...");
+      $("#submitbutton").prop('disabled', true);
+      $("#messages").html("");
+      var form = new FormData($("#newlicense")[0]);
+      $.ajax({
+              type: "POST",
+              enctype: 'multipart/form-data',
+              url: "/app/submit_new_license/",
+              processData: false,
+              contentType: false,
+              cache: false,
+              timeout: 600000,
+              data: form,
+              success: function (data) {
+                var githubCode = data.statusCode;
+                if(githubCode == '201'){
+                  var successMessage = "The license request has been successfully submitted.";
+                  $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
+                      setTimeout(function() {
+                        $("#messages").html("");
+                      }, 7000);
+                }
+                else{
+                  var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org with SPDX ID for the license you are submitting";
+                  $("#messages").html('<div class="alert alert-warning alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Warning! </strong>'+ warningMessage +'</div>');
+                      setTimeout(function() {
+                        $("#messages").html("");
+                      }, 7000);
+                }
+                $("#fullname").val("");
+                $("#shortIdentifier").val("");
+                $("#sourceUrl").val("");
+                $("#osiApproved").val(0);
+                $("#notes").val("");
+                $("#licenseHeader").val("");
+                $("#text").val("");
+                $("#userEmail").val("");
+                var sources = $('[id="sourceUrl"]');
+                if(sources.length > 1){
+                  for (var i = 3; i < sources.length + 2; i++) {
+                    $("#addSourceUrl").parent().parent().children(i.toString()).remove();
+                  }
+                }
+                $("#submitbutton").text("Submit");
+                $("#submitbutton").prop('disabled', false);
+              },
+              error: function (e) {
+                  console.log("ERROR : ", e);
+                  $("#modal-header").removeClass("green-modal");
+                  try {
+                    var obj = JSON.parse(e.responseText);
+                    if (obj.type=="warning"){
+                      $("#modal-header").removeClass("red-modal");
+                      $("#modal-header").addClass("yellow-modal");
+                      $("#modal-title").html("Warning!");
+                    }
+                  else if (obj.type=="error"){
+                      $("#modal-header").removeClass("yellow-modal");
+                      $("#modal-header").addClass("red-modal");
+                      $("#modal-title").html("Error!");
+                    }
+                  $("#modal-body").text(obj.data);
+                  }
+                  catch (e){
+                    $("#modal-header").removeClass("yellow-modal");
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Error!");
+                    $("#modal-body").text("The application could not be connected. Please try later.");
+                  }
+                  $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true, 
+                          show: true
+                  });
+                  $("#submitbutton").text("Submit");
+                  $("#submitbutton").prop('disabled', false);
+              }
+          });
+    }
+    else{
+      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+      setTimeout(function() {
+        $("#messages").html("");
+      }, 5000);
+    }
+});
+</script>
+{% endblock %}
