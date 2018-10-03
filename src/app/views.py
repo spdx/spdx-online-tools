@@ -54,7 +54,7 @@ logger = logging.getLogger()
 from .forms import LicenseRequestForm
 from .models import LicenseRequest
 
-from utils.github_utils import getGithubToken
+from app.github_utils import getGithubToken
 import cgi
 
 def index(request):

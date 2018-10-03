@@ -66,10 +66,10 @@ python manage.py test
 ## GitHub Developer Sensitive Data
 The `views.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is not checked into source. Due to that lack of data, the following error could rise when running the app:
 
-> from utils.github_utils import getGithubToken
+> from app.github_utils import getGithubToken
 > ImportError: No module named github_utils
 
-To avoid this error and allow the tool to use the GitHub API, the file `src/app/utils/github_utils.py` should be included into the source. The file should contain the following lines:
+To avoid this error and allow the tool to use the GitHub API, the file `src/app/github_utils.py` should be included into the source. The file should contain the following lines:
 
 ```
 def getGithubToken():	
