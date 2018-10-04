@@ -997,7 +997,7 @@ def xml_upload(request):
                         filename = fs.save(xml_file.name, xml_file)
                         uploaded_file_url = fs.url(filename)
                         page_id = request.POST['page_id']
-                        with open(str(settings.APP_DIR+uploaded_file_url), 'r') as f:
+                        with open(str(fs.location+'/'+filename), 'r') as f:
                             request.session[page_id] = [f.read(), ""]
                         if (request.is_ajax()):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
