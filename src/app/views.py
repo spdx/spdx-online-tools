@@ -36,7 +36,8 @@ import json
 from traceback import format_exc
 from json import dumps, loads
 from time import time
-from urlparse import urljoin
+
+from urllib.parse import urljoin
 import xml.etree.cElementTree as ET
 import datetime
 from wsgiref.util import FileWrapper
@@ -54,7 +55,7 @@ logger = logging.getLogger()
 from .forms import LicenseRequestForm
 from .models import LicenseRequest
 
-from utils.github_utils import getGithubToken
+from app.github_utils import getGithubToken
 import cgi
 
 def index(request):
@@ -261,7 +262,7 @@ def validate(request):
     """ View for validate tool
     returns validate.html template
     """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
@@ -320,7 +321,7 @@ def validate(request):
                     return render(request, 
                         'app/validate.html',context_dict,status=404
                         )
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
                 if (request.is_ajax()):
                     ajaxdict=dict()
@@ -373,7 +374,7 @@ def validate(request):
 def validate_xml(request):
     """ View to validate xml text against SPDX License XML Schema,
          used in the xml editor """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             ajaxdict=dict()
@@ -386,8 +387,9 @@ def validate_xml(request):
                     if not os.path.isdir(str(settings.MEDIA_ROOT +"/"+ folder)):
                         os.makedirs(str(settings.MEDIA_ROOT +"/"+ folder))
                     uploaded_file_url = settings.MEDIA_ROOT + '/' + folder + '/' + 'xmlFile.xml'
+                    print(xmlText)
                     with open(uploaded_file_url,'w') as f:
-                        f.write(xmlText)
+                        f.write(str(xmlText))
                     """ Get schema text from GitHub,
                     if it fails use the file in examples folder """
                     try:
@@ -454,7 +456,7 @@ def compare(request):
     """ View for compare tool
     returns compare.html template
     """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
@@ -472,7 +474,7 @@ def compare(request):
             try:
                 if request.FILES["files"]:
                     rfilename = request.POST["rfilename"]+".xlsx"
-                    folder = str(request.user)+"/"+ str(int(time()))
+                    folder = str(request.user) + "/" + str(int(time()))
                     callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
                     erroroccurred = False
                     warningoccurred = False
@@ -482,8 +484,7 @@ def compare(request):
                         return render(request, 
                             'app/compare.html',context_dict, status=404
                             )
-                    """Loop through the list of files"""
-                    folder = str(request.user) + "/" + str(int(time()))
+
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
                         base_url=urljoin(settings.MEDIA_URL, folder+'/')
                         ) 
@@ -502,7 +503,7 @@ def compare(request):
                             else :
                                 filelist.append(myfile.name)
                                 errorlist.append("No errors found")
-                        except jpype.JavaException,ex :
+                        except jpype.JavaException as ex :
                             """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
                             erroroccurred = True
                             filelist.append(myfile.name)
@@ -536,8 +537,9 @@ def compare(request):
                         if (warningoccurred==False):
                             """If no warning raised """
                             if (request.is_ajax()):
-                                ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ rfilename
-                                response = dumps(ajaxdict)
+                                newajaxdict=dict()
+                                newajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ rfilename
+                                response = dumps(newajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response)
                             context_dict["Content-Type"] = "application/vnd.ms-excel"
@@ -554,7 +556,7 @@ def compare(request):
                                 ajaxdict["files"] = filelist
                                 ajaxdict["errors"] = errorlist
                                 ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
-                                response = dumps(ajaxdict)
+                                response = dumps(newajaxdict)
                                 jpype.detachThreadFromJVM()
                                 return HttpResponse(response,status=406)
                             context_dict["Content-Type"] = "application/vnd.ms-excel"
@@ -628,7 +630,7 @@ def convert(request):
     """ View for convert tool
     returns convert.html template
     """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
@@ -764,7 +766,7 @@ def convert(request):
                     return render(request, 
                         'app/convert.html',context_dict,status=404
                         )
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application"""
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
@@ -817,7 +819,7 @@ def check_license(request):
     """ View for check license tool
     returns check_license.html template
     """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             licensetext = request.POST.get('licensetext')
@@ -861,7 +863,7 @@ def check_license(request):
                     return render(request, 
                         'app/check_license.html',context_dict,status=404
                         )
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application """
                 if (request.is_ajax()):
                     ajaxdict=dict()
@@ -899,7 +901,7 @@ def xml_upload(request):
     """ View for uploading XML file
     returns xml_upload.html
     """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         ajaxdict = {}
         if request.method == 'POST':
@@ -1060,7 +1062,7 @@ def xml_edit(request, page_id):
     returns editor.html """
     context_dict = {}
     if (page_id in request.session):
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             user = request.user
             try:
                 github_login = user.social_auth.get(provider='github')
@@ -1093,12 +1095,12 @@ def update_session_variables(request):
 
 def pull_request(request):
     """ View that handels pull request """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if request.method=="POST":
             context_dict = {}
             ajaxdict = {}
             try:
-                if request.user.is_authenticated():
+                if request.user.is_authenticated:
                     user = request.user
                 try:
                     """ Getting user info and calling the makePullRequest function """
@@ -1148,7 +1150,7 @@ def loginuser(request):
     """ View for Login
     returns login.html template
     """
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         context_dict={}
         if request.method == 'POST':
             username = request.POST.get('username')
@@ -1190,7 +1192,7 @@ def register(request):
     """ View for register
     returns register.html template
     """
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         context_dict={}
         if request.method == 'POST':
             user_form = UserRegisterForm(data=request.POST)
@@ -1229,7 +1231,7 @@ def profile(request):
     """ View for profile
     returns profile.html template
     """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         context_dict={}
         profile = UserID.objects.get(user=request.user)
         info_form = InfoForm(instance=request.user)

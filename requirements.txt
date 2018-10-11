@@ -1,6 +1,7 @@
-Django==1.11.2
-jpype1==0.6.2
-djangorestframework==3.6.3
+Django==2.1.2
+djangorestframework==3.8.2
+JPype1==0.6.3
+pytz==2018.5
 bs4==0.0.1
 requests==2.18.4
 lxml==4.2.3

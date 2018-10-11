@@ -17,7 +17,7 @@ from django.contrib.auth.models import User, Group
 
 from rest_framework import serializers
 
-from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload
+from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload
  
 
 class ValidateSerializer(serializers.HyperlinkedModelSerializer):
