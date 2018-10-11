@@ -381,15 +381,13 @@ def validate_xml(request):
             try :
                 if "xmlText" in request.POST:
                     """ Saving file to the media directory """
-                    xmlText = request.POST['xmlText']
-                    xmlText = xmlText.encode('utf-8')
+                    xmlText = str(request.POST['xmlText'])
                     folder = str(request.user) + "/" + str(int(time()))
                     if not os.path.isdir(str(settings.MEDIA_ROOT +"/"+ folder)):
                         os.makedirs(str(settings.MEDIA_ROOT +"/"+ folder))
                     uploaded_file_url = settings.MEDIA_ROOT + '/' + folder + '/' + 'xmlFile.xml'
-                    print(xmlText)
                     with open(uploaded_file_url,'w') as f:
-                        f.write(str(xmlText))
+                        f.write(xmlText)
                     """ Get schema text from GitHub,
                     if it fails use the file in examples folder """
                     try:
