@@ -1,9 +1,10 @@
-Django==1.11.2
-jpype1==0.6.2
-djangorestframework==3.6.3
+Django==1.11.16
+jpype1==0.6.3
+numpy==1.15.2
+djangorestframework==3.6.4
 bs4==0.0.1
-requests==2.18.4
-lxml==4.2.3
+requests==2.19.1
+lxml==4.2.5
 social-auth-app-django==2.1.0
 #for testing
-selenium==3.13.0
+selenium==3.14.1
