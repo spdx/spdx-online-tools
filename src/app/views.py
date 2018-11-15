@@ -79,34 +79,61 @@ def submitNewLicense(request):
     """ View for submit new licenses
     returns submit_new_license.html template
     """
-    context_dict={}
-    if request.method == 'POST':
-        form = LicenseRequestForm(request.POST, auto_id='%s')
-        if form.is_valid() and request.is_ajax():
-            licenseName = form.cleaned_data['fullname']
-            licenseIdentifier = form.cleaned_data['shortIdentifier']
-            licenseOsi = form.cleaned_data['osiApproved']
-            licenseSourceUrls = [form.cleaned_data['sourceUrl']]
-            licenseHeader = form.cleaned_data['licenseHeader']
-            licenseNotes = form.cleaned_data['notes']
-            licenseText = form.cleaned_data['text']
-            userEmail = form.cleaned_data['userEmail']
-            xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
-                licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
-            now = datetime.datetime.now()
-            licenseRequest = LicenseRequest(fullname=licenseName,shortIdentifier=licenseIdentifier,
-                submissionDatetime=now, userEmail=userEmail, xml=xml)
-            licenseRequest.save()
-            statusCode = createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi)
-            data = {'statusCode' : str(statusCode)}
-            return JsonResponse(data)
-
+    context_dict = {}
+    ajaxdict = {}
+    if request.method=="POST":
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect(settings.LOGIN_URL)        
+        try:
+            user = request.user
+            try:
+                """ Getting user info for submitting github issue """
+                github_login = user.social_auth.get(provider='github')
+                token = github_login.extra_data["access_token"]
+                username = github_login.extra_data["login"]
+                form = LicenseRequestForm(request.POST, auto_id='%s')
+                if form.is_valid() and request.is_ajax():
+                    licenseName = form.cleaned_data['fullname']
+                    licenseIdentifier = form.cleaned_data['shortIdentifier']
+                    licenseOsi = form.cleaned_data['osiApproved']
+                    licenseSourceUrls = [form.cleaned_data['sourceUrl']]
+                    licenseHeader = form.cleaned_data['licenseHeader']
+                    licenseNotes = form.cleaned_data['notes']
+                    licenseText = form.cleaned_data['text']
+                    userEmail = form.cleaned_data['userEmail']
+                    xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                        licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+                    now = datetime.datetime.now()
+                    licenseRequest = LicenseRequest(fullname=licenseName,shortIdentifier=licenseIdentifier,
+                        submissionDatetime=now, userEmail=userEmail, xml=xml)
+                    licenseRequest.save()
+                    statusCode = createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token)
+                    data = {'statusCode' : str(statusCode)}
+                    return JsonResponse(data)
+            except UserSocialAuth.DoesNotExist:
+                """ User not authenticated with GitHub """
+                if (request.is_ajax()):
+                    ajaxdict["type"] = "auth_error"
+                    ajaxdict["data"] = "Please login using GitHub to use this feature."
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response,status=401)
+                return HttpResponse("Please login using GitHub to use this feature.",status=401)
+        except:
+            """ Other errors raised """
+            logger.error(str(format_exc()))
+            if (request.is_ajax()):
+                ajaxdict["type"] = "error"
+                ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                response = dumps(ajaxdict)
+                return HttpResponse(response,status=500)
+            return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
     else:
         form = LicenseRequestForm(auto_id='%s')
-    context_dict['form'] = form
+        context_dict['form'] = form
     return render(request, 
         'app/submit_new_license.html', context_dict
         )
+
 
 def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
     """ View for generating a spdx license xml
@@ -126,11 +153,10 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     xmlString = ET.tostring(root, encoding='utf8', method='xml').replace('>','>\n')
     return xmlString
 
-def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi):
+def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
-    myToken = getGithubToken()
     body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** URL: '
     for url in licenseSourceUrls:
         body += url
@@ -1092,7 +1118,7 @@ def update_session_variables(request):
     return HttpResponse("Bad Request", status=400)
 
 def pull_request(request):
-    """ View that handels pull request """
+    """ View that handles pull request """
     if request.user.is_authenticated():
         if request.method=="POST":
             context_dict = {}
@@ -1171,7 +1197,7 @@ def loginuser(request):
                     context_dict["invalid"] = "Your account is disabled."
                     return render(request,
                         "app/login.html",context_dict,status=401
-                        )	
+                        )    
             else:
                 if (request.is_ajax()):
                     return HttpResponse("Invalid login details supplied.",status=403)
