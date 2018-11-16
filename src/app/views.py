@@ -54,7 +54,6 @@ logger = logging.getLogger()
 from .forms import LicenseRequestForm
 from .models import LicenseRequest
 
-from app.github_utils import getGithubToken
 import cgi
 
 def index(request):
@@ -130,6 +129,11 @@ def submitNewLicense(request):
     else:
         form = LicenseRequestForm(auto_id='%s')
         context_dict['form'] = form
+        try:
+            github_login = request.user.social_auth.get(provider='github')
+        except UserSocialAuth.DoesNotExist:
+            github_login = None
+        context_dict["github_login"] = github_login
     return render(request, 
         'app/submit_new_license.html', context_dict
         )
@@ -164,7 +168,7 @@ def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, t
     body += '**4.** OSI Approval: ' + licenseOsi
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
-    headers = {'Authorization': 'token ' + myToken}
+    headers = {'Authorization': 'token ' + token}
     url = 'https://api.github.com/repos/spdx/license-list-XML/issues'
     r = post(url, data=dumps(payload), headers=headers)
     return r.status_code

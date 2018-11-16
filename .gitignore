@@ -117,5 +117,8 @@ org.eclipse.core.resources.prefs
 # Various junk and temp files
 .DS_Store
 
-#GitHub token
+#GitHub token - no longer used, but leaving in github ignore just in case there are old files out there
 github_utils.py
+
+#Settings secrets
+secret.py
