@@ -129,10 +129,13 @@ def submitNewLicense(request):
     else:
         form = LicenseRequestForm(auto_id='%s')
         context_dict['form'] = form
-        try:
-            github_login = request.user.social_auth.get(provider='github')
-        except UserSocialAuth.DoesNotExist:
-            github_login = None
+        if not request.user.is_authenticated():
+		    github_login = None
+        else:
+            try:
+                github_login = request.user.social_auth.get(provider='github')
+            except UserSocialAuth.DoesNotExist, AttributeError:
+                github_login = None
         context_dict["github_login"] = github_login
     return render(request, 
         'app/submit_new_license.html', context_dict
