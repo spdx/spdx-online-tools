@@ -82,7 +82,12 @@ def submitNewLicense(request):
     ajaxdict = {}
     if request.method=="POST":
         if not request.user.is_authenticated():
-            return HttpResponseRedirect(settings.LOGIN_URL)        
+            if (request.is_ajax()):
+                ajaxdict["type"] = "auth_error"
+                ajaxdict["data"] = "Please login using GitHub to use this feature."
+                response = dumps(ajaxdict)
+                return HttpResponse(response,status=401)
+            return HttpResponse("Please login using GitHub to use this feature.",status=401)
         try:
             user = request.user
             try:
