@@ -152,6 +152,10 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     returns the license xml as a string
     """
     root = ET.Element("SPDXLicenseCollection", xmlns="http://www.spdx.org/license")
+    if licenseOsi=="Approved":
+        licenseOsi = "true"
+    else:
+        licenseOsi = "false"
     license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName)
     crossRefs = ET.SubElement(license, "crossRefs")
     for sourceUrl in licenseSourceUrls:
@@ -162,7 +166,7 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     licenseLines = licenseText.replace('\r','').split('\n')
     for licenseLine in licenseLines:
         ET.SubElement(licenseTextElement, "p").text = licenseLine
-    xmlString = ET.tostring(root, encoding='utf8', method='xml').replace('>','>\n')
+    xmlString = ET.tostring(root, method='xml').replace('>','>\n')
     return xmlString
 
 def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token):
@@ -173,7 +177,7 @@ def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, t
     for url in licenseSourceUrls:
         body += url
         body += '\n'
-    body += '**4.** OSI Approval: ' + licenseOsi
+    body += '**4.** OSI Status: ' + licenseOsi
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
