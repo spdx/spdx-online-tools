@@ -132,16 +132,19 @@ def submitNewLicense(request):
                 return HttpResponse(response,status=500)
             return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
     else:
-        form = LicenseRequestForm(auto_id='%s')
-        context_dict['form'] = form
+        email = ""
         if not request.user.is_authenticated():
 		    github_login = None
         else:
             try:
                 github_login = request.user.social_auth.get(provider='github')
+                username = github_login.extra_data["login"]
+                email = User.objects.get(username=username).email
             except UserSocialAuth.DoesNotExist, AttributeError:
                 github_login = None
         context_dict["github_login"] = github_login
+        form = LicenseRequestForm(auto_id='%s', email=email)
+        context_dict['form'] = form
     return render(request, 
         'app/submit_new_license.html', context_dict
         )
