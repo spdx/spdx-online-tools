@@ -21,8 +21,10 @@ from app.models import UserID
 
 OSI_CHOICES = (
     (0, "-"),
-    ("yes", "Yes"),
-    ("no", "No"),
+    ("Approved", "Approved"),
+    ("Not Submitted", "Not Submitted"),
+    ("Pending", "Submitted, but pending"),
+    ("Rejected", "Rejected")
 )
 
 class UserRegisterForm(forms.ModelForm):
@@ -66,7 +68,7 @@ class LicenseRequestForm(forms.Form):
     fullname = forms.CharField(label='Fullname', max_length=70)
     shortIdentifier = forms.CharField(label='Short identifier', max_length=25)
     sourceUrl = forms.CharField(label='Source / URL', required=False)
-    osiApproved = forms.CharField(label="OSI Approved", widget=forms.Select(choices=OSI_CHOICES))
+    osiApproved = forms.CharField(label="OSI Status", widget=forms.Select(choices=OSI_CHOICES))
     notes = forms.CharField(label='Notes', required=False)
     licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)
     text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
