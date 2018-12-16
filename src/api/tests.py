@@ -23,7 +23,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase,APIClient
 from rest_framework.authtoken.models import Token
 
-from models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload
+from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload
 
 
 class ValidateFileUploadTests(APITestCase):

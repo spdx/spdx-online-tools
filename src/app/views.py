@@ -36,7 +36,10 @@ import json
 from traceback import format_exc
 from json import dumps, loads
 from time import time
-from urlparse import urljoin
+try:
+    from urlparse import urljoin
+except ImportError:
+    from urllib.parse import urljoin
 import xml.etree.cElementTree as ET
 import datetime
 from wsgiref.util import FileWrapper
@@ -132,15 +135,15 @@ def submitNewLicense(request):
                 return HttpResponse(response,status=500)
             return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
     else:
-        email = ""
+        email=""
         if not request.user.is_authenticated():
-		    github_login = None
+            github_login=None
         else:
             try:
                 github_login = request.user.social_auth.get(provider='github')
                 username = github_login.extra_data["login"]
                 email = User.objects.get(username=username).email
-            except UserSocialAuth.DoesNotExist, AttributeError:
+            except UserSocialAuth.DoesNotExist as AttributeError:
                 github_login = None
         context_dict["github_login"] = github_login
         form = LicenseRequestForm(auto_id='%s', email=email)
@@ -365,7 +368,7 @@ def validate(request):
                     return render(request, 
                         'app/validate.html',context_dict,status=404
                         )
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
                 if (request.is_ajax()):
                     ajaxdict=dict()
@@ -547,7 +550,7 @@ def compare(request):
                             else :
                                 filelist.append(myfile.name)
                                 errorlist.append("No errors found")
-                        except jpype.JavaException,ex :
+                        except jpype.JavaException as ex :
                             """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
                             erroroccurred = True
                             filelist.append(myfile.name)
@@ -809,7 +812,7 @@ def convert(request):
                     return render(request, 
                         'app/convert.html',context_dict,status=404
                         )
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application"""
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
@@ -906,7 +909,7 @@ def check_license(request):
                     return render(request, 
                         'app/check_license.html',context_dict,status=404
                         )
-            except jpype.JavaException,ex :
+            except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application """
                 if (request.is_ajax()):
                     ajaxdict=dict()
