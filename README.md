@@ -39,23 +39,26 @@ Windows users need a Python installation and C++ compiler:
     ```bash
     cd spdx-online-tools
     pip install -r requirements.txt
-    ```
-4. Run Django migrate.
+
+4. Create Github API configuration according to [GitHub Developer Sensitive Data](#github-developer-sensitive-data).
+
+5. Run Django migrate.
     
     ```bash
+    cd src
     python manage.py migrate
     ```
-5. (Optional) If you want use xml-editor with licenses/exceptions from [spdx license list](https://github.com/spdx/license-list-data/), download the license name database.
+6. (Optional) If you want use xml-editor with licenses/exceptions from [spdx license list](https://github.com/spdx/license-list-data/), download the license name database.
     ```bash
     python src/populate.py
     ```
-6. Start the application.
+7. Start the application.
     ```bash
     python manage.py runserver
     ```
-7. Open `localhost:8000/` in the browser.
+8. Open `localhost:8000/` in the browser.
 
-8. Register and login to use the tools.
+9. Register and login to use the tools.
     
 ## How to Run Tests
     
