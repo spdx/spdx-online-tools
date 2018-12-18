@@ -202,4 +202,4 @@ def check_license_name(name):
             url += exception["licenseExceptionId"]
             return [url, exception["licenseExceptionId"]]
 
-    return False
+    return [False]

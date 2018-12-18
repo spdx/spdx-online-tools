@@ -1,10 +1,13 @@
 [![GSoC Logo](https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-logo-horizontal.svg)](https://summerofcode.withgoogle.com/projects/#5747767629578240)
+
 # spdx-online-tools
+
 Source for the website providing online SPDX tools.
 The tool provides an easy all-in-one website to upload and parse SPDX documents for validation, comparison and conversion and search SPDX license list.
 [Here](https://github.com/spdx/spdx-online-tools/wiki/Online-SPDX-Tool,-Google-Summer-of-Code-2017) you can find more about the working of the tool.
 
 ## Features
+
 * Upload and parse SPDX Documents
 * Validate SPDX Documents
 * Compare Multiple SPDX Rdf Files
@@ -13,10 +16,11 @@ The tool provides an easy all-in-one website to upload and parse SPDX documents 
 
 ## Requirements (Linux/Debian/Ubuntu)  
 
-Either the Sun/Oracle JDK/JRE Variant or OpenJDK. Python 2.6+. 
+Either the Sun/Oracle JDK/JRE Variant or OpenJDK. Python 2.6+.
 
 Debian/Ubuntu users will have to install g++ and python-dev first:  
-```
+
+```bash
 sudo apt-get install g++ python-dev
 ```
 
@@ -27,10 +31,10 @@ Windows users need a Python installation and C++ compiler:
 * Install some version of Python (2.7 or higher), e.g., [Anaconda](https://www.continuum.io/downloads) is a good choice for users not yet familiar with the language
 * Install a [Windows C++ Compiler](http://landinghub.visualstudio.com/visual-cpp-build-tools)
 
-
 ## Installation
-1. Clone or download the repository. 
-2. Create a new virtual environment for the project. To download virtual environment run ```pip install virtualenv```
+
+1. Clone or download the repository.
+2. Create a new virtual environment for the project. To download virtual environment run `pip install virtualenv`
     ```bash
     virtualenv venv
     source venv/bin/activate
@@ -41,7 +45,7 @@ Windows users need a Python installation and C++ compiler:
     pip install -r requirements.txt
     ```
 4. Run Django migrate.
-    
+
     ```bash
     python manage.py migrate
     ```
@@ -56,14 +60,15 @@ Windows users need a Python installation and C++ compiler:
 7. Open `localhost:8000/` in the browser.
 
 8. Register and login to use the tools.
-    
+
 ## How to Run Tests
-    
-```
+
+```bash
 python manage.py test
 ```
 
 ## GitHub Developer Sensitive Data
+
 The `settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is not checked into source. Due to that lack of data, the following error could rise when running the app:
 
 > from secret import getGithubToken, getGithubKey, getGithubSecret, getSecretKey
@@ -71,23 +76,24 @@ The `settings.py` file uses sensitive data to work with the GitHub API. For that
 
 To avoid this error and allow the tool to use the GitHub API, the file `src/src/secret.py` should be included into the source. The file should contain the following lines:
 
-```
-def getGithubKey():	
+```python
+def getGithubKey():
     return 'GHKEYXXX'
-	
-def getGithubSecret():	
+
+def getGithubSecret():
     return 'GHSECRETXXX'
-	
+
 def getSecretKey():
     return 'DJANGOSECRETXXX'
 ```
 
 where:
 
-- GHKEYXXX is the Client ID for the Github Oauth Apps
-- GHSECRETXXX is the Client ID for the Github Oauth Apps
-- DJANGOSECRETXXX is the Django secret
+* GHKEYXXX is the Client ID for the Github Oauth Apps
+* GHSECRETXXX is the Client ID for the Github Oauth Apps
+* DJANGOSECRETXXX is the Django secret
 
+**Note:** While setting up the GitHub OAuth App, set the `Homepage URL` to `http://localhost:8000/` and the `Authorization callback URL` to `http://localhost:8000/oauth/complete/github`
 
 ## How to Use API
 
@@ -114,7 +120,8 @@ where:
 6. For license check tool, send the request to `/api/check_license/`.
     ```bash
     curl -X POST -u <admin>:<password> -F "file=@<fileInput>" -H "Accept: application/json" http://localhost:8000/api/check_license/ | json_pp
-    ```    
+    ```
 
 ## Dependencies
+
 The project uses [spdx java tools](https://github.com/spdx/tools/) for various tools of the website.
