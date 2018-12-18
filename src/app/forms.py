@@ -67,7 +67,10 @@ class OrgInfoForm(forms.ModelForm):
 class LicenseRequestForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
-        self.email = kwargs.pop('email')
+        if 'email' in kwargs:
+            self.email = kwargs.pop('email')
+        else:
+            self.email = ""
         super(LicenseRequestForm, self).__init__(*args,**kwargs)
         self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email)
 
