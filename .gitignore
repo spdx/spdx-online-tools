@@ -113,3 +113,9 @@ org.eclipse.core.resources.prefs
 
 # sqlite
 *.sqlite3
+
+# Various junk and temp files
+.DS_Store
+
+#GitHub token
+github_utils.py

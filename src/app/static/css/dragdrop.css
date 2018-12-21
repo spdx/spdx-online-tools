@@ -1,0 +1,48 @@
+#drop-area {
+    border: 2px dashed rgb(221, 221, 221);
+    border-radius: 20px;
+    width: 90%;
+    min-height: 220px;
+    font-family: sans-serif;
+    margin: 30px auto;
+    padding: 20px 0;
+    transition: box-shadow 0.2s;
+    overflow: hidden;
+}
+#drop-area.highlight {
+    -webkit-box-shadow: 0 0 12px 1px grey inset;
+    -moz-box-shadow: 0 0 12px 1px grey inset;
+    box-shadow: 0 0 12px 1px grey inset;
+}
+.my-form {
+    margin-bottom: 10px;
+}
+.file-name{
+    margin-top:10px;
+}
+.success{
+    color:green;
+}
+.fail{
+    color:red;
+}
+.button {
+    display: inline-block;
+    padding: 8px;
+    background: #ccc;
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+.button:hover {
+    background: #ddd;
+}
+.reset{
+    background: rgb(255, 62, 62) !important;
+}
+.reset:hover{
+    background: rgb(252, 98, 98) !important;
+}
+#file {
+    display: none;
+}

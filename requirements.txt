@@ -1,4 +1,10 @@
-Django==2.0.4
+Django==2.1.2
 djangorestframework==3.8.2
 JPype1==0.6.3
-pytz==2018.4
+pytz==2018.5
+bs4==0.0.1
+requests==2.18.4
+lxml==4.2.3
+social-auth-app-django==2.1.0
+#for testing
+selenium==3.13.0

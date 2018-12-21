@@ -45,19 +45,39 @@ Windows users need a Python installation and C++ compiler:
     ```bash
     python manage.py migrate
     ```
-5. Start the application.
+5. (Optional) If you want use xml-editor with licenses/exceptions from [spdx license list](https://github.com/spdx/license-list-data/), download the license name database.
+    ```bash
+    python src/populate.py
+    ```
+6. Start the application.
     ```bash
     python manage.py runserver
     ```
-6. Open `localhost:8000/` in the browser.
+7. Open `localhost:8000/` in the browser.
 
-7. Register and login to use the tools.
+8. Register and login to use the tools.
     
 ## How to Run Tests
     
 ```
 python manage.py test
 ```
+
+## GitHub Developer Sensitive Data
+The `views.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is not checked into source. Due to that lack of data, the following error could rise when running the app:
+
+> from utils.github_utils import getGithubToken
+> ImportError: No module named github_utils
+
+To avoid this error and allow the tool to use the GitHub API, the file `src/app/utils/github_utils.py` should be included into the source. The file should contain the following lines:
+
+```
+def getGithubToken():	
+    return 'XXXX'
+```
+
+where, **XXXX** is a GitHub Developer token.
+
 
 ## How to Use API
 
