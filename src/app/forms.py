@@ -15,7 +15,7 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.admin import widgets 
+from django.contrib.admin import widgets
 
 from app.models import UserID
 
@@ -59,7 +59,7 @@ class InfoForm(forms.ModelForm):
         fields = ('first_name','last_name','email')
 
 class OrgInfoForm(forms.ModelForm):
-    
+
     class Meta:
         model = UserID
         fields = ('organisation',)
@@ -78,6 +78,6 @@ class LicenseRequestForm(forms.Form):
     shortIdentifier = forms.CharField(label='Short identifier', max_length=25)
     sourceUrl = forms.CharField(label='Source / URL', required=False)
     osiApproved = forms.CharField(label="OSI Status", widget=forms.Select(choices=OSI_CHOICES))
-    notes = forms.CharField(label='Notes', required=False)
+    notes = forms.CharField(label='Notes', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
     licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)
     text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))

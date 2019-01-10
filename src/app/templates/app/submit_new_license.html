@@ -24,19 +24,19 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >License's Full Name</label>
-        <div class="col-sm-4"> 
+        <div class="col-sm-4">
           {{ form.fullname }}
         </div>
-      </div>  
+      </div>
     </div>
 
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Short Identifier</label>
-        <div class="col-sm-4"> 
+        <div class="col-sm-4">
           {{ form.shortIdentifier }}
         </div>
-      </div>  
+      </div>
     </div>
 
     <div class = "form-group">
@@ -46,11 +46,11 @@
           {{ form.sourceUrl }}
           <span class="help-block" id="addSourceUrl" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add a source</span>
         </div>
-      </div>  
+      </div>
     </div>
 
     <div class = "form-group">
-      <div class="col-sm-12">  
+      <div class="col-sm-12">
       <label class="control-label col-sm-3" >&nbsp;OSI Status&nbsp;</label>
         <div class="col-sm-4">
           {{ form.osiApproved }}
@@ -60,38 +60,38 @@
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Notes</label>
-        <div class="col-sm-6">
-          {{ form.notes }}
-        </div>
-      </div>  
-    </div>
-
-    <div class = "form-group">
-      <div class="col-sm-12">
       <label class="control-label col-sm-3" >Standard License Header</label>
         <div class="col-sm-6">
-          {{ form.licenseHeader }}        
+          {{ form.licenseHeader }}
         </div>
-      </div>  
+      </div>
     </div>
 
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >License Text</label>
         <div class="col-sm-6">
-          {{ form.text }}          
+          {{ form.text }}
         </div>
-      </div>  
+      </div>
     </div>
 
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Email address</label>
         <div class="col-sm-4">
-          {{ form.userEmail }}          
+          {{ form.userEmail }}
         </div>
-      </div>  
+      </div>
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Comments</label>
+        <div class="col-sm-6">
+          {{ form.notes }}
+        </div>
+      </div>
     </div>
     <hr>
 		<input type="hidden" id="cfileformat" name="submit" value="">
@@ -240,7 +240,7 @@ function checkform() {
                   }
                   $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   });
                   $("#submitbutton").text("Submit");
