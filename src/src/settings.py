@@ -136,7 +136,7 @@ SOCIAL_AUTH_PIPELINE = (
 
 SOCIAL_AUTH_GITHUB_KEY = getGithubKey()
 SOCIAL_AUTH_GITHUB_SECRET = getGithubSecret()
-SOCIAL_AUTH_GITHUB_SCOPE = ['public_repo']
+SOCIAL_AUTH_GITHUB_SCOPE = ['public_repo', 'user:email']
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
