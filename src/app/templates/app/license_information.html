@@ -47,7 +47,7 @@
         <p class="fieldName">Submission Date</p>
         <p>{{licenseInformation.submissionDatetime}}</p>
     </div>
-    <div class"col-sm-12">
+    <div class="col-sm-12">
         <div class="col-sm-12">
             <a href="/app/license_requests/" class="btn">Go Back</a>
         </div>
@@ -56,6 +56,13 @@
                 {% csrf_token %}
                 <input type="hidden" name="supporttype" />
                 <button type="submit" class="btn btn-md btn-info" id="downloadBtn">Download the XML</button>
+            </form>
+        </div>
+        <div class="col-sm-12" style="margin-top: 5px">
+            <form id="edit-license-xml" name="edit_license_xml" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="supporttype" />
+                <button id="editButton" class="btn btn-md btn-info">Edit the XML</button>
             </form>
         </div>
     </div>
@@ -81,12 +88,37 @@
   background-color: RoyalBlue;
 }
 
-    
+
 </style>
 
 <script type="text/javascript">
+    function send_edit_request(form){
+      /* sending the request */
+      var win_href = window.location.href;
+      var license_id = win_href.split('/')[5];
+      $.ajax({
+        type: "POST",
+        enctype: 'multipart/form-data',
+        url: "/app/edit_license_xml/"+license_id+"/",
+        processData: false,
+        contentType: false,
+        cache: false,
+        dataType: 'json',
+        timeout: 600000,
+        data: form,
+        success: function (data) {
+          window.location.href = data.redirect_url;
+        },
+      });
+    }
     $(document).ready(function () {
         $("#licenserequestspage").addClass('linkactive');
         });
+    $("#editButton").on('click', function(event){
+      /* if the user uploads the file */
+      var form = new FormData($("#edit-license-xml")[0]);
+      event.preventDefault();
+      send_edit_request(form);
+    })
   </script>
 {% endblock %}
