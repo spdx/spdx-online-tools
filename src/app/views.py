@@ -214,6 +214,7 @@ def licenseInformation(request, licenseId):
     licenseInformation['shortIdentifier'] = licenseRequest.shortIdentifier
     licenseInformation['submissionDatetime'] = licenseRequest.submissionDatetime
     licenseInformation['userEmail'] = licenseRequest.userEmail
+    licenseInformation['licenseAuthorName'] = licenseRequest.licenseAuthorName
     xmlString = licenseRequest.xml
     data = parseXmlString(xmlString)
     licenseInformation['osiApproved'] = data['osiApproved']
