@@ -13,6 +13,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.firefox.options import Options
 import time
 
 from app.models import UserID
@@ -644,7 +645,9 @@ class ValidateXMLViewsTestCase(TestCase):
 class XMLEditorTestCase(StaticLiveServerTestCase):
 
     def setUp(self):
-        self.selenium = webdriver.Firefox()
+        options = Options()
+        options.add_argument('-headless')
+        self.selenium = webdriver.Firefox(firefox_options=options)
         self.initialXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license></SPDXLicenseCollection>'
         self.invalidXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license>'
         super(XMLEditorTestCase, self).setUp()
