@@ -1129,8 +1129,6 @@ def edit_license_xml(request, license_id):
     returns editor.html """
     context_dict = {}
     ajaxdict = {}
-    print("license_id")
-    print(license_id)
     if license_id:
         if request.user.is_authenticated():
             user = request.user
@@ -1142,10 +1140,6 @@ def edit_license_xml(request, license_id):
         license_obj = LicenseRequest.objects.get(id=license_id)
         context_dict["xml_text"] = license_obj.xml
         context_dict["license_name"] = license_obj.fullname
-        if(request.is_ajax()):
-            ajaxdict["redirect_url"] = '/app/edit_license_xml/'+license_id+'/'
-            response = dumps(ajaxdict)
-            return HttpResponse(response, status=200)
         return render(request,
             'app/editor.html',context_dict,status=200
             )

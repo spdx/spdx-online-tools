@@ -96,20 +96,7 @@
       /* sending the request */
       var win_href = window.location.href;
       var license_id = win_href.split('/')[5];
-      $.ajax({
-        type: "POST",
-        enctype: 'multipart/form-data',
-        url: "/app/edit_license_xml/"+license_id+"/",
-        processData: false,
-        contentType: false,
-        cache: false,
-        dataType: 'json',
-        timeout: 600000,
-        data: form,
-        success: function (data) {
-          window.location.href = data.redirect_url;
-        },
-      });
+      window.location.href = "/app/edit_license_xml/"+license_id+"/";
     }
     $(document).ready(function () {
         $("#licenserequestspage").addClass('linkactive');
