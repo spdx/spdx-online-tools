@@ -108,7 +108,7 @@ class RegisterViewsTestCase(TestCase):
         self.data = {"first_name": "test","last_name" : "test" ,
             "email" : "test@spdx.org","username":self.username,
             "password":self.password,"confirm_password":self.password,"organisation":"spdx"}
-            
+
     def test_register(self):
         """GET Request for register"""
         resp = self.client.get(reverse("register"),follow=True,secure=True)
@@ -144,7 +144,7 @@ class ValidateViewsTestCase(TestCase):
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
             self.assertEqual(resp.status_code,200)
-        
+
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         resp2 = self.client.get(reverse("validate"),follow=True,secure=True)
         self.assertEqual(resp2.status_code,200)
@@ -152,7 +152,7 @@ class ValidateViewsTestCase(TestCase):
         self.assertIn("app/validate.html",(i.name for i in resp2.templates))
         self.assertEqual(resp2.resolver_match.func.__name__,"validate")
         self.client.logout()
-        
+
     def test_validate_post_without_login(self):
         """POST Request for validate without login or ANONYMOUS_LOGIN_DISABLED """
         if not settings.ANONYMOUS_LOGIN_ENABLED :
@@ -190,7 +190,7 @@ class ValidateViewsTestCase(TestCase):
         self.assertEqual(resp.content,"This SPDX Document is valid.")
         self.rdf_file.close()
         self.client.logout()
-    
+
     def test_upload_other(self):
         """POST Request for validate validating other files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
@@ -475,7 +475,7 @@ class XMLUploadTestCase(TestCase):
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
             self.assertEqual(resp.status_code,200)
-        
+
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.get(reverse("xml-upload"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
@@ -525,7 +525,7 @@ class XMLUploadTestCase(TestCase):
         self.assertTrue('error' in resp.context)
         self.tv_file.close()
         self.client.logout()
-        
+
     def test_xml_input_textarea(self):
         """ POST request for xml input using textarea"""
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
@@ -855,7 +855,7 @@ class ProfileViewsTestCase(TestCase):
         self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='profiletestuser')[0])
-        
+
         resp2 = self.client.get(reverse("profile"),follow=True,secure=True)
         self.assertEqual(resp2.status_code,200)
         self.assertEqual(resp2.redirect_chain,[])
@@ -876,7 +876,7 @@ class ProfileViewsTestCase(TestCase):
         self.assertEqual(user.email,"profiletest@spdx.org")
         self.assertEqual(userid.organisation,"spdx")
         self.client.force_login(user)
-        
+
         save_info_resp = self.client.post(reverse("profile"),{'saveinfo':'saveinfo',"first_name": "john","last_name" : "doe" ,"email" : "johndoe@spdx.org","organisation":"Software Package Data Exchange"},follow=True,secure=True)
         self.assertEqual(save_info_resp.status_code,200)
         self.assertEqual(save_info_resp.redirect_chain,[])
@@ -899,10 +899,10 @@ class ProfileViewsTestCase(TestCase):
         self.assertEqual(change_pwd_resp.redirect_chain,[])
         self.assertEqual(change_pwd_resp.context["success"],"Your password was successfully updated!")
         self.client.logout()
-        
+
         resp2 = self.client.login(username='profiletestuser', password='profiletestpass')
         self.assertFalse(resp2)
-        
+
         resp3 = self.client.login(username='profiletestuser', password='johndoepass')
         self.assertTrue(resp3)
         self.client.logout()
@@ -920,10 +920,10 @@ class CheckUserNameTestCase(TestCase):
         """POST Request for checking username"""
         resp = self.client.post(reverse("check-username"),{"username":"spdx"},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
-        
+
         resp2 = self.client.post(reverse("check-username"),{"randomkey":"randomvalue"},follow=True,secure=True)
         self.assertEqual(resp2.status_code,400)
-        
+
         self.initialise()
         resp3 = self.client.post(reverse("check-username"),{"username":"checktestuser"},follow=True,secure=True)
         self.assertEqual(resp3.status_code,404)
@@ -938,6 +938,7 @@ class LicenseRequestsViewsTestCase(TestCase):
         self.assertIn("app/license_requests.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"licenseRequests")
 
+
 class SubmitNewLicenseViewsTestCase(TestCase):
 
     def initialise(self):
@@ -951,7 +952,7 @@ class SubmitNewLicenseViewsTestCase(TestCase):
         self.text ='<text> <copyrightText> <p>Copyright (C) 2006 by Rob Landley &lt;rob@landley.net&gt;</p> </copyrightText> <p>Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.</p> <p>THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</p> </text>'
         self.userEmail = "test@mail.com"
         self.xml = '<SPDXLicenseCollection xmlns="http://www.spdx.org/license"> <license isOsiApproved="false" licenseId="0BSD" name="BSD Zero Clause License"> <crossRefs> <crossRef> http://landley.net/toybox/license.html</crossRef> </crossRefs> <standardLicenseHeader /> <notes /> <text> <p> &lt;text&gt; &lt;copyrightText&gt; &lt;p&gt;Copyright (C) 2006 by Rob Landley &amp;lt;rob@landley.net&amp;gt;&lt;/p&gt; &lt;/copyrightText&gt; &lt;p&gt;Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.&lt;/p&gt; &lt;p&gt;THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.&lt;/p&gt; &lt;/text&gt;</p> </text> </license> </SPDXLicenseCollection> '
-        self.data = {"fullname": self.fullname, "shortIdentifier": self.shortIdentifier, 
+        self.data = {"fullname": self.fullname, "shortIdentifier": self.shortIdentifier,
                     "sourceUrl": self.sourceUrl,'osiApproved': self.osiApproved, 'notes': self.notes,
                     "licenseHeader": self.licenseHeader, "text": self.text, "userEmail": self.userEmail }
 
@@ -983,6 +984,25 @@ class SubmitNewLicenseViewsTestCase(TestCase):
     def test_generate_xml(self):
         """View for generating an xml from license submittal form fields"""
         self.initialise()
-        xml = generateLicenseXml(self.osiApproved, self.shortIdentifier, self.fullname, self.urls, 
+        xml = generateLicenseXml(self.osiApproved, self.shortIdentifier, self.fullname, self.urls,
                                 self.licenseHeader, self.notes, self.text).replace("\n"," ")
         self.assertEqual(self.xml, xml)
+
+    def test_edit_license_xml(self):
+        """GET Request for license requests list"""
+        license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
+        license_id = license_obj.id
+        resp = self.client.get(reverse("license_xml_editor", kwargs={'license_id': license_id}),follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertIn("app/editor.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"edit_license_xml")
+
+    def test_error_license_requests_edit_xml(self):
+        """GET Request for license requests list"""
+        license_id = 0
+        resp = self.client.get(reverse("license_xml_editor", kwargs={'license_id': license_id}),follow=True,secure=True)
+        self.assertEqual(resp.status_code,404)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertIn("404.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"edit_license_xml")

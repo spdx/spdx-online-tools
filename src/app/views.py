@@ -1130,6 +1130,10 @@ def edit_license_xml(request, license_id):
     context_dict = {}
     ajaxdict = {}
     if license_id:
+        if not LicenseRequest.objects.filter(id=license_id).exists():
+            return render(request,
+                '404.html',context_dict,status=404
+                )
         if request.user.is_authenticated():
             user = request.user
             try:
