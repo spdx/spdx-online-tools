@@ -991,6 +991,8 @@ class SubmitNewLicenseViewsTestCase(TestCase):
                                 self.licenseHeader, self.notes, self.text).replace("\n"," ")
         self.assertEqual(self.xml, xml)
 
+
+class EditLicenseXmlViewsTestCase(TestCase):
     def test_edit_license_xml(self):
         """View for editing the xml of a license, given its id"""
         license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
