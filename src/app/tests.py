@@ -992,7 +992,7 @@ class SubmitNewLicenseViewsTestCase(TestCase):
         self.assertEqual(self.xml, xml)
 
     def test_edit_license_xml(self):
-        """GET Request for license requests list"""
+        """View for editing the xml of a license, given its id"""
         license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
         license_id = license_obj.id
         resp = self.client.get(reverse("license_xml_editor", kwargs={'license_id': license_id}),follow=True,secure=True)
@@ -1002,7 +1002,7 @@ class SubmitNewLicenseViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"edit_license_xml")
 
     def test_error_license_requests_edit_xml(self):
-        """GET Request for license requests list"""
+        """Check if error page is displayed when the license id does not exist"""
         license_id = 0
         resp = self.client.get(reverse("license_xml_editor", kwargs={'license_id': license_id}),follow=True,secure=True)
         self.assertEqual(resp.status_code,404)
