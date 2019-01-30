@@ -47,7 +47,7 @@ Windows users need a Python installation and C++ compiler:
 4. Run Django migrate.
 
     ```bash
-    python manage.py migrate
+    python src/manage.py migrate
     ```
 5. (Optional) If you want use xml-editor with licenses/exceptions from [spdx license list](https://github.com/spdx/license-list-data/), download the license name database.
     ```bash
@@ -55,7 +55,7 @@ Windows users need a Python installation and C++ compiler:
     ```
 6. Start the application.
     ```bash
-    python manage.py runserver
+    python src/manage.py runserver
     ```
 7. Open `localhost:8000/` in the browser.
 
@@ -64,7 +64,7 @@ Windows users need a Python installation and C++ compiler:
 ## How to Run Tests
 
 ```bash
-python manage.py test
+python src/manage.py test
 ```
 
 ## GitHub Developer Sensitive Data
