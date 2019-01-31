@@ -1124,7 +1124,7 @@ def xml_edit(request, page_id):
         return HttpResponseRedirect('/app/xml_upload')
 
 
-def edit_license_xml(request, license_id):
+def edit_license_xml(request, license_id=None):
     """View for editing the XML file corresponsing to a license entry
     returns editor.html """
     context_dict = {}

@@ -1011,3 +1011,10 @@ class EditLicenseXmlViewsTestCase(TestCase):
         self.assertEqual(resp.redirect_chain,[])
         self.assertIn("404.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"edit_license_xml")
+
+    def test_no_license_id_on_license_requests_edit_xml(self):
+        """Check if the redirect works if no license id is provided in the url"""
+        resp = self.client.get(reverse("license_xml_editor_none"),follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertIn("app/license_requests.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"licenseRequests")
