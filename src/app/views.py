@@ -1125,6 +1125,34 @@ def xml_edit(request, page_id):
     else:
         return HttpResponseRedirect('/app/xml_upload')
 
+
+def edit_license_xml(request, license_id=None):
+    """View for editing the XML file corresponsing to a license entry
+    returns editor.html """
+    context_dict = {}
+    ajaxdict = {}
+    if license_id:
+        if not LicenseRequest.objects.filter(id=license_id).exists():
+            return render(request,
+                '404.html',context_dict,status=404
+                )
+        if request.user.is_authenticated():
+            user = request.user
+            try:
+                github_login = user.social_auth.get(provider='github')
+            except UserSocialAuth.DoesNotExist:
+                github_login = None
+            context_dict["github_login"] = github_login
+        license_obj = LicenseRequest.objects.get(id=license_id)
+        context_dict["xml_text"] = license_obj.xml
+        context_dict["license_name"] = license_obj.fullname
+        return render(request,
+            'app/editor.html',context_dict,status=200
+            )
+    else:
+        return HttpResponseRedirect('/app/license_requests')
+
+
 def update_session_variables(request):
     """ View for updating the XML text in the session variable """
     if request.method == "POST" and request.is_ajax():
