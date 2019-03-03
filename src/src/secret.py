@@ -9,7 +9,7 @@ def getSecretKey():
 
 # The methods: getAccessToken, getGithubUserId and getGithubUserName
 # are important for license submit tests, given that github authentication
-# is necessary for such tests to be executed.
+# is necessary for such tests to be executed normally.
 def getAccessToken():
     return None
 
