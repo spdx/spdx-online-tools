@@ -642,7 +642,7 @@ class ValidateXMLViewsTestCase(TestCase):
         self.client.logout()
 
 
-class XMLEditorTestCase(StaticLiveServerTestCase):
+class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
 
     def setUp(self):
         options = Options()
@@ -650,11 +650,11 @@ class XMLEditorTestCase(StaticLiveServerTestCase):
         self.selenium = webdriver.Firefox(firefox_options=options)
         self.initialXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license></SPDXLicenseCollection>'
         self.invalidXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license>'
-        super(XMLEditorTestCase, self).setUp()
+        super(LicenseXMLEditorTestCase, self).setUp()
 
     def tearDown(self):
         self.selenium.quit()
-        super(XMLEditorTestCase, self).tearDown()
+        super(LicenseXMLEditorTestCase, self).tearDown()
 
     def test_tree_editor_attributes(self):
         """ Test for adding, editing and deleting attributes using tree editor """
