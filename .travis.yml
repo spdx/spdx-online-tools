@@ -24,4 +24,4 @@ script:
   - cd src
   - xvfb-run python manage.py makemigrations
   - xvfb-run python manage.py migrate
-  - xvfb-run python manage.py test
+  - xvfb-run python manage.py test -v 2
