@@ -57,6 +57,14 @@ logger = logging.getLogger()
 from .forms import LicenseRequestForm
 from .models import LicenseRequest
 
+NORMAL = "normal"
+TESTS = "tests"
+
+TYPE_TO_URL = {
+"normal":  'https://api.github.com/repos/spdx/license-list-XML/issues',
+"tests": 'https://api.github.com/repos/spdx/TEST-LicenseList-XML/issues',
+}
+
 import cgi
 
 def index(request):
@@ -115,7 +123,11 @@ def submitNewLicense(request):
                     licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName,shortIdentifier=licenseIdentifier,
                         submissionDatetime=now, userEmail=userEmail, xml=xml)
                     licenseRequest.save()
-                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token)
+                    urlType = NORMAL
+                    if 'urlType' in request.POST:
+                        # This is present only when executing submit license via tests
+                        urlType = request.POST["urlType"]
+                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType)
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -176,7 +188,7 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     xmlString = ET.tostring(root, method='xml').replace('>','>\n')
     return xmlString
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
@@ -188,7 +200,7 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSource
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
-    url = 'https://api.github.com/repos/spdx/license-list-XML/issues'
+    url = TYPE_TO_URL[urlType]
     r = post(url, data=dumps(payload), headers=headers)
     return r.status_code
 
