@@ -61,8 +61,8 @@ NORMAL = "normal"
 TESTS = "tests"
 
 TYPE_TO_URL = {
-"normal":  'https://api.github.com/repos/spdx/license-list-XML/issues',
-"tests": 'https://api.github.com/repos/spdx/TEST-LicenseList-XML/issues',
+NORMAL:  'https://api.github.com/repos/spdx/license-list-XML/issues',
+TESTS: 'https://api.github.com/repos/spdx/TEST-LicenseList-XML/issues',
 }
 
 import cgi
