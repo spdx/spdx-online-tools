@@ -22,4 +22,4 @@ install:
 
 script:
   - cd src
-  - xvfb-run python manage.py test
+  - xvfb-run python manage.py test -v 2
