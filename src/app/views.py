@@ -420,7 +420,7 @@ def validate(request):
 
 def validate_xml(request):
     """ View to validate xml text against SPDX License XML Schema,
-         used in the xml editor """
+         used in the license xml editor """
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
@@ -1103,8 +1103,8 @@ def autocompleteModel(request):
         return HttpResponse( json.dumps( [ name for name in result ] ) )
     return HttpResponse()
 
-def xml_edit(request, page_id):
-    """View for editing the XML file
+def license_xml_edit(request, page_id):
+    """View for editing the License XML file
     returns editor.html """
     context_dict = {}
     if (page_id in request.session):
