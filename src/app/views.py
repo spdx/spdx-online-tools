@@ -57,6 +57,14 @@ logger = logging.getLogger()
 from .forms import LicenseRequestForm
 from .models import LicenseRequest
 
+NORMAL = "normal"
+TESTS = "tests"
+
+TYPE_TO_URL = {
+NORMAL:  'https://api.github.com/repos/spdx/license-list-XML/issues',
+TESTS: 'https://api.github.com/repos/spdx/TEST-LicenseList-XML/issues',
+}
+
 import cgi
 
 def index(request):
@@ -100,6 +108,7 @@ def submitNewLicense(request):
                 username = github_login.extra_data["login"]
                 form = LicenseRequestForm(request.POST, auto_id='%s')
                 if form.is_valid() and request.is_ajax():
+                    licenseAuthorName = form.cleaned_data['licenseAuthorName']
                     licenseName = form.cleaned_data['fullname']
                     licenseIdentifier = form.cleaned_data['shortIdentifier']
                     licenseOsi = form.cleaned_data['osiApproved']
@@ -111,10 +120,14 @@ def submitNewLicense(request):
                     xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                         licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                     now = datetime.datetime.now()
-                    licenseRequest = LicenseRequest(fullname=licenseName,shortIdentifier=licenseIdentifier,
+                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName,shortIdentifier=licenseIdentifier,
                         submissionDatetime=now, userEmail=userEmail, xml=xml)
                     licenseRequest.save()
-                    statusCode = createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token)
+                    urlType = NORMAL
+                    if 'urlType' in request.POST:
+                        # This is present only when executing submit license via tests
+                        urlType = request.POST["urlType"]
+                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType)
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -175,11 +188,11 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     xmlString = ET.tostring(root, method='xml').replace('>','>\n')
     return xmlString
 
-def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
-    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** URL: '
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** URL: '
     for url in licenseSourceUrls:
         body += url
         body += '\n'
@@ -187,7 +200,7 @@ def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, t
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
-    url = 'https://api.github.com/repos/spdx/license-list-XML/issues'
+    url = TYPE_TO_URL[urlType]
     r = post(url, data=dumps(payload), headers=headers)
     return r.status_code
 
@@ -213,6 +226,7 @@ def licenseInformation(request, licenseId):
     licenseInformation['shortIdentifier'] = licenseRequest.shortIdentifier
     licenseInformation['submissionDatetime'] = licenseRequest.submissionDatetime
     licenseInformation['userEmail'] = licenseRequest.userEmail
+    licenseInformation['licenseAuthorName'] = licenseRequest.licenseAuthorName
     xmlString = licenseRequest.xml
     data = parseXmlString(xmlString)
     licenseInformation['osiApproved'] = data['osiApproved']
