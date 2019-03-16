@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2017 Rohit Lodha 
+# Copyright (c) 2017 Rohit Lodha
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -20,7 +20,7 @@ from django.conf import settings
 from django import forms
 from django.template import RequestContext
 from django.core.files.storage import FileSystemStorage
-from django.contrib.auth.forms import PasswordChangeForm 
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib.auth.decorators import login_required
@@ -57,6 +57,14 @@ logger = logging.getLogger()
 from .forms import LicenseRequestForm
 from .models import LicenseRequest
 
+NORMAL = "normal"
+TESTS = "tests"
+
+TYPE_TO_URL = {
+NORMAL:  'https://api.github.com/repos/spdx/license-list-XML/issues',
+TESTS: 'https://api.github.com/repos/spdx/TEST-LicenseList-XML/issues',
+}
+
 import cgi
 
 def index(request):
@@ -64,7 +72,7 @@ def index(request):
     returns index.html template
     """
     context_dict={}
-    return render(request, 
+    return render(request,
         'app/index.html',context_dict
         )
 
@@ -73,7 +81,7 @@ def about(request):
     returns about.html template
     """
     context_dict={}
-    return render(request, 
+    return render(request,
         'app/about.html',context_dict
         )
 
@@ -100,6 +108,7 @@ def submitNewLicense(request):
                 username = github_login.extra_data["login"]
                 form = LicenseRequestForm(request.POST, auto_id='%s')
                 if form.is_valid() and request.is_ajax():
+                    licenseAuthorName = form.cleaned_data['licenseAuthorName']
                     licenseName = form.cleaned_data['fullname']
                     licenseIdentifier = form.cleaned_data['shortIdentifier']
                     licenseOsi = form.cleaned_data['osiApproved']
@@ -111,10 +120,14 @@ def submitNewLicense(request):
                     xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                         licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                     now = datetime.datetime.now()
-                    licenseRequest = LicenseRequest(fullname=licenseName,shortIdentifier=licenseIdentifier,
+                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName,shortIdentifier=licenseIdentifier,
                         submissionDatetime=now, userEmail=userEmail, xml=xml)
                     licenseRequest.save()
-                    statusCode = createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token)
+                    urlType = NORMAL
+                    if 'urlType' in request.POST:
+                        # This is present only when executing submit license via tests
+                        urlType = request.POST["urlType"]
+                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType)
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -148,7 +161,7 @@ def submitNewLicense(request):
         context_dict["github_login"] = github_login
         form = LicenseRequestForm(auto_id='%s', email=email)
         context_dict['form'] = form
-    return render(request, 
+    return render(request,
         'app/submit_new_license.html', context_dict
         )
 
@@ -175,11 +188,11 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     xmlString = ET.tostring(root, method='xml').replace('>','>\n')
     return xmlString
 
-def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
-    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** URL: '
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** URL: '
     for url in licenseSourceUrls:
         body += url
         body += '\n'
@@ -187,7 +200,7 @@ def createIssue(licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, t
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
-    url = 'https://api.github.com/repos/spdx/license-list-XML/issues'
+    url = TYPE_TO_URL[urlType]
     r = post(url, data=dumps(payload), headers=headers)
     return r.status_code
 
@@ -198,7 +211,7 @@ def licenseRequests(request):
     """
     licenserequests = LicenseRequest.objects.all()
     context_dict={'licenseRequests': licenserequests}
-    return render(request, 
+    return render(request,
         'app/license_requests.html',context_dict
         )
 
@@ -213,6 +226,7 @@ def licenseInformation(request, licenseId):
     licenseInformation['shortIdentifier'] = licenseRequest.shortIdentifier
     licenseInformation['submissionDatetime'] = licenseRequest.submissionDatetime
     licenseInformation['userEmail'] = licenseRequest.userEmail
+    licenseInformation['licenseAuthorName'] = licenseRequest.licenseAuthorName
     xmlString = licenseRequest.xml
     data = parseXmlString(xmlString)
     licenseInformation['osiApproved'] = data['osiApproved']
@@ -234,7 +248,7 @@ def licenseInformation(request, licenseId):
         os.remove(tempFilename)
         return response
 
-    return render(request, 
+    return render(request,
         'app/license_information.html',context_dict
         )
 
@@ -325,7 +339,7 @@ def validate(request):
                 if request.FILES["file"]:
                     """ Saving file to the media directory """
                     myfile = request.FILES['file']
-                    folder = str(request.user) + "/" + str(int(time())) 
+                    folder = str(request.user) + "/" + str(int(time()))
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
                         base_url=urljoin(settings.MEDIA_URL, folder+'/')
                         )
@@ -343,7 +357,7 @@ def validate(request):
                             return HttpResponse(response,status=400)
                         context_dict["error"] = retval
                         jpype.detachThreadFromJVM()
-                        return render(request, 
+                        return render(request,
                             'app/validate.html',context_dict,status=400
                             )
                     if (request.is_ajax()):
@@ -365,7 +379,7 @@ def validate(request):
                         return HttpResponse(response,status=404)
                     context_dict["error"] = "No file uploaded"
                     jpype.detachThreadFromJVM()
-                    return render(request, 
+                    return render(request,
                         'app/validate.html',context_dict,status=404
                         )
             except jpype.JavaException as ex :
@@ -379,7 +393,7 @@ def validate(request):
                     return HttpResponse(response,status=400)
                 context_dict["error"] = jpype.JavaException.message(ex)
                 jpype.detachThreadFromJVM()
-                return render(request, 
+                return render(request,
                     'app/validate.html',context_dict,status=400
                     )
             except MultiValueDictKeyError:
@@ -387,12 +401,12 @@ def validate(request):
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["type"] = "error"
-                    ajaxdict["data"] = "No files selected." 
+                    ajaxdict["data"] = "No files selected."
                     response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
-                context_dict["error"] = "No files selected." 
-                jpype.detachThreadFromJVM()    
+                context_dict["error"] = "No files selected."
+                jpype.detachThreadFromJVM()
                 return render(request,
                  'app/validate.html',context_dict,status=404
                  )
@@ -401,13 +415,13 @@ def validate(request):
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["type"] = "error"
-                    ajaxdict["data"] = format_exc() 
+                    ajaxdict["data"] = format_exc()
                     response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=400)
-                context_dict["error"] = format_exc() 
-                jpype.detachThreadFromJVM()    
-                return render(request, 
+                context_dict["error"] = format_exc()
+                jpype.detachThreadFromJVM()
+                return render(request,
                     'app/validate.html',context_dict,status=400
                     )
         else :
@@ -420,7 +434,7 @@ def validate(request):
 
 def validate_xml(request):
     """ View to validate xml text against SPDX License XML Schema,
-         used in the xml editor """
+         used in the license xml editor """
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
@@ -479,7 +493,7 @@ def validate_xml(request):
                 """ XML not valid """
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
-                    ajaxdict["data"] = "XML Parsing Error.\n The XML is not valid. Please correct the XML text and try again." 
+                    ajaxdict["data"] = "XML Parsing Error.\n The XML is not valid. Please correct the XML text and try again."
                     response = dumps(ajaxdict)
                     return HttpResponse(response,status=400)
                 return HttpResponse("XML Parsing Error.\n The XML is not valid. Please correct the XML text and try again.", status=400)
@@ -527,14 +541,14 @@ def compare(request):
                     if (len(request.FILES.getlist("files"))<2):
                         context_dict["error"]= "Please select atleast 2 files"
                         jpype.detachThreadFromJVM()
-                        return render(request, 
+                        return render(request,
                             'app/compare.html',context_dict, status=404
                             )
                     """Loop through the list of files"""
                     folder = str(request.user) + "/" + str(int(time()))
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
                         base_url=urljoin(settings.MEDIA_URL, folder+'/')
-                        ) 
+                        )
                     for myfile in request.FILES.getlist("files"):
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename)
@@ -560,7 +574,7 @@ def compare(request):
                             erroroccurred = True
                             filelist.append(myfile.name)
                             errorlist.append(format_exc())
-    
+
                     if (erroroccurred==False):
                         """ If no errors in any of the file,call the java function with parameters as list"""
                         try :
@@ -578,7 +592,7 @@ def compare(request):
                             context_dict["type"] = "warning2"
                             context_dict["error"]= errorlist
                             jpype.detachThreadFromJVM()
-                            return render(request, 
+                            return render(request,
                                 'app/compare.html',context_dict,status=400
                                 )
                         if (warningoccurred==False):
@@ -592,7 +606,7 @@ def compare(request):
                             context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
                             context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
                             jpype.detachThreadFromJVM()
-                            return render(request, 
+                            return render(request,
                                 'app/compare.html',context_dict,status=200
                                 )
                             #return HttpResponseRedirect(settings.MEDIA_URL+ folder + "/"+rfilename)
@@ -609,8 +623,8 @@ def compare(request):
                             context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
                             context_dict["type"] = "warning"
                             context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
-                            jpype.detachThreadFromJVM()   
-                            return render(request, 
+                            jpype.detachThreadFromJVM()
+                            return render(request,
                                 'app/compare.html',context_dict,status=406
                                 )
                     else :
@@ -620,41 +634,41 @@ def compare(request):
                             ajaxdict["errors"] = errorlist
                             response = dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
-                            return HttpResponse(response,status=400)   
+                            return HttpResponse(response,status=400)
                         context_dict["type"] = "error"
                         context_dict["error"] = errorlist
                         jpype.detachThreadFromJVM()
-                        return render(request, 
+                        return render(request,
                             'app/compare.html',context_dict,status=400
                             )
                 else :
                     context_dict["error"]= "File Not Uploaded"
                     context_dict["type"] = "error"
                     jpype.detachThreadFromJVM()
-                    return render(request, 
+                    return render(request,
                         'app/compare.html',context_dict,status=404
                         )
 
             except MultiValueDictKeyError:
-                """ If no files uploaded""" 
+                """ If no files uploaded"""
                 if (request.is_ajax()):
                     filelist.append("Files not selected.")
                     errorlist.append("Please select atleast 2 files.")
                     ajaxdict["files"] = filelist
                     ajaxdict["type"] = "error"
-                    ajaxdict["errors"] = errorlist 
+                    ajaxdict["errors"] = errorlist
                     response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
                 context_dict["error"] = "Select atleast two files"
                 context_dict["type"] = "error"
                 jpype.detachThreadFromJVM()
-                return render(request, 
+                return render(request,
                     'app/compare.html',context_dict,status=404
                     )
         else :
             """GET,HEAD"""
-            return render(request, 
+            return render(request,
                 'app/compare.html',context_dict
                 )
     else :
@@ -690,7 +704,7 @@ def convert(request):
             try :
                 if request.FILES["file"]:
                     """ Saving file to media directory """
-                    folder = str(request.user) + "/" + str(int(time())) 
+                    folder = str(request.user) + "/" + str(int(time()))
                     myfile = request.FILES['file']
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
@@ -724,7 +738,7 @@ def convert(request):
                         else :
                             jpype.detachThreadFromJVM()
                             context_dict["error"] = "Select the available conversion types."
-                            return render(request, 
+                            return render(request,
                                 'app/convert.html',context_dict,status=400
                                 )
                     elif (option1=="RDF"):
@@ -750,7 +764,7 @@ def convert(request):
                         else :
                             jpype.detachThreadFromJVM()
                             context_dict["error"] = "Select the available conversion types."
-                            return render(request, 
+                            return render(request,
                                 'app/convert.html',context_dict,status=400
                                 )
                     elif (option1=="Spreadsheet"):
@@ -770,7 +784,7 @@ def convert(request):
                         else :
                             jpype.detachThreadFromJVM()
                             context_dict["error"] = "Select the available conversion types."
-                            return render(request, 
+                            return render(request,
                                 'app/convert.html',context_dict,status=400
                                 )
                     if (warningoccurred==False) :
@@ -784,7 +798,7 @@ def convert(request):
                         context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                         context_dict["Content-Type"] = content_type
                         jpype.detachThreadFromJVM()
-                        return render(request, 
+                        return render(request,
                             'app/convert.html',context_dict,status=200
                             )
                         #return HttpResponseRedirect(settings.MEDIA_URL + folder + "/" + convertfile)
@@ -802,14 +816,14 @@ def convert(request):
                         context_dict["Content-Type"] = content_type
                         context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                         jpype.detachThreadFromJVM()
-                        return render(request, 
+                        return render(request,
                             'app/convert.html',context_dict,status=406
                             )
                 else :
                     context_dict["error"] = "No file uploaded"
                     context_dict["type"] = "error"
                     jpype.detachThreadFromJVM()
-                    return render(request, 
+                    return render(request,
                         'app/convert.html',context_dict,status=404
                         )
             except jpype.JavaException as ex :
@@ -823,21 +837,21 @@ def convert(request):
                 context_dict["type"] = "error"
                 context_dict["error"] = jpype.JavaException.message(ex)
                 jpype.detachThreadFromJVM()
-                return render(request, 
+                return render(request,
                     'app/convert.html',context_dict,status=400
                     )
             except MultiValueDictKeyError:
                 """ If no files uploaded"""
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
-                    ajaxdict["data"] = "No files selected." 
+                    ajaxdict["data"] = "No files selected."
                     response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
                 context_dict["type"] = "error"
-                context_dict["error"] = "No files selected." 
-                jpype.detachThreadFromJVM()    
-                return render(request, 
+                context_dict["error"] = "No files selected."
+                jpype.detachThreadFromJVM()
+                return render(request,
                     'app/convert.html',context_dict,status=404
                     )
             except :
@@ -850,12 +864,12 @@ def convert(request):
                     return HttpResponse(response,status=400)
                 context_dict["type"] = "error"
                 context_dict["error"] = format_exc()
-                jpype.detachThreadFromJVM()    
-                return render(request, 
+                jpype.detachThreadFromJVM()
+                return render(request,
                     'app/convert.html',context_dict,status=400
                     )
         else :
-            return render(request, 
+            return render(request,
                 'app/convert.html',context_dict
                 )
     else :
@@ -894,7 +908,7 @@ def check_license(request):
                         return HttpResponse(response)
                     context_dict["success"] = str(matching_str)
                     jpype.detachThreadFromJVM()
-                    return render(request, 
+                    return render(request,
                         'app/check_license.html',context_dict,status=200
                         )
                 else:
@@ -906,7 +920,7 @@ def check_license(request):
                         return HttpResponse(response,status=404)
                     context_dict["error"] = "There are no matching SPDX listed licenses"
                     jpype.detachThreadFromJVM()
-                    return render(request, 
+                    return render(request,
                         'app/check_license.html',context_dict,status=404
                         )
             except jpype.JavaException as ex :
@@ -919,7 +933,7 @@ def check_license(request):
                     return HttpResponse(response,status=404)
                 context_dict["error"] = jpype.JavaException.message(ex)
                 jpype.detachThreadFromJVM()
-                return render(request, 
+                return render(request,
                     'app/check_license.html',context_dict,status=404
                     )
             except :
@@ -931,13 +945,13 @@ def check_license(request):
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
                 context_dict["error"] = format_exc()
-                jpype.detachThreadFromJVM()    
-                return render(request, 
+                jpype.detachThreadFromJVM()
+                return render(request,
                     'app/check_license.html',context_dict,status=404
                     )
         else:
             """GET,HEAD"""
-            return render(request, 
+            return render(request,
                 'app/check_license.html',context_dict
                 )
     else:
@@ -961,7 +975,7 @@ def xml_upload(request):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                             response = dumps(ajaxdict)
                             return HttpResponse(response, status=200)
-                        return render(request, 
+                        return render(request,
                             'app/editor.html',context_dict,status=200
                             )
                     else:
@@ -971,7 +985,7 @@ def xml_upload(request):
                             response = dumps(ajaxdict)
                             return HttpResponse(response,status=404)
                         context_dict["error"] = "No license XML text provided. Please input some license XML text to edit."
-                        return render(request, 
+                        return render(request,
                             'app/xml_upload.html',context_dict,status=404
                             )
 
@@ -985,9 +999,9 @@ def xml_upload(request):
                             response = dumps(ajaxdict)
                             return HttpResponse(response,status=400)
                         context_dict["error"] = "No license name given. Please provide a SPDX license or exception name to edit."
-                        return render(request, 
+                        return render(request,
                             'app/xml_upload.html',context_dict,status=400
-                                )                        
+                                )
 
                     url = utils.check_license_name(name)
                     if url[0] is False:
@@ -997,7 +1011,7 @@ def xml_upload(request):
                             response = dumps(ajaxdict)
                             return HttpResponse(response,status=404)
                         context_dict["error"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
-                        return render(request, 
+                        return render(request,
                             'app/xml_upload.html',context_dict,status=404
                             )
                     url[0] += ".xml"
@@ -1009,7 +1023,7 @@ def xml_upload(request):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                             response = dumps(ajaxdict)
                             return HttpResponse(response, status=200)
-                        return render(request, 
+                        return render(request,
                                 'app/editor.html',context_dict,status=200
                                 )
                     else:
@@ -1019,7 +1033,7 @@ def xml_upload(request):
                             response = dumps(ajaxdict)
                             return HttpResponse(response,status=500)
                         context_dict["error"] = "The application could not be connected. Please try again."
-                        return render(request, 
+                        return render(request,
                             'app/xml_upload.html',context_dict,status=500
                             )
 
@@ -1035,10 +1049,10 @@ def xml_upload(request):
                                 response = dumps(ajaxdict)
                                 return HttpResponse(response,status=400)
                             context_dict["error"] = "Please select a SPDX license XML file."
-                            return render(request, 
+                            return render(request,
                                 'app/xml_upload.html',context_dict,status=400
                                 )
-                        folder = str(request.user) + "/" + str(int(time())) 
+                        folder = str(request.user) + "/" + str(int(time()))
                         fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
                             base_url=urljoin(settings.MEDIA_URL, folder+'/')
                             )
@@ -1051,7 +1065,7 @@ def xml_upload(request):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                             response = dumps(ajaxdict)
                             return HttpResponse(response, status=200)
-                        return render(request, 
+                        return render(request,
                             'app/xml_upload.html',context_dict,status=200
                             )
                     else :
@@ -1062,7 +1076,7 @@ def xml_upload(request):
                             response = dumps(ajaxdict)
                             return HttpResponse(response,status=400)
                         context_dict["error"] = "No file uploaded. Please upload a SPDX license XML file to edit."
-                        return render(request, 
+                        return render(request,
                             'app/xml_upload.html',context_dict,status=400
                             )
 
@@ -1077,7 +1091,7 @@ def xml_upload(request):
 
                 else:
                     ajaxdict["type"] = "error"
-                    ajaxdict["data"] = "Bad Request." 
+                    ajaxdict["data"] = "Bad Request."
                     response = dumps(ajaxdict)
                     return HttpResponse(response, status=400)
             except:
@@ -1088,7 +1102,7 @@ def xml_upload(request):
                     response = dumps(ajaxdict)
                     return HttpResponse(response, status=500)
                 context_dict["error"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                return render(request, 
+                return render(request,
                     'app/xml_upload.html',context_dict,status=500
                     )
         else :
@@ -1103,8 +1117,8 @@ def autocompleteModel(request):
         return HttpResponse( json.dumps( [ name for name in result ] ) )
     return HttpResponse()
 
-def xml_edit(request, page_id):
-    """View for editing the XML file
+def license_xml_edit(request, page_id):
+    """View for editing the License XML file
     returns editor.html """
     context_dict = {}
     if (page_id in request.session):
@@ -1117,11 +1131,39 @@ def xml_edit(request, page_id):
             context_dict["github_login"] = github_login
         context_dict["xml_text"] = request.session[page_id][0]
         context_dict["license_name"] = request.session[page_id][1]
-        return render(request, 
+        return render(request,
             'app/editor.html',context_dict,status=200
             )
     else:
         return HttpResponseRedirect('/app/xml_upload')
+
+
+def edit_license_xml(request, license_id=None):
+    """View for editing the XML file corresponsing to a license entry
+    returns editor.html """
+    context_dict = {}
+    ajaxdict = {}
+    if license_id:
+        if not LicenseRequest.objects.filter(id=license_id).exists():
+            return render(request,
+                '404.html',context_dict,status=404
+                )
+        if request.user.is_authenticated():
+            user = request.user
+            try:
+                github_login = user.social_auth.get(provider='github')
+            except UserSocialAuth.DoesNotExist:
+                github_login = None
+            context_dict["github_login"] = github_login
+        license_obj = LicenseRequest.objects.get(id=license_id)
+        context_dict["xml_text"] = license_obj.xml
+        context_dict["license_name"] = license_obj.fullname
+        return render(request,
+            'app/editor.html',context_dict,status=200
+            )
+    else:
+        return HttpResponseRedirect('/app/license_requests')
+
 
 def update_session_variables(request):
     """ View for updating the XML text in the session variable """
@@ -1219,16 +1261,16 @@ def loginuser(request):
                     context_dict["invalid"] = "Your account is disabled."
                     return render(request,
                         "app/login.html",context_dict,status=401
-                        )    
+                        )
             else:
                 if (request.is_ajax()):
                     return HttpResponse("Invalid login details supplied.",status=403)
                 context_dict['invalid']="Invalid login details supplied."
-                return render(request, 
+                return render(request,
                     'app/login.html',context_dict,status=403
                     )
         else:
-            return render(request, 
+            return render(request,
                 'app/login.html',context_dict
                 )
     else :
@@ -1336,7 +1378,7 @@ def checkusername(request):
         if (len(users)>0):
             return HttpResponse(dumps({"data": "Already Exist."}),status=404)
         else :
-            return HttpResponse(dumps({"data": "Success"}),status=200) 
+            return HttpResponse(dumps({"data": "Success"}),status=200)
     else :
         return HttpResponse(dumps({"data": "No username entered"}),status=400)
 
@@ -1356,7 +1398,7 @@ def handler404(request):
         context_instance = RequestContext(request),
         status=404
     )
-    
+
 def handler500(request):
     return render_to_response('app/500.html',
         context_instance = RequestContext(request)

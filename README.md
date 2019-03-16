@@ -28,8 +28,8 @@ sudo apt-get install g++ python-dev
 
 Windows users need a Python installation and C++ compiler:
 
-* Install some version of Python (2.7 or higher), e.g., [Anaconda](https://www.continuum.io/downloads) is a good choice for users not yet familiar with the language
-* Install a [Windows C++ Compiler](http://landinghub.visualstudio.com/visual-cpp-build-tools)
+* Install some version of Python (2.7 or higher), e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
+* Install a [Windows C++ Compiler](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
 ## Installation
 
@@ -49,7 +49,7 @@ Windows users need a Python installation and C++ compiler:
     ```bash
     python src/manage.py migrate
     ```
-5. (Optional) If you want use xml-editor with licenses/exceptions from [spdx license list](https://github.com/spdx/license-list-data/), download the license name database.
+5. (Optional) If you want use license-xml-editor with licenses/exceptions from [spdx license list](https://github.com/spdx/license-list-data/), download the license name database.
     ```bash
     python src/populate.py
     ```
