@@ -8,3 +8,4 @@ lxml==4.2.5
 social-auth-app-django==2.1.0
 #for testing
 selenium==3.14.1
+drf-yasg==1.14.0
