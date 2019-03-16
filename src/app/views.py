@@ -56,6 +56,8 @@ logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : 
 logger = logging.getLogger()
 from .forms import LicenseRequestForm
 from .models import LicenseRequest
+from ratelimit.decorators import ratelimit
+
 
 NORMAL = "normal"
 TESTS = "tests"
@@ -85,13 +87,23 @@ def about(request):
         'app/about.html',context_dict
         )
 
+@ratelimit(key='user_or_ip', rate='100/h', method=['POST'])
 def submitNewLicense(request):
     """ View for submit new licenses
     returns submit_new_license.html template
     """
     context_dict = {}
     ajaxdict = {}
+    was_limited = getattr(request, 'limited', False)
     if request.method=="POST":
+        if was_limited:
+            msg = "Sorry, your quota of hourly requests has been reached."
+            if (request.is_ajax()):
+                ajaxdict["type"] = "rate_limit"
+                ajaxdict["data"] = msg
+                response = dumps(ajaxdict)
+                return HttpResponse(response,status=401)
+            return HttpResponse(msg,status=401)
         if not request.user.is_authenticated():
             if (request.is_ajax()):
                 ajaxdict["type"] = "auth_error"

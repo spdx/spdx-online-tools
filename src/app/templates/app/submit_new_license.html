@@ -229,7 +229,7 @@ function checkform() {
                   $("#modal-header").removeClass("green-modal");
                   try {
                     var obj = JSON.parse(e.responseText);
-                    if (obj.type=="warning"){
+                    if (obj.type=="warning" || obj.type=="rate_limit"){
                       $("#modal-header").removeClass("red-modal");
                       $("#modal-header").addClass("yellow-modal");
                       $("#modal-title").html("Warning!");
