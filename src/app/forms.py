@@ -74,6 +74,7 @@ class LicenseRequestForm(forms.Form):
         super(LicenseRequestForm, self).__init__(*args,**kwargs)
         self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email)
 
+    licenseAuthorName = forms.CharField(label="License Author name", max_length=100, required=False)
     fullname = forms.CharField(label="Fullname", max_length=70)
     shortIdentifier = forms.CharField(label='Short identifier', max_length=25)
     sourceUrl = forms.CharField(label='Source / URL', required=False)

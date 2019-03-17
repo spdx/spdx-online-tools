@@ -3,7 +3,7 @@
 {% load staticfiles %}
 {% block body1 %}
 
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css"> 
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css">
 
 <div id="messages" class="messages">
 </div>
@@ -16,15 +16,17 @@
         <tr>
           <th>Fullname</th>
           <th>Short Identifier</th>
+          <th>License author name</th>
           <th>Submission Date (UTC)</th>
         </tr>
       </thead>
       <tbody>
         {% if licenseRequests %}
-        {% for elem in licenseRequests %}    
+        {% for elem in licenseRequests %}
           <tr class='clickableRow' id={{elem.id}}>
             <td>{{elem.fullname}}</td>
             <td>{{elem.shortIdentifier}}</td>
+            <td>{{elem.licenseAuthorName}}</td>
             <td>{{elem.submissionDatetime}}</td>
           </tr>
         {% endfor %}
@@ -32,13 +34,13 @@
       </tbody>
     </table>
 
-{% include "app/modal.html" %} 
+{% include "app/modal.html" %}
 </div>
 {% endblock %}
 {% block script_block %}
 
 <style>
-    th {text-align: center;} 
+    th {text-align: center;}
 </style>
 
 <script type="text/javascript">
