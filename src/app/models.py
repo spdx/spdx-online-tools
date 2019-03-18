@@ -33,6 +33,7 @@ class LicenseRequest(models.Model):
     shortIdentifier = models.CharField(max_length=25)
     submissionDatetime = models.DateTimeField(auto_now_add=True)
     userEmail = models.EmailField(max_length=35)
+    notes = models.CharField(max_length=255, default="")
     xml = models.TextField()
     archive = models.BooleanField(default=False)
 
