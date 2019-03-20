@@ -114,20 +114,21 @@ def submitNewLicense(request):
                     licenseOsi = form.cleaned_data['osiApproved']
                     licenseSourceUrls = [form.cleaned_data['sourceUrl']]
                     licenseHeader = form.cleaned_data['licenseHeader']
-                    licenseNotes = form.cleaned_data['notes']
+                    licenseComments = form.cleaned_data['comments']
                     licenseText = form.cleaned_data['text']
                     userEmail = form.cleaned_data['userEmail']
+                    licenseNotes = ''
                     xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                         licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                     now = datetime.datetime.now()
-                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName,shortIdentifier=licenseIdentifier,
-                        submissionDatetime=now, userEmail=userEmail, xml=xml)
+                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
+                        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
                     licenseRequest.save()
                     urlType = NORMAL
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
-                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType)
+                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseOsi, token, urlType)
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -188,15 +189,15 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     xmlString = ET.tostring(root, method='xml').replace('>','>\n')
     return xmlString
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseOsi, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
-    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** URL: '
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** URL: '
     for url in licenseSourceUrls:
         body += url
         body += '\n'
-    body += '**4.** OSI Status: ' + licenseOsi
+    body += '**6.** OSI Status: ' + licenseOsi
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
