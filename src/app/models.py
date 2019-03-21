@@ -14,18 +14,21 @@
 from __future__ import unicode_literals
 from django.db import models
 from datetime import datetime
-from django import forms
 from django.contrib.auth.models import User
+
 
 class UserID(models.Model):
     user = models.OneToOneField(User)
-    organisation = models.CharField("Organisation",max_length=64, null=False, blank=False)
-    lastlogin = models.DateField("Last Login",default=datetime.now,blank=True)
+    organisation = models.CharField("Organisation", max_length=64, null=False, blank=False)
+    lastlogin = models.DateField("Last Login", default=datetime.now, blank=True)
+
     def __str__(self):
         return self.user.username
 
+
 class LicenseNames(models.Model):
     name = models.CharField(max_length=200)
+
 
 class LicenseRequest(models.Model):
     licenseAuthorName = models.CharField(max_length=100, default="")
@@ -33,14 +36,15 @@ class LicenseRequest(models.Model):
     shortIdentifier = models.CharField(max_length=25)
     submissionDatetime = models.DateTimeField(auto_now_add=True)
     userEmail = models.EmailField(max_length=35)
-    notes = models.CharField(max_length=255, default="")
     xml = models.TextField()
     archive = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return "%s" % (self.fullname)
+        return "%s" % self.fullname
+
+    @property
     def __str__(self):
-        return "%s" % (self.fullname)
+        return "%s" % self.fullname
 
     class Meta:
         verbose_name = "LicenseRequest"

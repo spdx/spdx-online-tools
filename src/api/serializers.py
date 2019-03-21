@@ -13,12 +13,10 @@
 
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import User, Group          
-
 from rest_framework import serializers
 
-from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload
- 
+from api.models import ValidateFileUpload, ConvertFileUpload, CompareFileUpload, CheckLicenseFileUpload
+
 
 class ValidateSerializer(serializers.HyperlinkedModelSerializer):
     """POST validate API request fields"""
@@ -26,15 +24,19 @@ class ValidateSerializer(serializers.HyperlinkedModelSerializer):
         read_only=True,
         slug_field='id'
     )
+
     class Meta:
         model = ValidateFileUpload
         fields = ('created', 'file', 'owner')
 
+
 class ValidateSerializerReturn(serializers.ModelSerializer):
     """Response Fields to be returned to the user"""
+
     class Meta:
         model = ValidateFileUpload
-        fields = ('created', 'file', 'owner','result','status')
+        fields = ('created', 'file', 'owner', 'result', 'status')
+
 
 class ConvertSerializer(serializers.HyperlinkedModelSerializer):
     """POST convert API request fields"""
@@ -42,15 +44,20 @@ class ConvertSerializer(serializers.HyperlinkedModelSerializer):
         read_only=True,
         slug_field='id'
     )
+
     class Meta:
         model = ConvertFileUpload
-        fields = ('created', 'file', 'owner','cfilename','from_format','to_format','tagToRdfFormat')
+        fields = ('created', 'file', 'owner', 'cfilename', 'from_format', 'to_format', 'tagToRdfFormat')
+
 
 class ConvertSerializerReturn(serializers.ModelSerializer):
     """Response Fields to be returned to the user"""
+
     class Meta:
         model = ConvertFileUpload
-        fields = ('created', 'file', 'owner','result','from_format','to_format','tagToRdfFormat','cfilename','message','status')
+        fields = ('created', 'file', 'owner', 'result', 'from_format',
+                  'to_format', 'tagToRdfFormat', 'cfilename', 'message', 'status')
+
 
 class CompareSerializer(serializers.HyperlinkedModelSerializer):
     """POST compare API request fields"""
@@ -58,15 +65,19 @@ class CompareSerializer(serializers.HyperlinkedModelSerializer):
         read_only=True,
         slug_field='id'
     )
+
     class Meta:
         model = CompareFileUpload
-        fields = ('created', 'file1','file2', 'owner','rfilename')
+        fields = ('created', 'file1', 'file2', 'owner', 'rfilename')
+
 
 class CompareSerializerReturn(serializers.ModelSerializer):
     """Response Fields to be returned to the user"""
+
     class Meta:
         model = CompareFileUpload
-        fields = ('created', 'file1','file2', 'owner','result','rfilename','message','status')
+        fields = ('created', 'file1', 'file2', 'owner', 'result', 'rfilename', 'message', 'status')
+
 
 class CheckLicenseSerializer(serializers.HyperlinkedModelSerializer):
     """POST validate API request fields"""
@@ -74,12 +85,15 @@ class CheckLicenseSerializer(serializers.HyperlinkedModelSerializer):
         read_only=True,
         slug_field='id'
     )
+
     class Meta:
         model = CheckLicenseFileUpload
         fields = ('created', 'file', 'owner')
 
+
 class CheckLicenseSerializerReturn(serializers.ModelSerializer):
     """Response Fields to be returned to the user"""
+
     class Meta:
         model = CheckLicenseFileUpload
-        fields = ('created', 'file', 'owner','result','status')
+        fields = ('created', 'file', 'owner', 'result', 'status')

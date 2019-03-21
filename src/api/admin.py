@@ -15,8 +15,7 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
-from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload
-
+from api.models import ValidateFileUpload, ConvertFileUpload, CompareFileUpload
 
 admin.site.register(ValidateFileUpload)
 admin.site.register(CompareFileUpload)

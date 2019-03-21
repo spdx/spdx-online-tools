@@ -11,10 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import requests
-import json
 import base64
+import json
 import logging
+
+import requests
 from app.models import UserID, User
 
 
@@ -24,90 +25,92 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
 
     url = "https://api.github.com/"
     headers = {
-        "Accept":"application/vnd.github.machine-man-preview+json",
-        "Authorization":"bearer "+token,
-        "Content-Type":"application/json",
+        "Accept": "application/vnd.github.machine-man-preview+json",
+        "Authorization": "bearer " + token,
+        "Content-Type": "application/json",
     }
 
     """ Making a fork """
-    fork_url = url+"repos/spdx/license-list-XML/forks"
+    fork_url = url + "repos/spdx/license-list-XML/forks"
     response = requests.get(fork_url, headers=headers)
     data = json.loads(response.text)
     forks = [fork["owner"]["login"] for fork in data]
-    if not username in forks:
+    if username not in forks:
         """ If user has not forked the repo """
         response = requests.post(fork_url, headers=headers)
         if response.status_code != 202:
-            logger.error("[Pull Request] Error occured while creating fork, for %s user. "%(username)+response.text)
+            logger.error("[Pull Request] Error occured while creating fork, for %s user. " % (username) + response.text)
             return {
-                "type":"error",
-                "message":"Error occured while creating a fork of the repo. Please try again later or contact the SPDX Team."
+                "type": "error",
+                "message": "Error occured while creating a fork of the repo. Please try again later or contact the SPDX Team."
             }
     else:
-        if(updateUpstream=="true"):
+        if (updateUpstream == "true"):
             """ If user wants to update the forked repo with upstream master """
-            update_url = url+"repos/spdx/license-list-XML/git/refs/heads/master"
+            update_url = url + "repos/spdx/license-list-XML/git/refs/heads/master"
             response = requests.get(update_url, headers=headers)
             data = json.loads(response.text)
             sha = data["object"]["sha"]
             body = {
-                "sha":sha,
+                "sha": sha,
                 "force": True
             }
-            update_url = url+"repos/%s/license-list-XML/git/refs/heads/master"%(username)
+            update_url = url + "repos/%s/license-list-XML/git/refs/heads/master" % (username)
             response = requests.patch(update_url, headers=headers, data=json.dumps(body))
-            if response.status_code!=200:
-                logger.error("[Pull Request] Error occured while updating fork, for %s user. "%(username)+response.text)
+            if response.status_code != 200:
+                logger.error(
+                    "[Pull Request] Error occured while updating fork, for %s user. " % (username) + response.text)
                 return {
-                    "type":"error",
-                    "message":"Error occured while updating fork with the upstream master. Please try again later or contact the SPDX Team."
+                    "type": "error",
+                    "message": "Error occured while updating fork with the upstream master. Please try again later or contact the SPDX Team."
                 }
 
-
     """ Getting ref of master branch """
-    ref_url = url + "repos/%s/license-list-XML/git/refs/heads/master"%(username)
+    ref_url = url + "repos/%s/license-list-XML/git/refs/heads/master" % username
     response = requests.get(ref_url, headers=headers)
     if response.status_code != 200:
-        logger.error("[Pull Request] Error occured while getting ref of master branch, for %s user. "%(username)+response.text)
+        logger.error("[Pull Request] Error occured while getting ref of master branch, for %s user. " % (
+            username) + response.text)
         return {
-            "type":"error",
-            "message":"Some error occured while getting the ref of master branch. Please try again later or contact the SPDX Team."
+            "type": "error",
+            "message": "Some error occured while getting the ref of master branch. Please try again later or contact the SPDX Team."
         }
     data = json.loads(response.text)
     sha = str(data["object"]["sha"])
 
     """ Getting names of all branches """
-    branch_url = url + "repos/%s/license-list-XML/branches"%(username)
+    branch_url = url + "repos/%s/license-list-XML/branches" % (username)
     response = requests.get(branch_url, headers=headers)
     if response.status_code != 200:
-        logger.error("[Pull Request] Error occured while getting branch names, for %s user. "%(username)+response.text)
+        logger.error(
+            "[Pull Request] Error occured while getting branch names, for %s user. " % (username) + response.text)
         return {
-            "type":"error",
-            "message":"Some error occured while getting branch names. Please try again later or contact the SPDX Team."
+            "type": "error",
+            "message": "Some error occured while getting branch names. Please try again later or contact the SPDX Team."
         }
     data = json.loads(response.text)
     branch_names = [i["name"] for i in data]
-    
+
     """ Creating branch """
     if branchName in branch_names:
-        count=1
+        count = 1
         while True:
-            if((branchName+str(count)) in branch_names):
-                count+=1
+            if (branchName + str(count)) in branch_names:
+                count += 1
             else:
-                branchName = branchName+str(count)
+                branchName = branchName + str(count)
                 break
-    create_branch_url = url + "repos/%s/license-list-XML/git/refs"%(username)
+    create_branch_url = url + "repos/%s/license-list-XML/git/refs" % username
     body = {
-        "ref":"refs/heads/"+branchName,
-        "sha":sha,
+        "ref": "refs/heads/" + branchName,
+        "sha": sha,
     }
     response = requests.post(create_branch_url, headers=headers, data=json.dumps(body))
     if response.status_code != 201:
-        logger.error("[Pull Request] Error occured while creating branch, for %s user. "%(username)+response.text)
+        logger.error("[Pull Request] Error occured while creating branch, for %s user. " % (username) + response.text)
         return {
-            "type":"error",
-            "message":"Some error occured while creating the branch. Please try again later or contact the SPDX Team."
+            "type": "error",
+            "message": "Some error occured while creating the branch. Please try again later or contact the SPDX Team."
         }
     data = json.loads(response.text)
     branch_sha = data["object"]["sha"]
@@ -116,17 +119,17 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     if fileName[-4:] == ".xml":
         fileName = fileName[:-4]
     fileName += ".xml"
-    commit_url = url + "repos/%s/license-list-XML/contents/src/%s"%(username, fileName)
+    commit_url = url + "repos/%s/license-list-XML/contents/src/%s" % (username, fileName)
     xmlText = xmlText.encode('utf-8')
     fileContent = base64.b64encode(xmlText)
     body = {
-        "path":"src/"+fileName,
-        "message":commitMessage,
-        "content":fileContent,
-        "branch":branchName,
+        "path": "src/" + fileName,
+        "message": commitMessage,
+        "content": fileContent,
+        "branch": branchName,
     }
     """ Check if file already exists """
-    file_url = url + "repos/spdx/license-list-XML/contents/src/%s"%(fileName)
+    file_url = url + "repos/spdx/license-list-XML/contents/src/%s" % fileName
     response = requests.get(file_url, headers=headers)
     if response.status_code == 200:
         """ Creating Commit by updating the file """
@@ -134,11 +137,11 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         file_sha = data["sha"]
         body["sha"] = file_sha
     response = requests.put(commit_url, headers=headers, data=json.dumps(body))
-    if not (response.status_code==201 or response.status_code==200):
-        logger.error("[Pull Request] Error occured while making commit, for %s user. "%(username)+response.text)
+    if not (response.status_code == 201 or response.status_code == 200):
+        logger.error("[Pull Request] Error occured while making commit, for %s user. " % (username) + response.text)
         return {
-            "type":"error",
-            "message":"Some error occured while making commit. Please try again later or contact the SPDX Team."
+            "type": "error",
+            "message": "Some error occured while making commit. Please try again later or contact the SPDX Team."
         }
 
     """ Making Pull Request """
@@ -146,21 +149,24 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     body = {
         "title": prTitle,
         "body": prBody,
-        "head": "%s:%s"%(username, branchName),
+        "head": "%s:%s" % (username, branchName),
         "base": "master",
     }
     response = requests.post(pr_url, headers=headers, data=json.dumps(body))
     if response.status_code != 201:
-        logger.error("[Pull Request] Error occured while making pull request, for %s user. "%(username)+response.text)
+        logger.error(
+            "[Pull Request] Error occured while making pull request, for %s user. " % username + response.text)
         return {
-            "type":"error",
-            "message":"Some error occured while making the pull request. Please try again later or contact the SPDX Team."
+            "type": "error",
+            "message": "Some error occured while making the pull request. \
+            Please try again later or contact the SPDX Team."
         }
     data = json.loads(response.text)
     return {
-        "type":"success",
+        "type": "success",
         "pr_url": data["html_url"],
     }
+
 
 def save_profile(backend, user, response, *args, **kwargs):
     """ Pipeline for saving user's info in UserID model when register using GitHub """
@@ -169,36 +175,37 @@ def save_profile(backend, user, response, *args, **kwargs):
             profile = UserID()
             username = response.get('login')
             user = User.objects.filter(username=username)[0]
-            profile.user_id=user.id
-            profile.organisation='none'
+            profile.user_id = user.id
+            profile.organisation = 'none'
             profile.save()
         except:
             pass
+
 
 def check_license_name(name):
     """ Check if a license name exists """
     license_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json"
     data = requests.get(license_json).text
     data = json.loads(data)
-    url= "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/"
+    url = "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/"
     for license in data["licenses"]:
-        if(license["licenseId"] == name):
-            url+=name
+        if license["licenseId"] == name:
+            url += name
             return [url, name]
-        elif(license["name"] == name):
-            url+=license["licenseId"]
+        elif license["name"] == name:
+            url += license["licenseId"]
             return [url, license["licenseId"]]
 
     """ Check if an exception name exists """
     exceptions_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/exceptions.json"
     data = requests.get(exceptions_json).text
     data = json.loads(data)
-    url= "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/exceptions/"
+    url = "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/exceptions/"
     for exception in data["exceptions"]:
-        if(exception["licenseExceptionId"] == name):
+        if exception["licenseExceptionId"] == name:
             url += name
             return [url, name]
-        elif(exception["name"] == name):
+        elif exception["name"] == name:
             url += exception["licenseExceptionId"]
             return [url, exception["licenseExceptionId"]]
 

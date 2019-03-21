@@ -93,7 +93,7 @@ def submitNewLicense(request):
     ajaxdict = {}
     if request.method=="POST":
         if not request.user.is_authenticated():
-            if (request.is_ajax()):
+            if request.is_ajax()):
                 ajaxdict["type"] = "auth_error"
                 ajaxdict["data"] = "Please login using GitHub to use this feature."
                 response = dumps(ajaxdict)
@@ -114,26 +114,25 @@ def submitNewLicense(request):
                     licenseOsi = form.cleaned_data['osiApproved']
                     licenseSourceUrls = [form.cleaned_data['sourceUrl']]
                     licenseHeader = form.cleaned_data['licenseHeader']
-                    licenseComments = form.cleaned_data['comments']
+                    licenseNotes = form.cleaned_data['notes']
                     licenseText = form.cleaned_data['text']
                     userEmail = form.cleaned_data['userEmail']
-                    licenseNotes = ''
                     xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                         licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                     now = datetime.datetime.now()
-                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName,shortIdentifier=licenseIdentifier,
+                        submissionDatetime=now, userEmail=userEmail, xml=xml)
                     licenseRequest.save()
                     urlType = NORMAL
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
-                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseOsi, token, urlType)
+                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType)
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
                 """ User not authenticated with GitHub """
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict["type"] = "auth_error"
                     ajaxdict["data"] = "Please login using GitHub to use this feature."
                     response = dumps(ajaxdict)
@@ -142,7 +141,7 @@ def submitNewLicense(request):
         except:
             """ Other errors raised """
             logger.error(str(format_exc()))
-            if (request.is_ajax()):
+            if request.is_ajax()):
                 ajaxdict["type"] = "error"
                 ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
                 response = dumps(ajaxdict)
@@ -189,15 +188,15 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     xmlString = ET.tostring(root, method='xml').replace('>','>\n')
     return xmlString
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseOsi, token, urlType):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
-    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** URL: '
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** URL: '
     for url in licenseSourceUrls:
         body += url
         body += '\n'
-    body += '**6.** OSI Status: ' + licenseOsi
+    body += '**4.** OSI Status: ' + licenseOsi
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
@@ -327,7 +326,7 @@ def validate(request):
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
-            if (jpype.isJVMStarted()==0):
+            if jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it."""
                 classpath = settings.JAR_ABSOLUTE_PATH
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
@@ -348,9 +347,9 @@ def validate(request):
                     uploaded_file_url = fs.url(filename)
                     """ Call the java function with parameters """
                     retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url))
-                    if (len(retval) > 0):
+                    if len(retval) > 0):
                         """ If any warnings are returned """
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["type"] = "warning"
                             ajaxdict["data"] = "The following warning(s) were raised: " + str(retval)
                             response = dumps(ajaxdict)
@@ -361,7 +360,7 @@ def validate(request):
                         return render(request,
                             'app/validate.html',context_dict,status=400
                             )
-                    if (request.is_ajax()):
+                    if request.is_ajax()):
                         """ Valid SPDX Document """
                         ajaxdict["data"] = "This SPDX Document is valid."
                         response = dumps(ajaxdict)
@@ -371,7 +370,7 @@ def validate(request):
                     return HttpResponse("This SPDX Document is valid.",status=200)
                 else :
                     """ If no file uploaded."""
-                    if (request.is_ajax()):
+                    if request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["type"] = "error"
                         ajaxdict["data"] = "No file uploaded"
@@ -385,7 +384,7 @@ def validate(request):
                         )
             except jpype.JavaException as ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = jpype.JavaException.message(ex)
@@ -399,7 +398,7 @@ def validate(request):
                     )
             except MultiValueDictKeyError:
                 """ If no files selected"""
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "No files selected."
@@ -413,7 +412,7 @@ def validate(request):
                  )
             except :
                 """ Other error raised """
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = format_exc()
@@ -469,14 +468,14 @@ def validate_xml(request):
                     try:
                         xmlschema.assertValid(xml_input)
                         """ If the xml is valid """
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["type"] = "valid"
                             ajaxdict["data"] = "This XML is valid against SPDX License Schema."
                             response = dumps(ajaxdict)
                             return HttpResponse(response,status=200)
                         return HttpResponse("This XML is valid against SPDX License Schema.",status=200)
                     except Exception as e:
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["type"] = "invalid"
                             ajaxdict["data"] = "This XML is not valid against SPDX License Schema.\n"+str(e)
                             response = dumps(ajaxdict)
@@ -484,7 +483,7 @@ def validate_xml(request):
                         return HttpResponse("This XML is not valid against SPDX License Schema.\n"+str(e),status=200)
                 else :
                     """ If no xml text is given."""
-                    if (request.is_ajax()):
+                    if request.is_ajax()):
                         ajaxdict["type"] = "error"
                         ajaxdict["data"] = "No XML text given."
                         response = dumps(ajaxdict)
@@ -492,7 +491,7 @@ def validate_xml(request):
                     return HttpResponse("No XML text given.", status=400)
             except etree.XMLSyntaxError as e:
                 """ XML not valid """
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "XML Parsing Error.\n The XML is not valid. Please correct the XML text and try again."
                     response = dumps(ajaxdict)
@@ -501,7 +500,7 @@ def validate_xml(request):
             except :
                 """ Other error raised """
                 logger.error(str(format_exc()))
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
                     response = dumps(ajaxdict)
@@ -520,7 +519,7 @@ def compare(request):
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
-            if (jpype.isJVMStarted()==0):
+            if jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
                 classpath =settings.JAR_ABSOLUTE_PATH
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
@@ -539,7 +538,7 @@ def compare(request):
                     callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
                     erroroccurred = False
                     warningoccurred = False
-                    if (len(request.FILES.getlist("files"))<2):
+                    if len(request.FILES.getlist("files"))<2):
                         context_dict["error"]= "Please select atleast 2 files"
                         jpype.detachThreadFromJVM()
                         return render(request,
@@ -557,7 +556,7 @@ def compare(request):
                         try :
                             """Call the java function to verify for valid RDF Files."""
                             retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
-                            if (len(retval) > 0):
+                            if len(retval) > 0):
                                 """If warnings raised"""
                                 warningoccurred = True
                                 filelist.append(myfile.name)
@@ -576,13 +575,13 @@ def compare(request):
                             filelist.append(myfile.name)
                             errorlist.append(format_exc())
 
-                    if (erroroccurred==False):
+                    if erroroccurred==False):
                         """ If no errors in any of the file,call the java function with parameters as list"""
                         try :
                             compareclass.onlineFunction(callfunc)
                         except :
                             """Error raised by onlineFunction"""
-                            if (request.is_ajax()):
+                            if request.is_ajax()):
                                 ajaxdict["type"] = "warning2"
                                 ajaxdict["files"] = filelist
                                 ajaxdict["errors"] = errorlist
@@ -596,9 +595,9 @@ def compare(request):
                             return render(request,
                                 'app/compare.html',context_dict,status=400
                                 )
-                        if (warningoccurred==False):
+                        if warningoccurred==False):
                             """If no warning raised """
-                            if (request.is_ajax()):
+                            if request.is_ajax()):
                                 ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ rfilename
                                 response = dumps(ajaxdict)
                                 jpype.detachThreadFromJVM()
@@ -612,7 +611,7 @@ def compare(request):
                                 )
                             #return HttpResponseRedirect(settings.MEDIA_URL+ folder + "/"+rfilename)
                         else :
-                            if (request.is_ajax()):
+                            if request.is_ajax()):
                                 ajaxdict["type"] = "warning"
                                 ajaxdict["files"] = filelist
                                 ajaxdict["errors"] = errorlist
@@ -629,7 +628,7 @@ def compare(request):
                                 'app/compare.html',context_dict,status=406
                                 )
                     else :
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["files"] = filelist
                             ajaxdict["type"] = "error"
                             ajaxdict["errors"] = errorlist
@@ -652,7 +651,7 @@ def compare(request):
 
             except MultiValueDictKeyError:
                 """ If no files uploaded"""
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     filelist.append("Files not selected.")
                     errorlist.append("Please select atleast 2 files.")
                     ajaxdict["files"] = filelist
@@ -676,13 +675,13 @@ def compare(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def getFileFormat(to_format):
-    if (to_format=="Tag"):
+    if to_format=="Tag"):
         return ".spdx"
-    elif (to_format=="RDF"):
+    elif to_format=="RDF"):
         return ".rdf"
-    elif (to_format=="Spreadsheet"):
+    elif to_format=="Spreadsheet"):
         return ".xlsx"
-    elif (to_format=="HTML"):
+    elif to_format=="HTML"):
         return ".html"
     else :
         return ".invalid"
@@ -694,7 +693,7 @@ def convert(request):
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
-            if (jpype.isJVMStarted()==0):
+            if jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
                 classpath =settings.JAR_ABSOLUTE_PATH
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
@@ -721,20 +720,20 @@ def convert(request):
                         cfileformat = getFileFormat(option2)
                     convertfile =  request.POST["cfilename"] + cfileformat
                     """ Call the java function with parameters as list """
-                    if (option1=="Tag"):
+                    if option1=="Tag"):
                         print ("Verifing for Tag/Value Document")
-                        if (option2=="RDF"):
+                        if option2=="RDF"):
                             option3 = request.POST["tagToRdfFormat"]
                             content_type = "application/rdf+xml"
                             tagtordfclass = package.TagToRDF
                             retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+convertfile, option3])
-                            if (len(retval) > 0):
+                            if len(retval) > 0):
                                 warningoccurred = True
-                        elif (option2=="Spreadsheet"):
+                        elif option2=="Spreadsheet"):
                             content_type = "application/vnd.ms-excel"
                             tagtosprdclass = package.TagToSpreadsheet
                             retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
+                            if len(retval) > 0):
                                 warningoccurred = True
                         else :
                             jpype.detachThreadFromJVM()
@@ -742,25 +741,25 @@ def convert(request):
                             return render(request,
                                 'app/convert.html',context_dict,status=400
                                 )
-                    elif (option1=="RDF"):
+                    elif option1=="RDF"):
                         print ("Verifing for RDF Document")
-                        if (option2=="Tag"):
+                        if option2=="Tag"):
                             content_type = "text/tag-value"
                             rdftotagclass = package.RdfToTag
                             retval = rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
+                            if len(retval) > 0):
                                 warningoccurred = True
-                        elif (option2=="Spreadsheet"):
+                        elif option2=="Spreadsheet"):
                             content_type = "application/vnd.ms-excel"
                             rdftosprdclass = package.RdfToSpreadsheet
                             retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
+                            if len(retval) > 0):
                                 warningoccurred = True
-                        elif (option2=="HTML"):
+                        elif option2=="HTML"):
                             content_type = "text/html"
                             rdftohtmlclass = package.RdfToHtml
                             retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
+                            if len(retval) > 0):
                                 warningoccurred = True
                         else :
                             jpype.detachThreadFromJVM()
@@ -768,19 +767,19 @@ def convert(request):
                             return render(request,
                                 'app/convert.html',context_dict,status=400
                                 )
-                    elif (option1=="Spreadsheet"):
+                    elif option1=="Spreadsheet"):
                         print ("Verifing for Spreadsheet Document")
-                        if (option2=="Tag"):
+                        if option2=="Tag"):
                             content_type = "text/tag-value"
                             sprdtotagclass = package.SpreadsheetToTag
                             retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
+                            if len(retval) > 0):
                                 warningoccurred = True
-                        elif (option2=="RDF"):
+                        elif option2=="RDF"):
                             content_type = "application/rdf+xml"
                             sprdtordfclass = package.SpreadsheetToRDF
                             retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
+                            if len(retval) > 0):
                                 warningoccurred = True
                         else :
                             jpype.detachThreadFromJVM()
@@ -788,9 +787,9 @@ def convert(request):
                             return render(request,
                                 'app/convert.html',context_dict,status=400
                                 )
-                    if (warningoccurred==False) :
+                    if warningoccurred==False) :
                         """ If no warnings raised """
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                             response = dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
@@ -804,7 +803,7 @@ def convert(request):
                             )
                         #return HttpResponseRedirect(settings.MEDIA_URL + folder + "/" + convertfile)
                     else :
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["type"] = "warning"
                             ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ": " + str(retval)
                             ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
@@ -829,7 +828,7 @@ def convert(request):
                         )
             except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application"""
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = jpype.JavaException.message(ex)
                     response = dumps(ajaxdict)
@@ -843,7 +842,7 @@ def convert(request):
                     )
             except MultiValueDictKeyError:
                 """ If no files uploaded"""
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "No files selected."
                     response = dumps(ajaxdict)
@@ -857,7 +856,7 @@ def convert(request):
                     )
             except :
                 """ Other error raised """
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = format_exc()
                     response = dumps(ajaxdict)
@@ -884,7 +883,7 @@ def check_license(request):
         context_dict={}
         if request.method == 'POST':
             licensetext = request.POST.get('licensetext')
-            if (jpype.isJVMStarted()==0):
+            if jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
                 classpath =settings.JAR_ABSOLUTE_PATH
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
@@ -895,13 +894,13 @@ def check_license(request):
             try:
                 """Call the java function with parameter"""
                 matching_licenses = compareclass.matchingStandardLicenseIds(licensetext)
-                if (matching_licenses and len(matching_licenses) > 0):
+                if matching_licenses and len(matching_licenses) > 0):
                     matching_str = "The following license ID(s) match: "
                     matching_str+= matching_licenses[0]
                     for i in range(1,len(matching_licenses)):
                         matching_str += ", "
                         matching_str += matching_licenses[i]
-                    if (request.is_ajax()):
+                    if request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = matching_str
                         response = dumps(ajaxdict)
@@ -913,7 +912,7 @@ def check_license(request):
                         'app/check_license.html',context_dict,status=200
                         )
                 else:
-                    if (request.is_ajax()):
+                    if request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = "There are no matching SPDX listed licenses"
                         response = dumps(ajaxdict)
@@ -926,7 +925,7 @@ def check_license(request):
                         )
             except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application """
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = jpype.JavaException.message(ex)
                     response = dumps(ajaxdict)
@@ -939,7 +938,7 @@ def check_license(request):
                     )
             except :
                 """ Other exception raised """
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = format_exc()
                     response = dumps(ajaxdict)
@@ -980,7 +979,7 @@ def xml_upload(request):
                             'app/editor.html',context_dict,status=200
                             )
                     else:
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["type"] = "error"
                             ajaxdict["data"] = "No license XML text provided. Please input some license XML text to edit."
                             response = dumps(ajaxdict)
@@ -994,7 +993,7 @@ def xml_upload(request):
                     """ If license name is provided by the user """
                     name = request.POST["licenseName"]
                     if len(name) <= 0:
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["type"] = "error"
                             ajaxdict["data"] = "No license name given. Please provide a SPDX license or exception name to edit."
                             response = dumps(ajaxdict)
@@ -1006,7 +1005,7 @@ def xml_upload(request):
 
                     url = utils.check_license_name(name)
                     if url[0] is False:
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["type"] = "error"
                             ajaxdict["data"] = "License or Exception name does not exist. Please provide a valid SPDX license or exception name to edit."
                             response = dumps(ajaxdict)
@@ -1020,7 +1019,7 @@ def xml_upload(request):
                     if(response.status_code == 200):
                         page_id = request.POST['page_id']
                         request.session[page_id] = [response.text, url[1]]
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                             response = dumps(ajaxdict)
                             return HttpResponse(response, status=200)
@@ -1028,7 +1027,7 @@ def xml_upload(request):
                                 'app/editor.html',context_dict,status=200
                                 )
                     else:
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["type"] = "error"
                             ajaxdict["data"] = "The application could not be connected. Please try again."
                             response = dumps(ajaxdict)
@@ -1044,7 +1043,7 @@ def xml_upload(request):
                         """ Saving XML file to the media directory """
                         xml_file = request.FILES['file']
                         if not xml_file.name.endswith(".xml"):
-                            if (request.is_ajax()):
+                            if request.is_ajax()):
                                 ajaxdict["type"] = "error"
                                 ajaxdict["data"] = "Please select a SPDX license XML file."
                                 response = dumps(ajaxdict)
@@ -1062,7 +1061,7 @@ def xml_upload(request):
                         page_id = request.POST['page_id']
                         with open(str(fs.location+'/'+filename), 'r') as f:
                             request.session[page_id] = [f.read(), ""]
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
                             response = dumps(ajaxdict)
                             return HttpResponse(response, status=200)
@@ -1071,7 +1070,7 @@ def xml_upload(request):
                             )
                     else :
                         """ If no file is uploaded """
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["type"] = "error"
                             ajaxdict["data"] = "No file uploaded. Please upload a SPDX license XML file to edit."
                             response = dumps(ajaxdict)
@@ -1097,7 +1096,7 @@ def xml_upload(request):
                     return HttpResponse(response, status=400)
             except:
                 logger.error(str(format_exc()))
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
                     response = dumps(ajaxdict)
@@ -1122,7 +1121,7 @@ def license_xml_edit(request, page_id):
     """View for editing the License XML file
     returns editor.html """
     context_dict = {}
-    if (page_id in request.session):
+    if page_id in request.session):
         if request.user.is_authenticated():
             user = request.user
             try:
@@ -1227,7 +1226,7 @@ def pull_request(request):
                     response = utils.makePullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"])
                     if(response["type"]=="success"):
                         """ PR made successfully """
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["type"] = "success"
                             ajaxdict["data"] = response["pr_url"]
                             response = dumps(ajaxdict)
@@ -1235,7 +1234,7 @@ def pull_request(request):
                         return HttpResponse(response["pr_url"],status=200)
                     else:
                         """ Error while making PR """
-                        if (request.is_ajax()):
+                        if request.is_ajax()):
                             ajaxdict["type"] = "pr_error"
                             ajaxdict["data"] = response["message"]
                             response = dumps(ajaxdict)
@@ -1243,7 +1242,7 @@ def pull_request(request):
                         return HttpResponse(response["message"],status=500)
                 except UserSocialAuth.DoesNotExist:
                     """ User not authenticated with GitHub """
-                    if (request.is_ajax()):
+                    if request.is_ajax()):
                         ajaxdict["type"] = "auth_error"
                         ajaxdict["data"] = "Please login using GitHub to use this feature."
                         response = dumps(ajaxdict)
@@ -1252,7 +1251,7 @@ def pull_request(request):
             except:
                 """ Other errors raised """
                 logger.error(str(format_exc()))
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
                     response = dumps(ajaxdict)
@@ -1277,7 +1276,7 @@ def loginuser(request):
                 #add status  choice here
                 if user.is_active:
                     login(request, user)
-                    if (request.is_ajax()):
+                    if request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = "Success"
                         ajaxdict["next"] = "/app/"
@@ -1285,14 +1284,14 @@ def loginuser(request):
                         return HttpResponse(response)
                     return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
                 else:
-                    if (request.is_ajax()):
+                    if request.is_ajax()):
                         return HttpResponse("Your account is disabled.",status=401)
                     context_dict["invalid"] = "Your account is disabled."
                     return render(request,
                         "app/login.html",context_dict,status=401
                         )
             else:
-                if (request.is_ajax()):
+                if request.is_ajax()):
                     return HttpResponse("Invalid login details supplied.",status=403)
                 context_dict['invalid']="Invalid login details supplied."
                 return render(request,
@@ -1404,7 +1403,7 @@ def checkusername(request):
     """Returns whether username already taken or not"""
     if 'username' in request.POST:
         users = User.objects.filter(username=request.POST["username"])
-        if (len(users)>0):
+        if len(users)>0):
             return HttpResponse(dumps({"data": "Already Exist."}),status=404)
         else :
             return HttpResponse(dumps({"data": "Success"}),status=200)
