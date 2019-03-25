@@ -1260,7 +1260,7 @@ class LimitRequestsTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         self.factory = RequestFactory()
-        options.add_argument('-headless')
+        # options.add_argument('-headless')
         self.selenium = webdriver.Firefox(firefox_options=options)
         super(LimitRequestsTestCase, self).setUp()
 
@@ -1278,7 +1278,7 @@ class LimitRequestsTestCase(StaticLiveServerTestCase):
 
     def test_post_license_submit_request(self):
         """Check if the license submit post request is limited"""
-        request = self.factory.post('/license_requests')
+        request = self.factory.post('/submit_new_license')
         request.user = AnonymousUser()
         # Limit the request
         request.limited = True
