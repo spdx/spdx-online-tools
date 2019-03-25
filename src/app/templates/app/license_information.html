@@ -9,7 +9,12 @@
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
     {% if licenseInformation %}
-<div class="panel-heading"> <p class="lead">{{licenseInformation.fullname}}</p> </div>
+<div class="panel-heading"> <p class="lead">{{licenseInformation.fullname}}
+        {% if licenseInformation.archive %}
+            <span class="label label-success">Archived</span>
+        {% endif %}
+    </p>
+</div>  
     {% endif %}
 <div class="panel-body">
     {% if licenseInformation %}
@@ -103,13 +108,16 @@
       window.location.href = "/app/edit_license_xml/"+license_id+"/";
     }
     $(document).ready(function () {
-        $("#licenserequestspage").addClass('linkactive');
+        if (document.location.href.match(/archive_requests/))
+            $("#archiverequestspage").addClass('linkactive');
+        else
+            $("#licenserequestspage").addClass('linkactive');
         });
     $("#editButton").on('click', function(event){
       /* if the user uploads the file */
       var form = new FormData($("#edit-license-xml")[0]);
       event.preventDefault();
       send_edit_request(form);
-    })
+    });
   </script>
 {% endblock %}

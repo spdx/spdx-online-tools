@@ -61,8 +61,8 @@ NORMAL = "normal"
 TESTS = "tests"
 
 TYPE_TO_URL = {
-NORMAL:  'https://api.github.com/repos/spdx/license-list-XML/issues',
-TESTS: 'https://api.github.com/repos/spdx/TEST-LicenseList-XML/issues',
+NORMAL:  settings.REPO_URL,
+TESTS: settings.DEV_REPO_URL,
 }
 
 import cgi
@@ -114,20 +114,21 @@ def submitNewLicense(request):
                     licenseOsi = form.cleaned_data['osiApproved']
                     licenseSourceUrls = [form.cleaned_data['sourceUrl']]
                     licenseHeader = form.cleaned_data['licenseHeader']
-                    licenseNotes = form.cleaned_data['notes']
+                    licenseComments = form.cleaned_data['comments']
                     licenseText = form.cleaned_data['text']
                     userEmail = form.cleaned_data['userEmail']
+                    licenseNotes = ''
                     xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                         licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                     now = datetime.datetime.now()
-                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName,shortIdentifier=licenseIdentifier,
-                        submissionDatetime=now, userEmail=userEmail, xml=xml)
+                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
+                        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
                     licenseRequest.save()
                     urlType = NORMAL
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
-                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType)
+                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseOsi, token, urlType)
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -188,37 +189,36 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     xmlString = ET.tostring(root, method='xml').replace('>','>\n')
     return xmlString
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseSourceUrls, licenseOsi, token, urlType):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseOsi, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
-    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** URL: '
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** URL: '
     for url in licenseSourceUrls:
         body += url
         body += '\n'
-    body += '**4.** OSI Status: ' + licenseOsi
+    body += '**6.** OSI Status: ' + licenseOsi
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
     url = TYPE_TO_URL[urlType]
     r = post(url, data=dumps(payload), headers=headers)
     return r.status_code
-
-
-def licenseRequests(request):
-    """ View for license requests
-    returns license_requests.html template
-    """
-    licenserequests = LicenseRequest.objects.all()
-    context_dict={'licenseRequests': licenserequests}
-    return render(request,
-        'app/license_requests.html',context_dict
-        )
-
+    
 def licenseInformation(request, licenseId):
-    """ View for license request information
+    """ View for license request and archive request information
     returns license_information.html template
     """
+    if "archive_requests" in str(request.META.get('PATH_INFO')):
+        if not LicenseRequest.objects.filter(archive='True').filter(id=licenseId).exists():
+            return render(request,
+            '404.html',{},status=404
+            )
+    else:
+        if not LicenseRequest.objects.filter(archive='False').filter(id=licenseId).exists():
+            return render(request,
+            '404.html',{},status=404
+            )
     licenseRequest = LicenseRequest.objects.get(id=licenseId)
     context_dict = {}
     licenseInformation = {}
@@ -227,6 +227,7 @@ def licenseInformation(request, licenseId):
     licenseInformation['submissionDatetime'] = licenseRequest.submissionDatetime
     licenseInformation['userEmail'] = licenseRequest.userEmail
     licenseInformation['licenseAuthorName'] = licenseRequest.licenseAuthorName
+    licenseInformation['archive'] = licenseRequest.archive
     xmlString = licenseRequest.xml
     data = parseXmlString(xmlString)
     licenseInformation['osiApproved'] = data['osiApproved']
@@ -1137,7 +1138,6 @@ def license_xml_edit(request, page_id):
     else:
         return HttpResponseRedirect('/app/xml_upload')
 
-
 def edit_license_xml(request, license_id=None):
     """View for editing the XML file corresponsing to a license entry
     returns editor.html """
@@ -1164,6 +1164,35 @@ def edit_license_xml(request, license_id=None):
     else:
         return HttpResponseRedirect('/app/license_requests')
 
+def archiveRequests(request, license_id=None):
+    """ View for archive license requests
+    returns archive_requests.html template
+    """
+    if request.method == "POST" and request.is_ajax():
+        archive = request.POST.get('archive', False)
+        license_id = request.POST.get('license_id', False)
+        if license_id:
+            LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+    archiveRequests = LicenseRequest.objects.filter(archive='True')
+    context_dict={'archiveRequests': archiveRequests}
+    return render(request, 
+        'app/archive_requests.html',context_dict
+        )
+
+def licenseRequests(request, license_id=None):
+    """ View for license requests which are not archived
+    returns license_requests.html template
+    """
+    if request.method == "POST" and request.is_ajax():
+        archive = request.POST.get('archive', True)
+        license_id = request.POST.get('license_id', False)
+        if license_id:
+            LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+    licenseRequests = LicenseRequest.objects.filter(archive='False')
+    context_dict={'licenseRequests': licenseRequests}
+    return render(request, 
+        'app/license_requests.html',context_dict
+        )
 
 def update_session_variables(request):
     """ View for updating the XML text in the session variable """
