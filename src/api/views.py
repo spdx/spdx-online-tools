@@ -277,12 +277,12 @@ def convert(request):
                 message = jpype.JavaException.message(ex)
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
-                jpype.detachThreadFromJVM() 
+                jpype.detachThreadFromJVM()
             except :
                 message = format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
-                jpype.detachThreadFromJVM() 
+                jpype.detachThreadFromJVM()
             query.tagToRdfFormat=tagToRdfFormat
             query.message=message
             query.status = httpstatus
@@ -473,10 +473,10 @@ def check_license(request):
                     returnstatus = status.HTTP_400_BAD_REQUEST
                     httpstatus = 400
                     jpype.detachThreadFromJVM()
-            
+
             except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application """
-                result = jpype.JavaException.message(ex) 
+                result = jpype.JavaException.message(ex)
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM()
@@ -496,4 +496,4 @@ def check_license(request):
         else:
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )        
+                )

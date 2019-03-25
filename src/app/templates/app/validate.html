@@ -23,7 +23,7 @@
     </form>
   </div> <hr>
     <button id="validatebutton" name="validatebutton" class="btn btn-md btn-info" type="submit" disabled="true">Validate</button>
-  {% include "app/modal.html" %} 
+  {% include "app/modal.html" %}
   <!--
   <output id="list"></output>
   -->
@@ -40,7 +40,7 @@
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, preventDefaults, false)
   });
-  
+
   function preventDefaults (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -49,19 +49,19 @@
   ['dragenter', 'dragover'].forEach(eventName => {
     dropArea.addEventListener(eventName, highlight, false)
   });
-  
+
   ['dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, unhighlight, false)
   });
-  
+
   function highlight(e) {
     dropArea.classList.add('highlight')
   }
-  
+
   function unhighlight(e) {
     dropArea.classList.remove('highlight')
   }
-  
+
   dropArea.addEventListener('drop', handleDrop, false)
 
   function handleDrop(e) {
@@ -73,7 +73,7 @@
   function handleFiles(files) {
     ([...files]).forEach(checkFile)
   }
-  
+
   function checkFile(file){
     if(file){
       $(".file-name").html("<b>Selected File: </b>"+file.name);
@@ -125,7 +125,7 @@ function checkform() {
                   $("#modal-body").html("<h3>"+data.data+"</h3>");
                   $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   });
                   $("#validatebutton").text("Validate");
@@ -136,7 +136,7 @@ function checkform() {
                   $("#modal-header").removeClass("green-modal");
                   try {
                   	var obj = JSON.parse(e.responseText);
-                  	if (obj.type=="warning"){
+                  	if (obj.type=="warning" || obj.type=="rate_limit"){
 	                    $("#modal-header").removeClass("red-modal");
 	                    $("#modal-header").addClass("yellow-modal");
 	                    $("#modal-title").html("Warning!");
@@ -156,7 +156,7 @@ function checkform() {
                   }
                   $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   });
                   $("#validatebutton").text("Validate");
