@@ -31,7 +31,7 @@
             <td>{{elem.submissionDatetime}}</td>
             <td>
               {% csrf_token %}
-              <input id='archive_button{{elem.id}}' class='btn btn-success' width='25px' value='Archive' />
+              <button id='archive_button{{elem.id}}' class='btn btn-success' width='25px' value='Archive'>Archive</button>
             </td>
           </tr>
         {% endfor %}
@@ -43,10 +43,6 @@
 </div>
 {% endblock %}
 {% block script_block %}
-
-<style>
-    th {text-align: center;}
-</style>
 
 <script type="text/javascript">
   $(document).ready(function () {
@@ -70,7 +66,7 @@
       var $licenseId = $(this).closest("tr").attr('id');
       location.href="/app/license_requests/" + $licenseId;
     });
-    $('body').on('click', 'input[id^="archive_button"]', function (en) {
+    $('body').on('click', 'button[id^="archive_button"]', function (en) {
       en.stopImmediatePropagation();
       $("#modal-header").addClass("yellow-modal");
 	    $(".modal-footer").html('<button class="btn btn-success" id="confirm_archive"><span class="glyphicon glyphicon-off"></span> Confirm</button>');
