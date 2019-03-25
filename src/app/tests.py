@@ -1078,6 +1078,64 @@ class LicenseRequestsViewsTestCase(TestCase):
         self.assertIn("app/license_requests.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"licenseRequests")
 
+class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
+    
+    def setUp(self):
+        options = Options()
+        options.add_argument('-headless')
+        self.selenium = webdriver.Firefox(firefox_options=options)
+        super(ArchiveLicenseRequestsViewsTestCase, self).setUp()
+
+    def tearDown(self):
+        self.selenium.quit()
+        super(ArchiveLicenseRequestsViewsTestCase, self).tearDown()
+
+    def test_archive_license_requests(self):
+        """GET Request for archive license requests list"""
+        resp = self.client.get(reverse("archive-license-xml"),follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertIn("app/archive_requests.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"archiveRequests")
+    
+    def test_error_archive_license_requests(self):
+        """Check if error page is displayed when the license id does not exist for archive license"""
+        license_id = 0
+        resp = self.client.get(reverse("archived-license-information", args=(license_id,)),follow=True,secure=True)
+        self.assertEqual(resp.status_code,404)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertIn("404.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"licenseInformation")
+
+    def test_archive_license_requests_feature(self):
+        """Check if the license is shifted to archive requests when archive button is pressed"""
+        driver = self.selenium
+        driver.get(self.live_server_url+'/app/license_requests/')
+        table_contents = driver.find_element_by_css_selector('tbody').text
+        self.assertEquals(table_contents, "No data available in table")
+        license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
+        driver.refresh()
+        license_name = driver.find_element_by_css_selector('td').text
+        self.assertEquals(license_name, "BSD Zero Clause License-00")
+        self.assertEquals(LicenseRequest.objects.get(id=license_obj.id).archive, False)
+        driver.find_element_by_id('archive_button' + str(license_obj.id)).click()
+        driver.find_element_by_id('confirm_archive').click()
+        self.assertEquals(LicenseRequest.objects.get(id=license_obj.id).archive, True)
+
+    def test_unarchive_license_requests_feature(self):
+        """Check if license is shifted back to license requests when unarchive button is pressed"""
+        driver = self.selenium
+        driver.get(self.live_server_url+'/app/archive_requests/')
+        table_contents = driver.find_element_by_css_selector('tbody').text
+        self.assertEquals(table_contents, "No data available in table")
+        archive_license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD", archive="True")
+        driver.refresh()
+        license_name = driver.find_element_by_css_selector('td').text
+        self.assertEquals(license_name, "BSD Zero Clause License-00")
+        self.assertEquals(LicenseRequest.objects.get(id=archive_license_obj.id).archive, True)
+        driver.find_element_by_id('unarchive_button' + str(archive_license_obj.id)).click()
+        driver.find_element_by_id('confirm_unarchive').click()
+        self.assertEquals(LicenseRequest.objects.get(id=archive_license_obj.id).archive, False)
 
 class SubmitNewLicenseViewsTestCase(TestCase):
 
@@ -1087,6 +1145,7 @@ class SubmitNewLicenseViewsTestCase(TestCase):
         self.sourceUrl = "http://landley.net/toybox/license.html"
         self.urls = [self.sourceUrl]
         self.osiApproved = "no"
+        self.comments = ""
         self.notes = ""
         self.licenseHeader = ""
         self.text ='<text> <copyrightText> <p>Copyright (C) 2006 by Rob Landley &lt;rob@landley.net&gt;</p> </copyrightText> <p>Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.</p> <p>THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</p> </text>'
@@ -1112,7 +1171,7 @@ class SubmitNewLicenseViewsTestCase(TestCase):
             self.assertIn("shortIdentifier",resp.context["form"].fields)
             self.assertIn("sourceUrl",resp.context["form"].fields)
             self.assertIn("osiApproved",resp.context["form"].fields)
-            self.assertIn("notes",resp.context["form"].fields)
+            self.assertIn("comments",resp.context["form"].fields)
             self.assertIn("licenseHeader",resp.context["form"].fields)
             self.assertIn("text",resp.context["form"].fields)
             self.assertIn("userEmail",resp.context["form"].fields)
