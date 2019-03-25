@@ -128,7 +128,7 @@ def submitNewLicense(request):
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
-                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseOsi, token, urlType)
+                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, token, urlType)
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -189,15 +189,15 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     xmlString = ET.tostring(root, method='xml').replace('>','>\n')
     return xmlString
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseOsi, token, urlType):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
-    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** URL: '
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** Standard License Header: ' + licenseHeader + '\n**6.** URL: '
     for url in licenseSourceUrls:
         body += url
         body += '\n'
-    body += '**6.** OSI Status: ' + licenseOsi
+    body += '**7.** OSI Status: ' + licenseOsi
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
