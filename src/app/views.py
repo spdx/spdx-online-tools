@@ -69,6 +69,17 @@ TESTS: 'https://api.github.com/repos/spdx/TEST-LicenseList-XML/issues',
 
 import cgi
 
+def rate_limit_reponse(request):
+    ajaxdict = {}
+    msg = "Sorry, your quota of hourly requests has been reached."
+    if (request.is_ajax()):
+        ajaxdict["type"] = "rate_limit"
+        ajaxdict["data"] = msg
+        response = dumps(ajaxdict)
+        return HttpResponse(response,status=401)
+    return HttpResponse(msg,status=401)
+
+
 def index(request):
     """ View for index
     returns index.html template
@@ -97,13 +108,7 @@ def submitNewLicense(request):
     was_limited = getattr(request, 'limited', False)
     if request.method=="POST":
         if was_limited:
-            msg = "Sorry, your quota of hourly requests has been reached."
-            if (request.is_ajax()):
-                ajaxdict["type"] = "rate_limit"
-                ajaxdict["data"] = msg
-                response = dumps(ajaxdict)
-                return HttpResponse(response,status=401)
-            return HttpResponse(msg,status=401)
+            return rate_limit_reponse(request)
         if not request.user.is_authenticated():
             if (request.is_ajax()):
                 ajaxdict["type"] = "auth_error"
@@ -887,13 +892,17 @@ def convert(request):
     else :
         return HttpResponseRedirect(settings.LOGIN_URL)
 
+@ratelimit(key='user_or_ip', rate='100/h', method=['POST'])
 def check_license(request):
     """ View for check license tool
     returns check_license.html template
     """
+    was_limited = getattr(request, 'limited', False)
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
+            if was_limited:
+                return rate_limit_reponse(request)
             licensetext = request.POST.get('licensetext')
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """

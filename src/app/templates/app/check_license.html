@@ -13,7 +13,7 @@
 		<textarea id="licensetext" name="licensetext" rows="18" style="width: 100%"></textarea>
 		<button id="checklicensebutton" class=" btn btn-md btn-info" type="submit">Check License</button>
 </form>
-{% include "app/modal.html" %} 
+{% include "app/modal.html" %}
 </div>
 {% endblock %}
 {% block script_block %}
@@ -59,7 +59,7 @@ function checkform() {
                   $("#modal-body").html("<h3>"+data.data+"</h3>");
                   $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   });
                   $("#checklicensebutton").text("Check License");
@@ -70,9 +70,17 @@ function checkform() {
                   $("#modal-header").removeClass("green-modal");
                   try {
                     var obj = JSON.parse(e.responseText);
-                    $("#modal-header").addClass("red-modal");
-                    $("#modal-title").html("Error!");
-                    $("#modal-body").text(obj.data);
+										if (obj.type=="warning" || obj.type=="rate_limit"){
+                      $("#modal-header").removeClass("red-modal");
+                      $("#modal-header").addClass("yellow-modal");
+                      $("#modal-title").html("Warning!");
+                    }
+	                  else if (obj.type=="error"){
+	                      $("#modal-header").removeClass("yellow-modal");
+	                      $("#modal-header").addClass("red-modal");
+	                      $("#modal-title").html("Error!");
+	                    }
+	                  $("#modal-body").text(obj.data);
                   }
                   catch (e){
                     $("#modal-header").addClass("red-modal");
@@ -81,7 +89,7 @@ function checkform() {
                   }
                   $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   });
                   $("#checklicensebutton").text("Check License");
