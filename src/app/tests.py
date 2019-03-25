@@ -1260,7 +1260,7 @@ class LimitRequestsTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         self.factory = RequestFactory()
-        # options.add_argument('-headless')
+        options.add_argument('-headless')
         self.selenium = webdriver.Firefox(firefox_options=options)
         super(LimitRequestsTestCase, self).setUp()
 
