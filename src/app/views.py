@@ -1188,7 +1188,7 @@ def licenseRequests(request, license_id=None):
         license_id = request.POST.get('license_id', False)
         if license_id:
             LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
-    licenseRequests = LicenseRequest.objects.filter(archive='False')
+    licenseRequests = LicenseRequest.objects.filter(archive='False').order_by('-submissionDatetime')
     context_dict={'licenseRequests': licenseRequests}
     return render(request, 
         'app/license_requests.html',context_dict
