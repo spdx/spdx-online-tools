@@ -151,24 +151,25 @@ $(document).on('click', '#addSourceUrl', function(){
 
 <script type="text/javascript">
 function checkform() {
+  $(".form-control").removeAttr('style');
   if ($('#fullname').val().trim() === "") {
-    $('#fullname').focus();
+    scrollUpAndHighlight($('#fullname'))
     return ("Please enter the license fullname.");
   }
   else if (($('#shortIdentifier').val().trim() == "")){
-    $('#shortidentifier').focus();
+    scrollUpAndHighlight($('#shortIdentifier'))
     return("Please enter the identifier.");
   }
   else if (!validate_urls()){
-    $('sourceUrl').focus();
+    scrollUpAndHighlight($('#sourceUrl'))
     return("Please enter a valid URL.");
   }
   else if (($('#osiApproved').val() == "0")){
-    $('#osi_approved').focus();
+    scrollUpAndHighlight($('#osiApproved'))
     return("Please select if the OSI is approved or not.");
   }
   else if (($('#text').val().trim() == "")){
-    $('#cfilename').focus();
+    scrollUpAndHighlight($('#text'))
     return("Please enter the license text.");
   }
   else {
@@ -186,6 +187,13 @@ function validate_urls(){
   })
   return valid_urls;
 }
+
+/* Function to scroll at the top of the page and highlight the error field in red. */
+function scrollUpAndHighlight(element) {
+  $('html, body').animate({scrollTop: 50}, 500); 
+  $(element).css({ 'border-color':'#f00','box-shadow': '1px 1px 8px #f04a4a' });
+}
+
 </script>
 
 <script type="text/javascript">
