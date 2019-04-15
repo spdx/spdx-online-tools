@@ -6,5 +6,6 @@ bs4==0.0.1
 requests==2.20.1
 lxml==4.2.5
 social-auth-app-django==2.1.0
+python-decouple==3.1
 #for testing
 selenium==3.14.1

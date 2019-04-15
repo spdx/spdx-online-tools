@@ -71,20 +71,16 @@ python src/manage.py test
 
 The `settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is not checked into source. Due to that lack of data, the following error could rise when running the app:
 
-> from secret import getGithubToken, getGithubKey, getGithubSecret, getSecretKey
-> ImportError: No module named secret
+> ImproperlyConfigured: The SECRET_KEY setting must not be empty.
 
-To avoid this error and allow the tool to use the GitHub API, the file `src/src/secret.py` should be included into the source. The file should contain the following lines:
+To avoid this error and allow the tool to use the GitHub API, the following lines should be added to `src/.env`:
 
 ```python
-def getGithubKey():
-    return 'GHKEYXXX'
+SECRET_KEY=DJANGOSECRETXXX
 
-def getGithubSecret():
-    return 'GHSECRETXXX'
+SOCIAL_AUTH_GITHUB_KEY=GHKEYXXX
 
-def getSecretKey():
-    return 'DJANGOSECRETXXX'
+SOCIAL_AUTH_GITHUB_SECRET=GHSECRETXXX
 ```
 
 where:
