@@ -118,8 +118,9 @@ def submitNewLicense(request):
                     licenseText = form.cleaned_data['text']
                     userEmail = form.cleaned_data['userEmail']
                     licenseNotes = ''
+                    listVersionAdded = ''
                     xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
-                        licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+                        listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                     now = datetime.datetime.now()
                     licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
                         submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
@@ -167,7 +168,7 @@ def submitNewLicense(request):
         )
 
 
-def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
+def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
     """ View for generating a spdx license xml
     returns the license xml as a string
     """
@@ -176,7 +177,7 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
         licenseOsi = "true"
     else:
         licenseOsi = "false"
-    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName)
+    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName, listVersionAdded=listVersionAdded)
     crossRefs = ET.SubElement(license, "crossRefs")
     for sourceUrl in licenseSourceUrls:
         ET.SubElement(crossRefs, "crossRef").text = sourceUrl
