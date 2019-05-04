@@ -2,6 +2,7 @@ Django>=1.11.18,<1.12
 jpype1==0.6.3
 numpy==1.15.2
 djangorestframework==3.6.4
+django-ratelimit==2.0.0
 bs4==0.0.1
 requests==2.20.1
 lxml==4.2.5

@@ -55,20 +55,20 @@
     <div class = "form-group">
 			<div class="col-sm-12">
 			<label class="control-label col-sm-3" id="doclabel" >SPDX Document</label>
-				<div class="col-sm-3"> 
+				<div class="col-sm-3">
 				  <input type="file" id="file" placeholder="" name = "file"  >
 				</div>
-			</div>	
+			</div>
     </div>
     -->
 		<div class = "form-group">
 			<div class="col-sm-12">
 			<label class="control-label col-sm-3" >Converted File Name</label>
-				<div class="col-sm-3"> 
+				<div class="col-sm-3">
 				  <input type="text" id="cfilename" placeholder="" name = "cfilename"  >
 				  <label class="control-label" id="convertdoclabel" ></label>
 				</div>
-			</div>	
+			</div>
 		</div>
     <hr>
 		<input type="hidden" id="cfileformat" name="cfileformat" value="">
@@ -88,7 +88,7 @@
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, preventDefaults, false)
   });
-  
+
   function preventDefaults (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -97,19 +97,19 @@
   ['dragenter', 'dragover'].forEach(eventName => {
     dropArea.addEventListener(eventName, highlight, false)
   });
-  
+
   ['dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, unhighlight, false)
   });
-  
+
   function highlight(e) {
     dropArea.classList.add('highlight')
   }
-  
+
   function unhighlight(e) {
     dropArea.classList.remove('highlight')
   }
-  
+
   dropArea.addEventListener('drop', handleDrop, false)
 
   function handleDrop(e) {
@@ -121,7 +121,7 @@
   function handleFiles(files) {
     ([...files]).forEach(checkFile)
   }
-  
+
   function checkFile(file){
     if(file){
       $(".file-name").html("<b>Selected File: </b>"+file.name);
@@ -264,7 +264,7 @@ function checkform() {
                   $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
                   $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   });
                   $("#convertbutton").text("Convert");
@@ -276,6 +276,12 @@ function checkform() {
                   $("#modal-body").text("");
               	  try{
               	  	var obj = JSON.parse(e.responseText);
+                    if (obj.type=="rate_limit"){
+                      $("#modal-header").removeClass("red-modal");
+                      $("#modal-header").addClass("yellow-modal");
+                      $("#modal-title").html("Warning!");
+                      $("#modal-body").text(obj.data);
+                    }
               	  	if (obj.type=="warning"){
 	                    $("#modal-header").removeClass("red-modal");
 	                    $("#modal-header").addClass("yellow-modal");
@@ -297,10 +303,10 @@ function checkform() {
                     $("#modal-title").html("Error!");
                     $("#modal-body").text("The application could not be connected. Please try later.");
               	  }
-                  
+
                   $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   });
                   $("#convertbutton").text("Convert");

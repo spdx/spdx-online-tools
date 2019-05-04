@@ -14,7 +14,7 @@
 <div class="panel panel-default">
   <div class="panel-heading"> <p class="lead">Upload the XML File</p> </div>
     <div class="panel-body">
-  
+
       <ul class="nav nav-tabs">
         <li class="active"><a data-toggle="tab" href="#text">XML Text</a></li>
         <li><a data-toggle="tab" href="#upload">Upload File</a></li>
@@ -48,7 +48,7 @@
             {% csrf_token %}
             <div class="container" style="margin-top:20px;">
               <label class="control-label col-sm-6" >License Full Name or Identifier as on SPDX License List:</label>
-              <div class="col-sm-6" style="text-align:left;"> 
+              <div class="col-sm-6" style="text-align:left;">
                 <input type="text" id="licenseName" placeholder="License Name" name="licenseName" autocomplete="off" autofocus style="width:280px;">
               </div>
             </div> <hr>
@@ -63,7 +63,7 @@
           </form>
         </div>
   </div>
-  {% include "app/modal.html" %} 
+  {% include "app/modal.html" %}
   </div>
 </div>
 {% endblock %}
@@ -77,7 +77,7 @@
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, preventDefaults, false)
   });
-  
+
   function preventDefaults (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -86,19 +86,19 @@
   ['dragenter', 'dragover'].forEach(eventName => {
     dropArea.addEventListener(eventName, highlight, false)
   });
-  
+
   ['dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, unhighlight, false)
   });
-  
+
   function highlight(e) {
     dropArea.classList.add('highlight')
   }
-  
+
   function unhighlight(e) {
     dropArea.classList.remove('highlight')
   }
-  
+
   dropArea.addEventListener('drop', handleDrop, false)
 
   function handleDrop(e) {
@@ -110,7 +110,7 @@
   function handleFiles(files) {
     ([...files]).forEach(checkFile)
   }
-  
+
   function checkFile(file){
     if(file.type=="text/xml" || file.type=="application/xml"){
       $(".file-name").html("<b>Selected File: </b>"+file.name);
@@ -130,7 +130,7 @@
 </script>
 
 <script type="text/javascript">
-  
+
   function button_change(state){
     /* to change the state of submit button */
     if(state == 0){
@@ -167,7 +167,7 @@
         $("#modal-header").removeClass("green-modal");
         try {
           var obj = JSON.parse(e.responseText);
-          if (obj.type=="warning"){
+          if (obj.type=="warning" || obj.type=="rate_limit"){
             $("#modal-header").removeClass("red-modal");
             $("#modal-header").addClass("yellow-modal");
             $("#modal-title").html("Warning!");
@@ -187,7 +187,7 @@
         }
         $("#myModal").modal({
           backdrop: 'static',
-          keyboard: true, 
+          keyboard: true,
           show: true
         });
         button_change(1);

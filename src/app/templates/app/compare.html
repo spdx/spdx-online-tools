@@ -27,11 +27,11 @@
 		<div class = "form-group">
 			<div class="col-sm-12">
 			<label class="control-label col-sm-3" >Result File Name</label>
-				<div class="col-sm-6"> 
+				<div class="col-sm-6">
 					<input type="text" id="rfilename" placeholder="" name = "rfilename">
 					<label class="control-label" id="convertdoclabel">.xlsx</label>
 				</div>
-			</div>	
+			</div>
 		</div>
 		<hr>
 		<button class=" btn btn-md btn-info" type="submit" id="comparebutton" name="compare">Compare</button>
@@ -50,7 +50,7 @@
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, preventDefaults, false)
   });
-  
+
   function preventDefaults (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -59,19 +59,19 @@
   ['dragenter', 'dragover'].forEach(eventName => {
     dropArea.addEventListener(eventName, highlight, false)
   });
-  
+
   ['dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, unhighlight, false)
   });
-  
+
   function highlight(e) {
     dropArea.classList.add('highlight')
   }
-  
+
   function unhighlight(e) {
     dropArea.classList.remove('highlight')
   }
-  
+
   dropArea.addEventListener('drop', handleDrop, false)
 
   function handleDrop(e) {
@@ -83,7 +83,7 @@
   function handleFiles(files) {
     ([...files]).forEach(checkFile)
   }
-  
+
   function checkFile(file){
     if(file && selected_files.length<13){
       if ($(".file-name").text() == "No file selected"){
@@ -153,7 +153,7 @@ $(".reset").on("click", function(){
 	                $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
 	                $("#myModal").modal({
 	                        backdrop: 'static',
-	                        keyboard: true, 
+	                        keyboard: true,
 	                        show: true
 	                });
 	                $("#comparebutton").text("Compare");
@@ -165,6 +165,12 @@ $(".reset").on("click", function(){
 	                $("#modal-header").removeClass("green-modal");
 	                try{
 		                var obj = JSON.parse(e.responseText);
+                    if (obj.type=="rate_limit"){
+                      $("#modal-header").removeClass("red-modal");
+                      $("#modal-header").addClass("yellow-modal");
+                      $("#modal-title").html("Warning!");
+                      $("#modal-body").text(obj.data);
+                    }
 		                if (obj.type=="warning"){
 		                    $("#modal-header").removeClass("red-modal");
 		                    $("#modal-header").addClass("yellow-modal");
@@ -208,7 +214,7 @@ $(".reset").on("click", function(){
 
 	                $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   	});
 	                $("#comparebutton").text("Compare");

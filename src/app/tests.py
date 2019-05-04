@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.test import TestCase
+import json
+from django.test import RequestFactory, TestCase
 from unittest import skipIf
 from src.secret import getAccessToken, getGithubUserId, getGithubUserName
 from django.contrib.auth.models import User
@@ -20,10 +21,14 @@ import time
 
 from app.models import UserID
 from app.models import LicenseRequest
-from app.views import generateLicenseXml
-from django.contrib.auth.models import User
+from app.views import generateLicenseXml, submitNewLicense, RATE_LIMIT_TYPE, RATE_LIMIT_MSG, xml_upload, check_license, convert, compare, validate_xml, validate
+from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.auth import authenticate
 from social_django.models import UserSocialAuth
+
+from ratelimit.decorators import ratelimit
+# from ratelimit.exceptions import Ratelimited
+# from ratelimit.core import get_usage, is_ratelimited, _split_rate
 
 
 class IndexViewsTestCase(TestCase):
@@ -1079,7 +1084,7 @@ class LicenseRequestsViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"licenseRequests")
 
 class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
-    
+
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
@@ -1097,7 +1102,7 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
         self.assertEqual(resp.redirect_chain,[])
         self.assertIn("app/archive_requests.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"archiveRequests")
-    
+
     def test_error_archive_license_requests(self):
         """Check if error page is displayed when the license id does not exist for archive license"""
         license_id = 0
@@ -1249,3 +1254,112 @@ class EditLicenseXmlViewsTestCase(TestCase):
         self.assertEqual(resp.status_code,200)
         self.assertIn("app/license_requests.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"licenseRequests")
+
+
+class LimitRequestsTestCase(StaticLiveServerTestCase):
+
+    def setUp(self):
+        options = Options()
+        self.factory = RequestFactory()
+        options.add_argument('-headless')
+        self.selenium = webdriver.Firefox(firefox_options=options)
+        super(LimitRequestsTestCase, self).setUp()
+
+    def tearDown(self):
+        self.selenium.quit()
+        super(LimitRequestsTestCase, self).tearDown()
+
+    def test_get_license_submit_request(self):
+        """Limit post on license request submission"""
+        resp = self.client.get(reverse("submit-new-license"),follow=True,secure=True)
+        self.assertEqual(resp.status_code,200)
+        self.assertEqual(resp.redirect_chain,[])
+        self.assertIn("app/submit_new_license.html",(i.name for i in resp.templates))
+        self.assertEqual(resp.resolver_match.func.__name__,"submitNewLicense")
+
+    def test_post_license_submit_request(self):
+        """Check if the license submit post request is limited"""
+        request = self.factory.post('/submit_new_license')
+        request.user = AnonymousUser()
+        # Limit the request
+        request.limited = True
+        resp = submitNewLicense(request)
+        result = json.loads(resp.content)
+        self.assertEqual(resp.status_code,401)
+        self.assertEqual(result["data"],RATE_LIMIT_MSG)
+        self.assertEqual(result["type"],RATE_LIMIT_TYPE)
+
+    def test_post_validate_request(self):
+        """Check if the validate post request is limited"""
+        request = self.factory.post('/validate')
+        request.user = AnonymousUser()
+        # Limit the request
+        request.limited = True
+        resp = validate(request)
+        result = json.loads(resp.content)
+        self.assertEqual(resp.status_code,401)
+        self.assertEqual(result["data"],RATE_LIMIT_MSG)
+        self.assertEqual(result["type"],RATE_LIMIT_TYPE)
+
+    def test_post_validate_xml_request(self):
+        """Check if the validate_xml post request is limited"""
+        request = self.factory.post('/validate_xml')
+        request.user = AnonymousUser()
+        # Limit the request
+        request.limited = True
+        resp = validate_xml(request)
+        result = json.loads(resp.content)
+        self.assertEqual(resp.status_code,401)
+        self.assertEqual(result["data"],RATE_LIMIT_MSG)
+        self.assertEqual(result["type"],RATE_LIMIT_TYPE)
+
+    def test_post_compare_request(self):
+        """Check if the compare post request is limited"""
+        request = self.factory.post('/compare')
+        request.user = AnonymousUser()
+        # Limit the request
+        request.limited = True
+        resp = compare(request)
+        result = json.loads(resp.content)
+        self.assertEqual(resp.status_code,401)
+        self.assertEqual(result["data"],RATE_LIMIT_MSG)
+        self.assertEqual(result["type"],RATE_LIMIT_TYPE)
+
+
+    def test_post_convert_request(self):
+        """Check if the convert post request is limited"""
+        request = self.factory.post('/convert')
+        request.user = AnonymousUser()
+        # Limit the request
+        request.limited = True
+        resp = convert(request)
+        result = json.loads(resp.content)
+        self.assertEqual(resp.status_code,401)
+        self.assertEqual(result["data"],RATE_LIMIT_MSG)
+        self.assertEqual(result["type"],RATE_LIMIT_TYPE)
+
+
+    def test_post_check_license_request(self):
+        """Check if the check_license post request is limited"""
+        request = self.factory.post('/check_license')
+        request.user = AnonymousUser()
+        # Limit the request
+        request.limited = True
+        resp = check_license(request)
+        result = json.loads(resp.content)
+        self.assertEqual(resp.status_code,401)
+        self.assertEqual(result["data"],RATE_LIMIT_MSG)
+        self.assertEqual(result["type"],RATE_LIMIT_TYPE)
+
+
+    def test_post_xml_upload_request(self):
+        """Check if the xml_upload post request is limited"""
+        request = self.factory.post('/xml_upload')
+        request.user = AnonymousUser()
+        # Limit the request
+        request.limited = True
+        resp = xml_upload(request)
+        result = json.loads(resp.content)
+        self.assertEqual(resp.status_code,401)
+        self.assertEqual(result["data"],RATE_LIMIT_MSG)
+        self.assertEqual(result["type"],RATE_LIMIT_TYPE)

@@ -56,9 +56,13 @@ logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : 
 logger = logging.getLogger()
 from .forms import LicenseRequestForm
 from .models import LicenseRequest
+from ratelimit.decorators import ratelimit
+
 
 NORMAL = "normal"
 TESTS = "tests"
+RATE_LIMIT_MSG = "Sorry, your quota of hourly requests has been reached."
+RATE_LIMIT_TYPE = "rate_limit"
 
 TYPE_TO_URL = {
 NORMAL:  settings.REPO_URL,
@@ -66,6 +70,14 @@ TESTS: settings.DEV_REPO_URL,
 }
 
 import cgi
+
+def rate_limit_reponse(request):
+    ajaxdict = {}
+    ajaxdict["type"] = RATE_LIMIT_TYPE
+    ajaxdict["data"] = RATE_LIMIT_MSG
+    response = dumps(ajaxdict)
+    return HttpResponse(response,status=401)
+
 
 def index(request):
     """ View for index
@@ -85,13 +97,17 @@ def about(request):
         'app/about.html',context_dict
         )
 
+@ratelimit(key='user_or_ip', rate='100/h', method=['POST'])
 def submitNewLicense(request):
     """ View for submit new licenses
     returns submit_new_license.html template
     """
     context_dict = {}
     ajaxdict = {}
+    was_limited = getattr(request, 'limited', False)
     if request.method=="POST":
+        if was_limited:
+            return rate_limit_reponse(request)
         if not request.user.is_authenticated():
             if (request.is_ajax()):
                 ajaxdict["type"] = "auth_error"
@@ -205,7 +221,7 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     url = TYPE_TO_URL[urlType]
     r = post(url, data=dumps(payload), headers=headers)
     return r.status_code
-    
+
 def licenseInformation(request, licenseId):
     """ View for license request and archive request information
     returns license_information.html template
@@ -321,13 +337,17 @@ def download_xml_file(request, licenseId):
     response['Content-Disposition'] = 'inline; filename=myfile.xml'
     return response
 
+@ratelimit(key='user_or_ip', rate='100/h', method=['POST'])
 def validate(request):
     """ View for validate tool
     returns validate.html template
     """
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
+        was_limited = getattr(request, 'limited', False)
         if request.method == 'POST':
+            if was_limited:
+                return rate_limit_reponse(request)
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it."""
                 classpath = settings.JAR_ABSOLUTE_PATH
@@ -434,13 +454,17 @@ def validate(request):
     else :
         return HttpResponseRedirect(settings.LOGIN_URL)
 
+@ratelimit(key='user_or_ip', rate='100/h', method=['POST'])
 def validate_xml(request):
     """ View to validate xml text against SPDX License XML Schema,
          used in the license xml editor """
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
+        was_limited = getattr(request, 'limited', False)
         if request.method == 'POST':
             ajaxdict=dict()
+            if was_limited:
+                return rate_limit_reponse(request)
             try :
                 if "xmlText" in request.POST:
                     """ Saving file to the media directory """
@@ -514,13 +538,17 @@ def validate_xml(request):
     else :
         return HttpResponseRedirect(settings.LOGIN_URL)
 
+@ratelimit(key='user_or_ip', rate='100/h', method=['POST'])
 def compare(request):
     """ View for compare tool
     returns compare.html template
     """
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
+        was_limited = getattr(request, 'limited', False)
         if request.method == 'POST':
+            if was_limited:
+                return rate_limit_reponse(request)
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
                 classpath =settings.JAR_ABSOLUTE_PATH
@@ -688,13 +716,17 @@ def getFileFormat(to_format):
     else :
         return ".invalid"
 
+@ratelimit(key='user_or_ip', rate='100/h', method=['POST'])
 def convert(request):
     """ View for convert tool
     returns convert.html template
     """
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
+        was_limited = getattr(request, 'limited', False)
         if request.method == 'POST':
+            if was_limited:
+                return rate_limit_reponse(request)
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
                 classpath =settings.JAR_ABSOLUTE_PATH
@@ -877,13 +909,17 @@ def convert(request):
     else :
         return HttpResponseRedirect(settings.LOGIN_URL)
 
+@ratelimit(key='user_or_ip', rate='100/h', method=['POST'])
 def check_license(request):
     """ View for check license tool
     returns check_license.html template
     """
+    was_limited = getattr(request, 'limited', False)
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
+            if was_limited:
+                return rate_limit_reponse(request)
             licensetext = request.POST.get('licensetext')
             if (jpype.isJVMStarted()==0):
                 """ If JVM not already started, start it, attach a Thread and start processing the request """
@@ -959,6 +995,7 @@ def check_license(request):
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
 
+@ratelimit(key='user_or_ip', rate='100/h', method=['POST'])
 def xml_upload(request):
     """ View for uploading XML file
     returns xml_upload.html
@@ -966,7 +1003,10 @@ def xml_upload(request):
     if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         ajaxdict = {}
+        was_limited = getattr(request, 'limited', False)
         if request.method == 'POST':
+            if was_limited:
+                return rate_limit_reponse(request)
             try:
                 if "xmlTextButton" in request.POST:
                     """ If user provides XML text using textarea """
@@ -1176,7 +1216,7 @@ def archiveRequests(request, license_id=None):
             LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
     archiveRequests = LicenseRequest.objects.filter(archive='True').order_by('-submissionDatetime')
     context_dict={'archiveRequests': archiveRequests}
-    return render(request, 
+    return render(request,
         'app/archive_requests.html',context_dict
         )
 
@@ -1191,7 +1231,7 @@ def licenseRequests(request, license_id=None):
             LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
     licenseRequests = LicenseRequest.objects.filter(archive='False').order_by('-submissionDatetime')
     context_dict={'licenseRequests': licenseRequests}
-    return render(request, 
+    return render(request,
         'app/license_requests.html',context_dict
         )
 
@@ -1211,12 +1251,16 @@ def update_session_variables(request):
         return HttpResponse(response, status=400)
     return HttpResponse("Bad Request", status=400)
 
+@ratelimit(key='user_or_ip', rate='100/h', method=['POST'])
 def pull_request(request):
     """ View that handles pull request """
     if request.user.is_authenticated():
         if request.method=="POST":
             context_dict = {}
             ajaxdict = {}
+            was_limited = getattr(request, 'limited', False)
+            if was_limited:
+                return rate_limit_reponse(request)
             try:
                 if request.user.is_authenticated():
                     user = request.user
