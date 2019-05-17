@@ -188,17 +188,18 @@ $(document).on('click', '#addSourceUrl', function(){
 <script type="text/javascript">
 function checkform() {
   $(".form-control").removeAttr('style');
-  if ($('#fullname').val().trim() === "") {
+  if (validate_fullname()) {
     scrollUpAndHighlight($('#fullname'))
-    return ("Please enter the license fullname.");
+    message = validate_fullname()
+    return (message + "Hover over to '?' for more info.");
   }
-  else if (($('#shortIdentifier').val().trim() == "")){
+  else if (($('#shortIdentifier').val().trim() == "") || !validate_identifier()){
     scrollUpAndHighlight($('#shortIdentifier'))
-    return("Please enter the identifier.");
+    return("Please enter a valid license identifier. It consist of ASCII letters (A-Za-z), digits (0-9), full stops (.) and hyphen or minus signs (-) only. Hover over to '?' for more info");
   }
   else if (!validate_urls()){
     scrollUpAndHighlight($('#sourceUrl'))
-    return("Please enter a valid URL.");
+    return("Please enter a valid URL. Hover over to '?' for more info");
   }
   else if (($('#osiApproved').val() == "0")){
     scrollUpAndHighlight($('#osiApproved'))
@@ -211,6 +212,47 @@ function checkform() {
   else {
     return "1";
   }
+}
+
+function validate_fullname(){
+  message = "Please enter a valid fullname. "
+  // Define empty_schema to check if fullname is an empty string
+  empty_schema = /^(\s+)$/;
+  // Define no_comma_schema to check if fullname contains comma or not
+  no_comma_schema = /^((?!,).)*$/i;
+  // Define no_version_schema to check if version is not spelled out in fullname
+  no_version_schema = /^((?!version).)*$/i;
+  // Define lower_v_schema to check that no period or space occur between v and version number
+  lower_v_schema = /^((?!v\.|v\s).)*$/i;
+  // Define the_schema to omit fullname staring with 'the'
+  the_schema = /^(?!the.*$).*$/i;
+  fullname = $('#fullname').val();
+
+  if (empty_schema.test(fullname)){
+    message += "Fullname cannot be a empty string. "
+  }
+  else if (!no_comma_schema.test(fullname)){
+    message += "No commas in the fullname of license or exception. "
+  }
+  else if (!no_version_schema.test(fullname)){
+    message += "The word 'version' is not spelled out. Use 'v' instead of 'version'. "
+  }
+  else if (!lower_v_schema.test(fullname)){
+    message += "For version, use lower case v and no period or space between v and the version number. "
+  }
+  else if (!the_schema.test(fullname)){
+    message += "The fullname must omit certain words such as 'the ' for alphabetical sorting purposes. "
+  }
+  else {
+    message = null;
+  }
+  return message;
+}
+
+function validate_identifier(){
+  id_schema = /^[a-zA-Z0-9|.|-]+$/;
+  result = id_schema.test($('#shortIdentifier').val())
+  return result;
 }
 
 function validate_urls(){
