@@ -118,8 +118,9 @@ def submitNewLicense(request):
                     licenseText = form.cleaned_data['text']
                     userEmail = form.cleaned_data['userEmail']
                     licenseNotes = ''
+                    listVersionAdded = ''
                     xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
-                        licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+                        listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                     now = datetime.datetime.now()
                     licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
                         submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
@@ -128,7 +129,7 @@ def submitNewLicense(request):
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
-                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseOsi, token, urlType)
+                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, token, urlType)
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -167,7 +168,7 @@ def submitNewLicense(request):
         )
 
 
-def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
+def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
     """ View for generating a spdx license xml
     returns the license xml as a string
     """
@@ -176,7 +177,7 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
         licenseOsi = "true"
     else:
         licenseOsi = "false"
-    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName)
+    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName, listVersionAdded=listVersionAdded)
     crossRefs = ET.SubElement(license, "crossRefs")
     for sourceUrl in licenseSourceUrls:
         ET.SubElement(crossRefs, "crossRef").text = sourceUrl
@@ -189,15 +190,15 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, licenseSource
     xmlString = ET.tostring(root, method='xml').replace('>','>\n')
     return xmlString
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseOsi, token, urlType):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
-    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** URL: '
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** Standard License Header: ' + licenseHeader + '\n**6.** URL: '
     for url in licenseSourceUrls:
         body += url
         body += '\n'
-    body += '**6.** OSI Status: ' + licenseOsi
+    body += '**7.** OSI Status: ' + licenseOsi
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
@@ -1173,7 +1174,7 @@ def archiveRequests(request, license_id=None):
         license_id = request.POST.get('license_id', False)
         if license_id:
             LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
-    archiveRequests = LicenseRequest.objects.filter(archive='True')
+    archiveRequests = LicenseRequest.objects.filter(archive='True').order_by('-submissionDatetime')
     context_dict={'archiveRequests': archiveRequests}
     return render(request, 
         'app/archive_requests.html',context_dict
@@ -1188,7 +1189,7 @@ def licenseRequests(request, license_id=None):
         license_id = request.POST.get('license_id', False)
         if license_id:
             LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
-    licenseRequests = LicenseRequest.objects.filter(archive='False')
+    licenseRequests = LicenseRequest.objects.filter(archive='False').order_by('-submissionDatetime')
     context_dict={'licenseRequests': licenseRequests}
     return render(request, 
         'app/license_requests.html',context_dict

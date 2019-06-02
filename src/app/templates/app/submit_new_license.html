@@ -23,7 +23,9 @@
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >License's Full Name</label>
+      <label class="control-label col-sm-3" >License's Full Name
+        <span class="glyphicon glyphicon-question-sign" id="fullnameInfo" data-toggle="popover" data-placement="auto left"></span>
+      </label>
         <div class="col-sm-4">
           {{ form.fullname }}
         </div>
@@ -32,7 +34,9 @@
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Short Identifier</label>
+      <label class="control-label col-sm-3" >Short Identifier
+        <span class="glyphicon glyphicon-question-sign" id="shortIdentifierInfo" data-toggle="popover" data-placement="auto left"></span>
+      </label>
         <div class="col-sm-4">
           {{ form.shortIdentifier }}
         </div>
@@ -41,7 +45,9 @@
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Source / URL</label>
+      <label class="control-label col-sm-3" >Source / URL
+        <span class="glyphicon glyphicon-question-sign" id="sourceUrlInfo" data-toggle="popover" data-placement="auto left"></span>
+      </label>
         <div class="col-sm-4">
           {{ form.sourceUrl }}
           <span class="help-block" id="addSourceUrl" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add a source</span>
@@ -60,7 +66,9 @@
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Standard License Header</label>
+      <label class="control-label col-sm-3" >Standard License Header
+        <span class="glyphicon glyphicon-question-sign" id="licenseHeaderInfo" data-toggle="popover" data-placement="auto left"></span>
+      </label>
         <div class="col-sm-6">
           {{ form.licenseHeader }}
         </div>
@@ -69,7 +77,9 @@
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >License Text</label>
+      <label class="control-label col-sm-3" >License Text
+        <span class="glyphicon glyphicon-question-sign" id="textInfo" data-toggle="popover" data-placement="auto left"></span>
+      </label>
         <div class="col-sm-6">
           {{ form.text }}
         </div>
@@ -96,7 +106,9 @@
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Comments</label>
+      <label class="control-label col-sm-3" >Comments
+        <span class="glyphicon glyphicon-question-sign" id="commentsInfo" data-toggle="popover" data-placement="auto left"></span>
+      </label>
         <div class="col-sm-6">
           {{ form.comments }}
         </div>
@@ -114,6 +126,30 @@
 {% block script_block %}
 <script type="text/javascript">
 $(document).ready(function () {
+    var is_touch_device = "ontouchstart" in document.documentElement;
+    $('#fullnameInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "License Full Name", content: "\u2022 The full name may omit certain word, such as 'the,' for alphabetical sorting purposes. \
+    <br /> \u2022 No commas in full name of license or exception. \
+    <br /> \u2022 The word 'version' is not spelled out; 'v' or nothing is used to indicate license version (for space reasons) \
+    <br /> \u2022 For version, use lower case v and no period or space between v and the number. \
+    <br /> \u2022 No abbreviations are included (in parenthesis) after the full name.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#shortIdentifierInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Short Identifier", content: "\u2022 Short identifier to be used to identify a license or exception match to licenses or exceptions in the context of an SPDX file, a source file, or elsewhere. \
+    <br /> \u2022 Short identifiers consist of ASCII letters (A-Za-z), digits (0-9), full stops (.) and hyphen or minus signs (-) \
+    <br /> \u2022 Short identifiers consist of an abbreviation based on a common short name or acronym for the license or exception. \
+    <br /> \u2022 Where applicable, the abbreviation will be followed by a dash and then the version number, in X.Y format. \
+    <br /> \u2022 Where applicable, and if possible, the short identifier should be harmonized with other well-known open source naming sources (i.e., OSI, Fedora, etc.) \
+    <br /> \u2022 Short identifiers should be as short in length as possible while staying consistent with all other naming criteria.", html: "true", viewport: '.panel-body', container: 'body'});
+    $('#sourceUrlInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Source URL", content: "\u2022 Include URL for the official text of the license or exception. \
+    <br /> \u2022 If the license is OSI approved, also include URL for OSI license page. \
+    <br /> \u2022 Include another URL that has text version of license, if neither of the first two options are available. \
+    <br /> \u2022 Note that the source URL may refer to an original URL for the license which is no longer active. We don't remove inactive URLs. New or best available URLs may be added. \
+    <br /> \u2022 Link to the license or exception in its native language is used where specified (e.g. French for CeCILL). Link to English version where multiple, equivalent official translations (e.g. EUPL)", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#licenseHeaderInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Standard License Header", content: "\u2022 Should only include text intended to be put in the header of source files or other files as specified in the license or license appendix when specifically delineated. \
+    <br /> \u2022 Indicate if there is any variation in the header (i.e. for files developed by a contributor versus when applying license to original work) \
+    <br /> \u2022 Do not include NOTICE info intended for a separate notice file. \
+    <br /> \u2022 Leave this field blank if there is no standard header as specifically defined in the license.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#commentsInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Comments", content: "\u2022 Provide a short explanation regarding the need for this license or exception to be included on the SPDX License List. \
+    <br /> \u2022 Identify at least one program that uses it or any other related information.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#textInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "License Text", content: "Full license of the license text.", viewport: '.panel-body', container: '.panel-body'});
     $("#submitnewlicensepage").addClass('linkactive');
     $('input').addClass('form-control');
     $('select').addClass('form-control');
@@ -151,29 +187,72 @@ $(document).on('click', '#addSourceUrl', function(){
 
 <script type="text/javascript">
 function checkform() {
-  if ($('#fullname').val().trim() === "") {
-    $('#fullname').focus();
-    return ("Please enter the license fullname.");
+  $(".form-control").removeAttr('style');
+  if (validate_fullname()) {
+    scrollUpAndHighlight($('#fullname'))
+    message = validate_fullname()
+    return (message + "Hover over to '?' for more info.");
   }
-  else if (($('#shortIdentifier').val().trim() == "")){
-    $('#shortidentifier').focus();
-    return("Please enter the identifier.");
+  else if (($('#shortIdentifier').val().trim() == "") || !validate_identifier()){
+    scrollUpAndHighlight($('#shortIdentifier'))
+    return("Please enter a valid license identifier. It consist of ASCII letters (A-Za-z), digits (0-9), full stops (.) and hyphen or minus signs (-) only. Hover over to '?' for more info");
   }
   else if (!validate_urls()){
-    $('sourceUrl').focus();
-    return("Please enter a valid URL.");
+    scrollUpAndHighlight($('#sourceUrl'))
+    return("Please enter a valid URL. Hover over to '?' for more info");
   }
   else if (($('#osiApproved').val() == "0")){
-    $('#osi_approved').focus();
+    scrollUpAndHighlight($('#osiApproved'))
     return("Please select if the OSI is approved or not.");
   }
   else if (($('#text').val().trim() == "")){
-    $('#cfilename').focus();
+    scrollUpAndHighlight($('#text'))
     return("Please enter the license text.");
   }
   else {
     return "1";
   }
+}
+
+function validate_fullname(){
+  message = "Please enter a valid fullname. "
+  // Define empty_schema to check if fullname is an empty string
+  empty_schema = /^(\s+)$/;
+  // Define no_comma_schema to check if fullname contains comma or not
+  no_comma_schema = /^((?!,).)*$/i;
+  // Define no_version_schema to check if version is not spelled out in fullname
+  no_version_schema = /^((?!version).)*$/i;
+  // Define lower_v_schema to check that no period or space occur between v and version number
+  lower_v_schema = /^((?!v\.|v\s).)*$/i;
+  // Define the_schema to omit fullname staring with 'the'
+  the_schema = /^(?!the.*$).*$/i;
+  fullname = $('#fullname').val();
+
+  if (empty_schema.test(fullname)){
+    message += "Fullname cannot be a empty string. "
+  }
+  else if (!no_comma_schema.test(fullname)){
+    message += "No commas in the fullname of license or exception. "
+  }
+  else if (!no_version_schema.test(fullname)){
+    message += "The word 'version' is not spelled out. Use 'v' instead of 'version'. "
+  }
+  else if (!lower_v_schema.test(fullname)){
+    message += "For version, use lower case v and no period or space between v and the version number. "
+  }
+  else if (!the_schema.test(fullname)){
+    message += "The fullname must omit certain words such as 'the ' for alphabetical sorting purposes. "
+  }
+  else {
+    message = null;
+  }
+  return message;
+}
+
+function validate_identifier(){
+  id_schema = /^[a-zA-Z0-9|.|-]+$/;
+  result = id_schema.test($('#shortIdentifier').val())
+  return result;
 }
 
 function validate_urls(){
@@ -186,6 +265,13 @@ function validate_urls(){
   })
   return valid_urls;
 }
+
+/* Function to scroll at the top of the page and highlight the error field in red. */
+function scrollUpAndHighlight(element) {
+  $('html, body').animate({scrollTop: 50}, 500); 
+  $(element).css({ 'border-color':'#f00','box-shadow': '1px 1px 8px #f04a4a' });
+}
+
 </script>
 
 <script type="text/javascript">
