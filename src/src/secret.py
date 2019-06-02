@@ -18,3 +18,12 @@ def getGithubUserId():
 
 def getGithubUserName():
     return None
+
+def getOauthToolKitAppID():
+    return 'OauthAppIDXXX'
+
+def getOauthToolKitAppSecret():
+    return 'OauthAppSecretXXX'
+
+def getAuthCode():
+    return None
