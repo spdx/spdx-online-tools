@@ -45,3 +45,40 @@ class LicenseRequest(models.Model):
     class Meta:
         verbose_name = "LicenseRequest"
         verbose_name_plural = "LicenseRequests"
+
+
+class OrganisationName(models.Model):
+    name = models.CharField(max_length=250)
+    orgId = models.CharField(max_length=25)
+
+    def __unicode__(self):
+        return "%s" % (self.name)
+    def __str__(self):
+        return "%s" % (self.name)
+
+    class Meta:
+        verbose_name = "OrganisationName"
+        verbose_name_plural = "OrganisationNames"
+
+
+class LicenseNamespace(models.Model):
+    authorName = models.CharField(max_length=100, default="")
+    submitterFullname = models.CharField(max_length=70)
+    submitterEmail = models.EmailField(max_length=35)
+    organisation = models.ForeignKey(OrganisationName, null=True, blank=True)
+    url = models.TextField()
+    publiclyShared = models.BooleanField(default=True)
+    namespace = models.TextField()
+    submissionDatetime = models.DateTimeField(auto_now_add=True)
+    description = models.TextField()
+    archive = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return "%s" % (self.namespace)
+
+    def __str__(self):
+        return "%s" % (self.namespace)
+
+    class Meta:
+        verbose_name = "LicenseNamespace"
+        verbose_name_plural = "LicenseNamespaces"

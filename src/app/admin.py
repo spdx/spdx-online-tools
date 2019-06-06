@@ -17,7 +17,9 @@ from __future__ import unicode_literals
 from django.contrib import admin
 
 from app.models import UserID
-from app.models import LicenseRequest
+from app.models import LicenseRequest, OrganisationName, LicenseNamespace
 
 admin.site.register(UserID)
 admin.site.register(LicenseRequest)
+admin.site.register(OrganisationName)
+admin.site.register(LicenseNamespace)

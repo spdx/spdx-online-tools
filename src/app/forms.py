@@ -82,3 +82,20 @@ class LicenseRequestForm(forms.Form):
     comments = forms.CharField(label='Comments', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
     licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)
     text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
+
+
+class LicenseNamespaceRequestForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        if 'email' in kwargs:
+            self.email = kwargs.pop('email')
+        else:
+            self.email = ""
+        super(LicenseNamespaceRequestForm, self).__init__(*args,**kwargs)
+        self.fields["submitterEmail"] = forms.EmailField(label='Email', initial=self.email)
+
+    authorName = forms.CharField(label="Author name", max_length=100, required=False)
+    submitterFullname = forms.CharField(label="Submitter's Fullname", max_length=70)
+    url = forms.CharField(label='URL', required=False)
+    namespace = forms.CharField(label='Namespace', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
+    description = forms.CharField(label='Description', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
