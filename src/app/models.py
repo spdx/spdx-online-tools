@@ -53,8 +53,9 @@ class OrganisationName(models.Model):
 
     def __unicode__(self):
         return "%s" % (self.name)
+
     def __str__(self):
-        return "%s" % (self.name)
+        return "{0} [{1}]".format(self.name, self.orgId)
 
     class Meta:
         verbose_name = "OrganisationName"
@@ -62,13 +63,14 @@ class OrganisationName(models.Model):
 
 
 class LicenseNamespace(models.Model):
-    authorName = models.CharField(max_length=100, default="")
+    authorName = models.CharField(max_length=100)
     submitterFullname = models.CharField(max_length=70)
     submitterEmail = models.EmailField(max_length=35)
     organisation = models.ForeignKey(OrganisationName, null=True, blank=True)
-    url = models.TextField()
+    url = models.CharField(max_length=200)
     publiclyShared = models.BooleanField(default=True)
-    namespace = models.TextField()
+    namespace = models.CharField(max_length=200)
+    namespaceId = models.CharField(max_length=200)
     submissionDatetime = models.DateTimeField(auto_now_add=True)
     description = models.TextField()
     archive = models.BooleanField(default=False)

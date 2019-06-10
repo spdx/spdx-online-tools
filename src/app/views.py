@@ -26,6 +26,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
+
 import jpype
 import requests
 from lxml import etree
@@ -197,10 +198,34 @@ def submitNewLicenseNamespace(request):
                     description = form.cleaned_data['description']
                     submitterEmail = form.cleaned_data['submitterEmail']
                     namespace = form.cleaned_data['namespace']
+                    namespaceId = form.cleaned_data['namespaceId']
+                    publiclyShared = form.cleaned_data['publiclyShared']
+                    organisation = form.cleaned_data['organisation']
                     now = datetime.datetime.now()
-                    licenseNamespaceRequest = LicenseNamespace(authorName=authorName, submitterFullname=submitterFullname, url=url,
-                        submissionDatetime=now, submitterEmail=submitterEmail, description=description, namespace=namespace)
-                    licenseNamespaceRequest.save()
+                    urlLst = ''.join(e for e in url)
+                    licenseExists = utils.licenseExists(namespace, namespaceId, token)
+                    if licenseExists["exists"]:
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "license_exists"
+                            ajaxdict["title"] = "License exists"
+                            ajaxdict["data"] = """License already exists on the SPDX license list.\n
+                                                  It has the reference: """ + licenseExists["referenceNumber"] + """,\n
+                                                  name: """ + licenseExists["name"] + """\n
+                                                  and ID: """ + licenseExists["licenseId"]
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=401)
+                        return HttpResponse("Please submit another license namespace",status=401)
+                    else:
+                        licenseNamespaceRequest = LicenseNamespace(authorName=authorName,
+                                                                    submitterFullname=submitterFullname,
+                                                                    url=urlLst,
+                                                                    submissionDatetime=now,
+                                                                    submitterEmail=submitterEmail,
+                                                                    description=description,
+                                                                    namespace=namespace,
+                                                                    organisation=organisation,
+                                                                    publiclyShared=publiclyShared)
+                        licenseNamespaceRequest.save()
                     urlType = NORMAL
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
@@ -238,7 +263,7 @@ def submitNewLicenseNamespace(request):
             except UserSocialAuth.DoesNotExist as AttributeError:
                 github_login = None
         context_dict["github_login"] = github_login
-        form = LicenseNamespaceRequestForm(auto_id='%s', email=email)
+        form = LicenseNamespaceRequestForm(auto_id='%s')
         context_dict['form'] = form
     return render(request,
         'app/submit_new_license_namespace.html', context_dict

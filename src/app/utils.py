@@ -1,6 +1,6 @@
 # coding=utf-8
 
-# Copyright (c) 2018 Tushar Mittal 
+# Copyright (c) 2018 Tushar Mittal
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -16,6 +16,8 @@ import json
 import base64
 import logging
 from app.models import UserID, User
+from src.secret import licenseNamespaceUtils
+import socket
 
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
@@ -87,7 +89,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         }
     data = json.loads(response.text)
     branch_names = [i["name"] for i in data]
-    
+
     """ Creating branch """
     if branchName in branch_names:
         count=1
@@ -203,3 +205,54 @@ def check_license_name(name):
             return [url, exception["licenseExceptionId"]]
 
     return [False]
+
+
+def isConnected():
+    import requests
+    try:
+        response = requests.get("http://www.google.com")
+        return True
+    except requests.ConnectionError:
+        return False
+
+
+def getLicenseList(token):
+    url = "https://api.github.com/"
+    headers = {
+        "Accept":"application/vnd.github.v3.raw+json",
+        "Authorization":"bearer "+token,
+        "Content-Type":"application/json",
+    }
+    license_list_url = url+"repos/spdx/license-list-data/contents/json/licenses.json"
+    response = requests.get(license_list_url, headers=headers)
+    data = json.loads(response.text)
+    return data
+
+
+def licenseInList(namespace, namespaceId, token):
+    license_list = getLicenseList(token)
+    return_dict = {
+    "name": "",
+    "licenseId": "",
+    "referenceNumber": "",
+    "isDeprecatedLicenseId": "",
+    "exists": False
+    }
+    for license in license_list["licenses"]:
+        if namespaceId == license["licenseId"] or namespace == license["name"]:
+            return_dict["licenseId"] = license["licenseId"]
+            return_dict["name"] = license["name"]
+            return_dict["referenceNumber"] = license["referenceNumber"]
+            return_dict["isDeprecatedLicenseId"] = license["isDeprecatedLicenseId"]
+            return_dict["exists"] = True
+    return return_dict
+
+
+def licenseExists(namespace, namespaceId, token):
+    # Check if a license exists on the SPDX license list
+    # check internet connection
+    if isConnected():
+        licenseInListDict = licenseInList(namespace, namespaceId, token)
+        print(licenseInListDict)
+        return licenseInListDict
+    return {"exists": False}

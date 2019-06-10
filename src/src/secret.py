@@ -18,3 +18,10 @@ def getGithubUserId():
 
 def getGithubUserName():
     return None
+
+# For license namespace utils
+def licenseNamespaceUtils():
+    return {
+    "licenseListRepoUrl": "https://github.com/spdx/license-list-data",
+    "internetConnectionUrl": "www.google.com",
+    }

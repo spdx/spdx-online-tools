@@ -34,6 +34,17 @@
 
     <div class = "form-group">
       <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Organisation
+        <span class="glyphicon glyphicon-question-sign" id="organisation" data-toggle="popover" data-placement="auto left"></span>
+      </label>
+        <div class="col-sm-4">
+          {{ form.organisation }}
+        </div>
+      </div>
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
       <label class="control-label col-sm-3" >Namespace
         <span class="glyphicon glyphicon-question-sign" id="namespaceInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
@@ -45,12 +56,32 @@
 
     <div class = "form-group">
       <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Namespace Short identifier
+        <span class="glyphicon glyphicon-question-sign" id="namespaceId" data-toggle="popover" data-placement="auto left"></span>
+      </label>
+        <div class="col-sm-4">
+          {{ form.namespaceId }}
+        </div>
+      </div>
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Publicly shared</label>
+        <div class="col-sm-4 checkbox">
+          {{ form.publiclyShared }}
+        </div>
+      </div>
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
       <label class="control-label col-sm-3" >Source / URL
         <span class="glyphicon glyphicon-question-sign" id="urlInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.url }}
-          <span class="help-block" id="addSourceUrl" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add a source</span>
+          <!-- <span class="help-block" id="addUrlInfo" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add another URL</span> -->
         </div>
       </div>
     </div>
@@ -98,7 +129,9 @@ $(document).ready(function () {
     var is_touch_device = "ontouchstart" in document.documentElement;
     $('#submitterFullnameInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace submitter", content: "\u2022 The full name of the license namespace submitter.", html: "true", viewport: '.panel-body', container: '.panel-body'});
     $('#namespaceInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace", content: "\u2022 License namespace in dns-style request or a free-format.", html: "true", viewport: '.panel-body', container: 'body'});
+    $('#namespaceId').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace ID", content: "\u2022 License namespace short identifier.", html: "true", viewport: '.panel-body', container: 'body'});
     $('#urlInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace URL", content: "\u2022 Include URL for the official text of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#organisation').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace Organisation", content: "\u2022 Select organisation of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
     $('#descriptionInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "License namespace description", content: "Description of the license namespace", viewport: '.panel-body', container: '.panel-body'});
     $("#licensenamespace").addClass('linkactive');
     $("#submitnewlicensenamespacepage").addClass('linkactive');
@@ -130,9 +163,9 @@ $(document).ready(function () {
   });
 </script>
 <script type="text/javascript">
-$(document).on('click', '#addSourceUrl', function(){
-    var html = '<div class="col-sm-12 btn-group" style="padding:6px 0; margin-top:2"><input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceurl"></div>';
-  $('#addSourceUrl').before(html);
+$(document).on('click', '#addUrlInfo', function(){
+    var html = '<div class="col-sm-12 btn-group" style="padding:6px 0; margin-top:2"><input type="text" class="form-control" id="url" placeholder="" name="url"></div>';
+  $('#addUrlInfo').before(html);
 });
 </script>
 
@@ -148,8 +181,8 @@ function checkform() {
     scrollUpAndHighlight($('#namespace'))
     return("Please enter a valid license identifier. It consist of ASCII letters (A-Za-z), digits (0-9), full stops (.) and hyphen or minus signs (-) only. Hover over to '?' for more info");
   }
-  else if (!validate_urls()){
-    scrollUpAndHighlight($('#sourceUrl'))
+  else if (!validate_urls() && $('#urlInfo').val().trim() != ""){
+    scrollUpAndHighlight($('#urlInfo'))
     return("Please enter a valid URL. Hover over to '?' for more info");
   }
   else {
@@ -201,7 +234,7 @@ function validate_identifier(){
 function validate_urls(){
   var valid_urls = true;
   url_schema = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-  $('input[id="sourceUrl"]').each(function(){
+  $('input[id="url"]').each(function(){
     if(!url_schema.test($(this).val())){
       valid_urls = false;
     }
@@ -257,7 +290,7 @@ function scrollUpAndHighlight(element) {
                 $("#authorName").val(0);
                 $("#description").val("");
                 $("#submitterEmail").val("");
-                var sources = $('[id="sourceUrl"]');
+                var sources = $('[id="urlInfo"]');
                 if(sources.length > 1){
                   for (var i = 1; i < sources.length; i++) {
                     sources[i].remove();
@@ -271,7 +304,11 @@ function scrollUpAndHighlight(element) {
                   $("#modal-header").removeClass("green-modal");
                   try {
                     var obj = JSON.parse(e.responseText);
-                    if (obj.type=="warning"){
+                    if (obj.type=="license_exists"){
+                      $("#modal-header").removeClass("red-modal");
+                      $("#modal-header").addClass("yellow-modal");
+                      $("#modal-title").html(obj.title);
+                    } else if (obj.type=="warning"){
                       $("#modal-header").removeClass("red-modal");
                       $("#modal-header").addClass("yellow-modal");
                       $("#modal-title").html("Warning!");

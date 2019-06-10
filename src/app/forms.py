@@ -17,7 +17,8 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.admin import widgets
 
-from app.models import UserID
+from app.models import UserID, LicenseNamespace, OrganisationName
+from app.widgets import RelatedFieldWidgetCanAdd
 
 OSI_CHOICES = (
     (0, "-"),
@@ -84,18 +85,21 @@ class LicenseRequestForm(forms.Form):
     text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
 
 
-class LicenseNamespaceRequestForm(forms.Form):
-
+class LicenseNamespaceRequestForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        if 'email' in kwargs:
-            self.email = kwargs.pop('email')
-        else:
-            self.email = ""
-        super(LicenseNamespaceRequestForm, self).__init__(*args,**kwargs)
-        self.fields["submitterEmail"] = forms.EmailField(label='Email', initial=self.email)
+        super(LicenseNamespaceRequestForm, self).__init__(*args, **kwargs)
+        self.fields['namespaceId'].required = False
+        self.fields['url'].required = False
+        self.fields['organisation'].required = False
 
-    authorName = forms.CharField(label="Author name", max_length=100, required=False)
-    submitterFullname = forms.CharField(label="Submitter's Fullname", max_length=70)
-    url = forms.CharField(label='URL', required=False)
-    namespace = forms.CharField(label='Namespace', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
-    description = forms.CharField(label='Description', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
+    organisation = forms.ModelChoiceField(
+       required=False,
+       queryset=OrganisationName.objects.all(),
+       widget=RelatedFieldWidgetCanAdd(OrganisationName))
+
+    class Meta:
+        model = LicenseNamespace
+        fields = ('organisation', 'authorName',
+                  'submitterFullname', 'submitterEmail',
+                  'url', 'publiclyShared', 'namespace',
+                  'description', 'archive', 'namespaceId')
