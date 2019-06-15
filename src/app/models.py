@@ -28,7 +28,7 @@ class LicenseNames(models.Model):
     name = models.CharField(max_length=200)
 
 class LicenseRequest(models.Model):
-    licenseAuthorName = models.CharField(max_length=100, default="")
+    licenseAuthorName = models.CharField(max_length=100, default="",blank=True,null=True)
     fullname = models.CharField(max_length=70)
     shortIdentifier = models.CharField(max_length=25)
     submissionDatetime = models.DateTimeField(auto_now_add=True)
