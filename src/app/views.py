@@ -61,9 +61,14 @@ from .models import LicenseRequest, LicenseNamespace
 NORMAL = "normal"
 TESTS = "tests"
 
-TYPE_TO_URL = {
+TYPE_TO_URL_LICENSE = {
 NORMAL:  settings.REPO_URL,
 TESTS: settings.DEV_REPO_URL,
+}
+
+TYPE_TO_URL_NAMESPACE = {
+NORMAL:  settings.NAMESPACE_REPO_URL,
+TESTS: settings.NAMESPACE_DEV_REPO_URL,
 }
 
 import cgi
@@ -226,6 +231,11 @@ def submitNewLicenseNamespace(request):
                                                                     organisation=organisation,
                                                                     publiclyShared=publiclyShared)
                         licenseNamespaceRequest.save()
+                        urlType = NORMAL
+                        if 'urlType' in request.POST:
+                            # This is present only when executing submit license namespace via tests
+                            urlType = request.POST["urlType"]
+                        createLicenseNamespaceIssue(licenseNamespaceRequest, token, urlType)
                     urlType = NORMAL
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
@@ -304,7 +314,20 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
-    url = TYPE_TO_URL[urlType]
+    url = TYPE_TO_URL_LICENSE[urlType]
+    r = post(url, data=dumps(payload), headers=headers)
+    return r.status_code
+
+
+def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
+    """ View for creating an GitbHub issue
+    when submitting a new license namespace
+    """
+    body = '**1.** License Namespace: ' + licenseNamespace.namespace + '\n**2.** Short identifier: ' + licenseNamespace.namespaceId + '\n**3.** License Author or steward: ' + licenseNamespace.authorName + '\n**4.** Description: ' + licenseNamespace.description + '\n**5.** Submitter name: ' + licenseNamespace.submitterFullname + '\n**6.** URL: ' + licenseNamespace.url
+    title = 'New license namespace request: ' + licenseNamespace.namespaceId + ' [SPDX-Online-Tools]'
+    payload = {'title' : title, 'body': body, 'labels': ['new license namespace/exception request']}
+    headers = {'Authorization': 'token ' + token}
+    url = TYPE_TO_URL_NAMESPACE[urlType]
     r = post(url, data=dumps(payload), headers=headers)
     return r.status_code
 

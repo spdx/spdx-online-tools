@@ -19,9 +19,15 @@ APP_DIR = os.path.join(BASE_DIR,'app')
 API_DIR = os.path.join(BASE_DIR,'api')
 TEMPLATE_DIR = os.path.join(APP_DIR, 'templates')
 STATIC_PATH = os.path.join(APP_DIR,'static')
+
 DEV_REPO_URL = 'https://api.github.com/repos/spdx/TEST-LicenseList-XML/issues'
 PROD_REPO_URL = 'https://api.github.com/repos/spdx/license-list-XML/issues'
 REPO_URL = DEV_REPO_URL
+
+NAMESPACE_DEV_REPO_URL = 'https://api.github.com/repos/tjasmith/license-namespace-list/issues'
+NAMESPACE_PROD_REPO_URL = 'https://api.github.com/repos/tjasmith/license-namespace-list/issues'
+NAMESPACE_REPO_URL = NAMESPACE_DEV_REPO_URL
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
@@ -33,6 +39,7 @@ DEBUG = True
 
 if not DEBUG:
     REPO_URL = PROD_REPO_URL
+    NAMESPACE_REPO_URL = NAMESPACE_PROD_REPO_URL
 
 ALLOWED_HOSTS = ['*']
 

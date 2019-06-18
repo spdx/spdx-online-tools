@@ -253,6 +253,5 @@ def licenseExists(namespace, namespaceId, token):
     # check internet connection
     if isConnected():
         licenseInListDict = licenseInList(namespace, namespaceId, token)
-        print(licenseInListDict)
         return licenseInListDict
     return {"exists": False}
