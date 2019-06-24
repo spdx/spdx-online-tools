@@ -88,7 +88,7 @@ class LicenseRequestForm(forms.Form):
 class LicenseNamespaceRequestForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(LicenseNamespaceRequestForm, self).__init__(*args, **kwargs)
-        self.fields['namespaceId'].required = False
+        self.fields['shortIdentifier'].required = False
         self.fields['url'].required = False
         self.fields['organisation'].required = False
 
@@ -99,7 +99,7 @@ class LicenseNamespaceRequestForm(forms.ModelForm):
 
     class Meta:
         model = LicenseNamespace
-        fields = ('organisation', 'authorName',
-                  'submitterFullname', 'submitterEmail',
+        fields = ('organisation', 'licenseAuthorName',
+                  'fullname', 'userEmail', 'notes',
                   'url', 'publiclyShared', 'namespace',
-                  'description', 'archive', 'namespaceId')
+                  'description', 'archive', 'shortIdentifier')

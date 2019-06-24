@@ -197,18 +197,18 @@ def submitNewLicenseNamespace(request):
                 username = github_login.extra_data["login"]
                 form = LicenseNamespaceRequestForm(request.POST, auto_id='%s')
                 if form.is_valid() and request.is_ajax():
-                    authorName = form.cleaned_data['authorName']
-                    submitterFullname = form.cleaned_data['submitterFullname']
+                    licenseAuthorName = form.cleaned_data['licenseAuthorName']
+                    fullname = form.cleaned_data['fullname']
                     url = [form.cleaned_data['url']]
                     description = form.cleaned_data['description']
-                    submitterEmail = form.cleaned_data['submitterEmail']
+                    userEmail = form.cleaned_data['userEmail']
                     namespace = form.cleaned_data['namespace']
-                    namespaceId = form.cleaned_data['namespaceId']
+                    shortIdentifier = form.cleaned_data['shortIdentifier']
                     publiclyShared = form.cleaned_data['publiclyShared']
                     organisation = form.cleaned_data['organisation']
                     now = datetime.datetime.now()
                     urlLst = ''.join(e for e in url)
-                    licenseExists = utils.licenseExists(namespace, namespaceId, token)
+                    licenseExists = utils.licenseExists(namespace, shortIdentifier, token)
                     if licenseExists["exists"]:
                         if (request.is_ajax()):
                             ajaxdict["type"] = "license_exists"
@@ -221,11 +221,11 @@ def submitNewLicenseNamespace(request):
                             return HttpResponse(response,status=401)
                         return HttpResponse("Please submit another license namespace",status=401)
                     else:
-                        licenseNamespaceRequest = LicenseNamespace(authorName=authorName,
-                                                                    submitterFullname=submitterFullname,
+                        licenseNamespaceRequest = LicenseNamespace(licenseAuthorName=licenseAuthorName,
+                                                                    fullname=fullname,
                                                                     url=urlLst,
                                                                     submissionDatetime=now,
-                                                                    submitterEmail=submitterEmail,
+                                                                    userEmail=userEmail,
                                                                     description=description,
                                                                     namespace=namespace,
                                                                     organisation=organisation,

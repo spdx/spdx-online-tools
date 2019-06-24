@@ -27,7 +27,7 @@ class UserID(models.Model):
 class LicenseNames(models.Model):
     name = models.CharField(max_length=200)
 
-class LicenseRequest(models.Model):
+class License(models.Model):
     licenseAuthorName = models.CharField(max_length=100, default="")
     fullname = models.CharField(max_length=70)
     shortIdentifier = models.CharField(max_length=25)
@@ -36,6 +36,11 @@ class LicenseRequest(models.Model):
     notes = models.CharField(max_length=255, default="")
     xml = models.TextField()
     archive = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+class LicenseRequest(License):
 
     def __unicode__(self):
         return "%s" % (self.fullname)
@@ -62,18 +67,21 @@ class OrganisationName(models.Model):
         verbose_name_plural = "OrganisationNames"
 
 
-class LicenseNamespace(models.Model):
-    authorName = models.CharField(max_length=100)
-    submitterFullname = models.CharField(max_length=70)
-    submitterEmail = models.EmailField(max_length=35)
+class LicenseNamespace(License):
     organisation = models.ForeignKey(OrganisationName, null=True, blank=True)
-    url = models.CharField(max_length=200)
     publiclyShared = models.BooleanField(default=True)
-    namespace = models.CharField(max_length=200)
-    namespaceId = models.CharField(max_length=200)
-    submissionDatetime = models.DateTimeField(auto_now_add=True)
     description = models.TextField()
-    archive = models.BooleanField(default=False)
+    namespace = models.CharField(max_length=200)
+    url = models.CharField(max_length=200)
+
+
+    # authorName = models.CharField(max_length=100)
+    # submitterFullname = models.CharField(max_length=70)
+    # submitterEmail = models.EmailField(max_length=35)
+    # url = models.CharField(max_length=200)
+    # namespaceId = models.CharField(max_length=200)
+    # submissionDatetime = models.DateTimeField(auto_now_add=True)
+    # archive = models.BooleanField(default=False)
 
     def __unicode__(self):
         return "%s" % (self.namespace)
