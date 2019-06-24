@@ -110,7 +110,7 @@
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Submitter's Email address</label>
         <div class="col-sm-4">
-          {{ form.submitterEmail }}
+          {{ form.userEmail }}
         </div>
       </div>
     </div>
@@ -270,6 +270,7 @@ function scrollUpAndHighlight(element) {
               data: form,
               success: function (data) {
                 var githubCode = data.statusCode;
+                console.log("githubCode", githubCode);
                 if(githubCode == '201'){
                   var successMessage = "The license request has been successfully submitted.";
                   $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
@@ -284,12 +285,12 @@ function scrollUpAndHighlight(element) {
                         $("#messages").html("");
                       }, 7000);
                 }
-                $("#submitterFullname").val("");
+                $("#fullname").val("");
                 $("#namespace").val("");
                 $("#url").val("");
-                $("#authorName").val(0);
+                $("#licenseAuthorName").val(0);
                 $("#description").val("");
-                $("#submitterEmail").val("");
+                $("#userEmail").val("");
                 var sources = $('[id="urlInfo"]');
                 if(sources.length > 1){
                   for (var i = 1; i < sources.length; i++) {

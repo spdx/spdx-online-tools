@@ -180,6 +180,7 @@ def submitNewLicenseNamespace(request):
     """
     context_dict = {}
     ajaxdict = {}
+    print(request.method)
     if request.method=="POST":
         if not request.user.is_authenticated():
             if (request.is_ajax()):
@@ -196,7 +197,15 @@ def submitNewLicenseNamespace(request):
                 token = github_login.extra_data["access_token"]
                 username = github_login.extra_data["login"]
                 form = LicenseNamespaceRequestForm(request.POST, auto_id='%s')
+                print("form is valid")
+                print(form.is_valid())
+                print(form.errors)
+                print("github login")
+                print(github_login)
+                print("username")
+                print(username)
                 if form.is_valid() and request.is_ajax():
+                    statusCode = None
                     licenseAuthorName = form.cleaned_data['licenseAuthorName']
                     fullname = form.cleaned_data['fullname']
                     url = [form.cleaned_data['url']]
@@ -209,7 +218,10 @@ def submitNewLicenseNamespace(request):
                     now = datetime.datetime.now()
                     urlLst = ''.join(e for e in url)
                     licenseExists = utils.licenseExists(namespace, shortIdentifier, token)
+                    print("licenseExists")
+                    print(licenseExists)
                     if licenseExists["exists"]:
+                        print("license exists")
                         if (request.is_ajax()):
                             ajaxdict["type"] = "license_exists"
                             ajaxdict["title"] = "License exists"
@@ -221,6 +233,7 @@ def submitNewLicenseNamespace(request):
                             return HttpResponse(response,status=401)
                         return HttpResponse("Please submit another license namespace",status=401)
                     else:
+                        print("create license namespace")
                         licenseNamespaceRequest = LicenseNamespace(licenseAuthorName=licenseAuthorName,
                                                                     fullname=fullname,
                                                                     url=urlLst,
@@ -229,19 +242,14 @@ def submitNewLicenseNamespace(request):
                                                                     description=description,
                                                                     namespace=namespace,
                                                                     organisation=organisation,
-                                                                    publiclyShared=publiclyShared)
+                                                                    publiclyShared=publiclyShared,
+                                                                    shortIdentifier=shortIdentifier)
                         licenseNamespaceRequest.save()
                         urlType = NORMAL
                         if 'urlType' in request.POST:
                             # This is present only when executing submit license namespace via tests
                             urlType = request.POST["urlType"]
-                        createLicenseNamespaceIssue(licenseNamespaceRequest, token, urlType)
-                    urlType = NORMAL
-                    if 'urlType' in request.POST:
-                        # This is present only when executing submit license via tests
-                        urlType = request.POST["urlType"]
-                    statusCode = None
-                    # statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, token, urlType)
+                        statusCode = createLicenseNamespaceIssue(licenseNamespaceRequest, token, urlType)
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -323,8 +331,8 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license namespace
     """
-    body = '**1.** License Namespace: ' + licenseNamespace.namespace + '\n**2.** Short identifier: ' + licenseNamespace.namespaceId + '\n**3.** License Author or steward: ' + licenseNamespace.authorName + '\n**4.** Description: ' + licenseNamespace.description + '\n**5.** Submitter name: ' + licenseNamespace.submitterFullname + '\n**6.** URL: ' + licenseNamespace.url
-    title = 'New license namespace request: ' + licenseNamespace.namespaceId + ' [SPDX-Online-Tools]'
+    body = '**1.** License Namespace: ' + licenseNamespace.namespace + '\n**2.** Short identifier: ' + licenseNamespace.shortIdentifier + '\n**3.** License Author or steward: ' + licenseNamespace.licenseAuthorName + '\n**4.** Description: ' + licenseNamespace.description + '\n**5.** Submitter name: ' + licenseNamespace.fullname + '\n**6.** URL: ' + licenseNamespace.url
+    title = 'New license namespace request: ' + licenseNamespace.shortIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license namespace/exception request']}
     headers = {'Authorization': 'token ' + token}
     url = TYPE_TO_URL_NAMESPACE[urlType]

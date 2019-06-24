@@ -100,6 +100,6 @@ class LicenseNamespaceRequestForm(forms.ModelForm):
     class Meta:
         model = LicenseNamespace
         fields = ('organisation', 'licenseAuthorName',
-                  'fullname', 'userEmail', 'notes',
-                  'url', 'publiclyShared', 'namespace',
+                  'fullname', 'userEmail', 'url',
+                  'publiclyShared', 'namespace',
                   'description', 'archive', 'shortIdentifier')
