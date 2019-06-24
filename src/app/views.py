@@ -180,7 +180,6 @@ def submitNewLicenseNamespace(request):
     """
     context_dict = {}
     ajaxdict = {}
-    print(request.method)
     if request.method=="POST":
         if not request.user.is_authenticated():
             if (request.is_ajax()):
@@ -197,13 +196,6 @@ def submitNewLicenseNamespace(request):
                 token = github_login.extra_data["access_token"]
                 username = github_login.extra_data["login"]
                 form = LicenseNamespaceRequestForm(request.POST, auto_id='%s')
-                print("form is valid")
-                print(form.is_valid())
-                print(form.errors)
-                print("github login")
-                print(github_login)
-                print("username")
-                print(username)
                 if form.is_valid() and request.is_ajax():
                     statusCode = None
                     licenseAuthorName = form.cleaned_data['licenseAuthorName']
@@ -218,10 +210,7 @@ def submitNewLicenseNamespace(request):
                     now = datetime.datetime.now()
                     urlLst = ''.join(e for e in url)
                     licenseExists = utils.licenseExists(namespace, shortIdentifier, token)
-                    print("licenseExists")
-                    print(licenseExists)
                     if licenseExists["exists"]:
-                        print("license exists")
                         if (request.is_ajax()):
                             ajaxdict["type"] = "license_exists"
                             ajaxdict["title"] = "License exists"
@@ -233,7 +222,6 @@ def submitNewLicenseNamespace(request):
                             return HttpResponse(response,status=401)
                         return HttpResponse("Please submit another license namespace",status=401)
                     else:
-                        print("create license namespace")
                         licenseNamespaceRequest = LicenseNamespace(licenseAuthorName=licenseAuthorName,
                                                                     fullname=fullname,
                                                                     url=urlLst,

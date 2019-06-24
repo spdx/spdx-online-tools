@@ -74,15 +74,6 @@ class LicenseNamespace(License):
     namespace = models.CharField(max_length=200)
     url = models.CharField(max_length=200)
 
-
-    # authorName = models.CharField(max_length=100)
-    # submitterFullname = models.CharField(max_length=70)
-    # submitterEmail = models.EmailField(max_length=35)
-    # url = models.CharField(max_length=200)
-    # namespaceId = models.CharField(max_length=200)
-    # submissionDatetime = models.DateTimeField(auto_now_add=True)
-    # archive = models.BooleanField(default=False)
-
     def __unicode__(self):
         return "%s" % (self.namespace)
 
