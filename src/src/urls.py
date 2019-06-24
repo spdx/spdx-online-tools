@@ -53,6 +53,7 @@ urlpatterns = [
     url(r'^api2/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^oauth/', include('social_django.urls', namespace='social')),
+    url(r'^auth/', include('rest_framework_social_oauth2.urls', namespace='github_social')),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

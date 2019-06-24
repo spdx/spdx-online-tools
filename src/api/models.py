@@ -17,6 +17,14 @@ from django.contrib.auth.models import User
 from django.db import models
 from time import time
 
+OSI_CHOICES = (
+    (0, "-"),
+    ("Approved", "Approved"),
+    ("Not Submitted", "Not Submitted"),
+    ("Pending", "Submitted, but pending"),
+    ("Rejected", "Rejected")
+)
+
 def user_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/<username>/<filename>
     return 'apifiles/{0}/{1}/{2}'.format(instance.owner.username, int(time()), filename)
@@ -60,3 +68,21 @@ class CheckLicenseFileUpload(models.Model):
     file = models.FileField(upload_to=user_directory_path)
     result = models.CharField(max_length=128,null=False,blank=False)
     status = models.IntegerField(default=200,blank=False)
+
+class SubmitLicenseModel(models.Model):
+
+    created = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, to_field='id')
+    licenseAuthorName = models.CharField(max_length=100, default="", blank=True, null=True)
+    fullname = models.CharField(max_length=70)
+    shortIdentifier = models.CharField(max_length=25)
+    userEmail = models.EmailField(max_length=35)
+    #notes = models.CharField(max_length=255, default="")
+    result = models.CharField(max_length=128, blank=True, null=True)
+    status = models.IntegerField(default=200,  blank=False)
+    sourceUrl = models.CharField(max_length=255, default="", blank=True, null=True)
+    osiApproved = models.CharField(max_length=15, choices=OSI_CHOICES, default=0)
+    comments = models.TextField(default="", blank=True, null=True)
+    licenseHeader = models.CharField(max_length=25, default="", blank=True, null=True)
+    text = models.TextField(default="")
+    xml = models.TextField(default="")
