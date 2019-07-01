@@ -237,7 +237,7 @@ def submitNewLicenseNamespace(request):
                         if 'urlType' in request.POST:
                             # This is present only when executing submit license namespace via tests
                             urlType = request.POST["urlType"]
-                        statusCode = createLicenseNamespaceIssue(licenseNamespaceRequest, token, urlType)
+                        statusCode = utils.createLicenseNamespaceIssue(licenseNamespaceRequest, token, urlType)
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -269,7 +269,7 @@ def submitNewLicenseNamespace(request):
             except UserSocialAuth.DoesNotExist as AttributeError:
                 github_login = None
         context_dict["github_login"] = github_login
-        form = LicenseNamespaceRequestForm(auto_id='%s')
+        form = LicenseNamespaceRequestForm(auto_id='%s', email=email)
         context_dict['form'] = form
     return render(request,
         'app/submit_new_license_namespace.html', context_dict
@@ -314,18 +314,6 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     r = post(url, data=dumps(payload), headers=headers)
     return r.status_code
 
-
-def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
-    """ View for creating an GitbHub issue
-    when submitting a new license namespace
-    """
-    body = '**1.** License Namespace: ' + licenseNamespace.namespace + '\n**2.** Short identifier: ' + licenseNamespace.shortIdentifier + '\n**3.** License Author or steward: ' + licenseNamespace.licenseAuthorName + '\n**4.** Description: ' + licenseNamespace.description + '\n**5.** Submitter name: ' + licenseNamespace.fullname + '\n**6.** URL: ' + licenseNamespace.url
-    title = 'New license namespace request: ' + licenseNamespace.shortIdentifier + ' [SPDX-Online-Tools]'
-    payload = {'title' : title, 'body': body, 'labels': ['new license namespace/exception request']}
-    headers = {'Authorization': 'token ' + token}
-    url = TYPE_TO_URL_NAMESPACE[urlType]
-    r = post(url, data=dumps(payload), headers=headers)
-    return r.status_code
 
 def licenseInformation(request, licenseId):
     """ View for license request and archive request information

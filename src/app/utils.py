@@ -255,3 +255,16 @@ def licenseExists(namespace, namespaceId, token):
         licenseInListDict = licenseInList(namespace, namespaceId, token)
         return licenseInListDict
     return {"exists": False}
+
+
+def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
+    """ View for creating an GitbHub issue
+    when submitting a new license namespace
+    """
+    body = '**1.** License Namespace: ' + licenseNamespace.namespace + '\n**2.** Short identifier: ' + licenseNamespace.shortIdentifier + '\n**3.** License Author or steward: ' + licenseNamespace.licenseAuthorName + '\n**4.** Description: ' + licenseNamespace.description + '\n**5.** Submitter name: ' + licenseNamespace.fullname + '\n**6.** URL: ' + licenseNamespace.url
+    title = 'New license namespace request: ' + licenseNamespace.shortIdentifier + ' [SPDX-Online-Tools]'
+    payload = {'title' : title, 'body': body, 'labels': ['new license namespace/exception request']}
+    headers = {'Authorization': 'token ' + token}
+    url = TYPE_TO_URL_NAMESPACE[urlType]
+    r = requests.post(url, data=json.dumps(payload), headers=headers)
+    return r.status_code

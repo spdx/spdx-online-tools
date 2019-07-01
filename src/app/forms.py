@@ -87,10 +87,15 @@ class LicenseRequestForm(forms.Form):
 
 class LicenseNamespaceRequestForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
+        if 'email' in kwargs:
+            self.email = kwargs.pop('email')
+        else:
+            self.email = ""
         super(LicenseNamespaceRequestForm, self).__init__(*args, **kwargs)
         self.fields['shortIdentifier'].required = False
         self.fields['url'].required = False
         self.fields['organisation'].required = False
+        self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email)
 
     organisation = forms.ModelChoiceField(
        required=False,

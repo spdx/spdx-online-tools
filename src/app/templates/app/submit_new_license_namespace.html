@@ -271,13 +271,23 @@ function scrollUpAndHighlight(element) {
               success: function (data) {
                 var githubCode = data.statusCode;
                 console.log("githubCode", githubCode);
+                // if(githubCode == '201'){
+                //   var successMessage = "The license request has been successfully submitted.";
+                //   $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
+                //       setTimeout(function() {
+                //         $("#messages").html("");
+                //       }, 7000);
+                // }
                 if(githubCode == '201'){
-                  var successMessage = "The license request has been successfully submitted.";
-                  $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
-                      setTimeout(function() {
-                        $("#messages").html("");
-                      }, 7000);
-                }
+              		$("#modal-header").removeClass("red-modal yellow-modal");
+              		$("#modal-header").addClass("green-modal");
+              		$("#modal-body").html('The license request has been successfully submitted.');
+                      $("#myModal").modal({
+                         backdrop: 'static',
+                         keyboard: true,
+                         show: true
+                      });
+              	}
                 else{
                   var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org with SPDX ID for the license you are submitting";
                   $("#messages").html('<div class="alert alert-warning alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Warning! </strong>'+ warningMessage +'</div>');
