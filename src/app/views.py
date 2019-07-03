@@ -58,18 +58,7 @@ logger = logging.getLogger()
 from .forms import LicenseRequestForm, LicenseNamespaceRequestForm
 from .models import LicenseRequest, LicenseNamespace
 
-NORMAL = "normal"
-TESTS = "tests"
 
-TYPE_TO_URL_LICENSE = {
-NORMAL:  settings.REPO_URL,
-TESTS: settings.DEV_REPO_URL,
-}
-
-TYPE_TO_URL_NAMESPACE = {
-NORMAL:  settings.NAMESPACE_REPO_URL,
-TESTS: settings.NAMESPACE_DEV_REPO_URL,
-}
 
 import cgi
 
@@ -131,7 +120,7 @@ def submitNewLicense(request):
                     licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
                         submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
                     licenseRequest.save()
-                    urlType = NORMAL
+                    urlType = utils.NORMAL
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
@@ -233,7 +222,7 @@ def submitNewLicenseNamespace(request):
                                                                     publiclyShared=publiclyShared,
                                                                     shortIdentifier=shortIdentifier)
                         licenseNamespaceRequest.save()
-                        urlType = NORMAL
+                        urlType = utils.NORMAL
                         if 'urlType' in request.POST:
                             # This is present only when executing submit license namespace via tests
                             urlType = request.POST["urlType"]
@@ -310,7 +299,7 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
-    url = TYPE_TO_URL_LICENSE[urlType]
+    url = utils.TYPE_TO_URL_LICENSE[urlType]
     r = post(url, data=dumps(payload), headers=headers)
     return r.status_code
 

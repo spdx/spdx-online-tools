@@ -171,6 +171,7 @@ $(document).on('click', '#addUrlInfo', function(){
 
 <script type="text/javascript">
 function checkform() {
+  var urlValue = $('#url').val().trim();
   $(".form-control").removeAttr('style');
   if (validate_fullname()) {
     scrollUpAndHighlight($('#fullname'))
@@ -179,9 +180,9 @@ function checkform() {
   }
   else if (($('#namespace').val().trim() == "") || !validate_identifier()){
     scrollUpAndHighlight($('#namespace'))
-    return("Please enter a valid license identifier. It consist of ASCII letters (A-Za-z), digits (0-9), full stops (.) and hyphen or minus signs (-) only. Hover over to '?' for more info");
+    return("Please enter a valid license namespace identifier. It consist of ASCII letters (A-Za-z), digits (0-9), full stops (.) and hyphen or minus signs (-) only. Hover over to '?' for more info");
   }
-  else if (!validate_urls() && $('#urlInfo').val().trim() != ""){
+  else if (!validate_urls() && urlValue != ""){
     scrollUpAndHighlight($('#urlInfo'))
     return("Please enter a valid URL. Hover over to '?' for more info");
   }
@@ -208,7 +209,7 @@ function validate_fullname(){
     message += "Fullname cannot be a empty string. "
   }
   else if (!no_comma_schema.test(fullname)){
-    message += "No commas in the fullname of license or exception. "
+    message += "No commas in the fullname of license namespace or exception. "
   }
   else if (!no_version_schema.test(fullname)){
     message += "The word 'version' is not spelled out. Use 'v' instead of 'version'. "
@@ -281,6 +282,7 @@ function scrollUpAndHighlight(element) {
                 if(githubCode == '201'){
               		$("#modal-header").removeClass("red-modal yellow-modal");
               		$("#modal-header").addClass("green-modal");
+                  $("#modal-title").html("Success");
               		$("#modal-body").html('The license request has been successfully submitted.');
                       $("#myModal").modal({
                          backdrop: 'static',

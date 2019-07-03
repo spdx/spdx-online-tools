@@ -18,6 +18,21 @@ import logging
 from app.models import UserID, User
 from src.secret import licenseNamespaceUtils
 import socket
+from django.conf import settings
+
+
+NORMAL = "normal"
+TESTS = "tests"
+
+TYPE_TO_URL_LICENSE = {
+NORMAL:  settings.REPO_URL,
+TESTS: settings.DEV_REPO_URL,
+}
+
+TYPE_TO_URL_NAMESPACE = {
+NORMAL:  settings.NAMESPACE_REPO_URL,
+TESTS: settings.NAMESPACE_DEV_REPO_URL,
+}
 
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
