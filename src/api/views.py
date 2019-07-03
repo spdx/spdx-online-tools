@@ -27,6 +27,7 @@ from rest_framework.renderers import BrowsableAPIRenderer,JSONRenderer
 
 from django.core.files.storage import FileSystemStorage
 from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.auth.models import User
 
@@ -36,7 +37,7 @@ import datetime
 import xml.etree.cElementTree as ET
 
 from traceback import format_exc
-from os.path import abspath
+from os.path import abspath, join
 from time import time
 from requests import post
 from json import dumps, loads
@@ -49,8 +50,6 @@ NORMAL:  settings.REPO_URL,
 TESTS: settings.DEV_REPO_URL,
 }
 
-DEV_URL = 'http://localhost:8000'
-PROD_URL = 'http://13.57.134.254'
 
 class ValidateViewSet(ModelViewSet):
     """ Returns all validate api request """
@@ -535,7 +534,7 @@ def submit_license(request):
         """ Return the result of license submittal on the post license details """
         serializer = SubmitLicenseSerializer(data=request.data)
         if serializer.is_valid():
-            url = DEV_URL # change this to PROD_URL for production
+            serverUrl = request.build_absolute_uri('/')
             githubClientId = settings.SOCIAL_AUTH_GITHUB_KEY
             githubClientSecret = settings.SOCIAL_AUTH_GITHUB_SECRET
             code = request.data.get('code')
@@ -558,7 +557,7 @@ def submit_license(request):
                 clientId = settings.OAUTHTOOLKIT_APP_CLIENT_ID
                 clientSecret = settings.OAUTHTOOLKIT_APP_CLIENT_SECRET
                 backend = settings.BACKEND
-                djangoToken = convert_to_auth_token(url, clientId, clientSecret, backend, token)
+                djangoToken = convert_to_auth_token(serverUrl, clientId, clientSecret, backend, token)
                 user = get_user_from_token(djangoToken)
 
             licenseName = request.data.get('fullname')
@@ -585,6 +584,8 @@ def submit_license(request):
             licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
                 submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
             licenseRequest.save()
+            licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+            licenseRequestUrl = join(serverUrl, reverse('license-requests')[1:], str(licenseId))
             query = SubmitLicenseModel.objects.create(
                 owner=user,
                 fullname=licenseName,
@@ -603,7 +604,7 @@ def submit_license(request):
             if 'urlType' in request.POST:
                 # This is present only when executing submit license via tests
                 urlType = request.POST["urlType"]
-            statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, token, urlType)
+            statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
             if str(statusCode) == '201':
                 result = "Success! The license request has been successfully submitted."
                 query.result = result
@@ -642,15 +643,15 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAd
     return xmlString
 
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, token, urlType):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType):
     """ View for creating an GitHub issue
     when submitting a new license request
     """
-    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + str(licenseAuthorName)+ '\n**4.** Comments: ' + str(licenseComments) + '\n**5.** Standard License Header: ' + str(licenseHeader) + '\n**6.** URL: '
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** Standard License Header: ' + licenseHeader + '\n**6.** License Request Url: ' + licenseRequestUrl + '\n**7.** URL: '
     for url in licenseSourceUrls:
         body += url
         body += '\n'
-    body += '**7.** OSI Status: ' + licenseOsi
+    body += '**8.** OSI Status: ' + licenseOsi
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
