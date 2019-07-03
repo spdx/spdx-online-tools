@@ -16,7 +16,6 @@ import json
 import base64
 import logging
 from app.models import UserID, User
-from src.secret import licenseNamespaceUtils
 import socket
 from django.conf import settings
 
@@ -33,6 +32,13 @@ TYPE_TO_URL_NAMESPACE = {
 NORMAL:  settings.NAMESPACE_REPO_URL,
 TESTS: settings.NAMESPACE_DEV_REPO_URL,
 }
+
+# For license namespace utils
+def licenseNamespaceUtils():
+    return {
+    "licenseListRepoUrl": "https://github.com/spdx/license-list-data",
+    "internetConnectionUrl": "www.google.com",
+    }
 
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
