@@ -27,6 +27,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
+
 import jpype
 import requests
 from lxml import etree
@@ -55,16 +56,10 @@ import app.utils as utils
 
 logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
 logger = logging.getLogger()
-from .forms import LicenseRequestForm
-from .models import LicenseRequest
+from .forms import LicenseRequestForm, LicenseNamespaceRequestForm
+from .models import LicenseRequest, LicenseNamespace
 
-NORMAL = "normal"
-TESTS = "tests"
 
-TYPE_TO_URL = {
-NORMAL:  settings.REPO_URL,
-TESTS: settings.DEV_REPO_URL,
-}
 
 import cgi
 
@@ -129,7 +124,7 @@ def submitNewLicense(request):
                     licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
                     serverUrl = request.build_absolute_uri('/')
                     licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                    urlType = NORMAL
+                    urlType = utils.NORMAL
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
@@ -172,6 +167,108 @@ def submitNewLicense(request):
         )
 
 
+def submitNewLicenseNamespace(request):
+    """ View for submit new licenses namespace
+    returns submit_new_license_namespace.html template
+    """
+    context_dict = {}
+    ajaxdict = {}
+    if request.method=="POST":
+        if not request.user.is_authenticated():
+            if (request.is_ajax()):
+                ajaxdict["type"] = "auth_error"
+                ajaxdict["data"] = "Please login using GitHub to use this feature."
+                response = dumps(ajaxdict)
+                return HttpResponse(response,status=401)
+            return HttpResponse("Please login using GitHub to use this feature.",status=401)
+        try:
+            user = request.user
+            try:
+                """ Getting user info for submitting github issue """
+                github_login = user.social_auth.get(provider='github')
+                token = github_login.extra_data["access_token"]
+                username = github_login.extra_data["login"]
+                form = LicenseNamespaceRequestForm(request.POST, auto_id='%s')
+                if form.is_valid() and request.is_ajax():
+                    statusCode = None
+                    licenseAuthorName = form.cleaned_data['licenseAuthorName']
+                    fullname = form.cleaned_data['fullname']
+                    url = [form.cleaned_data['url']]
+                    description = form.cleaned_data['description']
+                    userEmail = form.cleaned_data['userEmail']
+                    namespace = form.cleaned_data['namespace']
+                    shortIdentifier = form.cleaned_data['shortIdentifier']
+                    publiclyShared = form.cleaned_data['publiclyShared']
+                    organisation = form.cleaned_data['organisation']
+                    now = datetime.datetime.now()
+                    urlLst = ''.join(e for e in url)
+                    licenseExists = utils.licenseExists(namespace, shortIdentifier, token)
+                    if licenseExists["exists"]:
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "license_exists"
+                            ajaxdict["title"] = "License exists"
+                            ajaxdict["data"] = """License already exists on the SPDX license list.\n
+                                                  It has the reference: """ + licenseExists["referenceNumber"] + """,\n
+                                                  name: """ + licenseExists["name"] + """\n
+                                                  and ID: """ + licenseExists["licenseId"]
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=401)
+                        return HttpResponse("Please submit another license namespace",status=401)
+                    else:
+                        licenseNamespaceRequest = LicenseNamespace(licenseAuthorName=licenseAuthorName,
+                                                                    fullname=fullname,
+                                                                    url=urlLst,
+                                                                    submissionDatetime=now,
+                                                                    userEmail=userEmail,
+                                                                    description=description,
+                                                                    namespace=namespace,
+                                                                    organisation=organisation,
+                                                                    publiclyShared=publiclyShared,
+                                                                    shortIdentifier=shortIdentifier)
+                        licenseNamespaceRequest.save()
+                        urlType = utils.NORMAL
+                        if 'urlType' in request.POST:
+                            # This is present only when executing submit license namespace via tests
+                            urlType = request.POST["urlType"]
+                        statusCode = utils.createLicenseNamespaceIssue(licenseNamespaceRequest, token, urlType)
+                    data = {'statusCode' : str(statusCode)}
+                    return JsonResponse(data)
+            except UserSocialAuth.DoesNotExist:
+                """ User not authenticated with GitHub """
+                if (request.is_ajax()):
+                    ajaxdict["type"] = "auth_error"
+                    ajaxdict["data"] = "Please login using GitHub to use this feature."
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response,status=401)
+                return HttpResponse("Please login using GitHub to use this feature.",status=401)
+        except:
+            """ Other errors raised """
+            logger.error(str(format_exc()))
+            if (request.is_ajax()):
+                ajaxdict["type"] = "error"
+                ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                response = dumps(ajaxdict)
+                return HttpResponse(response,status=500)
+            return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
+    else:
+        email=""
+        if not request.user.is_authenticated():
+            github_login=None
+        else:
+            try:
+                github_login = request.user.social_auth.get(provider='github')
+                username = github_login.extra_data["login"]
+                email = User.objects.get(username=username).email
+            except UserSocialAuth.DoesNotExist as AttributeError:
+                github_login = None
+        context_dict["github_login"] = github_login
+        form = LicenseNamespaceRequestForm(auto_id='%s', email=email)
+        context_dict['form'] = form
+    return render(request,
+        'app/submit_new_license_namespace.html', context_dict
+        )
+
+
 def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
     """ View for generating a spdx license xml
     returns the license xml as a string
@@ -206,10 +303,11 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
-    url = TYPE_TO_URL[urlType]
+    url = utils.TYPE_TO_URL_LICENSE[urlType]
     r = post(url, data=dumps(payload), headers=headers)
     return r.status_code
-    
+
+
 def licenseInformation(request, licenseId):
     """ View for license request and archive request information
     returns license_information.html template
@@ -1180,7 +1278,7 @@ def archiveRequests(request, license_id=None):
             LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
     archiveRequests = LicenseRequest.objects.filter(archive='True').order_by('-submissionDatetime')
     context_dict={'archiveRequests': archiveRequests}
-    return render(request, 
+    return render(request,
         'app/archive_requests.html',context_dict
         )
 
@@ -1195,7 +1293,7 @@ def licenseRequests(request, license_id=None):
             LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
     licenseRequests = LicenseRequest.objects.filter(archive='False').order_by('-submissionDatetime')
     context_dict={'licenseRequests': licenseRequests}
-    return render(request, 
+    return render(request,
         'app/license_requests.html',context_dict
         )
 

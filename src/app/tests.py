@@ -1079,7 +1079,7 @@ class LicenseRequestsViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"licenseRequests")
 
 class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
-    
+
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
@@ -1097,7 +1097,7 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
         self.assertEqual(resp.redirect_chain,[])
         self.assertIn("app/archive_requests.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"archiveRequests")
-    
+
     def test_error_archive_license_requests(self):
         """Check if error page is displayed when the license id does not exist for archive license"""
         license_id = 0

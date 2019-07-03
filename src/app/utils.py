@@ -1,6 +1,6 @@
 # coding=utf-8
 
-# Copyright (c) 2018 Tushar Mittal 
+# Copyright (c) 2018 Tushar Mittal
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -16,6 +16,29 @@ import json
 import base64
 import logging
 from app.models import UserID, User
+import socket
+from django.conf import settings
+
+
+NORMAL = "normal"
+TESTS = "tests"
+
+TYPE_TO_URL_LICENSE = {
+NORMAL:  settings.REPO_URL,
+TESTS: settings.DEV_REPO_URL,
+}
+
+TYPE_TO_URL_NAMESPACE = {
+NORMAL:  settings.NAMESPACE_REPO_URL,
+TESTS: settings.NAMESPACE_DEV_REPO_URL,
+}
+
+# For license namespace utils
+def licenseNamespaceUtils():
+    return {
+    "licenseListRepoUrl": "https://github.com/spdx/license-list-data",
+    "internetConnectionUrl": "www.google.com",
+    }
 
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
@@ -87,7 +110,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         }
     data = json.loads(response.text)
     branch_names = [i["name"] for i in data]
-    
+
     """ Creating branch """
     if branchName in branch_names:
         count=1
@@ -203,3 +226,62 @@ def check_license_name(name):
             return [url, exception["licenseExceptionId"]]
 
     return [False]
+
+
+def isConnected():
+    import requests
+    try:
+        response = requests.get("http://www.google.com")
+        return True
+    except requests.ConnectionError:
+        return False
+
+
+def getLicenseList(token):
+    url = "https://api.github.com/"
+    headers = {
+        "Accept":"application/vnd.github.v3.raw+json",
+        "Authorization":"bearer "+token,
+        "Content-Type":"application/json",
+    }
+    license_list_url = url+"repos/spdx/license-list-data/contents/json/licenses.json"
+    response = requests.get(license_list_url, headers=headers)
+    data = json.loads(response.text)
+    return data
+
+
+def licenseInList(namespace, namespaceId, token):
+    license_list = getLicenseList(token)
+    return_dict = {
+    "exists": False
+    }
+    for license in license_list["licenses"]:
+        if namespaceId == license["licenseId"] or namespace == license["name"]:
+            return_dict["licenseId"] = license["licenseId"]
+            return_dict["name"] = license["name"]
+            return_dict["referenceNumber"] = license["referenceNumber"]
+            return_dict["isDeprecatedLicenseId"] = license["isDeprecatedLicenseId"]
+            return_dict["exists"] = True
+    return return_dict
+
+
+def licenseExists(namespace, namespaceId, token):
+    # Check if a license exists on the SPDX license list
+    # check internet connection
+    if isConnected():
+        licenseInListDict = licenseInList(namespace, namespaceId, token)
+        return licenseInListDict
+    return {"exists": False}
+
+
+def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
+    """ View for creating an GitbHub issue
+    when submitting a new license namespace
+    """
+    body = '**1.** License Namespace: ' + licenseNamespace.namespace + '\n**2.** Short identifier: ' + licenseNamespace.shortIdentifier + '\n**3.** License Author or steward: ' + licenseNamespace.licenseAuthorName + '\n**4.** Description: ' + licenseNamespace.description + '\n**5.** Submitter name: ' + licenseNamespace.fullname + '\n**6.** URL: ' + licenseNamespace.url
+    title = 'New license namespace request: ' + licenseNamespace.shortIdentifier + ' [SPDX-Online-Tools]'
+    payload = {'title' : title, 'body': body, 'labels': ['new license namespace/exception request']}
+    headers = {'Authorization': 'token ' + token}
+    url = TYPE_TO_URL_NAMESPACE[urlType]
+    r = requests.post(url, data=json.dumps(payload), headers=headers)
+    return r.status_code
