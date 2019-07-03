@@ -20,6 +20,7 @@ from django.conf import settings
 from django import forms
 from django.template import RequestContext
 from django.core.files.storage import FileSystemStorage
+from django.core.urlresolvers import reverse
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDictKeyError
@@ -120,11 +121,14 @@ def submitNewLicense(request):
                     licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
                         submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
                     licenseRequest.save()
+                    licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+                    serverUrl = request.build_absolute_uri('/')
+                    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
                     urlType = utils.NORMAL
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
-                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, token, urlType)
+                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -287,15 +291,15 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAd
     xmlString = ET.tostring(root, method='xml').replace('>','>\n')
     return xmlString
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, token, urlType):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license request
     """
-    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** Standard License Header: ' + licenseHeader + '\n**6.** URL: '
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** Standard License Header: ' + licenseHeader + '\n**6.** License Request Url: ' + licenseRequestUrl + '\n**7.** URL: '
     for url in licenseSourceUrls:
         body += url
         body += '\n'
-    body += '**7.** OSI Status: ' + licenseOsi
+    body += '**8.** OSI Status: ' + licenseOsi
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
