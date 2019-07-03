@@ -247,10 +247,6 @@ def getLicenseList(token):
 def licenseInList(namespace, namespaceId, token):
     license_list = getLicenseList(token)
     return_dict = {
-    "name": "",
-    "licenseId": "",
-    "referenceNumber": "",
-    "isDeprecatedLicenseId": "",
     "exists": False
     }
     for license in license_list["licenses"]:
