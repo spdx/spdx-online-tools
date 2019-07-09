@@ -45,6 +45,7 @@ urlpatterns = [
     url(r'^make_pr/$', views.pull_request, name='pull-request'),
     url(r'^update_session/$',views.update_session_variables, name='update-session-variables'),
     url(r'^submit_new_license/$', views.submitNewLicense, name='submit-new-license'),
+    url(r'^submit_new_license_namespace/$', views.submitNewLicenseNamespace, name='submit-new-license-namespace'),
     url(r'^license_requests/$', views.licenseRequests, name='license-requests'),
     url(r'^license_requests/(?P<licenseId>\d+)/$', views.licenseInformation, name='license-information'),
     url(r'^archive_requests/$', views.archiveRequests, name='archive-license-xml'),

@@ -3,7 +3,7 @@
 {% load staticfiles %}
 {% block body1 %}
 
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css"> 
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css">
 
 <div id="messages" class="messages">
 </div>
@@ -23,7 +23,7 @@
       </thead>
       <tbody>
         {% if archiveRequests %}
-        {% for elem in archiveRequests %}    
+        {% for elem in archiveRequests %}
           <tr class='clickableRow' id={{elem.id}}>
             <td>{{elem.fullname}}</td>
             <td>{{elem.shortIdentifier}}</td>
@@ -39,14 +39,15 @@
       </tbody>
     </table>
 
-{% include "app/modal.html" %} 
+{% include "app/modal.html" %}
 </div>
 {% endblock %}
 {% block script_block %}
 
 <script type="text/javascript">
   $(document).ready(function () {
-      $("#archivepage").addClass('linkactive');
+      $("#licenserequest").addClass('linkactive');
+      $("#archiverequestspage").addClass('linkactive');
       });
 </script>
 
