@@ -1,0 +1,102 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load staticfiles %}
+{% block body1 %}
+
+<div id="messages" class="messages">
+</div>
+<p class ="lead"> {{ medialink }}</p>
+<p class ="lead"> {{ error }}</p>
+<div class="panel panel-default">
+    {% if licenseInformation %}
+<div class="panel-heading"> <p class="lead">{{licenseInformation.fullname}}
+        {% if licenseInformation.archive %}
+            <span class="label label-success">Archived</span>
+        {% endif %}
+    </p>
+</div>
+    {% endif %}
+<div class="panel-body">
+    {% if licenseInformation %}
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Fullname</p>
+        <p>{{licenseInformation.fullname}}</p>
+    </div>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">License author name</p>
+        <p>{{licenseInformation.licenseAuthorName}}</p>
+    </div>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Namespace</p>
+        <p>{{licenseInformation.namespace}}</p>
+    </div>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Short Identifier</p>
+        <p>{{licenseInformation.shortIdentifier}}</p>
+    </div>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Source/URL</p>
+        <p>{{licenseInformation.url}}</p>
+    </div>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Publicly shared</p>
+        <p>{{licenseInformation.publiclyShared}}</p>
+    </div>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Description</p>
+        <p>{{licenseInformation.description}}</p>
+    </div>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Notes</p>
+        <p>{{licenseInformation.notes|safe}}</p>
+    </div>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Submission Date</p>
+        <p>{{licenseInformation.submissionDatetime}}</p>
+    </div>
+    <div class="col-sm-12">
+        <div class="col-sm-12">
+            <a href="/app/license_requests/" class="btn">Go Back</a>
+        </div>
+        <div class="col-sm-12">
+            <form name="download_xml" method="post" action=''>
+                {% csrf_token %}
+                <input type="hidden" name="supporttype" />
+                <button type="submit" class="btn btn-md btn-info" id="downloadBtn">Download the XML</button>
+            </form>
+        </div>
+        <div class="col-sm-12" style="margin-top: 5px">
+            <form id="edit-license-xml" name="edit_license_xml" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="supporttype" />
+                <button id="editButton" class="btn btn-md btn-info">Edit the XML</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+</div>
+{% endblock %}
+{% block script_block %}
+
+<script type="text/javascript">
+    function send_edit_request(form){
+      /* sending the request */
+      var win_href = window.location.href;
+      var license_id = win_href.split('/')[5];
+      window.location.href = "/app/edit_license_xml/"+license_id+"/";
+    }
+    $(document).ready(function () {
+        if (document.location.href.match(/archive_requests/))
+            $("#licensenamespace").addClass('linkactive');
+        else
+            $("#licensenamespace").addClass('linkactive');
+        });
+    $("#editButton").on('click', function(event){
+      /* if the user uploads the file */
+      var form = new FormData($("#edit-license-xml")[0]);
+      event.preventDefault();
+      send_edit_request(form);
+    });
+  </script>
+{% endblock %}
