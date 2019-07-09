@@ -356,6 +356,62 @@ def licenseInformation(request, licenseId):
         'app/license_information.html',context_dict
         )
 
+
+def licenseNamespaceInformation(request, licenseId):
+    """ View for license namespace request and archive request information
+    returns license_namespace_information.html template
+    """
+    if "archive_requests" in str(request.META.get('PATH_INFO')):
+        if not LicenseNamespace.objects.filter(archive='True').filter(id=licenseId).exists():
+            return render(request,
+            '404.html',{},status=404
+            )
+    else:
+        if not LicenseNamespace.objects.filter(archive='False').filter(id=licenseId).exists():
+            return render(request,
+            '404.html',{},status=404
+            )
+    licenseNamespaceRequest = LicenseNamespace.objects.get(id=licenseId)
+    context_dict = {}
+    licenseInformation = {}
+    licenseInformation['fullname'] = licenseNamespaceRequest.fullname
+    licenseInformation['shortIdentifier'] = licenseNamespaceRequest.shortIdentifier
+    licenseInformation['submissionDatetime'] = licenseNamespaceRequest.submissionDatetime
+    licenseInformation['userEmail'] = licenseNamespaceRequest.userEmail
+    licenseInformation['licenseAuthorName'] = licenseNamespaceRequest.licenseAuthorName
+    licenseInformation['archive'] = licenseNamespaceRequest.archive
+
+    licenseInformation['notes'] = licenseNamespaceRequest.notes
+    licenseInformation['namespace'] = licenseNamespaceRequest.namespace
+    licenseInformation['url'] = licenseNamespaceRequest.url
+    licenseInformation['description'] = licenseNamespaceRequest.description
+    licenseInformation['publiclyShared'] = licenseNamespaceRequest.publiclyShared
+    xmlString = licenseNamespaceRequest.xml
+    # data = parseXmlString(xmlString)
+    # licenseInformation['osiApproved'] = data['osiApproved']
+    # licenseInformation['crossRefs'] = data['crossRefs']
+    # licenseInformation['notes'] = data['notes']
+    # licenseInformation['standardLicenseHeader'] = data['standardLicenseHeader']
+    # licenseInformation['description'] = data['text']
+    context_dict ={'licenseInformation': licenseInformation}
+    if request.method == 'POST':
+        tempFilename = 'output.xml'
+        xmlFile = open(tempFilename, 'w')
+        xmlFile.write(xmlString)
+        xmlFile.close()
+        xmlFile = open(tempFilename, 'r')
+        myfile = FileWrapper(xmlFile)
+        response = HttpResponse(myfile, content_type='application/xml')
+        response['Content-Disposition'] = 'attachment; filename=' + licenseNamespaceRequest.shortIdentifier + '.xml'
+        xmlFile.close()
+        os.remove(tempFilename)
+        return response
+
+    return render(request,
+        'app/license_namespace_information.html',context_dict
+        )
+
+
 def parseXmlString(xmlString):
     """ View for generating a spdx license xml
     returns a dictionary with the xmlString license fields values
@@ -1282,6 +1338,23 @@ def archiveRequests(request, license_id=None):
         'app/archive_requests.html',context_dict
         )
 
+
+def archiveNamespaceRequests(request, license_id=None):
+    """ View for archive namespace license requests
+    returns archive_namespace_requests.html template
+    """
+    if request.method == "POST" and request.is_ajax():
+        archive = request.POST.get('archive', False)
+        license_id = request.POST.get('license_id', False)
+        if license_id:
+            LicenseNamespace.objects.filter(pk=license_id).update(archive=archive)
+    archiveRequests = LicenseNamespace.objects.filter(archive='True').order_by('-submissionDatetime')
+    context_dict={'archiveRequests': archiveRequests}
+    return render(request,
+        'app/archive_namespace_requests.html',context_dict
+        )
+
+
 def licenseRequests(request, license_id=None):
     """ View for license requests which are not archived
     returns license_requests.html template
@@ -1295,6 +1368,22 @@ def licenseRequests(request, license_id=None):
     context_dict={'licenseRequests': licenseRequests}
     return render(request,
         'app/license_requests.html',context_dict
+        )
+
+
+def licenseNamespaceRequests(request, license_id=None):
+    """ View for license namespace requests which are not archived
+    returns license_namespace_requests.html template
+    """
+    if request.method == "POST" and request.is_ajax():
+        archive = request.POST.get('archive', True)
+        license_id = request.POST.get('license_id', False)
+        if license_id:
+            LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+    licenseNamespaceRequests = LicenseNamespace.objects.filter(archive='False').order_by('-submissionDatetime')
+    context_dict={'licenseNamespaceRequests': licenseNamespaceRequests}
+    return render(request,
+        'app/license_namespace_requests.html',context_dict
         )
 
 def update_session_variables(request):
