@@ -56,7 +56,7 @@
     </div>
     <div class="col-sm-12">
         <div class="col-sm-12">
-            <a href="/app/license_requests/" class="btn">Go Back</a>
+            <a href="/app/license_namespace_requests/" class="btn">Go Back</a>
         </div>
         <div class="col-sm-12">
             <form name="download_xml" method="post" action=''>
@@ -66,7 +66,7 @@
             </form>
         </div>
         <div class="col-sm-12" style="margin-top: 5px">
-            <form id="edit-license-xml" name="edit_license_xml" method="post" enctype="multipart/form-data">
+            <form id="edit-license-xml" name="edit_license_namespace_xml" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <input type="hidden" name="supporttype" />
                 <button id="editButton" class="btn btn-md btn-info">Edit the XML</button>
@@ -84,10 +84,10 @@
       /* sending the request */
       var win_href = window.location.href;
       var license_id = win_href.split('/')[5];
-      window.location.href = "/app/edit_license_xml/"+license_id+"/";
+      window.location.href = "/app/edit_license_namespace_xml/"+license_id+"/";
     }
     $(document).ready(function () {
-        if (document.location.href.match(/archive_requests/))
+        if (document.location.href.match(/archive_namespace_requests/))
             $("#licensenamespace").addClass('linkactive');
         else
             $("#licensenamespace").addClass('linkactive');

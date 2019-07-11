@@ -200,8 +200,15 @@ def submitNewLicenseNamespace(request):
                     shortIdentifier = form.cleaned_data['shortIdentifier']
                     publiclyShared = form.cleaned_data['publiclyShared']
                     organisation = form.cleaned_data['organisation']
+                    licenseText = ''
                     now = datetime.datetime.now()
                     urlLst = ''.join(e for e in url)
+                    licenseOsi = ''
+                    listVersionAdded = ''
+                    licenseHeader = ''
+                    licenseNotes = ''
+                    xml = generateLicenseXml(licenseOsi, shortIdentifier, fullname,
+                        listVersionAdded, url, licenseHeader, licenseNotes, licenseText)
                     licenseExists = utils.licenseExists(namespace, shortIdentifier, token)
                     if licenseExists["exists"]:
                         if (request.is_ajax()):
@@ -224,7 +231,8 @@ def submitNewLicenseNamespace(request):
                                                                     namespace=namespace,
                                                                     organisation=organisation,
                                                                     publiclyShared=publiclyShared,
-                                                                    shortIdentifier=shortIdentifier)
+                                                                    shortIdentifier=shortIdentifier,
+                                                                    xml=xml)
                         licenseNamespaceRequest.save()
                         urlType = utils.NORMAL
                         if 'urlType' in request.POST:
@@ -361,7 +369,7 @@ def licenseNamespaceInformation(request, licenseId):
     """ View for license namespace request and archive request information
     returns license_namespace_information.html template
     """
-    if "archive_requests" in str(request.META.get('PATH_INFO')):
+    if "archive_namespace_requests" in str(request.META.get('PATH_INFO')):
         if not LicenseNamespace.objects.filter(archive='True').filter(id=licenseId).exists():
             return render(request,
             '404.html',{},status=404
@@ -387,12 +395,12 @@ def licenseNamespaceInformation(request, licenseId):
     licenseInformation['description'] = licenseNamespaceRequest.description
     licenseInformation['publiclyShared'] = licenseNamespaceRequest.publiclyShared
     xmlString = licenseNamespaceRequest.xml
-    # data = parseXmlString(xmlString)
-    # licenseInformation['osiApproved'] = data['osiApproved']
-    # licenseInformation['crossRefs'] = data['crossRefs']
-    # licenseInformation['notes'] = data['notes']
-    # licenseInformation['standardLicenseHeader'] = data['standardLicenseHeader']
-    # licenseInformation['description'] = data['text']
+    data = parseXmlString(xmlString)
+    licenseInformation['osiApproved'] = data['osiApproved']
+    licenseInformation['crossRefs'] = data['crossRefs']
+    licenseInformation['notes'] = data['notes']
+    licenseInformation['standardLicenseHeader'] = data['standardLicenseHeader']
+    licenseInformation['text'] = data['text']
     context_dict ={'licenseInformation': licenseInformation}
     if request.method == 'POST':
         tempFilename = 'output.xml'
@@ -1322,6 +1330,33 @@ def edit_license_xml(request, license_id=None):
             )
     else:
         return HttpResponseRedirect('/app/license_requests')
+
+
+def edit_license_namespace_xml(request, license_id=None):
+    """View for editing the XML file corresponsing to a license namespace entry
+    returns editor.html """
+    context_dict = {}
+    ajaxdict = {}
+    if license_id:
+        if not LicenseNamespace.objects.filter(id=license_id).exists():
+            return render(request,
+                '404.html',context_dict,status=404
+                )
+        if request.user.is_authenticated():
+            user = request.user
+            try:
+                github_login = user.social_auth.get(provider='github')
+            except UserSocialAuth.DoesNotExist:
+                github_login = None
+            context_dict["github_login"] = github_login
+        license_obj = LicenseNamespace.objects.get(id=license_id)
+        context_dict["xml_text"] = license_obj.xml
+        context_dict["license_name"] = license_obj.fullname
+        return render(request,
+            'app/editor.html',context_dict,status=200
+            )
+    else:
+        return HttpResponseRedirect('/app/license_namespace_requests')
 
 def archiveRequests(request, license_id=None):
     """ View for archive license requests
