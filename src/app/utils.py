@@ -25,6 +25,7 @@ TESTS = "tests"
 
 TYPE_TO_URL_LICENSE = {
 NORMAL:  settings.REPO_URL,
+PROD:  settings.PROD_REPO_URL,
 TESTS: settings.DEV_REPO_URL,
 }
 
@@ -53,7 +54,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     }
 
     """ Making a fork """
-    fork_url = url+"repos/spdx/license-list-XML/forks"
+    fork_url = "{0}/forks".format(TYPE_TO_URL_LICENSE[PROD])
     response = requests.get(fork_url, headers=headers)
     data = json.loads(response.text)
     forks = [fork["owner"]["login"] for fork in data]
@@ -69,7 +70,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     else:
         if(updateUpstream=="true"):
             """ If user wants to update the forked repo with upstream master """
-            update_url = url+"repos/spdx/license-list-XML/git/refs/heads/master"
+            update_url = "{0}/git/refs/heads/master".format(TYPE_TO_URL_LICENSE[PROD])
             response = requests.get(update_url, headers=headers)
             data = json.loads(response.text)
             sha = data["object"]["sha"]
@@ -77,7 +78,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
                 "sha":sha,
                 "force": True
             }
-            update_url = url+"repos/%s/license-list-XML/git/refs/heads/master"%(username)
+            update_url = url+"repos/%s/"+settings.LICENSE_REPO_NAME+"/git/refs/heads/master"%(username)
             response = requests.patch(update_url, headers=headers, data=json.dumps(body))
             if response.status_code!=200:
                 logger.error("[Pull Request] Error occured while updating fork, for %s user. "%(username)+response.text)
@@ -88,7 +89,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
 
 
     """ Getting ref of master branch """
-    ref_url = url + "repos/%s/license-list-XML/git/refs/heads/master"%(username)
+    ref_url = url + "repos/%s/"+settings.LICENSE_REPO_NAME+"/git/refs/heads/master"%(username)
     response = requests.get(ref_url, headers=headers)
     if response.status_code != 200:
         logger.error("[Pull Request] Error occured while getting ref of master branch, for %s user. "%(username)+response.text)
@@ -100,7 +101,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     sha = str(data["object"]["sha"])
 
     """ Getting names of all branches """
-    branch_url = url + "repos/%s/license-list-XML/branches"%(username)
+    branch_url = url + "repos/%s/"+settings.LICENSE_REPO_NAME+"/branches"%(username)
     response = requests.get(branch_url, headers=headers)
     if response.status_code != 200:
         logger.error("[Pull Request] Error occured while getting branch names, for %s user. "%(username)+response.text)
@@ -120,7 +121,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
             else:
                 branchName = branchName+str(count)
                 break
-    create_branch_url = url + "repos/%s/license-list-XML/git/refs"%(username)
+    create_branch_url = url + "repos/%s/"+settings.LICENSE_REPO_NAME+"/git/refs"%(username)
     body = {
         "ref":"refs/heads/"+branchName,
         "sha":sha,
@@ -139,7 +140,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     if fileName[-4:] == ".xml":
         fileName = fileName[:-4]
     fileName += ".xml"
-    commit_url = url + "repos/%s/license-list-XML/contents/src/%s"%(username, fileName)
+    commit_url = url + "repos/%s/"+settings.LICENSE_REPO_NAME+"/contents/src/%s"%(username, fileName)
     xmlText = xmlText.encode('utf-8')
     fileContent = base64.b64encode(xmlText)
     body = {
@@ -149,7 +150,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         "branch":branchName,
     }
     """ Check if file already exists """
-    file_url = url + "repos/spdx/license-list-XML/contents/src/%s"%(fileName)
+    file_url = "{0}/contents/src/{1}".format(TYPE_TO_URL_LICENSE[PROD], fileName)
     response = requests.get(file_url, headers=headers)
     if response.status_code == 200:
         """ Creating Commit by updating the file """
@@ -165,7 +166,153 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         }
 
     """ Making Pull Request """
-    pr_url = url + "repos/spdx/license-list-XML/pulls"
+    pr_url = "{0}/pulls".format(TYPE_TO_URL_LICENSE[PROD])
+    body = {
+        "title": prTitle,
+        "body": prBody,
+        "head": "%s:%s"%(username, branchName),
+        "base": "master",
+    }
+    response = requests.post(pr_url, headers=headers, data=json.dumps(body))
+    if response.status_code != 201:
+        logger.error("[Pull Request] Error occured while making pull request, for %s user. "%(username)+response.text)
+        return {
+            "type":"error",
+            "message":"Some error occured while making the pull request. Please try again later or contact the SPDX Team."
+        }
+    data = json.loads(response.text)
+    return {
+        "type":"success",
+        "pr_url": data["html_url"],
+    }
+
+
+def makeNsPullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
+    logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
+    logger = logging.getLogger()
+
+    url = "https://api.github.com/"
+    headers = {
+        "Accept":"application/vnd.github.machine-man-preview+json",
+        "Authorization":"bearer "+token,
+        "Content-Type":"application/json",
+    }
+
+    """ Making a fork """
+
+    fork_url = "{0}/forks".format(TYPE_TO_URL_NAMESPACE[NORMAL])
+    response = requests.get(fork_url, headers=headers)
+    data = json.loads(response.text)
+    forks = [fork["owner"]["login"] for fork in data]
+    if not username in forks:
+        """ If user has not forked the repo """
+        response = requests.post(fork_url, headers=headers)
+        if response.status_code != 202:
+            logger.error("[Pull Request] Error occured while creating fork, for %s user. "%(username)+response.text)
+            return {
+                "type":"error",
+                "message":"Error occured while creating a fork of the repo. Please try again later or contact the SPDX Team."
+            }
+    else:
+        if(updateUpstream=="true"):
+            """ If user wants to update the forked repo with upstream master """
+            update_url = "{0}/git/refs/heads/master".format(TYPE_TO_URL_NAMESPACE[NORMAL])
+            response = requests.get(update_url, headers=headers)
+            data = json.loads(response.text)
+            sha = data["object"]["sha"]
+            body = {
+                "sha":sha,
+                "force": True
+            }
+            update_url = url+"repos/%s/"+settings.NAMESPACE_REPO_NAME+"/git/refs/heads/master"%(username)
+            response = requests.patch(update_url, headers=headers, data=json.dumps(body))
+            if response.status_code!=200:
+                logger.error("[Pull Request] Error occured while updating fork, for %s user. "%(username)+response.text)
+                return {
+                    "type":"error",
+                    "message":"Error occured while updating fork with the upstream master. Please try again later or contact the SPDX Team."
+                }
+
+
+    """ Getting ref of master branch """
+    ref_url = url + "repos/%s/"+settings.NAMESPACE_REPO_NAME+"/git/refs/heads/master"%(username)
+    response = requests.get(ref_url, headers=headers)
+    if response.status_code != 200:
+        logger.error("[Pull Request] Error occured while getting ref of master branch, for %s user. "%(username)+response.text)
+        return {
+            "type":"error",
+            "message":"Some error occured while getting the ref of master branch. Please try again later or contact the SPDX Team."
+        }
+    data = json.loads(response.text)
+    sha = str(data["object"]["sha"])
+
+    """ Getting names of all branches """
+    branch_url = url + "repos/%s/"+settings.NAMESPACE_REPO_NAME+"/branches"%(username)
+    response = requests.get(branch_url, headers=headers)
+    if response.status_code != 200:
+        logger.error("[Pull Request] Error occured while getting branch names, for %s user. "%(username)+response.text)
+        return {
+            "type":"error",
+            "message":"Some error occured while getting branch names. Please try again later or contact the SPDX Team."
+        }
+    data = json.loads(response.text)
+    branch_names = [i["name"] for i in data]
+
+    """ Creating branch """
+    if branchName in branch_names:
+        count=1
+        while True:
+            if((branchName+str(count)) in branch_names):
+                count+=1
+            else:
+                branchName = branchName+str(count)
+                break
+    create_branch_url = url + "repos/%s/"+settings.NAMESPACE_REPO_NAME+"/git/refs"%(username)
+    body = {
+        "ref":"refs/heads/"+branchName,
+        "sha":sha,
+    }
+    response = requests.post(create_branch_url, headers=headers, data=json.dumps(body))
+    if response.status_code != 201:
+        logger.error("[Pull Request] Error occured while creating branch, for %s user. "%(username)+response.text)
+        return {
+            "type":"error",
+            "message":"Some error occured while creating the branch. Please try again later or contact the SPDX Team."
+        }
+    data = json.loads(response.text)
+    branch_sha = data["object"]["sha"]
+
+    """ Creating Commit """
+    if fileName[-4:] == ".xml":
+        fileName = fileName[:-4]
+    fileName += ".xml"
+    commit_url = url + "repos/%s/"+settings.NAMESPACE_REPO_NAME+"/contents/src/%s"%(username, fileName)
+    xmlText = xmlText.encode('utf-8')
+    fileContent = base64.b64encode(xmlText)
+    body = {
+        "path":"src/"+fileName,
+        "message":commitMessage,
+        "content":fileContent,
+        "branch":branchName,
+    }
+    """ Check if file already exists """
+    file_url = "{0}//contents/src/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL], fileName)
+    response = requests.get(file_url, headers=headers)
+    if response.status_code == 200:
+        """ Creating Commit by updating the file """
+        data = json.loads(response.text)
+        file_sha = data["sha"]
+        body["sha"] = file_sha
+    response = requests.put(commit_url, headers=headers, data=json.dumps(body))
+    if not (response.status_code==201 or response.status_code==200):
+        logger.error("[Pull Request] Error occured while making commit, for %s user. "%(username)+response.text)
+        return {
+            "type":"error",
+            "message":"Some error occured while making commit. Please try again later or contact the SPDX Team."
+        }
+
+    """ Making Pull Request """
+    pr_url = "{0}/pulls".format(TYPE_TO_URL_NAMESPACE[NORMAL])
     body = {
         "title": prTitle,
         "body": prBody,
@@ -282,6 +429,6 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
     title = 'New license namespace request: ' + licenseNamespace.shortIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license namespace/exception request']}
     headers = {'Authorization': 'token ' + token}
-    url = TYPE_TO_URL_NAMESPACE[urlType]
+    url = "{0}/issues".format(TYPE_TO_URL_NAMESPACE[urlType])
     r = requests.post(url, data=json.dumps(payload), headers=headers)
     return r.status_code

@@ -311,7 +311,7 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
-    url = utils.TYPE_TO_URL_LICENSE[urlType]
+    url = "{0}/issues".format(utils.TYPE_TO_URL_LICENSE[urlType])
     r = post(url, data=dumps(payload), headers=headers)
     return r.status_code
 
@@ -1353,7 +1353,7 @@ def edit_license_namespace_xml(request, license_id=None):
         context_dict["xml_text"] = license_obj.xml
         context_dict["license_name"] = license_obj.fullname
         return render(request,
-            'app/editor.html',context_dict,status=200
+            'app/ns_editor.html',context_dict,status=200
             )
     else:
         return HttpResponseRedirect('/app/license_namespace_requests')
@@ -1452,6 +1452,60 @@ def pull_request(request):
                     token = github_login.extra_data["access_token"]
                     username = github_login.extra_data["login"]
                     response = utils.makePullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"])
+                    if(response["type"]=="success"):
+                        """ PR made successfully """
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "success"
+                            ajaxdict["data"] = response["pr_url"]
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=200)
+                        return HttpResponse(response["pr_url"],status=200)
+                    else:
+                        """ Error while making PR """
+                        if (request.is_ajax()):
+                            ajaxdict["type"] = "pr_error"
+                            ajaxdict["data"] = response["message"]
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response,status=500)
+                        return HttpResponse(response["message"],status=500)
+                except UserSocialAuth.DoesNotExist:
+                    """ User not authenticated with GitHub """
+                    if (request.is_ajax()):
+                        ajaxdict["type"] = "auth_error"
+                        ajaxdict["data"] = "Please login using GitHub to use this feature."
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response,status=401)
+                    return HttpResponse("Please login using GitHub to use this feature.",status=401)
+            except:
+                """ Other errors raised """
+                logger.error(str(format_exc()))
+                if (request.is_ajax()):
+                    ajaxdict["type"] = "error"
+                    ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response,status=500)
+                return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
+        else:
+            return HttpResponseRedirect(settings.HOME_URL)
+    else:
+        return HttpResponseRedirect(settings.LOGIN_URL)
+
+
+def namespace_pull_request(request):
+    """ View that handles pull request for a license namespace """
+    if request.user.is_authenticated():
+        if request.method=="POST":
+            context_dict = {}
+            ajaxdict = {}
+            try:
+                if request.user.is_authenticated():
+                    user = request.user
+                try:
+                    """ Getting user info and calling the makePullRequest function """
+                    github_login = user.social_auth.get(provider='github')
+                    token = github_login.extra_data["access_token"]
+                    username = github_login.extra_data["login"]
+                    response = utils.makeNsPullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"])
                     if(response["type"]=="success"):
                         """ PR made successfully """
                         if (request.is_ajax()):

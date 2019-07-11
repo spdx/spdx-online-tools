@@ -45,6 +45,7 @@ urlpatterns = [
     url(r'^validate_xml/$', views.validate_xml, name='validate-xml'),
     url(r'^search/$',views.autocompleteModel, name='autocompleteModel'),
     url(r'^make_pr/$', views.pull_request, name='pull-request'),
+    url(r'^make_namespace_pr/$', views.namespace_pull_request, name='namespace-pull-request'),
     url(r'^update_session/$',views.update_session_variables, name='update-session-variables'),
     url(r'^submit_new_license/$', views.submitNewLicense, name='submit-new-license'),
     url(r'^submit_new_license_namespace/$', views.submitNewLicenseNamespace, name='submit-new-license-namespace'),
