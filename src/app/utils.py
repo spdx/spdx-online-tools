@@ -22,6 +22,7 @@ from django.conf import settings
 
 NORMAL = "normal"
 TESTS = "tests"
+PROD = "prod"
 
 TYPE_TO_URL_LICENSE = {
 NORMAL:  settings.REPO_URL,
