@@ -11,14 +11,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import requests
-import json
 import base64
+import json
 import logging
-from app.models import UserID, User
+import re
 import socket
-from django.conf import settings
 
+import requests
+from django.conf import settings
+from spdx_license_matcher.computation import get_close_matches
+
+from app.models import User, UserID
+
+from .models import LicenseRequest
 
 NORMAL = "normal"
 TESTS = "tests"
@@ -285,3 +290,81 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
     url = TYPE_TO_URL_NAMESPACE[urlType]
     r = requests.post(url, data=json.dumps(payload), headers=headers)
     return r.status_code
+
+
+def clean(text):
+    """ Clean the XML tags from license text after parsing the XML string.
+    """
+    tags = re.compile('<.*?>')
+    cleanedText = re.sub(tags, '', text)
+    return cleanedText
+
+
+def get_rejected_licenses_issues(urlType):
+    """ Get all the issues that are already rejected by the legal team.
+    """
+    payload = {'state': 'closed', 'labels': 'new license/exception: Not Accepted'}
+    url = TYPE_TO_URL_LICENSE[urlType]
+    res = requests.get(url, params=payload)
+    issues = res.json()
+    return issues
+
+
+def get_yet_not_approved_licenses_issues(urlType):
+    """ Get all the issues that are yet to be approved by the legal team by sorting them with labels.
+    """
+    payload = {'state': 'open', 'labels': 'new license/exception request'}
+    url = TYPE_TO_URL_LICENSE[urlType]
+    response = requests.get(url, params=payload)
+    issues = response.json()
+    newRequestIssues = []
+
+    # Remove issues with Accepted labels
+    for issue in issues:
+        for label in issue.get('labels'):
+            if "new license/exception: Accepted" in label.get('name'):
+                break
+        else:
+            newRequestIssues.append(issue)
+    return newRequestIssues
+
+
+def get_license_data(issues):
+    """ Get license data returns a dictionary with key as license IDs and value as the
+    corresponding license text of these IDs.
+    """
+    licenseIds = []
+    licenseTexts = []
+    for issue in issues:
+        if issue.get('pull_request') is None:
+            licenseInfo = issue.get('body')
+            if '[SPDX-Online-Tools]' in issue.get('title'):
+                licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
+                licenseIds.append(licenseIdentifier)
+                licenseXml = str(LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).xml)
+                licenseText = parseXmlString(licenseXml)['text']
+                licenseTexts.append(clean(licenseText))
+    licenseData = dict(zip(licenseIds, licenseTexts))
+    return licenseData
+
+
+def get_issue_url_by_id(licenseId, issues):
+    """ Get the github issue url of the license by license ID and the issues instance.
+    """
+    return [issue.get('html_url') for issue in issues if issue.get('pull_request') is None if licenseId in issue.get('title')][0]
+
+
+def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
+    """ Check  if the license text matches with that of a license that is either
+    a not yet approved license or a rejected license.
+    returns the close matches of license text along with the license issue URL.
+    """
+    issues = get_rejected_licenses_issues(urlType)
+    issues.extend(get_yet_not_approved_licenses_issues(urlType))
+    licenseData = get_license_data(issues)
+    matches = get_close_matches(inputLicenseText, licenseData)
+    matches = matches.keys()
+    if not matches:
+        return matches, ''
+    issueUrl = get_issue_url_by_id(matches[0], issues)
+    return matches, issueUrl

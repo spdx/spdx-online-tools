@@ -115,21 +115,36 @@ def submitNewLicense(request):
                     userEmail = form.cleaned_data['userEmail']
                     licenseNotes = ''
                     listVersionAdded = ''
-                    xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
-                        listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
-                    now = datetime.datetime.now()
-                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
-                    licenseRequest.save()
-                    licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
-                    serverUrl = request.build_absolute_uri('/')
-                    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
+                    data = {}
                     urlType = utils.NORMAL
+                    
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
-                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
-                    data = {'statusCode' : str(statusCode)}
+                    
+                    matches, issueUrl = utils.check_new_licenses_and_rejected_licenses(licenseText, urlType)
+
+                    # Check if the license text doesn't matches with the rejected as well as not yet approved licenses
+                    if not matches:
+                        xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                            listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+                        now = datetime.datetime.now()
+                        licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
+                            submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+                        licenseRequest.save()
+                        licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+                        serverUrl = request.build_absolute_uri('/')
+                        licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
+                        statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
+                    
+                    # If the license text matches with either rejected or yet not approved license then return 409 Conflict
+                    else:
+                        statusCode = 409
+                        matchingString = 'The following license ID(s) match: ' + ", ".join(matches)
+                        data['matchingStr'] = matchingString
+                        data['issueUrl'] = issueUrl
+                    
+                    data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
                 """ User not authenticated with GitHub """
