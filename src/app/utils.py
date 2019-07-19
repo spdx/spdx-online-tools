@@ -18,13 +18,16 @@ import re
 import socket
 import xml.etree.cElementTree as ET
 
+import redis
 import requests
 from django.conf import settings
-from spdx_license_matcher.computation import get_close_matches
 
 from app.models import User, UserID
-
-from .models import LicenseRequest
+from spdx_license_matcher.build_licenses import build_spdx_licenses
+from spdx_license_matcher.computation import (get_close_matches,
+                                              get_matching_string)
+from spdx_license_matcher.difference import get_similarity_percent
+from spdx_license_matcher.utils import get_spdx_license_text
 
 NORMAL = "normal"
 TESTS = "tests"
@@ -590,3 +593,25 @@ def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
         return matches, ''
     issueUrl = get_issue_url_by_id(matches[0], issues)
     return matches, issueUrl
+
+
+def check_spdx_license(licenseText):
+    """Check the license text against the spdx license list.
+    """
+    licenseText = unicode(licenseText.decode('string_escape'), 'utf-8')
+    r = redis.StrictRedis(host='localhost', port=6379, db=0)
+    
+    # if redis is empty build the spdx license list in the redis database
+    if r.keys('*') == []:
+        build_spdx_licenses()
+    spdxLicenseIds = r.keys()
+    spdxLicenseTexts = r.mget(spdxLicenseIds)
+    licenseData = dict(zip(spdxLicenseIds, spdxLicenseTexts))
+    matches = get_close_matches(licenseText, licenseData)
+    matchingString = get_matching_string(matches, licenseText)
+    if matchingString == "":
+        licenseID = max(matches, key=matches.get)
+        spdxLicenseText = get_spdx_license_text(licenseID)
+        similarityPercent = get_similarity_percent(spdxLicenseText, licenseText)
+        return 'Close match! The given license text is {}% similar to the following license ID: {}'.format(similarityPercent, licenseID)
+    return matchingString

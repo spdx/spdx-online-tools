@@ -968,56 +968,35 @@ def check_license(request):
         context_dict={}
         if request.method == 'POST':
             licensetext = request.POST.get('licensetext')
-            if (jpype.isJVMStarted()==0):
-                """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =settings.JAR_ABSOLUTE_PATH
-                jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ Attach a Thread and start processing the request """
-            jpype.attachThreadToJVM()
-            package = jpype.JPackage("org.spdx.compare")
-            compareclass = package.LicenseCompareHelper
             try:
-                """Call the java function with parameter"""
-                matching_licenses = compareclass.matchingStandardLicenseIds(licensetext)
-                if (matching_licenses and len(matching_licenses) > 0):
-                    matching_str = "The following license ID(s) match: "
-                    matching_str+= matching_licenses[0]
-                    for i in range(1,len(matching_licenses)):
-                        matching_str += ", "
-                        matching_str += matching_licenses[i]
-                    if (request.is_ajax()):
-                        ajaxdict=dict()
-                        ajaxdict["data"] = matching_str
-                        response = dumps(ajaxdict)
-                        jpype.detachThreadFromJVM()
-                        return HttpResponse(response)
-                    context_dict["success"] = str(matching_str)
-                    jpype.detachThreadFromJVM()
-                    return render(request,
-                        'app/check_license.html',context_dict,status=200
-                        )
-                else:
+                matching_str = utils.check_spdx_license(licensetext)
+                if 'not enough confidence threshold' in matching_str:
                     if (request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = "There are no matching SPDX listed licenses"
                         response = dumps(ajaxdict)
-                        jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=404)
                     context_dict["error"] = "There are no matching SPDX listed licenses"
-                    jpype.detachThreadFromJVM()
                     return render(request,
                         'app/check_license.html',context_dict,status=404
                         )
+                if (request.is_ajax()):
+                    ajaxdict=dict()
+                    ajaxdict["data"] = matching_str
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response)
+                context_dict["success"] = str(matching_str)
+                return render(request,
+                    'app/check_license.html',context_dict,status=200
+                    )
             except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application """
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["data"] = jpype.JavaException.message(ex)
                     response = dumps(ajaxdict)
-                    jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
                 context_dict["error"] = jpype.JavaException.message(ex)
-                jpype.detachThreadFromJVM()
                 return render(request,
                     'app/check_license.html',context_dict,status=404
                     )
@@ -1027,10 +1006,8 @@ def check_license(request):
                     ajaxdict=dict()
                     ajaxdict["data"] = format_exc()
                     response = dumps(ajaxdict)
-                    jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
                 context_dict["error"] = format_exc()
-                jpype.detachThreadFromJVM()
                 return render(request,
                     'app/check_license.html',context_dict,status=404
                     )
