@@ -317,7 +317,7 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAd
 
 
 def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType):
-    """ View for creating an GitbHub issue
+    """ View for creating an GitHub issue
     when submitting a new license request
     """
     body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** Standard License Header: ' + licenseHeader + '\n**6.** License Request Url: ' + licenseRequestUrl + '\n**7.** URL: '
@@ -388,14 +388,6 @@ def parseXmlString(xmlString):
     return data
 
 
-def get_xml():
-    my_xml = ET.Element('foo', attrib={'bar': 'bla'})
-    my_str = ET.tostring(my_xml, 'utf-8', short_empty_elements=False)
-    enc = '<?xml version="1.0" encoding="utf-8"?>'
-    enc = enc + my_str.decode('utf-8')
-    return enc
-
-
 def clean(text):
     """ Clean the XML tags from license text after parsing the XML string.
     """
@@ -445,9 +437,12 @@ def get_license_data(issues):
             if '[SPDX-Online-Tools]' in issue.get('title'):
                 licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
                 licenseIds.append(licenseIdentifier)
-                licenseXml = str(LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).xml)
-                licenseText = parseXmlString(licenseXml)['text']
-                licenseTexts.append(clean(licenseText))
+                try:
+                    licenseXml = str(LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).xml)
+                    licenseText = parseXmlString(licenseXml)['text']
+                    licenseTexts.append(clean(licenseText))
+                except LicenseRequest.DoesNotExist:
+                    pass
     licenseData = dict(zip(licenseIds, licenseTexts))
     return licenseData
 

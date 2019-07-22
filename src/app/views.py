@@ -331,12 +331,6 @@ def licenseInformation(request, licenseId):
         )
 
 
-def download_xml_file(request, licenseId):
-    #licenseRequest = LicenseRequest.objects.get(id=licenseId)
-    response = HttpResponse(utils.get_xml(), content_type="application/xml")
-    response['Content-Disposition'] = 'inline; filename=myfile.xml'
-    return response
-
 def validate(request):
     """ View for validate tool
     returns validate.html template
