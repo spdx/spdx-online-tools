@@ -30,7 +30,7 @@ class LicenseNames(models.Model):
 class License(models.Model):
     licenseAuthorName = models.CharField(max_length=100, default="", blank=True, null=True)
     fullname = models.CharField(max_length=70)
-    shortIdentifier = models.CharField(max_length=25)
+    shortIdentifier = models.CharField(max_length=25, unique=True)
     submissionDatetime = models.DateTimeField(auto_now_add=True)
     userEmail = models.EmailField(max_length=35)
     notes = models.CharField(max_length=255, default="")
@@ -73,6 +73,8 @@ class LicenseNamespace(License):
     description = models.TextField()
     namespace = models.CharField(max_length=200)
     url = models.CharField(max_length=200)
+    promoted = models.BooleanField(default=False)
+    license_request = models.ForeignKey(LicenseRequest, null=True, blank=True)
 
     def __unicode__(self):
         return "%s" % (self.namespace)

@@ -57,6 +57,8 @@ urlpatterns = [
     url(r'^archive_requests/(?P<licenseId>\d+)/$', views.licenseInformation, name='archived-license-information'),
     url(r'^archive_namespace_requests/$', views.archiveNamespaceRequests, name='archive-license-namespace-xml'),
     url(r'^archive_namespace_requests/(?P<licenseId>\d+)/$', views.licenseNamespaceInformation, name='archived-license-namespace-information'),
+    url(r'^promoted_namespace_requests/$', views.promoteNamespaceRequests, name='promoted-license-namespace-xml'),
+    url(r'^promoted_namespace_requests/(?P<licenseId>\d+)/$', views.licenseNamespaceInformation, name='promoted-license-namespace-information'),
     #url(r'^password_reset/$', auth_views.password_reset, name='password_reset'),
     #url(r'^password_reset/done/$', auth_views.password_reset_done, name='password_reset_done'),
     #url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',

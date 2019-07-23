@@ -81,6 +81,25 @@ def about(request):
         'app/about.html',context_dict
         )
 
+def submitLicenseRequestUtil(licenseAuthorName, licenseName, licenseIdentifier, licenseOsi, licenseSourceUrls, licenseHeader, licenseComments, licenseText, userEmail, token, request):
+    licenseNotes = ''
+    listVersionAdded = ''
+    xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+        listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+    now = datetime.datetime.now()
+    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
+        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+    licenseRequest.save()
+    licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+    serverUrl = request.build_absolute_uri('/')
+    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
+    urlType = utils.NORMAL
+    if 'urlType' in request.POST:
+        # This is present only when executing submit license via tests
+        urlType = request.POST["urlType"]
+    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
+    return (statusCode, licenseRequest)
+
 def submitNewLicense(request):
     """ View for submit new licenses
     returns submit_new_license.html template
@@ -113,22 +132,7 @@ def submitNewLicense(request):
                     licenseComments = form.cleaned_data['comments']
                     licenseText = form.cleaned_data['text']
                     userEmail = form.cleaned_data['userEmail']
-                    licenseNotes = ''
-                    listVersionAdded = ''
-                    xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
-                        listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
-                    now = datetime.datetime.now()
-                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
-                    licenseRequest.save()
-                    licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
-                    serverUrl = request.build_absolute_uri('/')
-                    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                    urlType = utils.NORMAL
-                    if 'urlType' in request.POST:
-                        # This is present only when executing submit license via tests
-                        urlType = request.POST["urlType"]
-                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
+                    statusCode = submitLicenseRequestUtil(licenseAuthorName, licenseName, licenseIdentifier, licenseOsi, licenseSourceUrls, licenseHeader, licenseComments, licenseText, userEmail, token, request)[0]
                     data = {'statusCode' : str(statusCode)}
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -1387,6 +1391,34 @@ def archiveNamespaceRequests(request, license_id=None):
     context_dict={'archiveRequests': archiveRequests}
     return render(request,
         'app/archive_namespace_requests.html',context_dict
+        )
+
+
+def promoteNamespaceRequests(request, license_id=None):
+    """ View for promote namespace license requests
+    returns promote_namespace_requests.html template
+    """
+    from django.forms import model_to_dict
+    if request.method == "POST" and request.is_ajax():
+        promoted = request.POST.get('promoted', False)
+        license_id = request.POST.get('license_id', False)
+        if license_id:
+            """Create corresponding license request and issue"""
+            model_dict = model_to_dict(LicenseNamespace.objects.get(pk=license_id), exclude=['id'])
+            licenseOsi = ""
+            licenseHeader = ""
+            licenseComments = ""
+            user = request.user
+            github_login = user.social_auth.get(provider='github')
+            token = github_login.extra_data["access_token"]
+            return_tuple = submitLicenseRequestUtil(model_dict["licenseAuthorName"], model_dict["namespace"], model_dict["shortIdentifier"], licenseOsi, [model_dict["url"]], licenseHeader, licenseComments, model_dict["description"], model_dict["userEmail"], token, request)
+            statusCode = return_tuple[0]
+            if statusCode == 201:
+                LicenseNamespace.objects.filter(pk=license_id).update(promoted=promoted, license_request_id=return_tuple[1].id)
+    promotedRequests = LicenseNamespace.objects.filter(promoted='True').order_by('-submissionDatetime')
+    context_dict={'promotedRequests': promotedRequests}
+    return render(request,
+        'app/promoted_namespace_requests.html',context_dict
         )
 
 
