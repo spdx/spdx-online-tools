@@ -42,11 +42,9 @@ try:
     from urlparse import urljoin
 except ImportError:
     from urllib.parse import urljoin
-import xml.etree.cElementTree as ET
 import datetime
 from wsgiref.util import FileWrapper
 import os
-from requests import post
 
 from social_django.models import UserSocialAuth
 from app.models import UserID, LicenseNames
@@ -115,21 +113,36 @@ def submitNewLicense(request):
                     userEmail = form.cleaned_data['userEmail']
                     licenseNotes = ''
                     listVersionAdded = ''
-                    xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
-                        listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
-                    now = datetime.datetime.now()
-                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
-                    licenseRequest.save()
-                    licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
-                    serverUrl = request.build_absolute_uri('/')
-                    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
+                    data = {}
                     urlType = utils.NORMAL
+                    
                     if 'urlType' in request.POST:
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
-                    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
-                    data = {'statusCode' : str(statusCode)}
+                    
+                    matches, issueUrl = utils.check_new_licenses_and_rejected_licenses(licenseText, urlType)
+
+                    # Check if the license text doesn't matches with the rejected as well as not yet approved licenses
+                    if not matches:
+                        xml = utils.generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                            listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+                        now = datetime.datetime.now()
+                        licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
+                            submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+                        licenseRequest.save()
+                        licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+                        serverUrl = request.build_absolute_uri('/')
+                        licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
+                        statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
+                    
+                    # If the license text matches with either rejected or yet not approved license then return 409 Conflict
+                    else:
+                        statusCode = 409
+                        matchingString = 'The following license ID(s) match: ' + ", ".join(matches)
+                        data['matchingStr'] = matchingString
+                        data['issueUrl'] = issueUrl
+                    
+                    data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
                 """ User not authenticated with GitHub """
@@ -269,45 +282,6 @@ def submitNewLicenseNamespace(request):
         )
 
 
-def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
-    """ View for generating a spdx license xml
-    returns the license xml as a string
-    """
-    root = ET.Element("SPDXLicenseCollection", xmlns="http://www.spdx.org/license")
-    if licenseOsi=="Approved":
-        licenseOsi = "true"
-    else:
-        licenseOsi = "false"
-    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName, listVersionAdded=listVersionAdded)
-    crossRefs = ET.SubElement(license, "crossRefs")
-    for sourceUrl in licenseSourceUrls:
-        ET.SubElement(crossRefs, "crossRef").text = sourceUrl
-    ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
-    ET.SubElement(license, "notes").text = licenseNotes
-    licenseTextElement = ET.SubElement(license, "text")
-    licenseLines = licenseText.replace('\r','').split('\n')
-    for licenseLine in licenseLines:
-        ET.SubElement(licenseTextElement, "p").text = licenseLine
-    xmlString = ET.tostring(root, method='xml').replace('>','>\n')
-    return xmlString
-
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType):
-    """ View for creating an GitbHub issue
-    when submitting a new license request
-    """
-    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** Standard License Header: ' + licenseHeader + '\n**6.** License Request Url: ' + licenseRequestUrl + '\n**7.** URL: '
-    for url in licenseSourceUrls:
-        body += url
-        body += '\n'
-    body += '**8.** OSI Status: ' + licenseOsi
-    title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
-    payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
-    headers = {'Authorization': 'token ' + token}
-    url = utils.TYPE_TO_URL_LICENSE[urlType]
-    r = post(url, data=dumps(payload), headers=headers)
-    return r.status_code
-
-
 def licenseInformation(request, licenseId):
     """ View for license request and archive request information
     returns license_information.html template
@@ -332,7 +306,7 @@ def licenseInformation(request, licenseId):
     licenseInformation['licenseAuthorName'] = licenseRequest.licenseAuthorName
     licenseInformation['archive'] = licenseRequest.archive
     xmlString = licenseRequest.xml
-    data = parseXmlString(xmlString)
+    data = utils.parseXmlString(xmlString)
     licenseInformation['osiApproved'] = data['osiApproved']
     licenseInformation['crossRefs'] = data['crossRefs']
     licenseInformation['notes'] = data['notes']
@@ -356,72 +330,6 @@ def licenseInformation(request, licenseId):
         'app/license_information.html',context_dict
         )
 
-def parseXmlString(xmlString):
-    """ View for generating a spdx license xml
-    returns a dictionary with the xmlString license fields values
-    """
-    data = {}
-    tree = ET.ElementTree(ET.fromstring(xmlString))
-    try:
-        root = tree.getroot()
-    except Exception as e:
-        return
-    try:
-        if(len(root) > 0 and 'isOsiApproved' in root[0].attrib):
-            data['osiApproved'] = root[0].attrib['isOsiApproved']
-        else:
-            data['osiApproved'] = '-'
-    except Exception as e:
-        data['osiApproved'] = '-'
-    data['crossRefs'] = []
-    try:
-        if(len(('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')) > 0):
-            crossRefs = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')[0]
-            for crossRef in crossRefs:
-                data['crossRefs'].append(crossRef.text)
-    except Exception as e:
-        data['crossRefs'] = []
-    try:
-        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')) > 0):
-            data['notes'] = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')[0].text
-        else:
-            data['notes'] = ''
-    except Exception as e:
-        data['notes'] = ''
-    try:
-        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')) > 0):
-            data['standardLicenseHeader'] = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')[0].text
-        else:
-            data['standardLicenseHeader'] = ''
-    except Exception as e:
-        data['standardLicenseHeader'] = ''
-    try:
-        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')) > 0):
-            textElem = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')[0]
-            ET.register_namespace('', "http://www.spdx.org/license")
-            textStr = ET.tostring(textElem).strip()
-            if(len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>'):
-                textStr = textStr[42:]
-                textStr = textStr[:-7].strip().replace('&lt;', '<').replace('&gt;', '>').strip()
-            data['text'] = textStr.strip()
-        else:
-            data['text'] = ''
-    except Exception as e:
-        data['text'] = ''
-    return data
-
-def get_xml():
-    my_xml = ET.Element('foo', attrib={'bar': 'bla'})
-    my_str = ET.tostring(my_xml, 'utf-8', short_empty_elements=False)
-    enc = '<?xml version="1.0" encoding="utf-8"?>'
-    enc = enc + my_str.decode('utf-8')
-    return enc
-
-def download_xml_file(request, licenseId):
-    #licenseRequest = LicenseRequest.objects.get(id=licenseId)
-    response = HttpResponse(get_xml(), content_type="application/xml")
-    response['Content-Disposition'] = 'inline; filename=myfile.xml'
-    return response
 
 def validate(request):
     """ View for validate tool
