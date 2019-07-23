@@ -30,7 +30,7 @@
             <td>{{elem.shortIdentifier}}</td>
             <td>{{elem.licenseAuthorName}}</td>
             <td>{{elem.submissionDatetime}}</td>
-            <td>
+            <td id="archive_license">
               {% csrf_token %}
               <button id='archive_button{{elem.id}}' class='btn btn-success' width='25px' value='Archive'>Archive</button>
             </td>
@@ -69,7 +69,7 @@
 <script type="text/javascript">
 
   $('tbody tr').each(function (i,e) {
-    $(e).children('td:not(:last)').click(function () {
+    $(e).children('td:not(:last):not(#archive_license)', 'td:not(#archive_license)').click(function () {
       var $licenseId = $(this).closest("tr").attr('id');
       location.href="/app/license_namespace_requests/" + $licenseId;
     });
@@ -93,10 +93,6 @@
   });
 
   $('tbody tr').each(function (i,e) {
-    $(e).children('td:not(:last)').click(function () {
-      var $licenseId = $(this).closest("tr").attr('id');
-      location.href="/app/license_namespace_requests/" + $licenseId;
-    });
     $('body').on('click', 'button[id^="promote_button"]', function (en) {
       en.stopImmediatePropagation();
       $("#modal-header").addClass("yellow-modal");

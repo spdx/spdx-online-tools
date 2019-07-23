@@ -1,10 +1,8 @@
 def getGithubKey():
-    return '376d679b554ae9a9d474'
-    # return 'GHKEYXXX'
+    return 'GHKEYXXX'
 
 def getGithubSecret():
-    return 'b0b172b5780173783a4c86d60bae983c4608d6a7'
-    # return 'GHSECRETXXX'
+    return 'GHSECRETXXX'
 
 def getSecretKey():
     return 'DJANGOSECRETXXX'
