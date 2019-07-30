@@ -30,7 +30,7 @@ class LicenseNames(models.Model):
 class License(models.Model):
     licenseAuthorName = models.CharField(max_length=100, default="", blank=True, null=True)
     fullname = models.CharField(max_length=70)
-    shortIdentifier = models.CharField(max_length=25, unique=True)
+    shortIdentifier = models.CharField(max_length=25)
     submissionDatetime = models.DateTimeField(auto_now_add=True)
     userEmail = models.EmailField(max_length=35)
     notes = models.CharField(max_length=255, default="")

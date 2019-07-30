@@ -42,11 +42,9 @@ try:
     from urlparse import urljoin
 except ImportError:
     from urllib.parse import urljoin
-import xml.etree.cElementTree as ET
 import datetime
 from wsgiref.util import FileWrapper
 import os
-from requests import post
 
 from social_django.models import UserSocialAuth
 from app.models import UserID, LicenseNames
@@ -84,21 +82,35 @@ def about(request):
 def submitLicenseRequestUtil(licenseAuthorName, licenseName, licenseIdentifier, licenseOsi, licenseSourceUrls, licenseHeader, licenseComments, licenseText, userEmail, token, request):
     licenseNotes = ''
     listVersionAdded = ''
-    xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
-        listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
-    now = datetime.datetime.now()
-    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
-    licenseRequest.save()
-    licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
-    serverUrl = request.build_absolute_uri('/')
-    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
     urlType = utils.NORMAL
     if 'urlType' in request.POST:
         # This is present only when executing submit license via tests
         urlType = request.POST["urlType"]
-    statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
-    return (statusCode, licenseRequest)
+    data = {}
+    matches, issueUrl = utils.check_new_licenses_and_rejected_licenses(licenseText, urlType)
+
+    # Check if the license text doesn't matches with the rejected as well as not yet approved licenses
+    if not matches:
+        xml = utils.generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+            listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+        now = datetime.datetime.now()
+        licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
+            submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+        licenseRequest.save()
+        licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+        serverUrl = request.build_absolute_uri('/')
+        licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
+        statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
+
+    # If the license text matches with either rejected or yet not approved license then return 409 Conflict
+    else:
+        statusCode = 409
+        matchingString = 'The following license ID(s) match: ' + ", ".join(matches)
+        data['matchingStr'] = matchingString
+        data['issueUrl'] = issueUrl
+    data['statusCode'] = str(statusCode)
+    return (data, licenseRequest)
+
 
 def submitNewLicense(request):
     """ View for submit new licenses
@@ -132,9 +144,8 @@ def submitNewLicense(request):
                     licenseComments = form.cleaned_data['comments']
                     licenseText = form.cleaned_data['text']
                     userEmail = form.cleaned_data['userEmail']
-                    statusCode = submitLicenseRequestUtil(licenseAuthorName, licenseName, licenseIdentifier, licenseOsi, licenseSourceUrls, licenseHeader, licenseComments, licenseText, userEmail, token, request)[0]
-                    data = {'statusCode' : str(statusCode)}
-                    return JsonResponse(data)
+                    dataDict = submitLicenseRequestUtil(licenseAuthorName, licenseName, licenseIdentifier, licenseOsi, licenseSourceUrls, licenseHeader, licenseComments, licenseText, userEmail, token, request)[0]
+                    return JsonResponse(dataDict)
             except UserSocialAuth.DoesNotExist:
                 """ User not authenticated with GitHub """
                 if (request.is_ajax()):
@@ -211,7 +222,7 @@ def submitNewLicenseNamespace(request):
                     listVersionAdded = ''
                     licenseHeader = ''
                     licenseNotes = ''
-                    xml = generateLicenseXml(licenseOsi, shortIdentifier, fullname,
+                    xml = utils.generateLicenseXml(licenseOsi, shortIdentifier, fullname,
                         listVersionAdded, url, licenseHeader, licenseNotes, licenseText)
                     licenseExists = utils.licenseExists(namespace, shortIdentifier, token)
                     if licenseExists["exists"]:
@@ -281,28 +292,6 @@ def submitNewLicenseNamespace(request):
         )
 
 
-def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
-    """ View for generating a spdx license xml
-    returns the license xml as a string
-    """
-    root = ET.Element("SPDXLicenseCollection", xmlns="http://www.spdx.org/license")
-    if licenseOsi=="Approved":
-        licenseOsi = "true"
-    else:
-        licenseOsi = "false"
-    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName, listVersionAdded=listVersionAdded)
-    crossRefs = ET.SubElement(license, "crossRefs")
-    for sourceUrl in licenseSourceUrls:
-        ET.SubElement(crossRefs, "crossRef").text = sourceUrl
-    ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
-    ET.SubElement(license, "notes").text = licenseNotes
-    licenseTextElement = ET.SubElement(license, "text")
-    licenseLines = licenseText.replace('\r','').split('\n')
-    for licenseLine in licenseLines:
-        ET.SubElement(licenseTextElement, "p").text = licenseLine
-    xmlString = ET.tostring(root, method='xml').replace('>','>\n')
-    return xmlString
-
 def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license request
@@ -344,7 +333,7 @@ def licenseInformation(request, licenseId):
     licenseInformation['licenseAuthorName'] = licenseRequest.licenseAuthorName
     licenseInformation['archive'] = licenseRequest.archive
     xmlString = licenseRequest.xml
-    data = parseXmlString(xmlString)
+    data = utils.parseXmlString(xmlString)
     licenseInformation['osiApproved'] = data['osiApproved']
     licenseInformation['crossRefs'] = data['crossRefs']
     licenseInformation['notes'] = data['notes']
@@ -1412,7 +1401,7 @@ def promoteNamespaceRequests(request, license_id=None):
             github_login = user.social_auth.get(provider='github')
             token = github_login.extra_data["access_token"]
             return_tuple = submitLicenseRequestUtil(model_dict["licenseAuthorName"], model_dict["namespace"], model_dict["shortIdentifier"], licenseOsi, [model_dict["url"]], licenseHeader, licenseComments, model_dict["description"], model_dict["userEmail"], token, request)
-            statusCode = return_tuple[0]
+            statusCode = return_tuple[0]['statusCode']
             if statusCode == 201:
                 LicenseNamespace.objects.filter(pk=license_id).update(promoted=promoted, license_request_id=return_tuple[1].id)
     promotedRequests = LicenseNamespace.objects.filter(promoted='True').order_by('-submissionDatetime')
