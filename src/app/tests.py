@@ -20,7 +20,7 @@ import time
 
 from app.models import UserID
 from app.models import LicenseRequest
-from app.views import generateLicenseXml
+from app.utils import generateLicenseXml
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from social_django.models import UserSocialAuth

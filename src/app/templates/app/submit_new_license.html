@@ -302,6 +302,23 @@ function scrollUpAndHighlight(element) {
                         $("#messages").html("");
                       }, 7000);
                 }
+                else if(githubCode == '409'){
+                  var matchingStr = data.matchingStr;
+                  var issueUrl = data.issueUrl;
+                  var errorMessage = `Rejected! The request could not be completed as: ${matchingStr}. Please follow the below URL for more info.`
+                  $("#modal-header").removeClass("yellow-modal green-modal");
+		              $("#modal-header").addClass("red-modal");
+		              $(".modal-footer").html(`<a href=${issueUrl}><button class="btn btn-success btn-space" id="issueUrl"><span class="glyphicon glyphicon-link"></span> View on GitHub</button></a><button class="btn btn-primary btn-space" id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>`);
+		              $("#modal-body").html(errorMessage);
+                  $("#myModal").modal({
+                    backdrop: 'static',
+                    keyboard: true,
+                    show: true
+                  });
+                  $(document).on('click','button#ok', function(event){
+                  $("#myModal").modal("hide");
+                  });
+                }
                 else{
                   var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org with SPDX ID for the license you are submitting";
                   $("#messages").html('<div class="alert alert-warning alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Warning! </strong>'+ warningMessage +'</div>');
