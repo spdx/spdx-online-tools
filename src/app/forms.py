@@ -93,7 +93,9 @@ class LicenseNamespaceRequestForm(forms.ModelForm):
             self.email = ""
         super(LicenseNamespaceRequestForm, self).__init__(*args, **kwargs)
         self.fields['shortIdentifier'].required = False
-        self.fields['url'].required = False
+        self.fields['url'].required = True
+        self.fields['license_list_url'].required = False
+        self.fields['github_repo_url'].required = False
         self.fields['organisation'].required = False
         self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email)
 
@@ -106,5 +108,6 @@ class LicenseNamespaceRequestForm(forms.ModelForm):
         model = LicenseNamespace
         fields = ('organisation', 'licenseAuthorName',
                   'fullname', 'userEmail', 'url',
+                  'license_list_url', 'github_repo_url',
                   'publiclyShared', 'namespace',
                   'description', 'archive', 'shortIdentifier')

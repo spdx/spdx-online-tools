@@ -1,0 +1,108 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load staticfiles %}
+{% block body1 %}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css">
+
+<div id="messages" class="messages">
+</div>
+<p class ="lead"> {{ error }}</p>
+<div class="panel panel-default">
+<div class="panel-heading"> <p class="lead">Promoted License namespace Requests List</p> </div>
+<div class="panel-body">
+    <table id="requests_table" class="display dataTable">
+      <thead>
+        <tr>
+          <th>Fullname</th>
+          <th>Short Identifier</th>
+          <th>License author name</th>
+          <th>Submission Date (UTC)</th>
+          <th>Unarchive</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if promotedRequests %}
+        {% for elem in promotedRequests %}
+          <tr class='clickableRow' id={{elem.id}}>
+            <td>{{elem.fullname}}</td>
+            <td>{{elem.shortIdentifier}}</td>
+            <td>{{elem.licenseAuthorName}}</td>
+            <td>{{elem.submissionDatetime}}</td>
+            <td>
+              {% csrf_token %}
+              <button id='unarchive_button{{elem.id}}' class='btn btn-success' width='25px' value='Unarchive'>Unarchive</button>
+            </td>
+          </tr>
+        {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+
+{% include "app/modal.html" %}
+</div>
+{% endblock %}
+{% block script_block %}
+
+<script type="text/javascript">
+  $(document).ready(function () {
+      $("#licensenamespace").addClass('linkactive');
+      $("#archivenamespacerequestspage").addClass('linkactive');
+      });
+</script>
+
+<script type="text/javascript">
+  $(document).ready( function () {
+      $('#requests_table').DataTable({
+        'info': false,
+        'order': false
+      });
+  });
+</script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.js"></script>
+
+<script type="text/javascript">
+$('tbody tr').each(function (i,e) {
+    $(e).children('td:not(:last)').click(function () {
+      var $licenseId = $(this).closest("tr").attr('id');
+      location.href="/app/archive_namespace_requests/" + $licenseId;
+    });
+    $('body').on('click', 'button[id^="unarchive_button"]', function (en) {
+      en.stopImmediatePropagation();
+      $("#modal-header").addClass("yellow-modal");
+	    $(".modal-footer").html('<button class="btn btn-success" id="confirm_unarchive"><span class="glyphicon glyphicon-off"></span> Confirm</button>');
+      $("#modal-body").html('Are you sure you want to unarchive this license?');
+      $("#myModal").modal({
+        backdrop: 'static',
+        keyboard: true,
+        show: true,
+      })
+      var license = $(this).closest('tr');
+      $(document).on('click','button#confirm_unarchive', function(event){
+        event.preventDefault();
+        $("#myModal").modal("hide");
+        unarchiveLicense(license);
+      });
+    });
+  });
+function unarchiveLicense(license) {
+  var promoted = 'False';
+  var $licenseId = license.attr('id');
+  $.ajax({
+    url: '/app/promoted_namespace_requests/',
+    type: 'POST',
+    data: {
+      'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+      'promoted': promoted,
+      'license_id': $licenseId
+      },
+    dataType: 'json'
+  });
+  license.remove();
+  if(!$('tbody tr').length) {
+    var emptyRowContent = '<tr><td colspan="5" class="dataTables_empty" valign="top">No data available in table</td></tr>';
+    $("#requests_table tbody").append(emptyRowContent);
+  }
+}
+</script>
+{% endblock %}
