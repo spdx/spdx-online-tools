@@ -4,6 +4,11 @@
 {% block body1 %}
 
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css">
+{% if github_login %}
+<p id="githubLogin" hidden>True</p>
+{% else %}
+<p id="githubLogin" hidden>False</p>
+{% endif %}
 
 <div id="messages" class="messages">
 </div>
@@ -91,22 +96,35 @@
     });
   });
   $('tbody tr').each(function (i,e) {
+    var githubLogin = $("#githubLogin").text();
       $('body').on('click', 'button[id^="promote_button"]', function (en) {
         en.stopImmediatePropagation();
-        $("#modal-header").addClass("yellow-modal");
-  	    $(".modal-footer").html('<button class="btn btn-success" id="confirm_promote"><span class="glyphicon glyphicon-off"></span> Confirm</button>');
-        $("#modal-body").html('Are you sure you want to promote this license to the license list?');
-        $("#myModal").modal({
-          backdrop: 'static',
-          keyboard: true,
-          show: true,
-        })
-        var license = $(this).closest('tr');
-        $(document).on('click','button#confirm_promote', function(event){
-          event.preventDefault();
-          $("#myModal").modal("hide");
-          promoteLicense(license);
-        });
+        if(githubLogin == "False"){
+      		$("#modal-header").removeClass("red-modal green-modal");
+      		$("#modal-header").addClass("yellow-modal");
+      		$(".modal-footer").html('<button class="btn btn-success" id="github_auth_begin"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
+      		$("#modal-body").html('To promote a license namespace, you must log in using Github.  You will now be redirected to the github login.  Please allow the requested permissions.  If you do not have a github account, you can <a href="https://github.com/">sign up</a> for free or you can email your new license namespace to <a href="mailto:spdx-legal@spdx.org">spdx-legal@spdx.org</a>.');
+              $("#myModal").modal({
+                 backdrop: 'static',
+                 keyboard: true,
+                 show: true
+              });
+      	} else {
+          $("#modal-header").addClass("yellow-modal");
+    	    $(".modal-footer").html('<button class="btn btn-success" id="confirm_promote"><span class="glyphicon glyphicon-off"></span> Confirm</button>');
+          $("#modal-body").html('Are you sure you want to promote this license to the license list?');
+          $("#myModal").modal({
+            backdrop: 'static',
+            keyboard: true,
+            show: true,
+          })
+          var license = $(this).closest('tr');
+          $(document).on('click','button#confirm_promote', function(event){
+            event.preventDefault();
+            $("#myModal").modal("hide");
+            promoteLicense(license);
+          });
+        }
       });
   });
   function archiveLicense(license) {

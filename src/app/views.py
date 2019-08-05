@@ -50,6 +50,7 @@ from social_django.models import UserSocialAuth
 from app.models import UserID, LicenseNames
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 import app.utils as utils
+from django.forms import model_to_dict
 
 
 logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
@@ -373,7 +374,7 @@ def licenseNamespaceInformation(request, licenseId):
     licenseInformation['description'] = licenseNamespaceRequest.description
     licenseInformation['publiclyShared'] = licenseNamespaceRequest.publiclyShared
     xmlString = licenseNamespaceRequest.xml
-    data = parseXmlString(xmlString)
+    data = utils.parseXmlString(xmlString)
     licenseInformation['osiApproved'] = data['osiApproved']
     licenseInformation['crossRefs'] = data['crossRefs']
     licenseInformation['notes'] = data['notes']
@@ -1307,7 +1308,6 @@ def promoteNamespaceRequests(request, license_id=None):
     """ View for promote namespace license requests
     returns promote_namespace_requests.html template
     """
-    from django.forms import model_to_dict
     if request.method == "POST" and request.is_ajax():
         promoted = request.POST.get('promoted', False)
         license_id = request.POST.get('license_id', False)
@@ -1375,13 +1375,16 @@ def licenseNamespaceRequests(request, license_id=None):
     """ View for license namespace requests which are not archived
     returns license_namespace_requests.html template
     """
+    github_login = None
+    if request.user.is_authenticated():
+        github_login = request.user.social_auth.get(provider='github')
     if request.method == "POST" and request.is_ajax():
         archive = request.POST.get('archive', True)
         license_id = request.POST.get('license_id', False)
         if license_id:
             LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
     licenseNamespaceRequests = LicenseNamespace.objects.filter(archive='False').order_by('-submissionDatetime')
-    context_dict={'licenseNamespaceRequests': licenseNamespaceRequests}
+    context_dict={'licenseNamespaceRequests': licenseNamespaceRequests, 'github_login': github_login}
     return render(request,
         'app/license_namespace_requests.html',context_dict
         )

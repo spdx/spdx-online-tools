@@ -26,9 +26,10 @@ DEV_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(LICENSE_TEST_REPO_
 PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(LICENSE_REPO_NAME)
 REPO_URL = DEV_REPO_URL
 
-NAMESPACE_REPO_NAME = "license-namespace-list"
-NAMESPACE_DEV_REPO_URL = 'https://api.github.com/repos/tjasmith/{0}'.format(NAMESPACE_REPO_NAME)
-NAMESPACE_PROD_REPO_URL = 'https://api.github.com/repos/tjasmith/{0}'.format(NAMESPACE_REPO_NAME)
+NAMESPACE_REPO_NAME = "license-namespace"
+NAMESPACE_TEST_REPO = "license-namespace-test"
+NAMESPACE_DEV_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPACE_TEST_REPO)
+NAMESPACE_PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPACE_REPO_NAME)
 NAMESPACE_REPO_URL = NAMESPACE_DEV_REPO_URL
 
 # Quick-start development settings - unsuitable for production
