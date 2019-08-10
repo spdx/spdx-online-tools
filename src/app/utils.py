@@ -49,7 +49,7 @@ def licenseNamespaceUtils():
     }
 
 
-def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
+def makePullRequest_old(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
     logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
     logger = logging.getLogger()
 
@@ -193,7 +193,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         "pr_url": data["html_url"],
     }
 
-def makeNsPullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
+def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, is_ns):
     logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
     logger = logging.getLogger()
 
@@ -206,7 +206,7 @@ def makeNsPullRequest(username, token, branchName, updateUpstream, fileName, com
 
     """ Making a fork """
 
-    fork_url = "{0}/forks".format(TYPE_TO_URL_NAMESPACE[NORMAL])
+    fork_url = "{0}/forks".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[PROD])
     response = requests.get(fork_url, headers=headers)
     data = json.loads(response.text)
     forks = [fork["owner"]["login"] for fork in data]
@@ -222,7 +222,7 @@ def makeNsPullRequest(username, token, branchName, updateUpstream, fileName, com
     else:
         if(updateUpstream=="true"):
             """ If user wants to update the forked repo with upstream master """
-            update_url = "{0}/git/refs/heads/master".format(TYPE_TO_URL_NAMESPACE[NORMAL])
+            update_url = "{0}/git/refs/heads/master".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[PROD])
             response = requests.get(update_url, headers=headers)
             data = json.loads(response.text)
             sha = data["object"]["sha"]
@@ -230,7 +230,7 @@ def makeNsPullRequest(username, token, branchName, updateUpstream, fileName, com
                 "sha":sha,
                 "force": True
             }
-            update_url = "{0}repos/{1}/{2}/git/refs/heads/master".format(url, username, settings.NAMESPACE_REPO_NAME)
+            update_url = "{0}repos/{1}/{2}/git/refs/heads/master".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
             response = requests.patch(update_url, headers=headers, data=json.dumps(body))
             if response.status_code!=200:
                 logger.error("[Pull Request] Error occured while updating fork, for {0} user. {1}".format(username, response.text))
@@ -241,7 +241,7 @@ def makeNsPullRequest(username, token, branchName, updateUpstream, fileName, com
 
 
     """ Getting ref of master branch """
-    ref_url = "{0}repos/{1}/{2}/git/refs/heads/master".format(url, username, settings.NAMESPACE_REPO_NAME)
+    ref_url = "{0}repos/{1}/{2}/git/refs/heads/master".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
     response = requests.get(ref_url, headers=headers)
     if response.status_code != 200:
         logger.error("[Pull Request] Error occured while getting ref of master branch, for {0} user. {1}".format(username, response.text))
@@ -253,7 +253,7 @@ def makeNsPullRequest(username, token, branchName, updateUpstream, fileName, com
     sha = str(data["object"]["sha"])
 
     """ Getting names of all branches """
-    branch_url = url + "repos/%s/"+settings.NAMESPACE_REPO_NAME+"/branches"%(username)
+    branch_url = url + "repos/{0}/{1}/branches".format(username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
     response = requests.get(branch_url, headers=headers)
     if response.status_code != 200:
         logger.error("[Pull Request] Error occured while getting branch names, for {0} user. {1}".format(username, response.text))
@@ -273,7 +273,7 @@ def makeNsPullRequest(username, token, branchName, updateUpstream, fileName, com
             else:
                 branchName = branchName+str(count)
                 break
-    create_branch_url = "{0}repos/{1}/{2}/git/refs".format(url, username, settings.NAMESPACE_REPO_NAME)
+    create_branch_url = "{0}repos/{1}/{2}/git/refs".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
     body = {
         "ref":"refs/heads/{0}".format(branchName),
         "sha":sha,
@@ -292,7 +292,7 @@ def makeNsPullRequest(username, token, branchName, updateUpstream, fileName, com
     if fileName[-4:] == ".xml":
         fileName = fileName[:-4]
     fileName += ".xml"
-    commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME, fileName)
+    commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)
     xmlText = xmlText.encode('utf-8')
     fileContent = base64.b64encode(xmlText)
     body = {
@@ -302,7 +302,7 @@ def makeNsPullRequest(username, token, branchName, updateUpstream, fileName, com
         "branch":branchName,
     }
     """ Check if file already exists """
-    file_url = "{0}//contents/src/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL], fileName)
+    file_url = "{0}//contents/src/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[PROD], fileName)
     response = requests.get(file_url, headers=headers)
     if response.status_code == 200:
         """ Creating Commit by updating the file """
@@ -318,7 +318,7 @@ def makeNsPullRequest(username, token, branchName, updateUpstream, fileName, com
             }
 
     """ Making Pull Request """
-    pr_url = "{0}/pulls".format(TYPE_TO_URL_NAMESPACE[NORMAL])
+    pr_url = "{0}/pulls".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[PROD])
     body = {
         "title": prTitle,
         "body": prBody,

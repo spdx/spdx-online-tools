@@ -1421,7 +1421,7 @@ def pull_request(request):
                     github_login = user.social_auth.get(provider='github')
                     token = github_login.extra_data["access_token"]
                     username = github_login.extra_data["login"]
-                    response = utils.makePullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"])
+                    response = utils.makePullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"], False)
                     if(response["type"]=="success"):
                         """ PR made successfully """
                         if (request.is_ajax()):
@@ -1475,7 +1475,7 @@ def namespace_pull_request(request):
                     github_login = user.social_auth.get(provider='github')
                     token = github_login.extra_data["access_token"]
                     username = github_login.extra_data["login"]
-                    response = utils.makeNsPullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"])
+                    response = utils.makePullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"], True)
                     if(response["type"]=="success"):
                         """ PR made successfully """
                         if (request.is_ajax()):
