@@ -73,6 +73,10 @@ class LicenseNamespace(License):
     description = models.TextField()
     namespace = models.CharField(max_length=200)
     url = models.CharField(max_length=200)
+    license_list_url= models.URLField(max_length=250)
+    github_repo_url= models.URLField(max_length=250)
+    promoted = models.BooleanField(default=False)
+    license_request = models.ForeignKey(LicenseRequest, null=True, blank=True)
 
     def __unicode__(self):
         return "%s" % (self.namespace)
