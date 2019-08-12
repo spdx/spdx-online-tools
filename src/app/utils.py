@@ -440,29 +440,6 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
     return r.status_code
 
 
-def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
-    """ View for generating a spdx license xml
-    returns the license xml as a string
-    """
-    root = ET.Element("SPDXLicenseCollection", xmlns="http://www.spdx.org/license")
-    if licenseOsi=="Approved":
-        licenseOsi = "true"
-    else:
-        licenseOsi = "false"
-    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName, listVersionAdded=listVersionAdded)
-    crossRefs = ET.SubElement(license, "crossRefs")
-    for sourceUrl in licenseSourceUrls:
-        ET.SubElement(crossRefs, "crossRef").text = sourceUrl
-    ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
-    ET.SubElement(license, "notes").text = licenseNotes
-    licenseTextElement = ET.SubElement(license, "text")
-    licenseLines = licenseText.replace('\r','').split('\n')
-    for licenseLine in licenseLines:
-        ET.SubElement(licenseTextElement, "p").text = licenseLine
-    xmlString = ET.tostring(root, method='xml').replace('>','>\n')
-    return xmlString
-
-
 def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType):
     """ View for creating an GitHub issue
     when submitting a new license request

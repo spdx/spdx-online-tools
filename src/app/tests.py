@@ -20,7 +20,7 @@ import time
 
 from app.models import UserID
 from app.models import LicenseRequest, LicenseNamespace
-from app.utils import generateLicenseXml
+from app.generateXml import generateLicenseXml
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from social_django.models import UserSocialAuth
@@ -750,7 +750,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.getElementById('modalOk').click()")
         time.sleep(0.5)
         driver.execute_script("document.getElementById('tabTextEditor').click()")
-        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<codemirror.length/2;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
+        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<(codemirror.length/2)-1;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
         time.sleep(0.2)
         self.assertEquals(self.initialXML, finalXML)
 
@@ -820,7 +820,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.getElementById('modalOk').click()")
         time.sleep(0.5)
         driver.execute_script("document.getElementById('tabTextEditor').click()")
-        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<codemirror.length/2;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
+        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<(codemirror.length/2)-1;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
         time.sleep(0.2)
         self.assertEquals(self.initialXML, finalXML)
 
@@ -893,7 +893,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         nodeText = driver.execute_script("return document.querySelector('li.emptyText').innerHTML")
         self.assertEquals(nodeText, "(No text value. Click to edit.)")
         driver.execute_script("document.getElementById('tabTextEditor').click()")
-        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<codemirror.length/2;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
+        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<(codemirror.length/2)-1;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
         time.sleep(0.2)
         self.assertEquals(self.initialXML, finalXML)
 
@@ -1183,7 +1183,7 @@ class SubmitNewLicenseViewsTestCase(TestCase):
         """View for generating an xml from license submittal form fields"""
         self.initialise()
         xml = generateLicenseXml(self.osiApproved, self.shortIdentifier, self.fullname, self.listVersionAdded,
-                                self.urls, self.licenseHeader, self.notes, self.text).replace("\n"," ")
+                                self.urls, self.licenseHeader, self.notes, self.text).replace(">","> ")
         self.assertEqual(self.xml, xml)
 
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
@@ -1310,7 +1310,7 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
         table_contents = driver.find_element_by_css_selector('tbody').text
         self.assertEquals(table_contents, "No data available in table")
         xml = generateLicenseXml('', "0BSD", "BSD Zero Clause License-00",
-            '', "http://wwww.spdx.org", '', '', '')
+            '', ["http://wwww.spdx.org"], '', '', '')
         license_obj = LicenseNamespace.objects.create(fullname="BSD Zero Clause License-00",
                                                       licenseAuthorName="John Doe",
                                                       shortIdentifier="0BSD",
@@ -1473,7 +1473,7 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
         """View for generating an xml from license namespace submittal form fields"""
         self.initialise()
         xml = generateLicenseXml(self.osiApproved, self.shortIdentifier, self.fullname, self.listVersionAdded,
-                                [self.sourceUrl], self.licenseHeader, self.notes, self.text).replace("\n"," ")
+                                [self.sourceUrl], self.licenseHeader, self.notes, self.text).replace(">","> ")
         self.assertEqual(self.xml, xml)
 
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
