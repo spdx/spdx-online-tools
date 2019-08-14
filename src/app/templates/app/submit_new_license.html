@@ -1,13 +1,57 @@
 {% extends 'app/base.html' %}
 {% load static %}
 {% load staticfiles %}
+
+{% block head_block %}
+    <link href="{% static 'css/editor.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/diffview.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
 {% block body1 %}
     {% include "app/modal.html" %}
 {% endblock %}
 {% block body2 %}
+<form style="display:none" id="form">
+  {% csrf_token %}
+</form>
 <p id="githubLoginLink" hidden> {% url 'social:begin' 'github' %}</p>
 {% if github_login %}
 <p id="githubLogin" hidden>True</p>
+<div id="prFormContainer" hidden>
+  <img src={% static "images/ajax-loader.gif" %} alt="Loading GIF" class="ajax-loader">
+  <form id="githubPRForm" class="form-inline">
+      {% csrf_token %}
+      <div class="form-group">
+          <label for="branchName">Branch Name:</label>
+          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Pull Request will be made from this branch to master branch" style="font-size:12px;"></span>
+          <input type="text" class="form-control" id="branchName" name="branchName">
+      </div><br>
+      <div class="checkbox">
+          <label><input type="checkbox" id="updateUpstream"> Update with upstream master </label> <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Select this if you want to update your forked repo with the upstream repo, before making the pull request" style="font-size:12px;"></span>
+      </div>
+      <div class="form-group">
+          <label for="fileName">File Name:</label>
+          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Name of the XML file" style="font-size:12px;"></span>
+          <input type="text" class="form-control" id="fileName" name="fileName" value={{license_name}}> .xml
+      </div><br>
+      <div class="form-group">
+          <label for="commitMessage">Commit Message:</label>
+          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Git commit message, a brief description of your changes" style="font-size:12px;"></span>
+          <input type="text" class="form-control" id="commitMessage" name="commitMessage">
+      </div><br>
+      <div class="form-group">
+          <label for="prTitle">Pull Request Title:</label>
+          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request title, can be edited later." style="font-size:12px;"></span>
+          <input type="text" class="form-control" id="prTitle" name="prTitle">
+      </div><br>
+      <div class="form-group">
+          <label for="prBody">Pull Request Body:</label>
+          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request body, can be edited later." style="font-size:12px;"></span>
+          <textarea class="form-control" rows="5" id="prBody" name="prBody" style="resize:none; width:200px;"></textarea>
+      </div><br>
+      </textarea>
+  </form>
+</div>
 {% else %}
 <p id="githubLogin" hidden>False</p>
 {% endif %}
@@ -276,6 +320,8 @@ function scrollUpAndHighlight(element) {
 </script>
 
 <script type="text/javascript">
+  var LicenseData = {};
+
   $('#newlicense').on('submit', function(event){
     event.preventDefault();
     var check = checkform();
@@ -303,21 +349,63 @@ function scrollUpAndHighlight(element) {
                       }, 7000);
                 }
                 else if(githubCode == '409'){
-                  var matchingStr = data.matchingStr;
+                  var matchType = data.matchType;
                   var issueUrl = data.issueUrl;
-                  var errorMessage = `Rejected! The request could not be completed as: ${matchingStr}. Please follow the below URL for more info.`
-                  $("#modal-header").removeClass("yellow-modal green-modal");
-		              $("#modal-header").addClass("red-modal");
-		              $(".modal-footer").html(`<a href=${issueUrl}><button class="btn btn-success btn-space" id="issueUrl"><span class="glyphicon glyphicon-link"></span> View on GitHub</button></a><button class="btn btn-primary btn-space" id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>`);
-		              $("#modal-body").html(errorMessage);
-                  $("#myModal").modal({
-                    backdrop: 'static',
-                    keyboard: true,
-                    show: true
-                  });
-                  $(document).on('click','button#ok', function(event){
-                  $("#myModal").modal("hide");
-                  });
+                  var matchIds = data.matchIds;
+                  if(issueUrl){
+                    var matchingStr = data.matchingStr;
+                    var errorMessage = `Rejected! The request could not be completed as: ${matchingStr}. Please follow the below URL for more info.`
+                    $("#modal-header").removeClass("yellow-modal green-modal");
+		                $("#modal-header").addClass("red-modal");
+		                $(".modal-footer").html(`<a href=${issueUrl}><button class="btn btn-success btn-space" id="issueUrl"><span class="glyphicon glyphicon-link"></span> View on GitHub</button></a><button class="btn btn-primary btn-space" id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>`);
+		                $("#modal-body").html(errorMessage);
+                    $("#myModal").modal({
+                      backdrop: 'static',
+                      keyboard: true,
+                      show: true
+                    });
+                    $(document).on('click','button#ok', function(event){
+                    $("#myModal").modal("hide");
+                    });
+                  }
+                  else if(matchType == "Close match"){
+                    var inputLicenseText = data.inputLicenseText.replace(/\r\n/g,'\n');
+                    var originalLicenseText = data.originalLicenseText;
+                    var matchingGuidelinesUrl = 'https://spdx.org/spdx-license-list/matching-guidelines'
+                    var message = `Close match found! The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX Matching guidelines. Press show differences to continue.`
+                    LicenseData.data = data;
+                    $("#modal-header").removeClass("red-modal green-modal");
+		                $("#modal-header").addClass("yellow-modal");
+		                $(".modal-footer").html(`<a href=${matchingGuidelinesUrl}><button class="btn btn-success btn-space" id="matchingguidelines"><span class="glyphicon glyphicon-link"></span> SPDX Matching Guidelines</button></a><button class="btn btn-success btn-space" id="showDiff"><span class="glyphicon glyphicon-link"></span> Show differences</button><button class="btn btn-primary btn-space" id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>`);
+		                $("#modal-body").html(message);
+                    $("#myModal").modal({
+                      backdrop: 'static',
+                      keyboard: true,
+                      show: true
+                    });
+                    $(document).on('click','button#ok', function(event){
+                      $("#myModal").modal("hide");
+                    });
+                    $(document).on('click','button#showDiff', function(event){
+                      generate_text_diff(originalLicenseText.split('\n\n'), inputLicenseText.split('\n\n'));
+                    });
+                  }
+                  else{
+                    var errorMessage = `${matchType} found! The following license ID(s) match: <strong>${matchIds}</strong>. The license is already present in the SPDX license list.`;
+                    var spdxLicenseListUrl = 'https://spdx.org/licenses/';
+                    $("#modal-header").removeClass("yellow-modal green-modal");
+                    $("#modal-header").addClass("red-modal");
+		                $(".modal-footer").html(`<a href=${spdxLicenseListUrl} class="btn btn-success btn-space" id="spdxLicenseListUrl"><span class="glyphicon glyphicon-link"></span> SPDX License List</a><button class="btn btn-primary btn-space" id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>`);
+		                $("#modal-body").html(errorMessage);
+                    $("#myModal").modal({
+                      backdrop: 'static',
+                      keyboard: true,
+                      show: true
+                    });
+                    $(document).on('click','button#ok', function(event){
+                      $("#myModal").modal("hide");
+                    });
+                  }
                 }
                 else{
                   var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org with SPDX ID for the license you are submitting";
@@ -383,5 +471,155 @@ function scrollUpAndHighlight(element) {
       }, 5000);
     }
 });
+
+function getCookie(name) {
+    var value = "; " + document.cookie;
+    var parts = value.split("; " + name + "=");
+    if (parts.length == 2) return parts.pop().split(";").shift();
+}
+
+function makeIssue(data){
+    data['csrfmiddlewaretoken'] = getCookie('csrftoken');
+    $.ajax({
+        type: "POST",
+        enctype: 'multipart/form-data',
+        url: "/app/make_issue/",
+        dataType: 'json',
+        timeout: 600000,
+        data: data,
+        success: function (data) {
+                    var githubCode = data.statusCode;
+                    if(githubCode == '201'){
+                      var successMessage = "The license request has been successfully submitted.";
+                      $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
+                          setTimeout(function() {
+                            $("#messages").html("");
+                          }, 7000);
+                    }
+                    else{
+                      var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org with SPDX ID for the license you are submitting";
+                      $("#messages").html('<div class="alert alert-warning alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Warning! </strong>'+ warningMessage +'</div>');
+                          setTimeout(function() {
+                            $("#messages").html("");
+                          }, 7000);
+                    }
+        },
+        error: function (e) {
+                  console.log("ERROR : ", e);
+                  $("#modal-header").removeClass("green-modal");
+                  try {
+                    var obj = JSON.parse(e.responseText);
+                    if (obj.type=="warning"){
+                      $("#modal-header").removeClass("red-modal");
+                      $("#modal-header").addClass("yellow-modal");
+                      $("#modal-title").html("Warning!");
+                    }
+                  else if (obj.type=="error"){
+                      $("#modal-header").removeClass("yellow-modal");
+                      $("#modal-header").addClass("red-modal");
+                      $("#modal-title").html("Error!");
+                    }
+                  $("#modal-body").text(obj.data);
+                  $(".modal-footer").html('<button id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>');
+                  $("#ok").on("click",function(){
+                      $("#myModal").modal("hide");
+                      $(".modal-footer").html("");
+                    })
+                  }
+                  catch (e){
+                    $("#modal-header").removeClass("yellow-modal");
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Error!");
+                    $("#modal-body").text("The application could not be connected. Please try later.");
+                  }
+                  $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true,
+                          show: true
+                  });
+                  $("#submitbutton").text("Submit");
+                  $("#submitbutton").prop('disabled', false);
+              }
+    });
+}
+
+/* generate diff of input license text and spdx license list license text of closely matched licenses */
+function generate_text_diff(base, newtxt){
+    var sm = new difflib.SequenceMatcher(base, newtxt);
+    var opcodes = sm.get_opcodes();
+    
+    // build the diff view and add it to the current DOM
+    var diff = $(diffview.buildView({
+        baseTextLines: base,
+        newTextLines: newtxt,
+        opcodes: opcodes,
+        // set the display titles for each resource
+        baseTextName: "Base Text",
+        newTextName: "New Text",
+        contextSize: null,
+        viewType: 1
+    }))
+    diff.children().remove("thead");
+    diff.children().children().remove("th");
+    /* display result in modal */
+    displayModal("","success");
+    $("#modal-body").html(diff);
+    $("#modal-title").text("Do you think the changes are substantial to create a new license request?");
+    $(".modal-footer").html(`<center><button class="btn btn-success btn-space" id="createIssue"data-toggle="tooltip" data-placement="top" title="Yes, the changes are substantial to be new license itself."><span class="glyphicon glyphicon-ok"></span> Yes, changes are substantial</button><button class="btn btn-primary btn-space" id="makePullRequest"data-toggle="tooltip" data-placement="top" title="The licenses should match and thus, create a pull request"><span class="glyphicon glyphicon-edit"></span> Both licenses should match</span></button></center>`);
+    $("#modal-body").addClass("diff-modal-body");
+    $(".modal-dialog").addClass("diff-modal-dialog");
+    $("#createIssue").on("click",function(){
+        $("#myModal").modal("hide");
+        $(".modal-footer").html("");
+        makeIssue(LicenseData.data);
+    })
+    $("#makePullRequest").on("click",function(){
+        var githubLogin = $("#githubLogin").text();
+        $("#modal-body").removeClass("diff-modal-body");
+        $(".modal-dialog").removeClass("diff-modal-dialog");
+        $("#modal-title").html("Create a PR to the SPDX License XML");
+        $('button.close').remove();
+        /* if user not authenticated using GitHub, display modal with login button */
+        if(githubLogin == "False"){
+            $("#modal-header").removeClass("red-modal green-modal");
+            $("#modal-header").addClass("yellow-modal");
+            $(".modal-footer").html('<button class="btn btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><button class="btn btn-success" id="github_auth_begin"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
+            $("#modal-body").html("You will now be redirected to the GitHub website to authenticate with the SPDX GitHub App. Please allow all the requested permissions for the app to work properly. After coming back to this page please click the Submit Changes button again to create a Pull Request.");
+        }
+        /* if user logged in using GitHub, display the pull request form */
+        else if(githubLogin == "True"){
+            $("#modal-header").removeClass("red-modal yellow-modal");
+            $("#modal-header").addClass("green-modal");
+            $(".modal-footer").html('<button class="btn btn-default pull-left" id="prCancel" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><button class="btn btn-success" id="prOk"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
+            $("#modal-body").html($("#prFormContainer").html());
+            $("#githubPRForm").css("display","block");
+            $(".ajax-loader").css("display","none");
+            $("#modal-body").addClass("pr-modal-body");
+            $("#prOk, #prCancel").prop('disabled', false);
+        }
+        $("div.tooltip").remove();
+        $('[data-toggle="tooltip"]').tooltip();
+        $("#myModal").modal({
+            backdrop: 'static',
+            keyboard: true,
+            show: true
+        });
+    });
+    /* if user submits the pull request form */
+    $(document).on('click','button#prOk',function(event){
+        event.preventDefault();
+        /* call the makePR function, display error message if invalid value in form */
+        var response = makePR(LicenseData.data);
+        if(response!=true){
+            $('<div class="alert alert-danger" style="font-size:15px;"><strong>Error! </strong>'+response+'</div>').insertBefore("#githubPRForm");
+            setTimeout(function() {
+                $(".alert").remove();
+            }, 3000);
+        }
+    });
+}
 </script>
+<script type="text/javascript" src="{% static 'js/editor/script.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
 {% endblock %}
