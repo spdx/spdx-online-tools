@@ -1,9 +1,9 @@
 Django>=1.11.18,<1.12
 jpype1==0.6.3
-numpy==1.15.2
+numpy==1.16.4
 djangorestframework==3.9.1
 bs4==0.0.1
-requests==2.20.1
+requests==2.22
 lxml==4.2.5
 social-auth-app-django==2.1.0
 #for testing

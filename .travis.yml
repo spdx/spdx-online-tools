@@ -21,7 +21,8 @@ install:
   - pip install -r requirements.txt
 
 script:
+  - sudo systemctl status xvfb
   - cd src
-  - xvfb-run python manage.py makemigrations
-  - xvfb-run python manage.py migrate
-  - xvfb-run python manage.py test -v 2
+  - xvfb-run -a python manage.py makemigrations
+  - xvfb-run -a python manage.py migrate
+  - xvfb-run -a python manage.py test -v 2

@@ -76,11 +76,35 @@
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Source / URL
+      <label class="control-label col-sm-3" >SPDX File URL
         <span class="glyphicon glyphicon-question-sign" id="urlInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.url }}
+          <!-- <span class="help-block" id="addUrlInfo" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add another URL</span> -->
+        </div>
+      </div>
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >License list URL
+        <span class="glyphicon glyphicon-question-sign" id="licenseListUrlInfo" data-toggle="popover" data-placement="auto left"></span>
+      </label>
+        <div class="col-sm-4">
+          {{ form.license_list_url }}
+          <!-- <span class="help-block" id="addUrlInfo" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add another URL</span> -->
+        </div>
+      </div>
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Github repo URL
+        <span class="glyphicon glyphicon-question-sign" id="githubRepoUrlInfo" data-toggle="popover" data-placement="auto left"></span>
+      </label>
+        <div class="col-sm-4">
+          {{ form.github_repo_url }}
           <!-- <span class="help-block" id="addUrlInfo" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add another URL</span> -->
         </div>
       </div>
@@ -131,6 +155,8 @@ $(document).ready(function () {
     $('#namespaceInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace", content: "\u2022 License namespace in dns-style request or a free-format.", html: "true", viewport: '.panel-body', container: 'body'});
     $('#namespaceId').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace ID", content: "\u2022 License namespace short identifier.", html: "true", viewport: '.panel-body', container: 'body'});
     $('#urlInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace URL", content: "\u2022 Include URL for the official text of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#licenseListUrlInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "License list URL", content: "\u2022 Include URL for the official text of the license list namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#githubRepoUrlInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "GITHUB Repo URL", content: "\u2022 Include URL for the official github page of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
     $('#organisation').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace Organisation", content: "\u2022 Select organisation of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
     $('#descriptionInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "License namespace description", content: "Description of the license namespace", viewport: '.panel-body', container: '.panel-body'});
     $("#licensenamespace").addClass('linkactive');
