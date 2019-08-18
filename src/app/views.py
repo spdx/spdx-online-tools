@@ -998,8 +998,8 @@ def check_license(request):
         if request.method == 'POST':
             licensetext = request.POST.get('licensetext')
             try:
-                matching_str = utils.check_spdx_license(licensetext)
-                if 'not enough confidence threshold' in matching_str:
+                matchingId,matchingType = utils.check_spdx_license(licensetext)
+                if not matchingId:
                     if (request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = "There are no matching SPDX listed licenses"
@@ -1009,15 +1009,20 @@ def check_license(request):
                     return render(request,
                         'app/check_license.html',context_dict,status=404
                         )
-                if (request.is_ajax()):
-                    ajaxdict=dict()
-                    ajaxdict["data"] = matching_str
-                    response = dumps(ajaxdict)
-                    return HttpResponse(response)
-                context_dict["success"] = str(matching_str)
-                return render(request,
-                    'app/check_license.html',context_dict,status=200
-                    )
+                else:
+                    matching_str = matchingType + " found! The following license ID(s) match: "
+                    if isinstance(matchingId, list):
+                        matchingId = ",".join(matchingId)
+                    matching_str += matchingId
+                    if (request.is_ajax()):
+                        ajaxdict=dict()
+                        ajaxdict["data"] = matching_str
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response)
+                    context_dict["success"] = str(matching_str)
+                    return render(request,
+                        'app/check_license.html',context_dict,status=200
+                        )
             except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application """
                 if (request.is_ajax()):
