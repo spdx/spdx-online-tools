@@ -547,7 +547,7 @@ def get_rejected_licenses_issues(urlType):
     """ Get all the issues that are already rejected by the legal team.
     """
     payload = {'state': 'closed', 'labels': 'new license/exception: Not Accepted'}
-    url = TYPE_TO_URL_LICENSE[urlType]
+    url = TYPE_TO_URL_LICENSE[urlType] + '/issues'
     res = requests.get(url, params=payload)
     issues = res.json()
     return issues
@@ -557,11 +557,10 @@ def get_yet_not_approved_licenses_issues(urlType):
     """ Get all the issues that are yet to be approved by the legal team by sorting them with labels.
     """
     payload = {'state': 'open', 'labels': 'new license/exception request'}
-    url = TYPE_TO_URL_LICENSE[urlType]
+    url = TYPE_TO_URL_LICENSE[urlType] + '/issues'
     response = requests.get(url, params=payload)
     issues = response.json()
     newRequestIssues = []
-
     # Remove issues with Accepted labels
     for issue in issues:
         for label in issue.get('labels'):
@@ -579,7 +578,7 @@ def get_license_data(issues):
     licenseIds = []
     licenseTexts = []
     for issue in issues:
-        if issue.get('pull_request') is None:
+        if not issue.get('pull_request'):
             licenseInfo = issue.get('body')
             if '[SPDX-Online-Tools]' in issue.get('title'):
                 licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
