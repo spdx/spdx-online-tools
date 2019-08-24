@@ -48,7 +48,7 @@ def convert_to_auth_token(url, client_id, client_secret, backend, token):
         'backend': backend,
         'token': token,
     }
-    response = requests.post(url + '/auth/convert-token/', params=params)
+    response = requests.post(url + 'auth/convert-token/', params=params)
     return response.json()['access_token']
 
 
