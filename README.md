@@ -53,13 +53,29 @@ Windows users need a Python installation and C++ compiler:
     ```bash
     python src/populate.py
     ```
-6. Start the application.
+6. (Optional) If you want to use the license submittal feature or check license feature, follow the below step(s):
+    * Install redis server on your local machine.
+
+        **For linux/Mac user use**
+        
+        `sudo apt-get install redis-server`.
+        
+        **For Windows users**
+
+        Download the redis server from [here](https://github.com/microsoftarchive/redis/releases) and install it.
+    * Make sure redis server is running(for windows users only as they will have to run the redis server manually) and keep it running until you are done using the license submittal or check license feature.
+
+        *The redis is used to store the license text of license present on the SPDX license list. For the very first time it may take a while to build the license on the redis server.*
+
+        *SPDX License Matcher matches the license text input by the user(via license submittal form) against the data present on the redis to find for duplicate and near matches.*
+
+7. Start the application.
     ```bash
     python src/manage.py runserver
     ```
-7. Open `localhost:8000/` in the browser.
+8. Open `localhost:8000/` in the browser.
 
-8. Register and login to use the tools.
+9. Register and login to use the tools.
 
 ## How to Run Tests
 
