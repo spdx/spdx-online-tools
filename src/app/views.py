@@ -27,7 +27,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
-
+import codecs
 import jpype
 import requests
 from lxml import etree
@@ -45,12 +45,14 @@ except ImportError:
 import datetime
 from wsgiref.util import FileWrapper
 import os
+import subprocess
 
 from social_django.models import UserSocialAuth
 from app.models import UserID, LicenseNames
 from app.forms import UserRegisterForm,UserProfileForm,InfoForm,OrgInfoForm
 import app.utils as utils
 from django.forms import model_to_dict
+from app.generateXml import generateLicenseXml
 
 
 logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
@@ -125,7 +127,8 @@ def submitNewLicense(request):
 
                     # Check if the license text doesn't matches with the rejected as well as not yet approved licenses
                     if not matches:
-                        xml = utils.generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                        licenseText = licenseText.decode('unicode-escape')
+                        xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                             listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                         now = datetime.datetime.now()
                         licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
@@ -1406,6 +1409,55 @@ def update_session_variables(request):
         response = dumps(ajaxdict)
         return HttpResponse(response, status=400)
     return HttpResponse("Bad Request", status=400)
+
+def beautify(request):
+    """ View that handles beautify xml requests """
+    if request.method=="POST":
+        context_dict = {}
+        ajaxdict = {}
+        try:
+            """ Getting the license xml input by the user"""
+            xmlString = request.POST.get("xml", None)
+            if xmlString:
+                with open('test.xml','w') as f:
+                    f.write(xmlString)
+                    f.close()
+                commandRun = subprocess.call(["python", "app/formatxml.py","test.xml","-i", "3"])
+                if commandRun == 0:
+                    data = codecs.open("test.xml", 'r', encoding='string_escape').read()
+                    data = unicode(data, 'utf-8')
+                    os.remove('test.xml')
+                    if (request.is_ajax()):
+                        ajaxdict["type"] = "success"
+                        ajaxdict["data"] = data
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response,status=200)
+                    return HttpResponse(response["data"],status=200)
+                else:
+                    ajaxdict["type"] = "error"
+                    ajaxdict["data"] = "Invalid XML cannot be beautified."
+                    ajaxdict["xml"] = xmlString
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response,status=500)
+            else:
+                """ Error while getting xml """
+                if (request.is_ajax()):
+                    ajaxdict["type"] = "xml_error"
+                    ajaxdict["data"] = "Error getting the xml"
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response,status=500)
+                return HttpResponse(response,status=500)
+        except:
+            """ Other errors raised """
+            logger.error(str(format_exc()))
+            if (request.is_ajax()):
+                ajaxdict["type"] = "error"
+                ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                response = dumps(ajaxdict)
+                return HttpResponse(response,status=500)
+            return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
+    else:
+        return HttpResponseRedirect(settings.HOME_URL)
 
 def pull_request(request):
     """ View that handles pull request """
