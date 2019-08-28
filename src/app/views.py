@@ -133,7 +133,7 @@ def submitNewLicense(request):
                             matchingIds = ", ".join(matchingIds)
                         if matchingType == "Close match":
                             data['inputLicenseText'] = licenseText
-                            data['xml'] = utils.generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                            data['xml'] = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                                 listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                             originalLicenseText = get_spdx_license_text(matchingIds)
                             data['originalLicenseText'] = originalLicenseText
