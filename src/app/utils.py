@@ -18,13 +18,17 @@ import re
 import socket
 import xml.etree.cElementTree as ET
 
+import redis
 import requests
 from django.conf import settings
-from spdx_license_matcher.computation import get_close_matches
+from spdx_license_matcher.build_licenses import build_spdx_licenses
+from spdx_license_matcher.computation import (checkTextStandardLicense,
+                                              get_close_matches,
+                                              getListedLicense)
+from spdx_license_matcher.difference import get_similarity_percent
+from spdx_license_matcher.utils import get_spdx_license_text
 
 from app.models import User, UserID
-
-from .models import LicenseRequest
 
 NORMAL = "normal"
 TESTS = "tests"
@@ -48,155 +52,16 @@ def licenseNamespaceUtils():
     "internetConnectionUrl": "www.google.com",
     }
 
-
-def makePullRequest_old(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText):
-    logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
-    logger = logging.getLogger()
-
-    url = "https://api.github.com/"
-    headers = {
-        "Accept":"application/vnd.github.machine-man-preview+json",
-        "Authorization":"bearer "+token,
-        "Content-Type":"application/json",
-    }
-
-    """ Making a fork """
-    fork_url = "{0}/forks".format(TYPE_TO_URL_LICENSE[PROD])
-    response = requests.get(fork_url, headers=headers)
-    data = json.loads(response.text)
-    forks = [fork["owner"]["login"] for fork in data]
-    if not username in forks:
-        """ If user has not forked the repo """
-        response = requests.post(fork_url, headers=headers)
-        if response.status_code != 202:
-            logger.error("[Pull Request] Error occured while creating fork, for %s user. "%(username)+response.text)
-            return {
-                "type":"error",
-                "message":"Error occured while creating a fork of the repo. Please try again later or contact the SPDX Team."
-            }
-    else:
-        if(updateUpstream=="true"):
-            """ If user wants to update the forked repo with upstream master """
-            update_url = "{0}/git/refs/heads/master".format(TYPE_TO_URL_LICENSE[PROD])
-            response = requests.get(update_url, headers=headers)
-            data = json.loads(response.text)
-            sha = data["object"]["sha"]
-            body = {
-                "sha":sha,
-                "force": True
-            }
-            update_url = url+"repos/{0}/{1}/git/refs/heads/master".format(username, settings.LICENSE_REPO_NAME)
-            response = requests.patch(update_url, headers=headers, data=json.dumps(body))
-            if response.status_code!=200:
-                logger.error("[Pull Request] Error occured while updating fork, for {0} user. {1}".format(username, response.text))
-                return {
-                    "type":"error",
-                    "message":"Error occured while updating fork with the upstream master. Please try again later or contact the SPDX Team."
-                }
-
-
-    """ Getting ref of master branch """
-    ref_url = url + "repos/{0}/{1}/git/refs/heads/master".format(username, settings.LICENSE_REPO_NAME)
-    response = requests.get(ref_url, headers=headers)
-    if response.status_code != 200:
-        logger.error("[Pull Request] Error occured while getting ref of master branch, for {0} user. {1}".format(username, response.text))
-        return {
-            "type":"error",
-            "message":"Some error occured while getting the ref of master branch. Please try again later or contact the SPDX Team."
-        }
-    data = json.loads(response.text)
-    sha = str(data["object"]["sha"])
-
-    """ Getting names of all branches """
-    branch_url = url + "repos/{0}/{1}/branches".format(username, settings.LICENSE_REPO_NAME)
-    response = requests.get(branch_url, headers=headers)
-    if response.status_code != 200:
-        logger.error("[Pull Request] Error occured while getting branch names, for {0} user. {1}".format(username, response.text))
-        return {
-            "type":"error",
-            "message":"Some error occured while getting branch names. Please try again later or contact the SPDX Team."
-        }
-    data = json.loads(response.text)
-    branch_names = [i["name"] for i in data]
-
-    """ Creating branch """
-    if branchName in branch_names:
-        count=1
-        while True:
-            if((branchName+str(count)) in branch_names):
-                count+=1
-            else:
-                branchName = branchName+str(count)
-                break
-    create_branch_url = url + "repos/{0}/{1}/git/refs".format(username, settings.LICENSE_REPO_NAME)
-    body = {
-        "ref":"refs/heads/"+branchName,
-        "sha":sha,
-    }
-    response = requests.post(create_branch_url, headers=headers, data=json.dumps(body))
-    if response.status_code != 201:
-        logger.error("[Pull Request] Error occured while creating branch, for {0} user. {1}".format(username, response.text))
-        return {
-            "type":"error",
-            "message":"Some error occured while creating the branch. Please try again later or contact the SPDX Team."
-        }
-    data = json.loads(response.text)
-    branch_sha = data["object"]["sha"]
-
-    """ Creating Commit """
-    if fileName[-4:] == ".xml":
-        fileName = fileName[:-4]
-    fileName += ".xml"
-    commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.LICENSE_REPO_NAME, fileName)
-    xmlText = xmlText.encode('utf-8')
-    fileContent = base64.b64encode(xmlText)
-    body = {
-        "path":"src/"+fileName,
-        "message":commitMessage,
-        "content":fileContent,
-        "branch":branchName,
-    }
-    """ Check if file already exists """
-    file_url = "{0}/contents/src/{1}".format(TYPE_TO_URL_LICENSE[PROD], fileName)
-    response = requests.get(file_url, headers=headers)
-    if response.status_code == 200:
-        """ Creating Commit by updating the file """
-        data = json.loads(response.text)
-        file_sha = data["sha"]
-        body["sha"] = file_sha
-    response = requests.put(commit_url, headers=headers, data=json.dumps(body))
-    if not (response.status_code==201 or response.status_code==200):
-        logger.error("[Pull Request] Error occured while making commit, for {0} user. {1}".format(username, response.text))
-        return {
-            "type":"error",
-            "message":"Some error occured while making commit. Please try again later or contact the SPDX Team."
-        }
-
-    """ Making Pull Request """
-    pr_url = "{0}/pulls".format(TYPE_TO_URL_LICENSE[PROD])
-    body = {
-        "title": prTitle,
-        "body": prBody,
-        "head": "%s:%s"%(username, branchName),
-        "base": "master",
-    }
-    response = requests.post(pr_url, headers=headers, data=json.dumps(body))
-    if response.status_code != 201:
-        logger.error("[Pull Request] Error occured while making pull request, for {0} user. {1}".format(username, response.text))
-        return {
-            "type":"error",
-            "message":"Some error occured while making the pull request. Please try again later or contact the SPDX Team."
-        }
-    data = json.loads(response.text)
-    return {
-        "type":"success",
-        "pr_url": data["html_url"],
-    }
-
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, is_ns):
     logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
     logger = logging.getLogger()
 
+    if not xmlText:
+        logger.error("Error occurred while getting xml text. The xml text is empty")
+        return {
+            "type":"error",
+            "message":"Some error occurred while getting the xml text."
+        }
     url = "https://api.github.com/"
     headers = {
         "Accept":"application/vnd.github.machine-man-preview+json",
@@ -206,7 +71,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
 
     """ Making a fork """
 
-    fork_url = "{0}/forks".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[PROD])
+    fork_url = "{0}/forks".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL])
     response = requests.get(fork_url, headers=headers)
     data = json.loads(response.text)
     forks = [fork["owner"]["login"] for fork in data]
@@ -222,7 +87,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     else:
         if(updateUpstream=="true"):
             """ If user wants to update the forked repo with upstream master """
-            update_url = "{0}/git/refs/heads/master".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[PROD])
+            update_url = "{0}/git/refs/heads/master".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL])
             response = requests.get(update_url, headers=headers)
             data = json.loads(response.text)
             sha = data["object"]["sha"]
@@ -230,7 +95,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
                 "sha":sha,
                 "force": True
             }
-            update_url = "{0}repos/{1}/{2}/git/refs/heads/master".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
+            update_url = "{0}repos/{1}/{2}/git/refs/heads/master".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME)
             response = requests.patch(update_url, headers=headers, data=json.dumps(body))
             if response.status_code!=200:
                 logger.error("[Pull Request] Error occured while updating fork, for {0} user. {1}".format(username, response.text))
@@ -241,7 +106,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
 
 
     """ Getting ref of master branch """
-    ref_url = "{0}repos/{1}/{2}/git/refs/heads/master".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
+    ref_url = "{0}repos/{1}/{2}/git/refs/heads/master".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME)
     response = requests.get(ref_url, headers=headers)
     if response.status_code != 200:
         logger.error("[Pull Request] Error occured while getting ref of master branch, for {0} user. {1}".format(username, response.text))
@@ -253,7 +118,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     sha = str(data["object"]["sha"])
 
     """ Getting names of all branches """
-    branch_url = url + "repos/{0}/{1}/branches".format(username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
+    branch_url = url + "repos/{0}/{1}/branches".format(username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME)
     response = requests.get(branch_url, headers=headers)
     if response.status_code != 200:
         logger.error("[Pull Request] Error occured while getting branch names, for {0} user. {1}".format(username, response.text))
@@ -273,7 +138,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
             else:
                 branchName = branchName+str(count)
                 break
-    create_branch_url = "{0}repos/{1}/{2}/git/refs".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
+    create_branch_url = "{0}repos/{1}/{2}/git/refs".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME)
     body = {
         "ref":"refs/heads/{0}".format(branchName),
         "sha":sha,
@@ -292,7 +157,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     if fileName[-4:] == ".xml":
         fileName = fileName[:-4]
     fileName += ".xml"
-    commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)
+    commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME, fileName)
     xmlText = xmlText.encode('utf-8')
     fileContent = base64.b64encode(xmlText)
     body = {
@@ -302,7 +167,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         "branch":branchName,
     }
     """ Check if file already exists """
-    file_url = "{0}//contents/src/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[PROD], fileName)
+    file_url = "{0}/contents/src/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], fileName)
     response = requests.get(file_url, headers=headers)
     if response.status_code == 200:
         """ Creating Commit by updating the file """
@@ -318,7 +183,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
             }
 
     """ Making Pull Request """
-    pr_url = "{0}/pulls".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[PROD])
+    pr_url = "{0}/pulls".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL])
     body = {
         "title": prTitle,
         "body": prBody,
@@ -440,7 +305,8 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
     return r.status_code
 
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType):
+
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType, matchId=None):
     """ View for creating an GitHub issue
     when submitting a new license request
     """
@@ -448,7 +314,9 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     for url in licenseSourceUrls:
         licenseUrls += url
         licenseUrls += '\n'
-    body = "**1.** License Name: {0}\n**2.** Short identifier: {1}\n**3.** License Author or steward: {2}\n**4.** Comments: {3}\n**5.** Standard License Header: {4}\n**6.** License Request Url: {5}\n**7.** URL: {6} **8.** OSI Status: {7}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseHeader, licenseRequestUrl, licenseUrls, licenseOsi)
+    body = "**1.** License Name: {0}\n**2.** Short identifier: {1}\n**3.** License Author or steward: {2}\n**4.** Comments: {3}\n**5.** Standard License Header: {4}\n**6.** License Request Url: {5}\n**7.** URL: {6}\n**8.** OSI Status: {7}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseHeader, licenseRequestUrl, licenseUrls, licenseOsi)
+    if matchId:
+        body = body + "\n\n**Note:**\nThe license closely matched with the following license ID(s): " + matchId
     title = "New license request: {0} [SPDX-Online-Tools]".format(licenseIdentifier)
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
@@ -590,3 +458,38 @@ def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
         return matches, ''
     issueUrl = get_issue_url_by_id(matches[0], issues)
     return matches, issueUrl
+
+
+def check_spdx_license(licenseText):
+    """Check the license text against the spdx license list.
+    """
+    licenseText = unicode(licenseText.decode('string_escape'), 'utf-8')
+    r = redis.StrictRedis(host='localhost', port=6379, db=0)
+    
+    # if redis is empty build the spdx license list in the redis database
+    if r.keys('*') == []:
+        build_spdx_licenses()
+    spdxLicenseIds = r.keys()
+    spdxLicenseTexts = r.mget(spdxLicenseIds)
+    licenseData = dict(zip(spdxLicenseIds, spdxLicenseTexts))
+    matches = get_close_matches(licenseText, licenseData)
+
+    if not matches:
+        matchedLicenseIds = None
+        matchType = 'No match'
+    
+    elif 1.0 in matches.values() or all(0.99 < score for score in matches.values()):
+        matchedLicenseIds = matches.keys()
+        matchType = 'Perfect match'
+    
+    else:
+        for licenseID in matches:
+            listedLicense = getListedLicense(licenseID)
+            isTextStandard = checkTextStandardLicense(listedLicense, licenseText)
+            if not isTextStandard:
+                matchedLicenseIds = licenseID
+                matchType = 'Standard License match'
+        else:
+            matchedLicenseIds = max(matches, key=matches.get)
+            matchType = 'Close match'
+    return matchedLicenseIds, matchType

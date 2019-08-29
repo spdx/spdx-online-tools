@@ -59,6 +59,7 @@ logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : 
 logger = logging.getLogger()
 from .forms import LicenseRequestForm, LicenseNamespaceRequestForm
 from .models import LicenseRequest, LicenseNamespace
+from spdx_license_matcher.utils import get_spdx_license_text
 
 
 
@@ -123,6 +124,34 @@ def submitNewLicense(request):
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
 
+                    matchingIds, matchingType = utils.check_spdx_license(licenseText)
+                    licenseText = licenseText.decode('unicode-escape')
+                    matches = ['Perfect match', 'Standard License match', 'Close match']
+                    if matchingType in matches:
+                        data['matchType'] = matchingType
+                        if isinstance(matchingIds, list):
+                            matchingIds = ", ".join(matchingIds)
+                        if matchingType == "Close match":
+                            data['inputLicenseText'] = licenseText
+                            data['xml'] = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                                listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+                            originalLicenseText = get_spdx_license_text(matchingIds)
+                            data['originalLicenseText'] = originalLicenseText
+                            data['licenseOsi'] = licenseOsi
+                            data['licenseIdentifier'] = licenseIdentifier
+                            data['licenseName'] = licenseName
+                            data['listVersionAdded'] = listVersionAdded
+                            data['licenseSourceUrls'] = licenseSourceUrls
+                            data['licenseHeader'] = licenseHeader
+                            data['licenseNotes'] = licenseNotes
+                            data['licenseAuthorName'] = licenseAuthorName
+                            data['userEmail'] = userEmail
+                            data['comments'] = licenseComments
+                        data['matchIds'] = matchingIds
+                        statusCode = 409
+                        data['statusCode'] = str(statusCode)
+                        return JsonResponse(data)
+
                     matches, issueUrl = utils.check_new_licenses_and_rejected_licenses(licenseText, urlType)
 
                     # Check if the license text doesn't matches with the rejected as well as not yet approved licenses
@@ -145,7 +174,7 @@ def submitNewLicense(request):
                         matchingString = 'The following license ID(s) match: ' + ", ".join(matches)
                         data['matchingStr'] = matchingString
                         data['issueUrl'] = issueUrl
-
+                    
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -968,45 +997,31 @@ def check_license(request):
         context_dict={}
         if request.method == 'POST':
             licensetext = request.POST.get('licensetext')
-            if (jpype.isJVMStarted()==0):
-                """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =settings.JAR_ABSOLUTE_PATH
-                jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ Attach a Thread and start processing the request """
-            jpype.attachThreadToJVM()
-            package = jpype.JPackage("org.spdx.compare")
-            compareclass = package.LicenseCompareHelper
             try:
-                """Call the java function with parameter"""
-                matching_licenses = compareclass.matchingStandardLicenseIds(licensetext)
-                if (matching_licenses and len(matching_licenses) > 0):
-                    matching_str = "The following license ID(s) match: "
-                    matching_str+= matching_licenses[0]
-                    for i in range(1,len(matching_licenses)):
-                        matching_str += ", "
-                        matching_str += matching_licenses[i]
-                    if (request.is_ajax()):
-                        ajaxdict=dict()
-                        ajaxdict["data"] = matching_str
-                        response = dumps(ajaxdict)
-                        jpype.detachThreadFromJVM()
-                        return HttpResponse(response)
-                    context_dict["success"] = str(matching_str)
-                    jpype.detachThreadFromJVM()
-                    return render(request,
-                        'app/check_license.html',context_dict,status=200
-                        )
-                else:
+                matchingId,matchingType = utils.check_spdx_license(licensetext)
+                if not matchingId:
                     if (request.is_ajax()):
                         ajaxdict=dict()
                         ajaxdict["data"] = "There are no matching SPDX listed licenses"
                         response = dumps(ajaxdict)
-                        jpype.detachThreadFromJVM()
                         return HttpResponse(response,status=404)
                     context_dict["error"] = "There are no matching SPDX listed licenses"
-                    jpype.detachThreadFromJVM()
                     return render(request,
                         'app/check_license.html',context_dict,status=404
+                        )
+                else:
+                    matching_str = matchingType + " found! The following license ID(s) match: "
+                    if isinstance(matchingId, list):
+                        matchingId = ",".join(matchingId)
+                    matching_str += matchingId
+                    if (request.is_ajax()):
+                        ajaxdict=dict()
+                        ajaxdict["data"] = matching_str
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response)
+                    context_dict["success"] = str(matching_str)
+                    return render(request,
+                        'app/check_license.html',context_dict,status=200
                         )
             except jpype.JavaException as ex :
                 """ Java exception raised without exiting the application """
@@ -1014,10 +1029,8 @@ def check_license(request):
                     ajaxdict=dict()
                     ajaxdict["data"] = jpype.JavaException.message(ex)
                     response = dumps(ajaxdict)
-                    jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
                 context_dict["error"] = jpype.JavaException.message(ex)
-                jpype.detachThreadFromJVM()
                 return render(request,
                     'app/check_license.html',context_dict,status=404
                     )
@@ -1027,10 +1040,8 @@ def check_license(request):
                     ajaxdict=dict()
                     ajaxdict["data"] = format_exc()
                     response = dumps(ajaxdict)
-                    jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=404)
                 context_dict["error"] = format_exc()
-                jpype.detachThreadFromJVM()
                 return render(request,
                     'app/check_license.html',context_dict,status=404
                     )
@@ -1410,6 +1421,7 @@ def update_session_variables(request):
         return HttpResponse(response, status=400)
     return HttpResponse("Bad Request", status=400)
 
+
 def beautify(request):
     """ View that handles beautify xml requests """
     if request.method=="POST":
@@ -1458,6 +1470,68 @@ def beautify(request):
             return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
     else:
         return HttpResponseRedirect(settings.HOME_URL)
+
+
+def issue(request):
+    """ View that handles create issue request """
+    if request.user.is_authenticated():
+        if request.method=="POST":
+            context_dict = {}
+            ajaxdict = {}
+            try:
+                if request.user.is_authenticated():
+                    user = request.user
+                try:
+                    github_login = user.social_auth.get(provider='github')
+                    token = github_login.extra_data["access_token"]
+                    licenseAuthorName = request.POST['licenseAuthorName']
+                    licenseName = request.POST['licenseName']
+                    licenseIdentifier = request.POST['licenseIdentifier']
+                    licenseOsi = request.POST['licenseOsi']
+                    licenseSourceUrls = request.POST.getlist('licenseSourceUrls')
+                    licenseHeader = request.POST['licenseHeader']
+                    licenseComments = request.POST['comments']
+                    licenseText = request.POST['inputLicenseText']
+                    userEmail = request.POST['userEmail']
+                    licenseNotes = request.POST['licenseNotes']
+                    listVersionAdded = request.POST['listVersionAdded']
+                    matchId = request.POST['matchIds']
+                    urlType = utils.NORMAL
+                    data = {}
+                    xml = utils.generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                        listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+                    now = datetime.datetime.now()
+                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
+                        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+                    licenseRequest.save()
+                    licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+                    serverUrl = request.build_absolute_uri('/')
+                    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
+                    statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType, matchId)
+                    data['statusCode'] = str(statusCode)
+                    return JsonResponse(data)
+                except UserSocialAuth.DoesNotExist:
+                    """ User not authenticated with GitHub """
+                    if (request.is_ajax()):
+                        ajaxdict["type"] = "auth_error"
+                        ajaxdict["data"] = "Please login using GitHub to use this feature."
+                        response = dumps(ajaxdict)
+                        return HttpResponse(response,status=401)
+                    return HttpResponse("Please login using GitHub to use this feature.",status=401)
+            except:
+                """ Other errors raised """
+                logger.error(str(format_exc()))
+                if (request.is_ajax()):
+                    ajaxdict["type"] = "error"
+                    ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                    response = dumps(ajaxdict)
+                    return HttpResponse(response,status=500)
+                return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
+        else:
+            return HttpResponseRedirect(settings.HOME_URL)
+    else:
+        return HttpResponseRedirect(settings.LOGIN_URL)
+
 
 def pull_request(request):
     """ View that handles pull request """

@@ -554,7 +554,7 @@ function checkPRForm(){
     return true;
 }
 /* sends ajax request to pull_request view */
-function makePR(){
+function makePR(data=null){
     /* if invalid values in form return */
     var check = checkPRForm();
     if(check!=true) return check;
@@ -576,6 +576,9 @@ function makePR(){
     }
     else if(activeTab=="tabSplitView"){
         xmlText = splitTextEditor.getValue().trim()
+    }
+    else if(data){
+        xmlText = data.xml;
     }
     else{
         xmlText = latestXmlText
