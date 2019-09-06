@@ -386,7 +386,7 @@ function scrollUpAndHighlight(element) {
                     $(document).on('click','button#ok', function(event){
                       $("#myModal").modal("hide");
                     });
-                    $(document).on('click','button#showDiff', function(event){
+                    $(document).off().on('click','button#showDiff', function(event){
                       generate_text_diff(originalLicenseText.split('\n\n'), inputLicenseText.split('\n\n'));
                     });
                   }
@@ -544,7 +544,7 @@ function makeIssue(data){
 }
 
 /* generate diff of input license text and spdx license list license text of closely matched licenses */
-function generate_text_diff(base, newtxt){
+async function generate_text_diff(base, newtxt){
     var sm = new difflib.SequenceMatcher(base, newtxt);
     var opcodes = sm.get_opcodes();
     
@@ -565,62 +565,38 @@ function generate_text_diff(base, newtxt){
     displayModal("","success");
     $("#modal-body").html(diff);
     $("#modal-title").text("Do you think the changes are substantial to create a new license request?");
-    $(".modal-footer").html(`<center><button class="btn btn-success btn-space" id="createIssue"data-toggle="tooltip" data-placement="top" title="Yes, the changes are substantial to be new license itself."><span class="glyphicon glyphicon-ok"></span> Yes, changes are substantial</button><button class="btn btn-primary btn-space" id="makePullRequest"data-toggle="tooltip" data-placement="top" title="The licenses should match and thus, create a pull request"><span class="glyphicon glyphicon-edit"></span> Both licenses should match</span></button></center>`);
+    $(".modal-footer").html(`<center><button class="btn btn-success btn-space" id="createIssue"data-toggle="tooltip" data-placement="top" title="Yes, the changes are substantial to be new license itself."><span class="glyphicon glyphicon-ok"></span> Yes, changes are substantial</button><button class="btn btn-primary btn-space" id="makeIssueToUpdate"data-toggle="tooltip" data-placement="top" title="The licenses should match and thus, create a pull request"><span class="glyphicon glyphicon-edit"></span> Both licenses should match</span></button></center>`);
     $("#modal-body").addClass("diff-modal-body");
     $(".modal-dialog").addClass("diff-modal-dialog");
+    $("#myModal").modal({
+        backdrop: 'static',
+        keyboard: true, 
+        show: true
+    });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await takeScreenshotAndUpload();
+    diffUrl =  'https://github.com/' + repositoryNameWithOwner + '/blob/master/' + localStorage.getItem('filename');
+    LicenseData.data["diffUrl"] = diffUrl;
     $("#createIssue").on("click",function(){
         $("#myModal").modal("hide");
+        $(".modal-title").text("");
         $(".modal-footer").html("");
         makeIssue(LicenseData.data);
     })
-    $("#makePullRequest").on("click",function(){
-        var githubLogin = $("#githubLogin").text();
-        $("#modal-body").removeClass("diff-modal-body");
-        $(".modal-dialog").removeClass("diff-modal-dialog");
-        $("#modal-title").html("Create a PR to the SPDX License XML");
-        $('button.close').remove();
-        /* if user not authenticated using GitHub, display modal with login button */
-        if(githubLogin == "False"){
-            $("#modal-header").removeClass("red-modal green-modal");
-            $("#modal-header").addClass("yellow-modal");
-            $(".modal-footer").html('<button class="btn btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><button class="btn btn-success" id="github_auth_begin"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
-            $("#modal-body").html("You will now be redirected to the GitHub website to authenticate with the SPDX GitHub App. Please allow all the requested permissions for the app to work properly. After coming back to this page please click the Submit Changes button again to create a Pull Request.");
-        }
-        /* if user logged in using GitHub, display the pull request form */
-        else if(githubLogin == "True"){
-            $("#modal-header").removeClass("red-modal yellow-modal");
-            $("#modal-header").addClass("green-modal");
-            $(".modal-footer").html('<button class="btn btn-default pull-left" id="prCancel" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button><button class="btn btn-success" id="prOk"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
-            $("#modal-body").html($("#prFormContainer").html());
-            $("#githubPRForm").css("display","block");
-            $(".ajax-loader").css("display","none");
-            $("#modal-body").addClass("pr-modal-body");
-            $("#prOk, #prCancel").prop('disabled', false);
-        }
-        $("div.tooltip").remove();
-        $('[data-toggle="tooltip"]').tooltip();
-        $("#myModal").modal({
-            backdrop: 'static',
-            keyboard: true,
-            show: true
-        });
+    $("#makeIssueToUpdate").on("click",function(){
+      $("#myModal").modal("hide");
+      $(".modal-title").text("");
+      $(".modal-footer").html("");
+      matchingId = LicenseData.data.matchIds;
+      LicenseData.data["msg"] = `Update ${matchingId} to allow matching to the included text`;
+      makeIssue(LicenseData.data);
     });
-    /* if user submits the pull request form */
-    $(document).on('click','button#prOk',function(event){
-        event.preventDefault();
-        /* call the makePR function, display error message if invalid value in form */
-        var response = makePR(LicenseData.data);
-        if(response!=true){
-            $('<div class="alert alert-danger" style="font-size:15px;"><strong>Error! </strong>'+response+'</div>').insertBefore("#githubPRForm");
-            setTimeout(function() {
-                $(".alert").remove();
-            }, 3000);
-        }
-    });
-}
+  }
 </script>
 <script type="text/javascript" src="{% static 'js/editor/script.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/treeview.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/html2canvas.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/postscreenshot.js' %}"></script>
 {% endblock %}
