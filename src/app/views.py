@@ -1506,9 +1506,9 @@ def issue(request):
                     licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
                         submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
                     licenseRequest.save()
-                    licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+                    licenseRequestId = licenseRequest.id
                     serverUrl = request.build_absolute_uri('/')
-                    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
+                    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
                     statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType, matchId, diffUrl, msg)
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
