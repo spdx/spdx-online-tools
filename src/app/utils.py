@@ -306,7 +306,7 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
 
 
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType, matchId=None):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType, matchId=None, diffUrl=None, msg=None):
     """ View for creating an GitHub issue
     when submitting a new license request
     """
@@ -315,9 +315,14 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
         licenseUrls += url
         licenseUrls += '\n'
     body = "**1.** License Name: {0}\n**2.** Short identifier: {1}\n**3.** License Author or steward: {2}\n**4.** Comments: {3}\n**5.** Standard License Header: {4}\n**6.** License Request Url: {5}\n**7.** URL: {6}\n**8.** OSI Status: {7}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseHeader, licenseRequestUrl, licenseUrls, licenseOsi)
+    if diffUrl:
+        body = body + "\n**8.** License Text Diff: {0}".format(diffUrl)
     if matchId:
         body = body + "\n\n**Note:**\nThe license closely matched with the following license ID(s): " + matchId
-    title = "New license request: {0} [SPDX-Online-Tools]".format(licenseIdentifier)
+    if msg:
+        title = msg
+    else:
+        title = "New license request: {0} [SPDX-Online-Tools]".format(licenseIdentifier)
     payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
     headers = {'Authorization': 'token ' + token}
     url = "{0}/issues".format(TYPE_TO_URL_LICENSE[urlType])

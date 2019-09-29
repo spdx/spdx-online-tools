@@ -255,7 +255,7 @@ def submitNewLicenseNamespace(request):
                     listVersionAdded = ''
                     licenseHeader = ''
                     licenseNotes = ''
-                    xml = utils.generateLicenseXml(licenseOsi, shortIdentifier, fullname,
+                    xml = generateLicenseXml(licenseOsi, shortIdentifier, fullname,
                         listVersionAdded, url, licenseHeader, licenseNotes, licenseText)
                     licenseExists = utils.licenseExists(namespace, shortIdentifier, token)
                     if licenseExists["exists"]:
@@ -1344,7 +1344,7 @@ def promoteNamespaceRequests(request, license_id=None):
             licenseText = model_dict["description"]
             userEmail = model_dict["userEmail"]
 
-            xml = utils.generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+            xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                 listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
             now = datetime.datetime.now()
             licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
@@ -1496,9 +1496,11 @@ def issue(request):
                     licenseNotes = request.POST['licenseNotes']
                     listVersionAdded = request.POST['listVersionAdded']
                     matchId = request.POST['matchIds']
+                    diffUrl = request.POST['diffUrl']
+                    msg = request.POST.get('msg', None)
                     urlType = utils.NORMAL
                     data = {}
-                    xml = utils.generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                    xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                         listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                     now = datetime.datetime.now()
                     licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
@@ -1507,7 +1509,7 @@ def issue(request):
                     licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
                     serverUrl = request.build_absolute_uri('/')
                     licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                    statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType, matchId)
+                    statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType, matchId, diffUrl, msg)
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
                 except UserSocialAuth.DoesNotExist:
