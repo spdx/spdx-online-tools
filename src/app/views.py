@@ -794,7 +794,7 @@ def getFileFormat(to_format):
     elif (to_format=="RDF"):
         return ".rdf"
     elif (to_format=="Spreadsheet"):
-        return ".xls"
+        return ".xlsx"
     elif (to_format=="HTML"):
         return ".html"
     else :
