@@ -104,6 +104,7 @@
       <label class="control-label col-sm-3" >&nbsp;OSI Status&nbsp;</label>
         <div class="col-sm-4">
           {{ form.osiApproved }}
+          <span class="help-block" id="OSIapproved" style="text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >Go to the <a href = "https://opensource.org/licenses/">OSI approved licenses</a> to know more. </span>
         </div>
       </div>
     </div>
@@ -183,7 +184,7 @@ $(document).ready(function () {
     <br /> \u2022 Where applicable, and if possible, the short identifier should be harmonized with other well-known open source naming sources (i.e., OSI, Fedora, etc.) \
     <br /> \u2022 Short identifiers should be as short in length as possible while staying consistent with all other naming criteria.", html: "true", viewport: '.panel-body', container: 'body'});
     $('#sourceUrlInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Source URL", content: "\u2022 Include URL for the official text of the license or exception. \
-    <br /> \u2022 If the license is OSI approved, also include URL for OSI license page. \
+    <br /> \u2022 If the license is \<a> OSI approved </a>\, also include URL for OSI license page. \
     <br /> \u2022 Include another URL that has text version of license, if neither of the first two options are available. \
     <br /> \u2022 Note that the source URL may refer to an original URL for the license which is no longer active. We don't remove inactive URLs. New or best available URLs may be added. \
     <br /> \u2022 Link to the license or exception in its native language is used where specified (e.g. French for CeCILL). Link to English version where multiple, equivalent official translations (e.g. EUPL)", html: "true", viewport: '.panel-body', container: '.panel-body'});
@@ -205,7 +206,7 @@ $(document).ready(function () {
 		$("#modal-header").removeClass("red-modal green-modal");
 		$("#modal-header").addClass("yellow-modal");
 		$(".modal-footer").html('<button class="btn btn-success" id="github_auth_begin"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
-		$("#modal-body").html('To submit a license, you must  <a href="https://github.com/login">log in</a> using Github.  You will now be redirected to the github login.  Please allow the requested permissions.  If you do not have a github account, you can <a href="https://github.com/">sign up</a> for free or you can email your new license request to <a href="mailto:spdx-legal@spdx.org">spdx-legal@spdx.org</a>.');
+		$("#modal-body").html('To submit a license, you must log in using Github.  You will now be redirected to the github login.  Please allow the requested permissions.  If you do not have a github account, you can <a href="https://github.com/">sign up</a> for free or you can email your new license request to <a href="mailto:spdx-legal@spdx.org">spdx-legal@spdx.org</a>.');
         $("#myModal").modal({
            backdrop: 'static',
            keyboard: true,
