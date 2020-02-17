@@ -16,7 +16,6 @@
 <h3>Providing an all-in-one portal to upload and parse SPDX documents for validation, comparison and conversion and search SPDX license list.</h3>
 <hr>
 <p class="lead text-right" style="color:#0097c4;"><strong>Project by - Rohit Lodha, GSoC 2017<br> Tushar Mittal, GSoC 2018</strong></p>
-
 {% endblock %}
 
 {% block script_block %}
@@ -25,4 +24,15 @@ $(document).ready(function () {
     $("#aboutpage").addClass('linkactive');
   });
 </script>
+<footer style="margin-left: 21%;
+margin-top: 20px;
+font-size: 1.1em;">
+<b>Spdx online tools version :  
+<span style="color:#0097c4;">  {{ spdx_version }}</span>
+<br>
+Java Tools version : <span style="color:#0097c4;">  {{ java_tools_version }}</span>
+</b>
+</footer>
+
 {% endblock %}
+
