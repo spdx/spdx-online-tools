@@ -28,7 +28,7 @@ from spdx_license_matcher.computation import (checkTextStandardLicense,
 from spdx_license_matcher.difference import get_similarity_percent
 from spdx_license_matcher.utils import get_spdx_license_text
 
-from app.models import User, UserID, LicenseRequest, LicenseNamespace
+from app.models import User, UserID
 
 NORMAL = "normal"
 TESTS = "tests"
@@ -434,10 +434,10 @@ def get_license_data(issues):
                 licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
                 licenseIds.append(licenseIdentifier)
                 try:
-                    licenseXml = str(LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).xml)
+                    licenseXml = str(License.objects.get(shortIdentifier=licenseIdentifier).xml)
                     licenseText = parseXmlString(licenseXml)['text']
                     licenseTexts.append(clean(licenseText))
-                except LicenseRequest.DoesNotExist:
+                except License.DoesNotExist:
                     pass
     licenseData = dict(zip(licenseIds, licenseTexts))
     return licenseData
