@@ -434,10 +434,10 @@ def get_license_data(issues):
                 licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
                 licenseIds.append(licenseIdentifier)
                 try:
-                    licenseXml = str(LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).xml)
+                    licenseXml = str(License.objects.get(shortIdentifier=licenseIdentifier).xml)
                     licenseText = parseXmlString(licenseXml)['text']
                     licenseTexts.append(clean(licenseText))
-                except LicenseRequest.DoesNotExist:
+                except License.DoesNotExist:
                     pass
     licenseData = dict(zip(licenseIds, licenseTexts))
     return licenseData
