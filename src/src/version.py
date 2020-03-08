@@ -3,7 +3,7 @@ Version file for displaying the respective version of
 the tools and online-tools repositories.
 """
 
-spdx_version = '1.0'
+spdx_online_tools_version = '1.0'
 
 """
 Visit https://github.com/spdx/tools/releases to know about the tools releases.
