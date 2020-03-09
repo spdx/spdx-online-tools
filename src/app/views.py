@@ -26,7 +26,7 @@ from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from src.version import spdx_version
+from src.version import spdx_online_tools_version
 from src.version import java_tools_version
 
 import codecs
@@ -81,7 +81,7 @@ def about(request):
     returns about.html template
     """
     context_dict={
-                'spdx_version':spdx_version,
+                'spdx_online_tools_version':spdx_online_tools_version,
                 'java_tools_version':java_tools_version
                 }
     return render(request,
