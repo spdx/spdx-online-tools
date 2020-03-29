@@ -1405,7 +1405,7 @@ def licenseRequests(request, license_id=None):
             github_login = user.social_auth.get(provider='github')
             token = github_login.extra_data["access_token"]
             username = github_login.extra_data["login"]
-            test = requests.get('https://api.github.com/repos/spdx/tools-python/collaborators/anshuldutt21' , headers={'Authorization': 'token {}'.format(token) })
+            test = requests.get('https://api.github.com/repos/spdx/spdx-online-tools/collaborators/anshuldutt21' , headers={'Authorization': 'token {}'.format(token) })
             if ((test.status_code == 200) or (test.status_code == 204)):
                 archive = request.POST.get('archive', True)
                 license_id = request.POST.get('license_id', False)
