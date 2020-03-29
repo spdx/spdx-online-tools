@@ -1290,13 +1290,37 @@ def archiveRequests(request, license_id=None):
     """ View for archive license requests
     returns archive_requests.html template
     """
+    context_dict = {}
     if request.method == "POST" and request.is_ajax():
-        archive = request.POST.get('archive', False)
-        license_id = request.POST.get('license_id', False)
-        if license_id:
-            LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+        if request.user.is_authenticated():       
+            user = request.user
+            """ Getting user info for submitting github issue """
+            github_login = user.social_auth.get(provider='github')
+            token = github_login.extra_data["access_token"]
+            username = github_login.extra_data["login"]
+            test = requests.get('https://api.github.com/repos/spdx/tools-python/collaborators/anshuldutt21' , headers={'Authorization': 'token {}'.format(token) })
+            if ((test.status_code == 200) or (test.status_code == 204)):
+                archive = request.POST.get('archive', True)
+                license_id = request.POST.get('license_id', False)
+                context_dict['authorized'] = "True"
+                if license_id:
+                    LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+        else:
+            if (request.is_ajax()):
+                ajaxdict = {}
+                ajaxdict["type"] = "auth_error"
+                ajaxdict["data"] = "Please login using GitHub to use this feature."
+                response = dumps(ajaxdict)
+                return HttpResponse(response,status=401)
+            return HttpResponse("Please login using GitHub to use this feature.",status=401)
     archiveRequests = LicenseRequest.objects.filter(archive='True').order_by('-submissionDatetime')
-    context_dict={'archiveRequests': archiveRequests}
+    context_dict['archiveRequests'] = archiveRequests
+    if request.user.is_authenticated:
+        user = request.user
+        github_login = user.social_auth.get(provider='github')
+    else:
+        github_login = None
+    context_dict['github_login'] = github_login
     return render(request,
         'app/archive_requests.html',context_dict
         )
@@ -1373,13 +1397,37 @@ def licenseRequests(request, license_id=None):
     """ View for license requests which are not archived
     returns license_requests.html template
     """
+    context_dict = {}
     if request.method == "POST" and request.is_ajax():
-        archive = request.POST.get('archive', True)
-        license_id = request.POST.get('license_id', False)
-        if license_id:
-            LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
-    licenseRequests = LicenseRequest.objects.filter(archive='False').order_by('-submissionDatetime')
-    context_dict={'licenseRequests': licenseRequests}
+        if request.user.is_authenticated():       
+            user = request.user
+            """ Getting user info for submitting github issue """
+            github_login = user.social_auth.get(provider='github')
+            token = github_login.extra_data["access_token"]
+            username = github_login.extra_data["login"]
+            test = requests.get('https://api.github.com/repos/spdx/tools-python/collaborators/anshuldutt21' , headers={'Authorization': 'token {}'.format(token) })
+            if ((test.status_code == 200) or (test.status_code == 204)):
+                archive = request.POST.get('archive', True)
+                license_id = request.POST.get('license_id', False)
+                context_dict['authorized'] = "True"
+                if license_id:
+                    LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+        else:
+            if (request.is_ajax()):
+                ajaxdict = {}
+                ajaxdict["type"] = "auth_error"
+                ajaxdict["data"] = "Please login using GitHub to use this feature."
+                response = dumps(ajaxdict)
+                return HttpResponse(response,status=401)
+            return HttpResponse("Please login using GitHub to use this feature.",status=401)
+    archiveRequests = LicenseRequest.objects.filter(archive='False').order_by('-submissionDatetime')
+    context_dict['archiveRequests'] = archiveRequests
+    if request.user.is_authenticated:
+        user = request.user
+        github_login = user.social_auth.get(provider='github')
+    else:
+        github_login = None
+    context_dict['github_login'] = github_login
     return render(request,
         'app/license_requests.html',context_dict
         )
