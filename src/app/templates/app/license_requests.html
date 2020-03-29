@@ -111,10 +111,10 @@
       }
 
       var license = $(this).closest('tr');
-      $(document).on('click','button#confirm_unarchive', function(event){
+      $(document).on('click','button#confirm_archive', function(event){
         event.preventDefault();
         $("#myModal").modal("hide");
-        unarchiveLicense(license);
+        archiveLicense(license);
       });
     });
   });
