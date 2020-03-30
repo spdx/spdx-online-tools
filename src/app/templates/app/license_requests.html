@@ -7,16 +7,6 @@
 
 <div id="messages" class="messages">
 </div>
-{% if github_login  %}
-<p id="githubLogin" hidden>True</p>
-{% else %}
-<p id ="githubLogin" hidden> False </p>
-{% endif %}
-{% if authorized  %}
-<p id="authorized" hidden>True</p>
-{% else %}
-<p id ="authorized" hidden> False </p>
-{% endif %}
 
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
@@ -81,13 +71,11 @@
     });
     $('body').on('click', 'button[id^="archive_button"]', function (en) {
       en.stopImmediatePropagation();
-      var githubLogin = $("#githubLogin").text();
-      var authorized = $("#authorized").text();
-      console.log(authorized);
-      if (githubLogin == "True"){
-        if (authorized) {
+      var githubLogin =  "{{ github_login }}" ;
+      if ((githubLogin) != "None"){
+        if (" {{ authorized }} ") {
           $("#modal-header").addClass("yellow-modal");
-          $("#modal-body").html('You are not permitted to unarchive this license.');
+          $("#modal-body").html('You are not permitted to archive this license.');
           $("#myModal").modal({
                 backdrop: 'static',
                 keyboard: true,
@@ -96,25 +84,30 @@
         }
         else{
               $("#modal-header").addClass("yellow-modal");
-	            $(".modal-footer").html('<button class="btn btn-success" id="confirm_unarchive"><span class="glyphicon glyphicon-off"></span> Confirm</button>');
-              $("#modal-body").html('Are you sure you want to unarchive this license?');
+	            $(".modal-footer").html('<button class="btn btn-success" id="confirm_archive"><span class="glyphicon glyphicon-off"></span> Confirm</button>');
+              $("#modal-body").html('Are you sure you want to archive this license?');
               $("#myModal").modal({
                 backdrop: 'static',
                 keyboard: true,
                 show: true,
           })
-       };
+       }
       }
       else {
         $("#modal-header").addClass("yellow-modal");
         $("#modal-body").html('You must login to use this functionality');
+        $("#myModal").modal({
+                backdrop: 'static',
+                keyboard: true,
+                show: true,
+          })
       }
 
       var license = $(this).closest('tr');
-      $(document).on('click','button#confirm_unarchive', function(event){
+      $(document).on('click','button#confirm_archive', function(event){
         event.preventDefault();
         $("#myModal").modal("hide");
-        unarchiveLicense(license);
+        archiveLicense(license);
       });
     });
   });

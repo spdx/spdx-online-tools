@@ -7,16 +7,6 @@
 
 <div id="messages" class="messages">
 </div>
-{% if github_login  %}
-<p id="githubLogin" hidden>True</p>
-{% else %}
-<p id ="githubLogin" hidden> False </p>
-{% endif %}
-{% if authorized  %}
-<p id="authorized" hidden>True</p>
-{% else %}
-<p id ="authorized" hidden> False </p>
-{% endif %}
 
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
@@ -81,11 +71,9 @@ $('tbody tr').each(function (i,e) {
     });
     $('body').on('click', 'button[id^="unarchive_button"]', function (en) {
       en.stopImmediatePropagation();
-      var githubLogin = $("#githubLogin").text();
-      var authorized = $("#authorized").text();
-      console.log(authorized);
-      if (githubLogin == "True"){
-        if (authorized) {
+      var githubLogin =  "{{ github_login }}" ;
+      if ((githubLogin) != "None"){
+        if (" {{ authorized }} ") {
           $("#modal-header").addClass("yellow-modal");
           $("#modal-body").html('You are not permitted to unarchive this license.');
           $("#myModal").modal({
@@ -103,11 +91,16 @@ $('tbody tr').each(function (i,e) {
                 keyboard: true,
                 show: true,
           })
-       };
+       }
       }
       else {
         $("#modal-header").addClass("yellow-modal");
         $("#modal-body").html('You must login to use this functionality');
+        $("#myModal").modal({
+                backdrop: 'static',
+                keyboard: true,
+                show: true,
+          })
       }
 
       var license = $(this).closest('tr');
