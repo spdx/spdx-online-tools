@@ -18,3 +18,8 @@ input[type="checkbox"]{
   margin-left: 0px !important;
   margin-top: -3px !important;
 }
+
+.popover-content {
+  overflow-x: auto;
+  max-height: 380px;
+}

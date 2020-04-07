@@ -150,15 +150,14 @@
 {% block script_block %}
 <script type="text/javascript">
 $(document).ready(function () {
-    var is_touch_device = "ontouchstart" in document.documentElement;
-    $('#submitterFullnameInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace submitter", content: "\u2022 The full name of the license namespace submitter.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#namespaceInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace", content: "\u2022 License namespace in dns-style request or a free-format.", html: "true", viewport: '.panel-body', container: 'body'});
-    $('#namespaceId').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace ID", content: "\u2022 License namespace short identifier.", html: "true", viewport: '.panel-body', container: 'body'});
-    $('#urlInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace URL", content: "\u2022 Include URL for the official text of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#licenseListUrlInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "License list URL", content: "\u2022 Include URL for the official text of the license list namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#githubRepoUrlInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "GITHUB Repo URL", content: "\u2022 Include URL for the official github page of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#organisation').popover({trigger: is_touch_device ? "click" : "hover", title: "Namespace Organisation", content: "\u2022 Select organisation of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#descriptionInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "License namespace description", content: "Description of the license namespace", viewport: '.panel-body', container: '.panel-body'});
+    $('#submitterFullnameInfo').popover({trigger: "click", title: "Namespace submitter", content: "\u2022 The full name of the license namespace submitter.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#namespaceInfo').popover({trigger: "click", title: "Namespace", content: "\u2022 License namespace in dns-style request or a free-format.", html: "true", viewport: '.panel-body', container: 'body'});
+    $('#namespaceId').popover({trigger: "click", title: "Namespace ID", content: "\u2022 License namespace short identifier.", html: "true", viewport: '.panel-body', container: 'body'});
+    $('#urlInfo').popover({trigger: "click", title: "Namespace URL", content: "\u2022 Include URL for the official text of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#licenseListUrlInfo').popover({trigger: "click", title: "License list URL", content: "\u2022 Include URL for the official text of the license list namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#githubRepoUrlInfo').popover({trigger: "click", title: "GITHUB Repo URL", content: "\u2022 Include URL for the official github page of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#organisation').popover({trigger: "click", title: "Namespace Organisation", content: "\u2022 Select organisation of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#descriptionInfo').popover({trigger: "click", title: "License namespace description", content: "Description of the license namespace", viewport: '.panel-body', container: '.panel-body'});
     $("#licensenamespace").addClass('linkactive');
     $("#submitnewlicensenamespacepage").addClass('linkactive');
     $('input').addClass('form-control');
@@ -275,6 +274,16 @@ function scrollUpAndHighlight(element) {
   $(element).css({ 'border-color':'#f00','box-shadow': '1px 1px 8px #f04a4a' });
 }
 
+</script>
+<script>
+$(document).on('click', function (e) {
+    $('[data-toggle=popover]').each(function () {
+        // hide any open popovers when the anywhere else in the body is clicked
+        if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+            $(this).popover('hide');
+        }
+    });
+});
 </script>
 
 <script type="text/javascript">
