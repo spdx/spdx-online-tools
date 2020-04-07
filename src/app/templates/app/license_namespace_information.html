@@ -14,7 +14,7 @@
             <span class="label label-success">Archived</span>
         {% endif %}
     </p>
-</div>  
+</div>
     {% endif %}
 <div class="panel-body">
     {% if licenseInformation %}
@@ -27,30 +27,28 @@
         <p>{{licenseInformation.licenseAuthorName}}</p>
     </div>
     <div class="licenseField col-sm-12">
+        <p class="fieldName">Namespace</p>
+        <p>{{licenseInformation.namespace}}</p>
+    </div>
+    <div class="licenseField col-sm-12">
         <p class="fieldName">Short Identifier</p>
         <p>{{licenseInformation.shortIdentifier}}</p>
     </div>
     <div class="licenseField col-sm-12">
         <p class="fieldName">Source/URL</p>
-        {% for crossRef in licenseInformation.crossRefs %}
-        <p>{{crossRef}}</p>
-        {% endfor %}
+        <p>{{licenseInformation.url}}</p>
     </div>
     <div class="licenseField col-sm-12">
-        <p class="fieldName">Osi Approved</p>
-        <p>{{licenseInformation.osiApproved}}</p>
+        <p class="fieldName">Publicly shared</p>
+        <p>{{licenseInformation.publiclyShared}}</p>
+    </div>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Description</p>
+        <p>{{licenseInformation.description}}</p>
     </div>
     <div class="licenseField col-sm-12">
         <p class="fieldName">Notes</p>
-        <p>{{licenseInformation.notes}}</p>
-    </div>
-    <div class="licenseField col-sm-12">
-        <p class="fieldName">Standard License Header</p>
-        <p>{{licenseInformation.standardLicenseHeader}}</p>
-    </div>
-    <div class="licenseField col-sm-12">
-        <p class="fieldName">Text</p>
-        <p>{{licenseInformation.text|safe}}</p>
+        <p>{{licenseInformation.notes|safe}}</p>
     </div>
     <div class="licenseField col-sm-12">
         <p class="fieldName">Submission Date</p>
@@ -58,7 +56,7 @@
     </div>
     <div class="col-sm-12">
         <div class="col-sm-12">
-            <a href="/app/license_requests/" class="btn">Go Back</a>
+            <a href="/app/license_namespace_requests/" class="btn">Go Back</a>
         </div>
         <div class="col-sm-12">
             <form name="download_xml" method="post" action=''>
@@ -68,7 +66,7 @@
             </form>
         </div>
         <div class="col-sm-12" style="margin-top: 5px">
-            <form id="edit-license-xml" name="edit_license_xml" method="post" enctype="multipart/form-data">
+            <form id="edit-license-xml" name="edit_license_namespace_xml" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <input type="hidden" name="supporttype" />
                 <button id="editButton" class="btn btn-md btn-info">Edit the XML</button>
@@ -86,13 +84,13 @@
       /* sending the request */
       var win_href = window.location.href;
       var license_id = win_href.split('/')[5];
-      window.location.href = "/app/edit_license_xml/"+license_id+"/";
+      window.location.href = "/app/edit_license_namespace_xml/"+license_id+"/";
     }
     $(document).ready(function () {
-        if (document.location.href.match(/archive_requests/))
-            $("#archiverequestspage").addClass('linkactive');
+        if (document.location.href.match(/archive_namespace_requests/))
+            $("#licensenamespace").addClass('linkactive');
         else
-            $("#licenserequestspage").addClass('linkactive');
+            $("#licensenamespace").addClass('linkactive');
         });
     $("#editButton").on('click', function(event){
       /* if the user uploads the file */

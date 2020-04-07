@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-from secret import getGithubKey, getGithubSecret, getSecretKey
+from secret import getGithubKey, getGithubSecret, getSecretKey, getOauthToolKitAppID, getOauthToolKitAppSecret
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,6 +19,18 @@ APP_DIR = os.path.join(BASE_DIR,'app')
 API_DIR = os.path.join(BASE_DIR,'api')
 TEMPLATE_DIR = os.path.join(APP_DIR, 'templates')
 STATIC_PATH = os.path.join(APP_DIR,'static')
+
+LICENSE_REPO_NAME = "license-list-XML"
+LICENSE_TEST_REPO_NAME = "TEST-LicenseList-XML"
+DEV_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(LICENSE_TEST_REPO_NAME)
+PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(LICENSE_REPO_NAME)
+REPO_URL = DEV_REPO_URL
+
+NAMESPACE_REPO_NAME = "license-namespace"
+NAMESPACE_TEST_REPO = "license-namespace-test"
+NAMESPACE_DEV_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPACE_TEST_REPO)
+NAMESPACE_PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPACE_REPO_NAME)
+NAMESPACE_REPO_URL = NAMESPACE_DEV_REPO_URL
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -28,6 +40,10 @@ SECRET_KEY = getSecretKey()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+if not DEBUG:
+    REPO_URL = PROD_REPO_URL
+    NAMESPACE_REPO_URL = NAMESPACE_PROD_REPO_URL
 
 ALLOWED_HOSTS = ['*']
 
@@ -45,6 +61,8 @@ INSTALLED_APPS = [
     'api',
     'rest_framework',
     'social_django',
+    'oauth2_provider',
+    'rest_framework_social_oauth2',
 ]
 
 MIDDLEWARE = [
@@ -119,6 +137,7 @@ AUTHENTICATION_BACKENDS = [
     'social_core.backends.yahoo.YahooOpenId',
     'social_core.backends.github.GithubOAuth2',
     'django.contrib.auth.backends.ModelBackend',
+    'rest_framework_social_oauth2.backends.DjangoOAuth2',
 ]
 
 SOCIAL_AUTH_PIPELINE = (
@@ -170,13 +189,20 @@ MEDIA_URL = '/media/'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAdminUser',
+        'rest_framework.permissions.AllowAny',
     ],
     'PAGE_SIZE': 10,
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
-    )
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        #'oauth2_provider.ext.rest_framework.OAuth2Authentication',  # django-oauth-toolkit < 1.0.0
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
+        'rest_framework_social_oauth2.authentication.SocialAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
 }
 
 # Absolute Path for tool.jar
@@ -190,6 +216,13 @@ LOGIN_REDIRECT_URL = "/app/"
 REGISTER_REDIRECT_UTL = "/app/login/"
 LOGIN_URL = "/app/login/"
 HOME_URL="/app/"
+
+# oauthtoolkit app credentials
+OAUTHTOOLKIT_APP_CLIENT_ID = getOauthToolKitAppID()
+OAUTHTOOLKIT_APP_CLIENT_SECRET = getOauthToolKitAppSecret()
+BACKEND = 'github'
+DRFSO2_PROPRIETARY_BACKEND_NAME = 'Github'
+DRFSO2_URL_NAMESPACE = 'github_social'
 
 # Online tool usage without login
 ANONYMOUS_LOGIN_ENABLED = True

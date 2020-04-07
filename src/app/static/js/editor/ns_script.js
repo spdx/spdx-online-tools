@@ -54,7 +54,7 @@ var xml_schema = {
         }
     },
     standardLicenseHeader: {
-        children: ["p", "alt", "bullet", "br"]    
+        children: ["p", "alt", "bullet", "br"]
     },
     alt: {
         attrs:{
@@ -91,7 +91,7 @@ var xml_schema = {
  * initialXmlText: contains initial xml text, global variable
  * latestXmlText: contains updated and valid xml text , global variable
  */
-var editor = "", splitTextEditor = "", initialXmlText = "", latestXmlText = '', beautifiedXmlText = '';
+var editor = "", splitTextEditor = "", initialXmlText = "", latestXmlText = '';
 $(document).ready(function(){
     /* initialize bootstrap tooltip */
     $('[data-toggle="tooltip"]').tooltip();
@@ -159,10 +159,8 @@ $(document).ready(function(){
     $(".CodeMirror").css("font-size",fontSize+'px');
     editor.setSize(($(window).width)*(0.9), 500);
     splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 550);
-    beautify(editor.getValue().trim());
-    initialXmlText = beautifiedXmlText;
-    beautify(editor.getValue().trim());
-    latestXmlText = beautifiedXmlText;
+    initialXmlText = beautify(editor.getValue().trim());
+    latestXmlText = beautify(editor.getValue().trim());
 
     /* Decrease editor font size */
     $("#dec-fontsize").click(function(){
@@ -223,7 +221,7 @@ $(document).ready(function(){
         splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 500);
         editor.setSize(($(window).width)*(0.9), 500);
         if (fullscreen){
-            $(".CodeMirror-fullscreen").css("height","auto");   
+            $(".CodeMirror-fullscreen").css("height","auto");
         }
         splitTextEditor.refresh();
         editor.refresh();
@@ -232,8 +230,7 @@ $(document).ready(function(){
     /* beautify XML */
     $("#beautify").on("click",function(){
         var xmlText = editor.getValue().trim();
-        beautify(xmlText);
-        editor.setValue(beautifiedXmlText);
+        editor.setValue(beautify(xmlText));
         editor.focus();
     })
 
@@ -271,8 +268,7 @@ $(document).ready(function(){
                 $('#tabSplitView, #tabTreeEditor').removeAttr("data-toggle");
                 $(this).attr("data-toggle","tab");
                 /* update the text editor with the value of split view editor */
-                beautify(splitTextEditor.getValue().trim());
-                latestXmlText = beautifiedXmlText;
+                latestXmlText = beautify(splitTextEditor.getValue().trim());
                 editor.setValue(latestXmlText);
                 /* refresh and focus on the editor */
                 setTimeout(function(){
@@ -291,8 +287,7 @@ $(document).ready(function(){
             $(this).attr("data-toggle","tab");
             /* convert the xml text to tree and update latestXmlText */
             convertTextToTree(editor, 'treeView')
-            beautify(editor.getValue().trim());
-            latestXmlText = beautifiedXmlText;
+            latestXmlText = beautify(editor.getValue().trim());
         }
         else if(activeTab=='tabSplitView'){
             /* check for any open textboxes */
@@ -302,8 +297,7 @@ $(document).ready(function(){
                 $(this).attr("data-toggle","tab");
                 /* convert the xml text in split editor to tree and update latestXmlText */
                 convertTextToTree(splitTextEditor, 'treeView')
-                beautify(splitTextEditor.getValue().trim());
-                latestXmlText = beautifiedXmlText;
+                latestXmlText = beautify(splitTextEditor.getValue().trim());
             }
         }
     })
@@ -333,9 +327,7 @@ $(document).ready(function(){
             $('#tabTreeEditor, #tabTextEditor').removeAttr("data-toggle");
             $(this).attr("data-toggle","tab");
             /* update the split text editor with the value of text editor */
-            currentXmlText = editor.getValue().trim();
-            beautify(currentXmlText);
-            latestXmlText = beautifiedXmlText;
+            latestXmlText = beautify(editor.getValue().trim());
             splitTextEditor.setValue(latestXmlText);
             /* use the text in split text editor to updated split tree editor */
             convertTextToTree(splitTextEditor, 'splitTreeView');
@@ -554,7 +546,7 @@ function checkPRForm(){
     return true;
 }
 /* sends ajax request to pull_request view */
-function makePR(data=null){
+function makePR(){
     /* if invalid values in form return */
     var check = checkPRForm();
     if(check!=true) return check;
@@ -577,15 +569,11 @@ function makePR(data=null){
     else if(activeTab=="tabSplitView"){
         xmlText = splitTextEditor.getValue().trim()
     }
-    else if(data){
-        xmlText = data.xml;
-    }
     else{
         xmlText = latestXmlText
     }
     /* send ajax request with form data */
-    beautify(xmlText);
-    xmlText = beautifiedXmlText;
+    xmlText = beautify(xmlText);
     var form = new FormData($("#githubPRForm")[0]);
     form.append("branchName", $("#branchName").val());
     form.append("updateUpstream", $("#updateUpstream").is(":checked"));
@@ -597,7 +585,7 @@ function makePR(data=null){
     $.ajax({
         type: "POST",
         enctype: 'multipart/form-data',
-        url: "/app/make_pr/",
+        url: "/app/make_namespace_pr/",
         processData: false,
         contentType: false,
         cache: false,
@@ -640,7 +628,7 @@ function makePR(data=null){
 function generate_diff(base, newtxt){
     var sm = new difflib.SequenceMatcher(base, newtxt);
     var opcodes = sm.get_opcodes();
-    
+
     // build the diff view and add it to the current DOM
     var diff = $(diffview.buildView({
         baseTextLines: base,
@@ -662,42 +650,72 @@ function generate_diff(base, newtxt){
     $(".modal-dialog").addClass("diff-modal-dialog");
 }
 
-function getCookie(name) {
-    var value = "; " + document.cookie;
-    var parts = value.split("; " + name + "=");
-    if (parts.length == 2) return parts.pop().split(";").shift();
-}
-
-
 /* XML beautify script */
 function beautify(text){
-    csrf = getCookie('csrftoken');
-    $.ajax({
-        type: "POST",
-        url: "/app/beautify/",
-        dataType: 'json',
-        timeout: 600000,
-        async: false,
-        data: {
-            "xml" : text,
-            "csrfmiddlewaretoken" : csrf,
-        },
-        success: function(data) {
-            beautifiedXmlText = data.data.toString();
-        },
-        error: function (e) {
-            try {
-                //var obj = JSON.parse(e.responseText);
-                console.log(e);
-                //displayModal(obj.data, "error");
-                beautifiedXmlText = text;
-            }
-            catch (e){
-                console.log(e)
-                displayModal(e,"error");
+    var shift = ['\n'], i;
+    for(i=0;i<100;i++){
+        shift.push(shift[i]+'    ');
+    }
+    var array = text.replace(/>\s{0,}</g,"><")
+                 .replace(/\s{0,}</g,"~::~<")
+                 .replace(/\s*xmlns\:/g,"~::~xmlns:")
+                 .replace(/\s*xmlns\=/g,"~::~xmlns=")
+                 .split('~::~');
+    var len = array.length;
+    var inComment = false;
+    var deep = 0;
+    var str = "";
+
+    for(i=0;i<len;i++){
+        /* if start comment or <![CDATA[...]]> or <!DOCTYPE */
+        if(array[i].search(/<!/) > -1){
+            str += shift[deep]+array[i];
+            inComment = true;
+            // if end comment  or <![CDATA[...]]> //
+            if(array[i].search(/-->/) > -1 || array[i].search(/\]>/) > -1 || array[i].search(/!DOCTYPE/) > -1 ){
+                inComment = false;
             }
         }
-    });
+        /* end comment  or <![CDATA[...]]> */
+        else if(array[i].search(/-->/)>-1 || array[i].search(/\]>/) > -1){
+            str += array[i];
+            inComment = false;
+        }
+        /* <elm></elm> */
+        else if( /^<\w/.exec(array[i-1]) && /^<\/\w/.exec(array[i]) &&
+        /^<[\w:\-\.\,]+/.exec(array[i-1]) == /^<\/[\w:\-\.\,]+/.exec(array[i])[0].replace('/','')){
+            str += array[i];
+            if(!inComment) deep--;
+        }
+        /* <elm> */
+        else if(array[i].search(/<\w/) > -1 && array[i].search(/<\//) == -1 && array[i].search(/\/>/) == -1 ){
+            str = !inComment ? str += shift[deep++]+array[i] : str += array[i];
+        }
+        /* <elm>...</elm> */
+        else if(array[i].search(/<\w/) > -1 && array[i].search(/<\//) > -1){
+            str = !inComment ? str += shift[deep]+array[i] : str += array[i];
+        }
+        /* </elm> */
+        else if(array[i].search(/<\//) > -1){
+            str = !inComment ? str += shift[--deep]+array[i] : str += array[i];
+        }
+        /* <elm/> */
+        else if(array[i].search(/\/>/) > -1 ){
+            str = !inComment ? str += shift[deep]+array[i] : str += array[i];
+        }
+        /* <? xml ... ?> */
+        else if(array[i].search(/<\?/) > -1){
+            str += shift[deep]+array[i];
+        }
+        /* xmlns */
+        else if( array[i].search(/xmlns\:/) > -1  || array[i].search(/xmlns\=/) > -1){
+            str += ' '+array[i];
+        }
+        else {
+            str += array[i];
+        }
+    }
+    return  (str[0] == '\n') ? str.slice(1) : str;
 }
 
 /* display message using modal */
@@ -713,7 +731,7 @@ function display_message(message){
     $(".modal-footer").html('<button class="btn btn-default" data-dismiss="modal">OK</button>')
     $("#myModal").modal({
         backdrop: 'static',
-        keyboard: true, 
+        keyboard: true,
         show: true
     });
     setTimeout(function() {
@@ -733,7 +751,7 @@ function saveTextAsFile() {
             displayModal("The file you are downloading is not a valid XML.", "alert");
         }
         xmlText = editor.getValue().trim();
-    } 
+    }
     else if(activeTab=="tabTreeEditor"){
         xmlText = updateTextEditor(editor, 'treeView');
         if(xmlText==0){
@@ -749,7 +767,7 @@ function saveTextAsFile() {
     }
     var textBlob = new Blob([xmlText], { type: 'application/xml' });
     var fileName = "license.xml";
-    
+
     var downloadLink = document.createElement("a");
     downloadLink.download = fileName;
     downloadLink.innerHTML = "Hidden Download Link";

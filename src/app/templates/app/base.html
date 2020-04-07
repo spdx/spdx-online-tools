@@ -67,6 +67,54 @@
 .left-align {
   text-align: left;
 }
+tbody tr {
+  cursor: pointer;
+}
+th {
+  text-align: center;
+}
+tbody tr:hover {
+  background-color: #ddd!important;
+}
+tbody tr:hover > .sorting_1 {
+  background-color: #ddd!important;
+}
+.ui-autocomplete {
+  background: white;
+}
+.ui-menu .ui-menu-item{
+  border-radius: 0px;
+  border: 1px solid #dcdcdc;
+}
+.ui-state-active {
+  background-color: gray;
+  font-weight: bold;
+  color:white;
+}
+.licenseField {
+  float: left;
+  margin-top: 1.5em;
+}
+.fieldName {
+  font-size: 1.4em;
+  color: #3197c4;
+}
+div p {
+  text-align: left;
+}
+.lead {
+  text-align: center;
+}
+.btn-info {
+  background-color: #3197c4;
+  border: none;
+}
+.btn-info:hover {
+  background-color: RoyalBlue;
+}
+.btn-space {
+  margin-right: 1em;
+}
 
 </style>
   <body>
@@ -89,8 +137,26 @@
             <li><a href="/app/convert/" id="convertpage">Convert</a></li>
             <li><a href="/app/check_license/" id="checklicensepage">Check License</a></li>
             <li><a href="/app/xml_upload" id="license-xml-editor">License XML Editor</a></li>
-            <li><a href="/app/submit_new_license/" id="submitnewlicensepage">Submit New License</a></li>
-            <li><a href="/app/license_requests/" id="licenserequestspage">License Requests</a></li>
+            <li>
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="licenserequest">License requests
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu" style="font-size: 12px;">
+                <li><a href="/app/submit_new_license/" id="submitnewlicensepage">Submit New License</a></li>
+                <li><a href="/app/license_requests/" id="licenserequestspage">License Requests</a></li>
+                <li><a href="/app/archive_requests/" id="archiverequestspage">Archive Requests</a></li>
+              </ul>
+            </li>
+            <li>
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="licensenamespace">License namespaces
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu" style="font-size: 12px;">
+                <li><a href="/app/submit_new_license_namespace/" id="submitnewlicensenamespacepage">Submit namespace</a></li>
+                <li><a href="/app/license_namespace_requests/" id="licensenamespacerequests">License namespaces</a></li>
+                <li><a href="/app/archive_namespace_requests/" id="archivenamespacerequestspage">Archived namespaces</a></li>
+              </ul>
+            </li>
 		  </ul>
 		  <ul class="nav navbar-nav navbar-right" style="margin-right: 25px;font-size: 12px;">
 			{% if user.is_authenticated %}

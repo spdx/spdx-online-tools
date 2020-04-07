@@ -17,7 +17,8 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.admin import widgets
 
-from app.models import UserID
+from app.models import UserID, LicenseNamespace, OrganisationName
+from app.widgets import RelatedFieldWidgetCanAdd
 
 OSI_CHOICES = (
     (0, "-"),
@@ -79,6 +80,34 @@ class LicenseRequestForm(forms.Form):
     shortIdentifier = forms.CharField(label='Short identifier', max_length=25)
     sourceUrl = forms.CharField(label='Source / URL', required=False)
     osiApproved = forms.CharField(label="OSI Status", widget=forms.Select(choices=OSI_CHOICES))
-    notes = forms.CharField(label='Notes', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
+    comments = forms.CharField(label='Comments', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
     licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)
     text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
+
+
+class LicenseNamespaceRequestForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        if 'email' in kwargs:
+            self.email = kwargs.pop('email')
+        else:
+            self.email = ""
+        super(LicenseNamespaceRequestForm, self).__init__(*args, **kwargs)
+        self.fields['shortIdentifier'].required = False
+        self.fields['url'].required = True
+        self.fields['license_list_url'].required = False
+        self.fields['github_repo_url'].required = False
+        self.fields['organisation'].required = False
+        self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email)
+
+    organisation = forms.ModelChoiceField(
+       required=False,
+       queryset=OrganisationName.objects.all(),
+       widget=RelatedFieldWidgetCanAdd(OrganisationName))
+
+    class Meta:
+        model = LicenseNamespace
+        fields = ('organisation', 'licenseAuthorName',
+                  'fullname', 'userEmail', 'url',
+                  'license_list_url', 'github_repo_url',
+                  'publiclyShared', 'namespace',
+                  'description', 'archive', 'shortIdentifier')

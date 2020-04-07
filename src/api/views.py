@@ -16,19 +16,39 @@ from __future__ import unicode_literals
 from rest_framework.parsers import FileUploadParser,FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload
-from api.serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,CheckLicenseSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn,CheckLicenseSerializerReturn
+from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload,SubmitLicenseModel
+from api.serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,CheckLicenseSerializer,SubmitLicenseSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn,CheckLicenseSerializerReturn,SubmitLicenseSerializerReturn
+from api.oauth import generate_github_access_token,convert_to_auth_token,get_user_from_token
+from app.models import LicenseRequest
 from rest_framework import status
-from rest_framework.decorators import api_view,renderer_classes
+from rest_framework.decorators import api_view,renderer_classes,permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.renderers import BrowsableAPIRenderer,JSONRenderer
 
 from django.core.files.storage import FileSystemStorage
+from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.contrib.auth.models import User
 
 import jpype
+import re
+import datetime
+import xml.etree.cElementTree as ET
+
 from traceback import format_exc
-from os.path import abspath
+from os.path import abspath, join
 from time import time
+from requests import post
+from json import dumps, loads
+
+NORMAL = "normal"
+TESTS = "tests"
+
+TYPE_TO_URL = {
+NORMAL:  settings.REPO_URL,
+TESTS: settings.DEV_REPO_URL,
+}
 
 
 class ValidateViewSet(ModelViewSet):
@@ -496,4 +516,166 @@ def check_license(request):
         else:
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )        
+                )
+
+
+@api_view(['GET', 'POST'])
+@renderer_classes((JSONRenderer,))
+@permission_classes((AllowAny, ))
+def submit_license(request):
+    """ Handle submit license api request """
+    if request.method == 'GET':
+        """ Return all check license api request """
+        query = SubmitLicenseModel.objects.all()
+        serializer = SubmitLicenseSerializer(query, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        """ Return the result of license submittal on the post license details """
+        serializer = SubmitLicenseSerializer(data=request.data)
+        if serializer.is_valid():
+            serverUrl = request.build_absolute_uri('/')
+            githubClientId = settings.SOCIAL_AUTH_GITHUB_KEY
+            githubClientSecret = settings.SOCIAL_AUTH_GITHUB_SECRET
+            code = request.data.get('code')
+            userId = request.data.get('user_id')
+            if code is None or code.strip() == '':
+                return Response({
+                        "result": "No authentication code provided."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            if userId:
+                # Used for API testing only
+                user = User.objects.get(id=userId)
+                token = request.data.get('token')
+            else:
+                try:
+                    token = generate_github_access_token(githubClientId, githubClientSecret, code)
+                except PermissionDenied:
+                    return Response({
+                            "result": "Authentication code provided is incorrect."
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                clientId = settings.OAUTHTOOLKIT_APP_CLIENT_ID
+                clientSecret = settings.OAUTHTOOLKIT_APP_CLIENT_SECRET
+                backend = settings.BACKEND
+                djangoToken = convert_to_auth_token(serverUrl, clientId, clientSecret, backend, token)
+                user = get_user_from_token(djangoToken)
+
+            licenseName = request.data.get('fullname')
+            licenseIdentifier = request.data.get('shortIdentifier')
+            licenseAuthorName = request.data.get('licenseAuthorName')
+            userEmail = request.data.get('userEmail')
+            licenseSourceUrls = [request.data.get('sourceUrl')]
+            licenseOsi = request.data.get('osiApproved')
+            licenseComments = request.data.get('comments')
+            licenseHeader = request.data.get('licenseHeader')
+            licenseText = request.data.get('text')
+            result=request.data.get('result')
+            listVersionAdded = ''
+            licenseNotes = ''
+            result = validate_license_fields(licenseName, licenseIdentifier)
+            if result != '1':
+                return Response({
+                    "result": [result]
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+            now = datetime.datetime.now()
+            licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
+                submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+            licenseRequest.save()
+            licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+            licenseRequestUrl = join(serverUrl, reverse('license-requests')[1:], str(licenseId))
+            query = SubmitLicenseModel.objects.create(
+                owner=user,
+                fullname=licenseName,
+                shortIdentifier=licenseIdentifier,
+                licenseAuthorName=licenseAuthorName,
+                userEmail=userEmail,
+                sourceUrl=licenseSourceUrls,
+                osiApproved=licenseOsi,
+                comments=licenseComments,
+                licenseHeader=licenseHeader,
+                text=licenseText,
+                xml=xml,
+                result=result
+            )
+            urlType = NORMAL
+            if 'urlType' in request.POST:
+                # This is present only when executing submit license via tests
+                urlType = request.POST["urlType"]
+            statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
+            if str(statusCode) == '201':
+                result = "Success! The license request has been successfully submitted."
+                query.result = result
+                query.status = str(statusCode)
+                SubmitLicenseModel.objects.filter(fullname=request.data.get('fullname')).update(result=result,status=statusCode)
+            serial = SubmitLicenseSerializerReturn(instance=query)
+            return Response(
+                serial.data, status=str(statusCode)
+                )
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
+
+
+def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
+    """ View for generating a spdx license xml
+    returns the license xml as a string
+    """
+    root = ET.Element("SPDXLicenseCollection", xmlns="http://www.spdx.org/license")
+    if licenseOsi=="Approved":
+        licenseOsi = "true"
+    else:
+        licenseOsi = "false"
+    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName, listVersionAdded=listVersionAdded)
+    crossRefs = ET.SubElement(license, "crossRefs")
+    for sourceUrl in licenseSourceUrls:
+        ET.SubElement(crossRefs, "crossRef").text = sourceUrl
+    ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
+    ET.SubElement(license, "notes").text = licenseNotes
+    licenseTextElement = ET.SubElement(license, "text")
+    licenseLines = licenseText.replace('\r','').split('\n')
+    for licenseLine in licenseLines:
+        ET.SubElement(licenseTextElement, "p").text = licenseLine
+    xmlString = ET.tostring(root, method='xml').replace('>','>\n')
+    return xmlString
+
+
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType):
+    """ View for creating an GitHub issue
+    when submitting a new license request
+    """
+    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** Standard License Header: ' + licenseHeader + '\n**6.** License Request Url: ' + licenseRequestUrl + '\n**7.** URL: '
+    for url in licenseSourceUrls:
+        body += url
+        body += '\n'
+    body += '**8.** OSI Status: ' + licenseOsi
+    title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
+    payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
+    headers = {'Authorization': 'token ' + token}
+    url = TYPE_TO_URL[urlType]
+    r = post(url, data=dumps(payload), headers=headers)
+    return r.status_code
+
+
+def validate_license_fields(licenseName, licenseIdentifier):
+    """ Validate the licenseName and licenseIdentifier
+    when submitting a new license
+    """
+    no_comma_match = bool(re.compile(r'^((?!,).)*$').match(licenseName))
+    no_version_match = bool(re.compile(r'^((?!version).)*$').match(licenseName))
+    lower_v_match = bool(re.compile(r'^((?!v\.|v\s).)*$').match(licenseName))
+    the_match = bool(re.compile(r'^(?!the|The.*$).*$').match(licenseName))
+
+    if not no_comma_match:
+        return 'No commas allowed in the fullname of license or exception.'
+    elif not no_version_match:
+        return 'The word "version" is not spelled out. Use "v" instead of "version".'
+    elif not lower_v_match:
+        return 'For version, use lower case v and no period or space between v and the version number.'
+    elif not the_match:
+        return 'The fullname must omit certain words such as "the " for alphabetical sorting purposes.'
+    else:
+        return '1'
