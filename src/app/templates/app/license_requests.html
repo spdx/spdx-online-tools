@@ -2,6 +2,7 @@
 {% load static %}
 {% load staticfiles %}
 {% block body1 %}
+{% include "app/modal.html" %}
 
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css">
 
@@ -40,7 +41,6 @@
       </tbody>
     </table>
 
-{% include "app/modal.html" %}
 </div>
 {% endblock %}
 {% block script_block %}
@@ -75,7 +75,7 @@
       if ((githubLogin) != "None"){
         if (" {{ authorized }} ") {
           $("#modal-header").addClass("yellow-modal");
-          $("#modal-body").html('You are not permitted to archive this license.');
+          $("#modal-body").html('Are you sure you want to archive this license?');
           $("#myModal").modal({
                 backdrop: 'static',
                 keyboard: true,
@@ -85,7 +85,7 @@
         else{
               $("#modal-header").addClass("yellow-modal");
 	            $(".modal-footer").html('<button class="btn btn-success" id="confirm_archive"><span class="glyphicon glyphicon-off"></span> Confirm</button>');
-              $("#modal-body").html('Are you sure you want to archive this license?');
+              $("#modal-body").html('You are not permitted to archive this request.');
               $("#myModal").modal({
                 backdrop: 'static',
                 keyboard: true,
