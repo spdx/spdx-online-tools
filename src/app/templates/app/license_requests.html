@@ -33,7 +33,9 @@
             <td>{{elem.submissionDatetime}}</td>
             <td>
               {% csrf_token %}
+              {% if github_login %}
               <button id='archive_button{{elem.id}}' class='btn btn-success' width='25px' value='Archive'>Archive</button>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}
@@ -93,16 +95,7 @@
           })
        }
       }
-      else {
-        $("#modal-header").addClass("yellow-modal");
-        $("#modal-body").html('You must login to use this functionality');
-        $("#myModal").modal({
-                backdrop: 'static',
-                keyboard: true,
-                show: true,
-          })
-      }
-
+      
       var license = $(this).closest('tr');
       $(document).on('click','button#confirm_archive', function(event){
         event.preventDefault();

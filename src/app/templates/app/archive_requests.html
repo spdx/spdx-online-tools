@@ -32,7 +32,11 @@
             <td>{{elem.submissionDatetime}}</td>
             <td>
               {% csrf_token %}
+              {% if github_login %}
+              {% if authorized %}
               <button id='unarchive_button{{elem.id}}' class='btn btn-success' width='25px' value='Unarchive'>Unarchive</button>
+              {% endif %}
+              {% endif %}
             </td>
           </tr>
         {% endfor %}
@@ -92,15 +96,6 @@ $('tbody tr').each(function (i,e) {
                 show: true,
           })
        }
-      }
-      else {
-        $("#modal-header").addClass("yellow-modal");
-        $("#modal-body").html('You must login to use this functionality');
-        $("#myModal").modal({
-                backdrop: 'static',
-                keyboard: true,
-                show: true,
-          })
       }
 
       var license = $(this).closest('tr');
