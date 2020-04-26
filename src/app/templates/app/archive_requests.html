@@ -32,10 +32,8 @@
             <td>{{elem.submissionDatetime}}</td>
             <td>
               {% csrf_token %}
-              {% if github_login %}
-              {% if authorized %}
+              {% if github_login and authorized %}
               <button id='unarchive_button{{elem.id}}' class='btn btn-success' width='25px' value='Unarchive'>Unarchive</button>
-              {% endif %}
               {% endif %}
             </td>
           </tr>
@@ -75,28 +73,14 @@ $('tbody tr').each(function (i,e) {
     });
     $('body').on('click', 'button[id^="unarchive_button"]', function (en) {
       en.stopImmediatePropagation();
-      var githubLogin =  "{{ github_login }}" ;
-      if ((githubLogin) != "None"){
-        if (" {{ authorized }} ") {
-          $("#modal-header").addClass("yellow-modal");
-          $("#modal-body").html('You are not permitted to unarchive this license.');
-          $("#myModal").modal({
+       $("#modal-header").addClass("yellow-modal");
+	     $(".modal-footer").html('<button class="btn btn-success" id="confirm_unarchive"><span class="glyphicon glyphicon-off"></span> Confirm</button>');
+       $("#modal-body").html('Are you sure you want to unarchive this license?');
+       $("#myModal").modal({
                 backdrop: 'static',
                 keyboard: true,
                 show: true,
           })
-        }
-        else{
-              $("#modal-header").addClass("yellow-modal");
-	            $(".modal-footer").html('<button class="btn btn-success" id="confirm_unarchive"><span class="glyphicon glyphicon-off"></span> Confirm</button>');
-              $("#modal-body").html('Are you sure you want to unarchive this license?');
-              $("#myModal").modal({
-                backdrop: 'static',
-                keyboard: true,
-                show: true,
-          })
-       }
-      }
 
       var license = $(this).closest('tr');
       $(document).on('click','button#confirm_unarchive', function(event){
@@ -105,7 +89,6 @@ $('tbody tr').each(function (i,e) {
         unarchiveLicense(license);
       });
     });
-  });
 
 function unarchiveLicense(license) {
   var archive = 'False';
