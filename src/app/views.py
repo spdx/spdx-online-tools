@@ -1298,7 +1298,7 @@ def archiveRequests(request, license_id=None):
             github_login = user.social_auth.get(provider='github')
             token = github_login.extra_data["access_token"]
             username = github_login.extra_data["login"]
-            test = requests.get('https://api.github.com/repos/spdx/tools-python/collaborators/{username}' , headers={'Authorization': 'token {}'.format(token) })
+            test = requests.get('https://api.github.com/repos/spdx/tools-python/collaborators/'+username , headers={'Authorization': 'token {}'.format(token) })
             try:
                 if ((test.status_code == 200) or (test.status_code == 204)):
                     archive = request.POST.get('archive', True)
@@ -1408,10 +1408,10 @@ def licenseRequests(request, license_id=None):
             github_login = user.social_auth.get(provider='github')
             token = github_login.extra_data["access_token"]
             username = github_login.extra_data["login"]
-            test = requests.get('https://api.github.com/repos/spdx/spdx-online-tools/collaborators/anshuldutt21' , headers={'Authorization': 'token {}'.format(token) })
+            test = requests.get('https://api.github.com/repos/spdx/spdx-online-tools/collaborators/'+username , headers={'Authorization': 'token {}'.format(token) })
             try:
                 if ((test.status_code == 200) or (test.status_code == 204)):
-                    archive = request.POST.get('archive', True)
+                    archive = request.POST.get('archive', False)
                     license_id = request.POST.get('license_id', False)
                     context_dict['authorized'] = "True"
                     if license_id:
@@ -1426,8 +1426,8 @@ def licenseRequests(request, license_id=None):
                 response = dumps(ajaxdict)
                 return HttpResponse(response,status=401)
             return HttpResponse("Please login using GitHub to use this feature.",status=401)
-    archiveRequests = LicenseRequest.objects.filter(archive='False').order_by('-submissionDatetime')
-    context_dict['archiveRequests'] = archiveRequests
+    licenseRequests = LicenseRequest.objects.filter(archive='False').order_by('-submissionDatetime')
+    context_dict['licenseRequests'] = licenseRequests
     if request.user.is_authenticated:
         user = request.user
         github_login = user.social_auth.get(provider='github')
