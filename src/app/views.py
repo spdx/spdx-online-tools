@@ -1299,12 +1299,15 @@ def archiveRequests(request, license_id=None):
             token = github_login.extra_data["access_token"]
             username = github_login.extra_data["login"]
             test = requests.get('https://api.github.com/repos/spdx/tools-python/collaborators/{username}' , headers={'Authorization': 'token {}'.format(token) })
-            if ((test.status_code == 200) or (test.status_code == 204)):
-                archive = request.POST.get('archive', True)
-                license_id = request.POST.get('license_id', False)
-                context_dict['authorized'] = "True"
-                if license_id:
-                    LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+            try:
+                if ((test.status_code == 200) or (test.status_code == 204)):
+                    archive = request.POST.get('archive', True)
+                    license_id = request.POST.get('license_id', False)
+                    context_dict['authorized'] = "True"
+                    if license_id:
+                        LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+            except:
+                return HttpResponse("Permission Denied", status=101)
         else:
             if (request.is_ajax()):
                 ajaxdict = {}
@@ -1406,12 +1409,15 @@ def licenseRequests(request, license_id=None):
             token = github_login.extra_data["access_token"]
             username = github_login.extra_data["login"]
             test = requests.get('https://api.github.com/repos/spdx/spdx-online-tools/collaborators/anshuldutt21' , headers={'Authorization': 'token {}'.format(token) })
-            if ((test.status_code == 200) or (test.status_code == 204)):
-                archive = request.POST.get('archive', True)
-                license_id = request.POST.get('license_id', False)
-                context_dict['authorized'] = "True"
-                if license_id:
-                    LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+            try:
+                if ((test.status_code == 200) or (test.status_code == 204)):
+                    archive = request.POST.get('archive', True)
+                    license_id = request.POST.get('license_id', False)
+                    context_dict['authorized'] = "True"
+                    if license_id:
+                        LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+            except:
+                return HttpResponse("Permission Denied", status=101)
         else:
             if (request.is_ajax()):
                 ajaxdict = {}
