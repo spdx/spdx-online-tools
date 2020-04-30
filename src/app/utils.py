@@ -51,6 +51,9 @@ def licenseNamespaceUtils():
     "licenseListRepoUrl": "https://github.com/spdx/license-list-data",
     "internetConnectionUrl": "www.google.com",
     }
+def checkPermission(username,token):
+    test = requests.get('https://api.github.com/repos/spdx/tools-python/collaborators/'+username , headers={'Authorization': 'token {}'.format(token) })
+    return test
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, is_ns):
     logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")

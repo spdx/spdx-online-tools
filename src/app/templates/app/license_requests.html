@@ -18,7 +18,9 @@
           <th>Short Identifier</th>
           <th>License author name</th>
           <th>Submission Date (UTC)</th>
+          {% if github_login and authorized %}
           <th>Archive</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
