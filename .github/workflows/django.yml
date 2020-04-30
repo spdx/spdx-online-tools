@@ -26,6 +26,7 @@ jobs:
         wget https://github.com/mozilla/geckodriver/releases/download/v0.23.0/geckodriver-v0.23.0-linux64.tar.gz
         mkdir geckodriver && tar zxvf geckodriver-v0.23.0-linux64.tar.gz -C geckodriver
         export PATH=$PATH:$PWD/geckodriver
+        sudo apt-get install xvfb
     - name: Install Python Dependencies
       run: |
         python -m pip install --upgrade pip
