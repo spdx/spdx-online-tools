@@ -51,9 +51,17 @@ def licenseNamespaceUtils():
     "licenseListRepoUrl": "https://github.com/spdx/license-list-data",
     "internetConnectionUrl": "www.google.com",
     }
-def checkPermission(username,token):
+def checkPermission(user):
+    """ Getting user info for submitting github issue """
+    github_login = user.social_auth.get(provider='github')
+    token = github_login.extra_data["access_token"]
+    username = github_login.extra_data["login"]
     test = requests.get('https://api.github.com/repos/spdx/tools-python/collaborators/'+username , headers={'Authorization': 'token {}'.format(token) })
-    return test
+    if((test.status_code == 200) or (test.status_code == 204)):
+        return True
+    else:
+        logger.error("Permission denied while accessing the github api.")
+        return False
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, is_ns):
     logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
