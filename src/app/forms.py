@@ -19,6 +19,13 @@ from django.contrib.admin import widgets
 
 from app.models import UserID, LicenseNamespace, OrganisationName
 from app.widgets import RelatedFieldWidgetCanAdd
+from .constants import (FULL_NAME_HELP_TEXT, SHORT_IDENTIFIER_HELP_TEXT,
+                        SOURCE_URL_HELP_TEXT, LICENSE_HEADER_INFO_HELP_TEXT,
+                        COMMENTS_INFO_HELP_TEXT, LICENSE_TEXT_HELP_TEXT,
+                        LIC_NS_SUB_FULLNAME_HELP_TEXT, LIC_NS_NSINFO_HELP_TEXT,
+                        LIC_NS_NSID_HELP_TEXT, LIC_NS_URL_INFO_HELP_TEXT,
+                        LIC_NS_LIC_LIST_URL_HELP_TEXT, LIC_NS_GH_REPO_URL_HELP_TEXT,
+                        LIC_NS_ORG_HELP_TEXT, LIC_NS_DESC_HELP_TEXT)
 
 OSI_CHOICES = (
     (0, "-"),
@@ -76,13 +83,13 @@ class LicenseRequestForm(forms.Form):
         self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email)
 
     licenseAuthorName = forms.CharField(label="License Author name", max_length=100, required=False)
-    fullname = forms.CharField(label="Fullname", max_length=70)
-    shortIdentifier = forms.CharField(label='Short identifier', max_length=25)
-    sourceUrl = forms.CharField(label='Source / URL', required=False)
+    fullname = forms.CharField(label="Fullname", max_length=70, help_text=FULL_NAME_HELP_TEXT)
+    shortIdentifier = forms.CharField(label='Short identifier', max_length=25, help_text=SHORT_IDENTIFIER_HELP_TEXT)
+    sourceUrl = forms.CharField(label='Source / URL', required=False, help_text=SOURCE_URL_HELP_TEXT)
     osiApproved = forms.CharField(label="OSI Status", widget=forms.Select(choices=OSI_CHOICES))
-    comments = forms.CharField(label='Comments', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
-    licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)
-    text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
+    comments = forms.CharField(label='Comments', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}), help_text=COMMENTS_INFO_HELP_TEXT)
+    licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False, help_text=LICENSE_HEADER_INFO_HELP_TEXT)
+    text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}), help_text=LICENSE_TEXT_HELP_TEXT)
 
 
 class LicenseNamespaceRequestForm(forms.ModelForm):
@@ -93,16 +100,24 @@ class LicenseNamespaceRequestForm(forms.ModelForm):
             self.email = ""
         super(LicenseNamespaceRequestForm, self).__init__(*args, **kwargs)
         self.fields['shortIdentifier'].required = False
+        self.fields['shortIdentifier'].help_text = LIC_NS_NSID_HELP_TEXT
+        self.fields['namespace'].help_text = LIC_NS_NSINFO_HELP_TEXT
+        self.fields['fullname'].help_text = LIC_NS_SUB_FULLNAME_HELP_TEXT
         self.fields['url'].required = True
+        self.fields['url'].help_text = LIC_NS_URL_INFO_HELP_TEXT
+        self.fields['description'].help_text = LIC_NS_DESC_HELP_TEXT
         self.fields['license_list_url'].required = False
+        self.fields['license_list_url'].help_text = LIC_NS_LIC_LIST_URL_HELP_TEXT
         self.fields['github_repo_url'].required = False
+        self.fields['github_repo_url'].help_text = LIC_NS_GH_REPO_URL_HELP_TEXT
         self.fields['organisation'].required = False
         self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email)
 
     organisation = forms.ModelChoiceField(
        required=False,
        queryset=OrganisationName.objects.all(),
-       widget=RelatedFieldWidgetCanAdd(OrganisationName))
+       widget=RelatedFieldWidgetCanAdd(OrganisationName),
+       help_text=LIC_NS_ORG_HELP_TEXT)
 
     class Meta:
         model = LicenseNamespace

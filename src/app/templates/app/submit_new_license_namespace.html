@@ -24,7 +24,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Submitter's Full Name
-        <span class="glyphicon glyphicon-question-sign" id="submitterFullnameInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="submitterFullnameInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.fullname }}
@@ -35,7 +35,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Organisation
-        <span class="glyphicon glyphicon-question-sign" id="organisation" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="organisation" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.organisation }}
@@ -46,7 +46,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Namespace
-        <span class="glyphicon glyphicon-question-sign" id="namespaceInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="namespaceInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.namespace }}
@@ -57,7 +57,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Namespace Short identifier
-        <span class="glyphicon glyphicon-question-sign" id="namespaceId" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="namespaceId" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.shortIdentifier }}
@@ -77,7 +77,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >SPDX File URL
-        <span class="glyphicon glyphicon-question-sign" id="urlInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="urlInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.url }}
@@ -89,7 +89,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >License list URL
-        <span class="glyphicon glyphicon-question-sign" id="licenseListUrlInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="licenseListUrlInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.license_list_url }}
@@ -101,7 +101,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Github repo URL
-        <span class="glyphicon glyphicon-question-sign" id="githubRepoUrlInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="githubRepoUrlInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.github_repo_url }}
@@ -113,7 +113,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Description
-        <span class="glyphicon glyphicon-question-sign" id="descriptionInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="descriptionInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-6">
           {{ form.description }}
@@ -149,15 +149,21 @@
 
 {% block script_block %}
 <script type="text/javascript">
+function initNSPopOvers() {
+    console.log("in ready");
+    $('#submitterFullnameInfo').popover({trigger: "click focus", title: "Namespace submitter", content: "{{ form.fullname.help_text }}", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#namespaceInfo').popover({trigger: "click focus", title: "Namespace", content: "{{ form.namespace.help_text }}", html: "true", viewport: '.panel-body', container: 'body'});
+    $('#namespaceId').popover({trigger: "click focus", title: "Namespace ID", content: "{{ form.shortIdentifier.help_text }}", html: "true", viewport: '.panel-body', container: 'body'});
+    $('#urlInfo').popover({trigger: "click focus", title: "Namespace URL", content: "{{ form.url.help_text }}", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#licenseListUrlInfo').popover({trigger: "click focus", title: "License list URL", content: "{{ form.license_list_url.help_text }}", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#githubRepoUrlInfo').popover({trigger: "click focus", title: "GITHUB Repo URL", content: "{{ form.github_repo_url.help_text }}", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#organisation').popover({trigger: "click focus", title: "Namespace Organisation", content: "{{ form.organisation.help_text }}", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#descriptionInfo').popover({trigger: "click focus", title: "License namespace description", content: "{{ form.description.help_text }}", viewport: '.panel-body', container: '.panel-body'});
+}
+  </script>
+<script type="text/javascript">
 $(document).ready(function () {
-    $('#submitterFullnameInfo').popover({trigger: "click", title: "Namespace submitter", content: "\u2022 The full name of the license namespace submitter.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#namespaceInfo').popover({trigger: "click", title: "Namespace", content: "\u2022 License namespace in dns-style request or a free-format.", html: "true", viewport: '.panel-body', container: 'body'});
-    $('#namespaceId').popover({trigger: "click", title: "Namespace ID", content: "\u2022 License namespace short identifier.", html: "true", viewport: '.panel-body', container: 'body'});
-    $('#urlInfo').popover({trigger: "click", title: "Namespace URL", content: "\u2022 Include URL for the official text of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#licenseListUrlInfo').popover({trigger: "click", title: "License list URL", content: "\u2022 Include URL for the official text of the license list namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#githubRepoUrlInfo').popover({trigger: "click", title: "GITHUB Repo URL", content: "\u2022 Include URL for the official github page of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#organisation').popover({trigger: "click", title: "Namespace Organisation", content: "\u2022 Select organisation of the license namespace.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#descriptionInfo').popover({trigger: "click", title: "License namespace description", content: "Description of the license namespace", viewport: '.panel-body', container: '.panel-body'});
+    initNSPopOvers();
     $("#licensenamespace").addClass('linkactive');
     $("#submitnewlicensenamespacepage").addClass('linkactive');
     $('input').addClass('form-control');
@@ -276,9 +282,9 @@ function scrollUpAndHighlight(element) {
 
 </script>
 <script>
-$(document).on('click', function (e) {
-    $('[data-toggle=popover]').each(function () {
-        // hide any open popovers when the anywhere else in the body is clicked
+$(document).on('mousedown', function (e) {
+    $('[data-toggle=popover]').each(function (index, elt) {
+        // hide any open popovers when anywhere else in the body is clicked
         if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
             $(this).popover('hide');
         }
@@ -392,4 +398,11 @@ $(document).on('click', function (e) {
     }
 });
 </script>
+<script type="text/javascript" src="{% static 'js/editor/codemirror.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/script.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/treeview.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/html2canvas.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/postscreenshot.js' %}"></script>
 {% endblock %}

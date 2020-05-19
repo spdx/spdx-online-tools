@@ -9531,10 +9531,10 @@ TextareaInput.prototype.needsContentAttribute = false
 
 function fromTextArea(textarea, options) {
   options = options ? copyObj(options) : {}
-  options.value = textarea.value
-  if (!options.tabindex && textarea.tabIndex)
+  options.value = textarea ? textarea.value : ""
+  if (!options.tabindex && textarea && textarea.tabIndex)
     { options.tabindex = textarea.tabIndex }
-  if (!options.placeholder && textarea.placeholder)
+  if (!options.placeholder && textarea && textarea.placeholder)
     { options.placeholder = textarea.placeholder }
   // Set autofocus to true if this textarea is focused, or if it has
   // autofocus and no other element is focused.
@@ -9547,7 +9547,7 @@ function fromTextArea(textarea, options) {
   function save() {textarea.value = cm.getValue()}
 
   var realSubmit
-  if (textarea.form) {
+  if (textarea && textarea.form) {
     on(textarea.form, "submit", save)
     // Deplorable hack to make the submit method do the right thing.
     if (!options.leaveSubmitMethodAlone) {
@@ -9580,8 +9580,10 @@ function fromTextArea(textarea, options) {
     }
   }
 
-  textarea.style.display = "none"
-  var cm = CodeMirror(function (node) { return textarea.parentNode.insertBefore(node, textarea.nextSibling); },
+  if(textarea) {
+    textarea.style.display = "none"
+  }
+  var cm = CodeMirror(function (node) { return textarea ? textarea.parentNode.insertBefore(node, textarea.nextSibling) : ""; },
     options)
   return cm
 }
