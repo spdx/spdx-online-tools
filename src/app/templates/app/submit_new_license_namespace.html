@@ -150,7 +150,6 @@
 {% block script_block %}
 <script type="text/javascript">
 function initNSPopOvers() {
-    console.log("in ready");
     $('#submitterFullnameInfo').popover({trigger: "click focus", title: "Namespace submitter", content: "{{ form.fullname.help_text }}", html: "true", viewport: '.panel-body', container: '.panel-body'});
     $('#namespaceInfo').popover({trigger: "click focus", title: "Namespace", content: "{{ form.namespace.help_text }}", html: "true", viewport: '.panel-body', container: 'body'});
     $('#namespaceId').popover({trigger: "click focus", title: "Namespace ID", content: "{{ form.shortIdentifier.help_text }}", html: "true", viewport: '.panel-body', container: 'body'});

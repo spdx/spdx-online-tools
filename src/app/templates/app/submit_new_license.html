@@ -170,7 +170,6 @@
 {% block script_block %}
 <script type="text/javascript">
 function initPopOvers() {
-    console.log("in ready");
     $('#fullnameInfo').popover({trigger: "click focus", title: "License Full Name", content: "{{ form.fullname.help_text }}", html: "true", viewport: '.panel-body', container: '.panel-body'});
     $('#shortIdentifierInfo').popover({trigger: "click focus", title: "Short Identifier", content: "{{ form.shortIdentifier.help_text }}", html: "true", viewport: '.panel-body', container: 'body'});
     $('#sourceUrlInfo').popover({trigger: "click focus", title: "Source URL", content: "{{ form.sourceUrl.help_text }}", html: "true", viewport: '.panel-body', container: '.panel-body'});
