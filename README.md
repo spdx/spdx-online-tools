@@ -1,4 +1,4 @@
-[![GSoC Logo](/title_img/spdx-online-tool.jpg)](https://summerofcode.withgoogle.com/projects/#5747767629578240)
+[![GSoC Logo](./title_img/spdx-online-tool.jpg)](https://summerofcode.withgoogle.com/projects/#5747767629578240)
 
 # spdx-online-tools
 
