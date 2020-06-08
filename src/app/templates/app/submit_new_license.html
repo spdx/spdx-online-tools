@@ -61,7 +61,7 @@
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">Submit a New License to the SPDX Licenses List</p> </div>
-<div class="panel-body">
+<div class="panel-body" style="overflow: scroll;">
 <form id="newlicense" enctype="multipart/form-data" class = "form-horizontal" method = "post" action='/submit_new_license/'>
 		{% csrf_token %}
 

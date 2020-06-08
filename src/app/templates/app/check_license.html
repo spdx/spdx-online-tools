@@ -7,7 +7,7 @@
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead"> Check License</p> </div>
-<div class="panel-body">
+<div class="panel-body" style= "overflow:scroll;">
 <form id="checklicenseform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
 		<textarea id="licensetext" name="licensetext" rows="18" style="width: 100%"></textarea>
