@@ -458,7 +458,7 @@ def validate(request):
                         base_url=urljoin(settings.MEDIA_URL, folder+'/')
                         )
                     filename = fs.save(myfile.name, myfile)
-                    uploaded_file_url = fs.url(filename)
+                    uploaded_file_url = fs.url(filename).replace("%20", " ")
                     """ Call the java function with parameters """
                     retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url))
                     if (len(retval) > 0):
