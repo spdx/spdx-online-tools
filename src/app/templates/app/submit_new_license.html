@@ -224,8 +224,15 @@ $(document).ready(function () {
   });
 </script>
 <script type="text/javascript">
+function removeDiv(elem){
+    $(elem).parent('div').remove();
+} 
+$(document).on('click', '#removeSourceUrl', function(){
+removeDiv(this);
+});
+
 $(document).on('click', '#addSourceUrl', function(){
-    var html = '<div class="col-sm-12 btn-group" style="padding:6px 0; margin-top:2"><input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceurl"></div>';
+     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%;"> <input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceurl"> </label> <span id="removeSourceUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
   $('#addSourceUrl').before(html);
 });
 </script>
