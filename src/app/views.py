@@ -665,7 +665,7 @@ def compare(request):
                         )
                     for myfile in request.FILES.getlist("files"):
                         filename = fs.save(myfile.name, myfile)
-                        uploaded_file_url = fs.url(filename)
+                        uploaded_file_url = fs.url(filename).replace("%20", " ")
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
                         try :
                             """Call the java function to verify for valid RDF Files."""
@@ -822,7 +822,7 @@ def convert(request):
                     myfile = request.FILES['file']
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
-                    uploaded_file_url = fs.url(filename)
+                    uploaded_file_url = fs.url(filename).replace("%20", " ")
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
                     functiontocall = option1 + "To" + option2
