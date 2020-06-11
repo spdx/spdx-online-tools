@@ -28,7 +28,7 @@ sudo apt-get install g++ python-dev
 
 Windows users need a Python installation and C++ compiler:
 
-* Install some version of Python (2.7 or higher), e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
+* Install Python 2.7 version, e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
 * Install a [Windows C++ Compiler](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
 ## Installation
@@ -99,7 +99,7 @@ python src/manage.py test
 
 ## GitHub Developer Sensitive Data
 
-The `settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is not checked into source. Due to that lack of data, some features of SPDX Online Tools and its API won't be able to run as they require the user credentials in order to access the GitHub API. So, the user is supposed to enter their credentials in the `src/src/secret.py ` file in order to ensure proper functioning of the tool.
+The `src/src/settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is not checked into source. Due to that lack of data, some features of SPDX Online Tools and its API won't be able to run as they require the user credentials in order to access the GitHub API. So, the user is supposed to enter their credentials in the `src/src/secret.py ` file in order to ensure proper functioning of the tool.
 
 The `src/src/secret.py` file contains the following lines along with some methods required to run the tests properly. These include:
 
@@ -136,7 +136,7 @@ where:
 
 1. Start the server.
     ```bash
-    python manage.py runserver
+    python src/manage.py runserver
     ```
 2. Send the request to the url with the form input values accordingly. Curl examples are given below.
 
@@ -158,16 +158,16 @@ where:
     ```
 7. For the license submittal API, first create a a django oauth toolkit application and follow the steps given below:
     #### Django Oauth Toolkit App
-    * Go to admin page and login(if you don't have an admin account then create one using `python manage.py createsuperuser`).
-    * Create a new application by going to the `Add application` section.
-    * Copy the client id and client secret of the app and paste it in secret.py file under   getOauthToolKitAppID and secret and fill the other details of the app as follows:
+    * Go to admin page and login(if you don't have an admin account then create one using `python src/manage.py createsuperuser`).
+    * Create a new application by going to the `Applications` section.
+    * Copy the client id and client secret of the app and paste it in `src/src/secret.py` file under   getOauthToolKitAppID and secret and fill the other details of the app as follows:
         * `User`: `<admin you created>`
         * `client type`: `confidential`
         * `authorization grant type`: `resource owner password based`
     
         and SAVE the app.
     #### Authorize oauth app with github to get code and send a request to the license submittal API
-    * Visit `http://github.com/login/oauth/authorize/?client_id=<github-client-id>` it will then redirect you to a url, copy the `code` query string present in the url and send it via curl command if you want to use the API. if you want to run tests and test the API then paste the `code` in the secret.py file in the `getAuthCode` method.
+    * Visit `http://github.com/login/oauth/authorize/?client_id=<github-client-id>` it will then redirect you to a url, copy the `code` query string present in the url and send it via curl command if you want to use the API. if you want to run tests and test the API then paste the `code` in the `src/src/secret.py` file in the `getAuthCode` method.
 
         **Note** You can only use your code once. If you want to use the license submittal API again, you can generate a new code by following the above point. The code is valid for 10 minutes only.
 
