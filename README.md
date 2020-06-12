@@ -99,34 +99,34 @@ python src/manage.py test
 
 ## GitHub Developer Sensitive Data
 
-The `src/src/settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is not checked into source. Due to that lack of data, some features of SPDX Online Tools and its API won't be able to run as they require the user credentials in order to access the GitHub API. So, the user is supposed to enter their credentials in the `src/src/secret.py ` file in order to ensure proper functioning of the tool.
+The `src/src/settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is maintained as environment variables. Due to that lack of data, some features of SPDX Online Tools and its API won't be able to run as they require the user credentials in order to access the GitHub API. So, the user is supposed to either maintain a `.env` file in the `src/src/` folder or create environment variables in their os with their credentials in order to ensure proper functioning of the tool.
 
 The `src/src/secret.py` file contains the following lines along with some methods required to run the tests properly. These include:
 
 ```python
 def getGithubKey():
-    return 'GHKEYXXX'
+    return os.environ.get(key="GITHUB_KEY")
 
 def getGithubSecret():
-    return 'GHSECRETXXX'
+    return os.environ.get(key="GITHUB_SECRET")
 
 def getSecretKey():
-    return 'DJANGOSECRETXXX'
+    return os.environ.get(key="DJANGO_SECRET_KEY")
 
 def getOauthToolKitAppID():
-    return 'OauthAppIDXXX'
+    return os.environ.get(key="OAUTH_APP_ID")
 
 def getOauthToolKitAppSecret():
-    return 'OauthAppSecretXXX'
+    return os.environ.get(key="OAUTH_APP_SECRET")
 ```
 
 where:
 
-* GHKEYXXX is the Client ID for the Github Oauth Apps
-* GHSECRETXXX is the Client secret for the Github Oauth Apps
-* DJANGOSECRETXXX is the Django secret
-* OauthAppIDXXX is the client ID of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
-* OauthAppSecretXXX is the client secret of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
+* GITHUB_KEY is the Client ID for the Github Oauth Apps
+* GITHUB_SECRET is the Client secret for the Github Oauth Apps
+* DJANGO_SECRET_KEY is the Django secret
+* OAUTH_APP_ID is the client ID of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
+* OAUTH_APP_SECRET is the client secret of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
 
 **Note:** While setting up the GitHub OAuth App, set the `Homepage URL` to `http://localhost:8000/` and the `Authorization callback URL` to `http://localhost:8000/oauth/complete/github`
 
