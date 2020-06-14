@@ -1153,7 +1153,6 @@ def xml_upload(request):
                             base_url=urljoin(settings.MEDIA_URL, folder+'/')
                             )
                         filename = fs.save(xml_file.name, xml_file)
-                        uploaded_file_url = fs.url(filename)
                         page_id = request.POST['page_id']
                         with open(str(fs.location+'/'+filename), 'r') as f:
                             request.session[page_id] = [f.read(), ""]
