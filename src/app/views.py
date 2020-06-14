@@ -458,7 +458,7 @@ def validate(request):
                         base_url=urljoin(settings.MEDIA_URL, folder+'/')
                         )
                     filename = fs.save(myfile.name, myfile)
-                    uploaded_file_url = fs.url(filename)
+                    uploaded_file_url = fs.url(filename).replace("%20", " ")
                     """ Call the java function with parameters """
                     retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url))
                     if (len(retval) > 0):
@@ -665,7 +665,7 @@ def compare(request):
                         )
                     for myfile in request.FILES.getlist("files"):
                         filename = fs.save(myfile.name, myfile)
-                        uploaded_file_url = fs.url(filename)
+                        uploaded_file_url = fs.url(filename).replace("%20", " ")
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
                         try :
                             """Call the java function to verify for valid RDF Files."""
@@ -822,7 +822,7 @@ def convert(request):
                     myfile = request.FILES['file']
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
-                    uploaded_file_url = fs.url(filename)
+                    uploaded_file_url = fs.url(filename).replace("%20", " ")
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
                     functiontocall = option1 + "To" + option2
@@ -1153,7 +1153,6 @@ def xml_upload(request):
                             base_url=urljoin(settings.MEDIA_URL, folder+'/')
                             )
                         filename = fs.save(xml_file.name, xml_file)
-                        uploaded_file_url = fs.url(filename)
                         page_id = request.POST['page_id']
                         with open(str(fs.location+'/'+filename), 'r') as f:
                             request.session[page_id] = [f.read(), ""]
