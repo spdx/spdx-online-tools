@@ -105,10 +105,10 @@ The `src/src/secret.py` file contains the following lines along with some method
 
 ```python
 def getGithubKey():
-    return os.environ.get(key="GITHUB_KEY")
+    return os.environ.get(key="ONLINE_TOOL_GITHUB_KEY")
 
 def getGithubSecret():
-    return os.environ.get(key="GITHUB_SECRET")
+    return os.environ.get(key="ONLINE_TOOL_GITHUB_SECRET")
 
 def getSecretKey():
     return os.environ.get(key="DJANGO_SECRET_KEY")
@@ -122,8 +122,8 @@ def getOauthToolKitAppSecret():
 
 where:
 
-* GITHUB_KEY is the Client ID for the Github Oauth Apps
-* GITHUB_SECRET is the Client secret for the Github Oauth Apps
+* ONLINE_TOOL_GITHUB_KEY is the Client ID for the Github Oauth Apps
+* ONLINE_TOOL_GITHUB_SECRET is the Client secret for the Github Oauth Apps
 * DJANGO_SECRET_KEY is the Django secret
 * OAUTH_APP_ID is the client ID of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
 * OAUTH_APP_SECRET is the client secret of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))

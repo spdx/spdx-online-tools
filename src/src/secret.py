@@ -5,10 +5,10 @@ import os
 load_dotenv()
 
 def getGithubKey():
-    return os.environ.get(key="GITHUB_KEY")
+    return os.environ.get(key="ONLINE_TOOL_GITHUB_KEY")
 
 def getGithubSecret():
-    return os.environ.get(key="GITHUB_SECRET")
+    return os.environ.get(key="ONLINE_TOOL_GITHUB_SECRET")
 
 def getSecretKey():
     return os.environ.get(key="DJANGO_SECRET_KEY")
@@ -20,10 +20,10 @@ def getAccessToken():
     return os.environ.get(key="ACCESS_TOKEN")
 
 def getGithubUserId():
-    return os.environ.get(key="GITHUB_USER_ID")
+    return os.environ.get(key="TEST_GITHUB_USER_ID")
 
 def getGithubUserName():
-    return os.environ.get(key="GITHUB_USER_NAME")
+    return os.environ.get(key="TEST_GITHUB_USER_NAME")
 
 def getOauthToolKitAppID():
     return os.environ.get(key="OAUTH_APP_ID")
