@@ -1,0 +1,54 @@
+# Using python2 as the base image
+FROM python:2 as base 
+
+# Create the folder spdx and cd to it
+WORKDIR /spdx
+
+# Copy the requirements.txt file into the container
+COPY requirements.txt .
+
+# Install the python dependencies
+RUN pip install -r requirements.txt
+
+# -----------------------------
+
+# Container to lint python code
+FROM base as linter 
+
+# Setting current work directory to /spdx
+WORKDIR /spdx
+
+# Copy all files into the container
+COPY . .
+
+# Installing pylint and linting the python code
+RUN pip install pylint && pylint -E *.py **/*.py || printf "\n SPDX online tools has got some errors! Continuing the build for now\n\n"
+
+# Run the tests
+RUN python src/manage.py test && printf "Success!"
+
+# -----------------------------
+
+# Container for for SPDX Online tools
+FROM base as production
+
+# Setting current work directory to /bassa
+WORKDIR /spdx
+
+# Copy everthing into the container
+COPY . .
+
+# Install supervisor
+RUN apt-get update && \
+    apt-get -y install supervisor && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+# Exposing ports where the server listens 
+EXPOSE 8000
+
+# Move the configuration for supervisor to access
+RUN mv ./supervisor_api.conf /etc/supervisor/conf.d
+
+# Start the supervisor
+CMD /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
