@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  spdx:
+    container_name: spdx_dev
+    build:
+      context: ./
+      dockerfile: dockerfile.dev
+    ports:
+      - 8000:8000
+    volumes:
+      - ./:/spdxonlinetools
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:5.0-alpine
+    container_name: redis
+    restart: always
+    volumes:
+      - data-volume:/data
+    ports:
+      - 6379:6379
+
+volumes:
+  data-volume:
