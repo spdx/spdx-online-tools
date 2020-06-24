@@ -32,7 +32,7 @@ RUN python src/manage.py test && printf "Success!"
 # Container for for SPDX Online tools
 FROM base as production
 
-# Setting current work directory to /bassa
+# Setting current work directory to /spdx
 WORKDIR /spdx
 
 # Copy everthing into the container
