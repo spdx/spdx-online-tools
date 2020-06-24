@@ -12,23 +12,6 @@ RUN pip install -r requirements.txt
 
 # -----------------------------
 
-# Container to lint python code
-FROM base as linter 
-
-# Setting current work directory to /spdx
-WORKDIR /spdx
-
-# Copy all files into the container
-COPY . .
-
-# Installing pylint and linting the python code
-RUN pip install pylint && pylint -E *.py **/*.py || printf "\n SPDX online tools has got some errors! Continuing the build for now\n\n"
-
-# Run the tests
-RUN python src/manage.py test && printf "Success!"
-
-# -----------------------------
-
 # Container for for SPDX Online tools
 FROM base as production
 
