@@ -10,6 +10,8 @@ services:
       - 8000:8000
     volumes:
       - ./container_logs:/spdx/container_logs
+    environment:
+      - PYTHONDONTWRITEBYTECODE: 1
     depends_on:
       - redis
 

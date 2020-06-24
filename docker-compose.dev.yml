@@ -10,6 +10,8 @@ services:
       - 8000:8000
     volumes:
       - ./:/spdxonlinetools
+    environment:
+      - PYTHONDONTWRITEBYTECODE: 1
     depends_on:
       - redis
 
