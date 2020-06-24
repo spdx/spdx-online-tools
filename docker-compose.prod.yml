@@ -8,6 +8,8 @@ services:
       dockerfile: dockerfile.prod
     ports:
       - 8000:8000
+    volumes:
+      - ./container_logs:/spdx/container_logs
     depends_on:
       - redis
 
