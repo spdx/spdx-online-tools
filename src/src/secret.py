@@ -4,6 +4,7 @@ import os
 # Load environment variables from a .env file
 load_dotenv()
 
+
 def getGithubKey():
     return os.environ.get(key="ONLINE_TOOL_GITHUB_KEY")
 
