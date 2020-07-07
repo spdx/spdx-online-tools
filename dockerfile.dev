@@ -1,11 +1,17 @@
 # Use the official python 2 base image
-FROM python:2
+FROM python:2 as python-container
 
 # Copy the requirements.txt file into the container
 COPY requirements.txt .
 
 # Install the python dependencies
 RUN pip install -r requirements.txt
+
+# Use JDK 8
+FROM openjdk:8
+
+# Copy complete python container into java container
+COPY --from=python-container / /
 
 # Create the volume /spdxonlinetools which maps to the host
 VOLUME [ "/spdxonlinetools" ]
@@ -20,7 +26,3 @@ EXPOSE 8000
 CMD python src/manage.py migrate && \ 
     python src/populate.py && \
     python src/manage.py runserver 0.0.0.0:8000
-
-
-
-

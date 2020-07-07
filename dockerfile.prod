@@ -27,6 +27,15 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
+# Use JDK 8
+FROM openjdk:8
+
+# Copy complete python container into java container
+COPY --from=production / /
+
+# Move to spdxonlinetools folder
+WORKDIR /spdx
+
 # Exposing ports where the server listens 
 EXPOSE 8000
 
