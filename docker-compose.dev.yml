@@ -11,7 +11,7 @@ services:
     volumes:
       - ./:/spdxonlinetools
     environment:
-      - PYTHONDONTWRITEBYTECODE: 1
+      - PYTHONDONTWRITEBYTECODE=1
     depends_on:
       - redis
 
