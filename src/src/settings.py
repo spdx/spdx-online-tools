@@ -209,7 +209,7 @@ REST_FRAMEWORK = {
 # The online tool uses spdx-tools-2.1.6-SNAPSHOT-jar-with-dependencies.jar from the compiled target folder of java tools
 # renamed (for now) as tool.jar in the main src directory of spdx-online tool
 
-JAR_ABSOLUTE_PATH =  os.path.join(os.path.abspath("."),"tool.jar")
+JAR_ABSOLUTE_PATH = os.path.join(BASE_DIR, "tool.jar")
 # URL Path Variables
 
 LOGIN_REDIRECT_URL = "/app/"
