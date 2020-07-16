@@ -12,6 +12,7 @@ services:
       - ./container_logs:/spdx/container_logs
     environment:
       - PYTHONDONTWRITEBYTECODE=1
+      - SPDX_RDIS_HOST=redis
     depends_on:
       - redis
 

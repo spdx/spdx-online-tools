@@ -33,6 +33,8 @@ from app.models import User, UserID
 from dotenv import load_dotenv
 import os
 
+load_dotenv()
+
 NORMAL = "normal"
 TESTS = "tests"
 PROD = "prod"
