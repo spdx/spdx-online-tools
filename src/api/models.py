@@ -72,7 +72,7 @@ class CheckLicenseFileUpload(models.Model):
 class SubmitLicenseModel(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(User, to_field='id')
+    owner = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
     licenseAuthorName = models.CharField(max_length=100, default="", blank=True, null=True)
     fullname = models.CharField(max_length=70)
     shortIdentifier = models.CharField(max_length=25)

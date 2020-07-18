@@ -19,11 +19,10 @@ from django.conf.urls import handler400, handler403, handler404, handler500
 from app import views
 #from django.contrib.auth import views as auth_views
 
-
-handler400 = 'views.handler400'
-handler403 = 'views.handler403'
-handler404 = 'views.handler404'
-handler500 = 'views.handler500'
+handler400 = 'app.views.handler400'
+handler403 = 'app.views.handler403'
+handler404 = 'app.views.handler404'
+handler500 = 'app.views.handler500'
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -38,7 +37,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('checkusername/', views.checkusername, name='check-username'),
     path('xml_upload/',views.xml_upload, name='xml-upload'),
-    re_path(r'^edit/(?P<page_id>[0-9a-z]+)/$', views.xml_edit, name='editor'),
+    re_path(r'^edit/(?P<page_id>[0-9a-z]+)/$', views.license_xml_edit, name='editor'),
     re_path(r'^edit_license_xml/(?P<license_id>[0-9]+)/$', views.edit_license_xml, name='license_xml_editor'),
     path('edit_license_xml/', views.edit_license_xml, name='license_xml_editor_none'),
     path('validate_xml/', views.validate_xml, name='validate-xml'),

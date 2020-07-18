@@ -16,9 +16,10 @@ from __future__ import unicode_literals
 from rest_framework.parsers import FileUploadParser,FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload,SubmitLicenseModel,LicenseRequest
+from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload,SubmitLicenseModel
 from api.serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,CheckLicenseSerializer,SubmitLicenseSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn,CheckLicenseSerializerReturn,SubmitLicenseSerializerReturn
 from api.oauth import generate_github_access_token,convert_to_auth_token,get_user_from_token
+from app.models import LicenseRequest
 from rest_framework import status
 from rest_framework.decorators import api_view,renderer_classes,permission_classes
 from rest_framework.permissions import AllowAny
@@ -26,7 +27,7 @@ from rest_framework.renderers import BrowsableAPIRenderer,JSONRenderer
 
 from django.core.files.storage import FileSystemStorage
 from django.core.exceptions import PermissionDenied
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.models import User
 
@@ -116,9 +117,9 @@ def validate(request):
                     returnstatus = status.HTTP_400_BAD_REQUEST
                     httpstatus = 400
                     jpype.detachThreadFromJVM()
-            except jpype.JavaException as ex :
+            except jpype.JException as ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
-                result = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
+                result = jpype.JException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM()
@@ -293,8 +294,8 @@ def convert(request):
                         jpype.detachThreadFromJVM()
                 else :
                     message, returnstatus, httpstatus = convertError('404')
-            except jpype.JavaException as ex :
-                message = jpype.JavaException.message(ex)
+            except jpype.JException as ex :
+                message = jpype.JException.message(ex)
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM() 
@@ -412,9 +413,9 @@ def compare(request):
                     returnstatus = status.HTTP_400_BAD_REQUEST
                     httpstatus = 400
                     jpype.detachThreadFromJVM()
-            except jpype.JavaException as ex :
+            except jpype.JException as ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
-                message = jpype.JavaException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
+                message = jpype.JException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM()
@@ -494,9 +495,9 @@ def check_license(request):
                     httpstatus = 400
                     jpype.detachThreadFromJVM()
             
-            except jpype.JavaException as ex :
+            except jpype.JException as ex :
                 """ Java exception raised without exiting the application """
-                result = jpype.JavaException.message(ex) 
+                result = jpype.JException.message(ex) 
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
                 jpype.detachThreadFromJVM()

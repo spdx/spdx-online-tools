@@ -15,7 +15,7 @@ def getGithubSecret():
 
 def getSecretKey():
     return "NON_EMPTY_DJANGO_SECRET" if os.environ.get(key="DJANGO_SECRET_KEY") == "" \
-        else os.environ.get(key="DJANGO_SECRET_KEY", failobj="NON_EMPTY_DJANGO_SECRET")
+        else os.environ.get(key="DJANGO_SECRET_KEY", default="NON_EMPTY_DJANGO_SECRET")
 
 # The methods: getAccessToken, getGithubUserId and getGithubUserName
 # are important for license submit tests, given that github authentication

@@ -20,7 +20,7 @@ from django.conf import settings
 from django import forms
 from django.template import RequestContext
 from django.core.files.storage import FileSystemStorage
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDictKeyError
@@ -85,7 +85,7 @@ def submitNewLicense(request):
     context_dict = {}
     ajaxdict = {}
     if request.method=="POST":
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             if (request.is_ajax()):
                 ajaxdict["type"] = "auth_error"
                 ajaxdict["data"] = "Please login using GitHub to use this feature."
@@ -191,7 +191,7 @@ def submitNewLicense(request):
             return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
     else:
         email=""
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             github_login=None
         else:
             try:
@@ -215,7 +215,7 @@ def submitNewLicenseNamespace(request):
     context_dict = {}
     ajaxdict = {}
     if request.method=="POST":
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             if (request.is_ajax()):
                 ajaxdict["type"] = "auth_error"
                 ajaxdict["data"] = "Please login using GitHub to use this feature."
@@ -305,7 +305,7 @@ def submitNewLicenseNamespace(request):
             return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
     else:
         email=""
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             github_login=None
         else:
             try:
@@ -432,7 +432,7 @@ def validate(request):
     """ View for validate tool
     returns validate.html template
     """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
@@ -491,16 +491,16 @@ def validate(request):
                     return render(request,
                         'app/validate.html',context_dict,status=404
                         )
-            except jpype.JavaException as ex :
+            except jpype.JException as ex :
                 """ Error raised by verifyclass.verify without exiting the application"""
                 if (request.is_ajax()):
                     ajaxdict=dict()
                     ajaxdict["type"] = "error"
-                    ajaxdict["data"] = jpype.JavaException.message(ex)
+                    ajaxdict["data"] = jpype.JException.message(ex)
                     response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=400)
-                context_dict["error"] = jpype.JavaException.message(ex)
+                context_dict["error"] = jpype.JException.message(ex)
                 jpype.detachThreadFromJVM()
                 return render(request,
                     'app/validate.html',context_dict,status=400
@@ -544,7 +544,7 @@ def validate(request):
 def validate_xml(request):
     """ View to validate xml text against SPDX License XML Schema,
          used in the license xml editor """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             ajaxdict=dict()
@@ -625,7 +625,7 @@ def compare(request):
     """ View for compare tool
     returns compare.html template
     """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
@@ -673,11 +673,11 @@ def compare(request):
                             else :
                                 filelist.append(myfile.name)
                                 errorlist.append("No errors found")
-                        except jpype.JavaException as ex :
+                        except jpype.JException as ex :
                             """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
                             erroroccurred = True
                             filelist.append(myfile.name)
-                            errorlist.append(jpype.JavaException.message(ex))
+                            errorlist.append(jpype.JException.message(ex))
                         except :
                             """ Other Exceptions"""
                             erroroccurred = True
@@ -799,7 +799,7 @@ def convert(request):
     """ View for convert tool
     returns convert.html template
     """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             if (jpype.isJVMStarted()==0):
@@ -935,16 +935,16 @@ def convert(request):
                     return render(request,
                         'app/convert.html',context_dict,status=404
                         )
-            except jpype.JavaException as ex :
+            except jpype.JException as ex :
                 """ Java exception raised without exiting the application"""
                 if (request.is_ajax()):
                     ajaxdict["type"] = "error"
-                    ajaxdict["data"] = jpype.JavaException.message(ex)
+                    ajaxdict["data"] = jpype.JException.message(ex)
                     response = dumps(ajaxdict)
                     jpype.detachThreadFromJVM()
                     return HttpResponse(response,status=400)
                 context_dict["type"] = "error"
-                context_dict["error"] = jpype.JavaException.message(ex)
+                context_dict["error"] = jpype.JException.message(ex)
                 jpype.detachThreadFromJVM()
                 return render(request,
                     'app/convert.html',context_dict,status=400
@@ -988,7 +988,7 @@ def check_license(request):
     """ View for check license tool
     returns check_license.html template
     """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
             licensetext = request.POST.get('licensetext')
@@ -1018,14 +1018,14 @@ def check_license(request):
                     return render(request,
                         'app/check_license.html',context_dict,status=200
                         )
-            except jpype.JavaException as ex :
+            except jpype.JException as ex :
                 """ Java exception raised without exiting the application """
                 if (request.is_ajax()):
                     ajaxdict=dict()
-                    ajaxdict["data"] = jpype.JavaException.message(ex)
+                    ajaxdict["data"] = jpype.JException.message(ex)
                     response = dumps(ajaxdict)
                     return HttpResponse(response,status=404)
-                context_dict["error"] = jpype.JavaException.message(ex)
+                context_dict["error"] = jpype.JException.message(ex)
                 return render(request,
                     'app/check_license.html',context_dict,status=404
                     )
@@ -1052,7 +1052,7 @@ def xml_upload(request):
     """ View for uploading XML file
     returns xml_upload.html
     """
-    if request.user.is_authenticated() or settings.ANONYMOUS_LOGIN_ENABLED:
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         ajaxdict = {}
         if request.method == 'POST':
@@ -1212,7 +1212,7 @@ def license_xml_edit(request, page_id):
     returns editor.html """
     context_dict = {}
     if (page_id in request.session):
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             user = request.user
             try:
                 github_login = user.social_auth.get(provider='github')
@@ -1237,7 +1237,7 @@ def edit_license_xml(request, license_id=None):
             return render(request,
                 '404.html',context_dict,status=404
                 )
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             user = request.user
             try:
                 github_login = user.social_auth.get(provider='github')
@@ -1264,7 +1264,7 @@ def edit_license_namespace_xml(request, license_id=None):
             return render(request,
                 '404.html',context_dict,status=404
                 )
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             user = request.user
             try:
                 github_login = user.social_auth.get(provider='github')
@@ -1286,7 +1286,7 @@ def archiveRequests(request, license_id=None):
     """
     context_dict = {}
     if request.method == "POST" and request.is_ajax():
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             user = request.user
             if utils.checkPermission(user):
                 archive = request.POST.get('archive', True)
@@ -1388,7 +1388,7 @@ def licenseRequests(request, license_id=None):
     """
     context_dict = {}
     if request.method == "POST" and request.is_ajax():
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             user = request.user
             if utils.checkPermission(user):
                 archive = request.POST.get('archive', False)
@@ -1422,7 +1422,7 @@ def licenseNamespaceRequests(request, license_id=None):
     returns license_namespace_requests.html template
     """
     github_login = None
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         github_login = request.user.social_auth.get(provider='github')
     if request.method == "POST" and request.is_ajax():
         archive = request.POST.get('archive', True)
@@ -1506,12 +1506,12 @@ def beautify(request):
 
 def issue(request):
     """ View that handles create issue request """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if request.method=="POST":
             context_dict = {}
             ajaxdict = {}
             try:
-                if request.user.is_authenticated():
+                if request.user.is_authenticated:
                     user = request.user
                 try:
                     github_login = user.social_auth.get(provider='github')
@@ -1569,12 +1569,12 @@ def issue(request):
 
 def pull_request(request):
     """ View that handles pull request """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if request.method=="POST":
             context_dict = {}
             ajaxdict = {}
             try:
-                if request.user.is_authenticated():
+                if request.user.is_authenticated:
                     user = request.user
                 try:
                     """ Getting user info and calling the makePullRequest function """
@@ -1623,12 +1623,12 @@ def pull_request(request):
 
 def namespace_pull_request(request):
     """ View that handles pull request for a license namespace """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if request.method=="POST":
             context_dict = {}
             ajaxdict = {}
             try:
-                if request.user.is_authenticated():
+                if request.user.is_authenticated:
                     user = request.user
                 try:
                     """ Getting user info and calling the makePullRequest function """
@@ -1679,7 +1679,7 @@ def loginuser(request):
     """ View for Login
     returns login.html template
     """
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         context_dict={}
         if request.method == 'POST':
             username = request.POST.get('username')
@@ -1721,7 +1721,7 @@ def register(request):
     """ View for register
     returns register.html template
     """
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         context_dict={}
         if request.method == 'POST':
             user_form = UserRegisterForm(data=request.POST)
@@ -1760,7 +1760,7 @@ def profile(request):
     """ View for profile
     returns profile.html template
     """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         context_dict={}
         profile = UserID.objects.get(user=request.user)
         info_form = InfoForm(instance=request.user)
@@ -1824,23 +1824,23 @@ def checkusername(request):
         return HttpResponse(dumps({"data": "No username entered"}),status=400)
 
 
-def handler400(request):
+def handler400(request, exception=None):
     return render_to_response('app/400.html',
         context_instance = RequestContext(request)
     )
 
-def handler403(request):
+def handler403(request, exception=None):
     return render_to_response('app/403.html',
         context_instance = RequestContext(request)
     )
 
-def handler404(request):
+def handler404(request, exception=None):
     return render_to_response('app/404.html',
         context_instance = RequestContext(request),
         status=404
     )
 
-def handler500(request):
+def handler500(request, exception=None):
     return render_to_response('app/500.html',
         context_instance = RequestContext(request)
     )
