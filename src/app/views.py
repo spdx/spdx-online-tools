@@ -38,10 +38,8 @@ import json
 from traceback import format_exc
 from json import dumps, loads
 from time import time
-try:
-    from urlparse import urljoin
-except ImportError:
-    from urllib.parse import urljoin
+from urllib.parse import urljoin
+import xml.etree.cElementTree as ET
 import datetime
 from wsgiref.util import FileWrapper
 import os
@@ -61,9 +59,6 @@ from .forms import LicenseRequestForm, LicenseNamespaceRequestForm
 from .models import LicenseRequest, LicenseNamespace
 from spdx_license_matcher.utils import get_spdx_license_text
 
-
-
-import cgi
 
 def index(request):
     """ View for index
@@ -174,7 +169,7 @@ def submitNewLicense(request):
                         matchingString = 'The following license ID(s) match: ' + ", ".join(matches)
                         data['matchingStr'] = matchingString
                         data['issueUrl'] = issueUrl
-                    
+
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
@@ -1291,9 +1286,9 @@ def archiveRequests(request, license_id=None):
     """
     context_dict = {}
     if request.method == "POST" and request.is_ajax():
-        if request.user.is_authenticated():       
+        if request.user.is_authenticated():
             user = request.user
-            if utils.checkPermission(user):    
+            if utils.checkPermission(user):
                 archive = request.POST.get('archive', True)
                 license_id = request.POST.get('license_id', False)
                 context_dict['authorized'] = "True"
@@ -1393,7 +1388,7 @@ def licenseRequests(request, license_id=None):
     """
     context_dict = {}
     if request.method == "POST" and request.is_ajax():
-        if request.user.is_authenticated():       
+        if request.user.is_authenticated():
             user = request.user
             if utils.checkPermission(user):
                 archive = request.POST.get('archive', False)

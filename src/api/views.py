@@ -16,10 +16,9 @@ from __future__ import unicode_literals
 from rest_framework.parsers import FileUploadParser,FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload,SubmitLicenseModel
+from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload,SubmitLicenseModel,LicenseRequest
 from api.serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,CheckLicenseSerializer,SubmitLicenseSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn,CheckLicenseSerializerReturn,SubmitLicenseSerializerReturn
 from api.oauth import generate_github_access_token,convert_to_auth_token,get_user_from_token
-from app.models import LicenseRequest
 from rest_framework import status
 from rest_framework.decorators import api_view,renderer_classes,permission_classes
 from rest_framework.permissions import AllowAny
@@ -39,6 +38,7 @@ import xml.etree.cElementTree as ET
 from traceback import format_exc
 from os.path import abspath, join
 from time import time
+from urllib.parse import urljoin
 from requests import post
 from json import dumps, loads
 
