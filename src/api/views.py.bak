@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+from __future__ import unicode_literals
 
 from rest_framework.parsers import FileUploadParser,FormParser, MultiPartParser
 from rest_framework.response import Response

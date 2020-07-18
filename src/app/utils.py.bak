@@ -450,7 +450,7 @@ def get_license_data(issues):
                     licenseTexts.append(clean(licenseText))
                 except License.DoesNotExist:
                     pass
-    licenseData = dict(list(zip(licenseIds, licenseTexts)))
+    licenseData = dict(zip(licenseIds, licenseTexts))
     return licenseData
 
 
@@ -469,7 +469,7 @@ def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
     issues.extend(get_yet_not_approved_licenses_issues(urlType))
     licenseData = get_license_data(issues)
     matches = get_close_matches(inputLicenseText, licenseData)
-    matches = list(matches.keys())
+    matches = matches.keys()
     if not matches:
         return matches, ''
     issueUrl = get_issue_url_by_id(matches[0], issues)
@@ -479,23 +479,23 @@ def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
 def check_spdx_license(licenseText):
     """Check the license text against the spdx license list.
     """
-    licenseText = str(licenseText.decode('string_escape'), 'utf-8')
+    licenseText = unicode(licenseText.decode('string_escape'), 'utf-8')
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
     
     # if redis is empty build the spdx license list in the redis database
     if r.keys('*') == []:
         build_spdx_licenses()
-    spdxLicenseIds = list(r.keys())
+    spdxLicenseIds = r.keys()
     spdxLicenseTexts = r.mget(spdxLicenseIds)
-    licenseData = dict(list(zip(spdxLicenseIds, spdxLicenseTexts)))
+    licenseData = dict(zip(spdxLicenseIds, spdxLicenseTexts))
     matches = get_close_matches(licenseText, licenseData)
 
     if not matches:
         matchedLicenseIds = None
         matchType = 'No match'
     
-    elif 1.0 in list(matches.values()) or all(0.99 < score for score in list(matches.values())):
-        matchedLicenseIds = list(matches.keys())
+    elif 1.0 in matches.values() or all(0.99 < score for score in matches.values()):
+        matchedLicenseIds = matches.keys()
         matchType = 'Perfect match'
     
     else:

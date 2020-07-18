@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+from __future__ import unicode_literals
 
 from django.shortcuts import render,render_to_response
 from django.http import HttpResponse,HttpResponseRedirect
@@ -1469,7 +1469,7 @@ def beautify(request):
                 commandRun = subprocess.call(["python", "app/formatxml.py","test.xml","-i", "3"])
                 if commandRun == 0:
                     data = codecs.open("test.xml", 'r', encoding='string_escape').read()
-                    data = str(data, 'utf-8')
+                    data = unicode(data, 'utf-8')
                     os.remove('test.xml')
                     if (request.is_ajax()):
                         ajaxdict["type"] = "success"

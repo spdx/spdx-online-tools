@@ -12,13 +12,14 @@
 # limitations under the License.
 
 
+from __future__ import unicode_literals
 
 from django.contrib import admin
 
-from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,SubmitLicenseModel
+from app.models import UserID
+from app.models import LicenseRequest, OrganisationName, LicenseNamespace
 
-
-admin.site.register(ValidateFileUpload)
-admin.site.register(CompareFileUpload)
-admin.site.register(ConvertFileUpload)
-admin.site.register(SubmitLicenseModel)
+admin.site.register(UserID)
+admin.site.register(LicenseRequest)
+admin.site.register(OrganisationName)
+admin.site.register(LicenseNamespace)

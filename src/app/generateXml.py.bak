@@ -20,11 +20,11 @@ symbolBullets = r"^(\s*)([*\u2022\-])(\s)"
 def previous_and_current(some_iterable):
     prevs, items = tee(some_iterable, 2)
     prevs = chain([None], prevs)
-    return list(zip(prevs, items))
+    return zip(prevs, items)
 
 
 def escapeXmlData(string):
-    for initial,final in list(entityMap.items()):
+    for initial,final in entityMap.items():
         string.replace(initial, final)
     return string
 
