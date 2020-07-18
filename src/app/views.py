@@ -355,7 +355,7 @@ def licenseInformation(request, licenseId):
     context_dict ={'licenseInformation': licenseInformation}
     if request.method == 'POST':
         tempFilename = 'output.xml'
-        xmlFile = open(tempFilename, 'w')
+        xmlFile = open(tempFilename, 'wb')
         xmlFile.write(xmlString)
         xmlFile.close()
         xmlFile = open(tempFilename, 'r')
@@ -410,7 +410,7 @@ def licenseNamespaceInformation(request, licenseId):
     context_dict ={'licenseInformation': licenseInformation}
     if request.method == 'POST':
         tempFilename = 'output.xml'
-        xmlFile = open(tempFilename, 'w')
+        xmlFile = open(tempFilename, 'wb')
         xmlFile.write(xmlString)
         xmlFile.close()
         xmlFile = open(tempFilename, 'r')
@@ -557,7 +557,7 @@ def validate_xml(request):
                     if not os.path.isdir(str(settings.MEDIA_ROOT +"/"+ folder)):
                         os.makedirs(str(settings.MEDIA_ROOT +"/"+ folder))
                     uploaded_file_url = settings.MEDIA_ROOT + '/' + folder + '/' + 'xmlFile.xml'
-                    with open(uploaded_file_url,'w') as f:
+                    with open(uploaded_file_url, 'wb') as f:
                         f.write(xmlText)
                     """ Get schema text from GitHub,
                     if it fails use the file in examples folder """
@@ -1463,7 +1463,7 @@ def beautify(request):
             """ Getting the license xml input by the user"""
             xmlString = request.POST.get("xml", None)
             if xmlString:
-                with open('test.xml','w') as f:
+                with open('test.xml','wb') as f:
                     f.write(xmlString)
                     f.close()
                 commandRun = subprocess.call(["python", "app/formatxml.py","test.xml","-i", "3"])
