@@ -16,7 +16,7 @@ The tool provides an easy all-in-one website to upload and parse SPDX documents 
 
 ## Requirements (Linux/Debian/Ubuntu)  
 
-Either the Sun/Oracle JDK/JRE Variant or OpenJDK. Python 2.6+.
+Either the Sun/Oracle JDK/JRE Variant or OpenJDK. Python 3.7+.
 
 Debian/Ubuntu users will have to install g++ and python-dev first:  
 
@@ -28,15 +28,15 @@ sudo apt-get install g++ python-dev
 
 Windows users need a Python installation and C++ compiler:
 
-* Install Python 2.7 version, e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
+* Install Python 3.7 version, e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
 * Install a [Windows C++ Compiler](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
 ## Installation
 
 1. Clone or download the repository.
-2. Create a new virtual environment for the project. To download virtual environment run `pip install virtualenv`
+2. Create a new virtual environment for the project.
     ```bash
-    virtualenv venv
+    python3 -m venv ./venv
     source venv/bin/activate
     ```
 3. Install the required python libraries given in the requirements.txt file.
