@@ -1,5 +1,5 @@
 # Using python2 as the base image
-FROM python:2 as base 
+FROM python:3 as base
 
 # Create the folder spdx and cd to it
 WORKDIR /spdx

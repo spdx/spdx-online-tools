@@ -1,6 +1,6 @@
 Django==2.2.14
 djangorestframework==3.11.0
-JPype1==1.0.1
+jpype1==1.0.1
 pytz==2020.1
 numpy==1.19.0
 requests==2.24

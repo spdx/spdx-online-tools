@@ -188,7 +188,7 @@ class ValidateViewsTestCase(TestCase):
         self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
         resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
-        self.assertEqual(resp.content,"This SPDX Document is valid.")
+        self.assertEqual(resp.content,b"This SPDX Document is valid.")
         self.client.logout()
 
     def test_upload_rdf(self):
@@ -197,7 +197,7 @@ class ValidateViewsTestCase(TestCase):
         self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"))
         resp = self.client.post(reverse("validate"),{'file' : self.rdf_file},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
-        self.assertEqual(resp.content,"This SPDX Document is valid.")
+        self.assertEqual(resp.content,b"This SPDX Document is valid.")
         self.rdf_file.close()
         self.client.logout()
 
@@ -629,7 +629,7 @@ class ValidateXMLViewsTestCase(TestCase):
         self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
         resp = self.client.post(reverse("validate-xml"),{},follow=True,secure=True)
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content, "No XML text given.")
+        self.assertEqual(resp.content, b"No XML text given.")
         self.assertEqual(resp.redirect_chain,[])
         self.client.logout()
 
@@ -639,7 +639,7 @@ class ValidateXMLViewsTestCase(TestCase):
         self.xml_text = open(getExamplePath("Adobe-Glyph.xml")).read()
         resp = self.client.post(reverse("validate-xml"),{'xmlText': self.xml_text},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
-        self.assertEqual(resp.content,"This XML is valid against SPDX License Schema.")
+        self.assertEqual(resp.content, b"This XML is valid against SPDX License Schema.")
         self.client.logout()
 
     def test_invalid_xml(self):
@@ -961,7 +961,7 @@ class PullRequestTestCase(TestCase):
         resp = self.client.post(reverse("pull-request"),{},follow=True,secure=True)
         self.assertEqual(resp.status_code,401)
         self.assertEqual(resp.redirect_chain,[])
-        self.assertEqual(resp.content, "Please login using GitHub to use this feature.")
+        self.assertEqual(resp.content, b"Please login using GitHub to use this feature.")
         self.client.logout()
 
 
