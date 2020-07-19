@@ -35,6 +35,11 @@ from api.oauth import generate_github_access_token,get_user_from_token
 from api.views import generateLicenseXml
 
 from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload,SubmitLicenseModel
+from django.conf import settings
+import os
+
+def getExamplePath(filename):
+    return os.path.join(settings.EXAMPLES_DIR, filename)
 
 class ValidateFileUploadTests(APITestCase):
     """ Test for validate api with all
@@ -51,10 +56,10 @@ class ValidateFileUploadTests(APITestCase):
         u = User.objects.create_user(**self.credentials)
         u.is_staff = True
         u.save()
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-        self.invalid_tv_file = open("examples/SPDXTagExample-v2.0_invalid.spdx")
-        self.invalid_rdf_file = open("examples/SPDXRdfExample-v2.0_invalid.rdf")
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"))
+        self.invalid_tv_file = open(getExamplePath("SPDXTagExample-v2.0_invalid.spdx"))
+        self.invalid_rdf_file = open(getExamplePath("SPDXRdfExample-v2.0_invalid.rdf"))
 
     def tearDown(self):
         try:
@@ -119,9 +124,9 @@ class ConvertFileUploadTests(APITestCase):
         self.rdf = "RDF"
         self.xlsx = "Spreadsheet"
         self.html ="HTML"
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-        self.xlsx_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"))
+        self.xlsx_file = open(getExamplePath("SPDXSpreadsheetExample-2.0.xls"))
 
     def tearDown(self):
         try:
@@ -225,9 +230,9 @@ class CompareFileUploadTests(APITestCase):
         u = User.objects.create_user(**self.credentials)
         u.is_staff = True
         u.save()
-        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-        self.rdf_file2 = open("examples/SPDXRdfExample.rdf")
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"))
+        self.rdf_file2 = open(getExamplePath("SPDXRdfExample.rdf"))
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
 
     def tearDown(self):
         try:
@@ -281,8 +286,8 @@ class CheckLicenseFileUploadTests(APITestCase):
         u = User.objects.create_user(**self.credentials)
         u.is_staff = True
         u.save()
-        self.license_file = open("examples/AFL-1.1.txt")
-        self.other_file = open("examples/Other.txt")
+        self.license_file = open(getExamplePath("AFL-1.1.txt"))
+        self.other_file = open(getExamplePath("Other.txt"))
         
     def tearDown(self):
         try:

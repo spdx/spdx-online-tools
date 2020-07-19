@@ -19,6 +19,7 @@ APP_DIR = os.path.join(BASE_DIR,'app')
 API_DIR = os.path.join(BASE_DIR,'api')
 TEMPLATE_DIR = os.path.join(APP_DIR, 'templates')
 STATIC_PATH = os.path.join(APP_DIR,'static')
+EXAMPLES_DIR = os.path.join(BASE_DIR,'examples')
 
 LICENSE_REPO_NAME = "license-list-XML"
 LICENSE_TEST_REPO_NAME = "TEST-LicenseList-XML"
