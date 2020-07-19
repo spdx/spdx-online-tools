@@ -12,7 +12,7 @@ services:
       - ./:/spdxonlinetools
     environment:
       - PYTHONDONTWRITEBYTECODE=1
-      - SPDX_RDIS_HOST=redis
+      - SPDX_REDIS_HOST=redis
     depends_on:
       - redis
 

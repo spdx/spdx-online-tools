@@ -50,4 +50,4 @@ def getAuthCode():
     return os.environ.get(key="AUTH_CODE")
 
 def getRedisHost():
-    return os.environ.get(key="SPDX_RDIS_HOST", failobj="localhost")
+    return os.environ.get(key="SPDX_REDIS_HOST", failobj="localhost")
