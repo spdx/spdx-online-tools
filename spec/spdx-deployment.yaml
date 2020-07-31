@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: spdx-online-tools
+  name: spdx-online-tools-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spdx-online-tools
+  template:
+    metadata:
+      labels:
+        app: spdx-online-tools
+    spec:
+      containers:
+      - env:
+        - name: PYTHONDONTWRITEBYTECODE
+          value: "1"
+        - name: SPDX_REDIS_HOST
+          value: redis
+        image: spdx/spdx-online-tools:0.0.1
+        imagePullPolicy: ""
+        name: spdx-online-tools-prod
+        ports:
+        - containerPort: 8000
+      restartPolicy: Always
+status: {}
