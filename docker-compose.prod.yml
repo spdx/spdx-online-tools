@@ -1,6 +1,14 @@
 version: "3"
 
 services:
+
+  nginx:
+    build: ./nginx
+    ports:
+      - 1337:80
+    depends_on:
+      - spdx
+      
   spdx:
     container_name: spdx_prod
     build:
@@ -10,11 +18,13 @@ services:
       - 8000:8000
     volumes:
       - ./container_logs:/spdx/container_logs
+    env_file: spdx-prod.env
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - SPDX_REDIS_HOST=redis
     depends_on:
       - redis
+      - db
 
   redis:
     image: redis:5.0-alpine
@@ -24,6 +34,16 @@ services:
       - data-volume:/data
     ports:
       - 6379:6379
+      
+  db:
+    image: postgres:12.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=spdx
+      - POSTGRES_PASSWORD=spdxdbpass0
+      - POSTGRES_DB=spdx_db
 
 volumes:
   data-volume:
+  postgres_data:

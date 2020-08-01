@@ -39,7 +39,7 @@ NAMESPACE_REPO_URL = NAMESPACE_DEV_REPO_URL
 SECRET_KEY = getSecretKey()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get(key='DEBUG', failobj=1)
 
 if not DEBUG:
     REPO_URL = PROD_REPO_URL
@@ -104,8 +104,12 @@ WSGI_APPLICATION = 'src.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': os.environ.get(key='SQL_ENGINE',failobj='django.db.backends.sqlite3'),
+        'NAME': os.environ.get(key='SQL_DATABASE', failobj=os.path.join(BASE_DIR, 'db.sqlite3')),
+        'USER': os.environ.get(key='SQL_USER', failobj='user'),
+        'PASSWORD': os.environ.get(key='SQL_PASSWORD', failobj='password'),
+        'HOST': os.environ.get(key='SQL_HOST', failobj='localhost'),
+        'PORT': os.environ.get(key='SQL_PORT', failobj='5432'),
     }
 }
 
