@@ -7,7 +7,7 @@ services:
     image: 410487266669.dkr.ecr.us-west-2.amazonaws.com/spdx/nginx:0.1.0
     restart: always
     ports:
-      - 1337:80
+      - 80:80
     depends_on:
       - spdx
       
@@ -17,8 +17,8 @@ services:
       context: ./
       dockerfile: dockerfile.prod
     image: 410487266669.dkr.ecr.us-west-2.amazonaws.com/spdx/online-tools:0.1.0
-    ports:
-      - 8000:8000
+    expose:
+      - 8000
     volumes:
       - ./container_logs:/spdx/container_logs
     env_file: spdx-prod.env
@@ -34,8 +34,8 @@ services:
     restart: always
     volumes:
       - data-volume:/data
-    ports:
-      - 6379:6379
+    expose:
+      - 6379
 
 volumes:
   data-volume:
