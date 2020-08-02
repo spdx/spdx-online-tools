@@ -16,6 +16,8 @@ Following are the steps for a clean initial installaction of the application:
   * Dowload docker-compose: `sudo curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose`
   * Set execution permissions for docker-compose: `sudo chmod +x /usr/local/bin/docker-compose`
   * Install AWS CLI - see the [Installing AWS CLI on Linux documentation](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html)
+  * Add the logged in user to the docker group following the [fixing docker permissions documentation](https://www.digitalocean.com/community/questions/how-to-fix-docker-got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socket)
+  * Configure the AWS CLI for access to AWS with permissions to use ECR
 * Setup an IAM role to enable EC2 access to Amazon ECR
   * Create an IAM role using the EC2 use case with the policy AmazonEC2ContainerRegistryPowerUser
   * Attach the role to the EC2 instance
@@ -34,21 +36,6 @@ Following are the steps for a clean initial installaction of the application:
   * replace `<aws-account-id>` with the AWS account ID
   * replace `<aws-region>` with the AWS region
   * replace `<version>` with the specific version of the nginx and spdx-online-tools-build to be deployed
-* Update the spdx-prod.env file
-
-```
-DEBUG=0
-ONLINE_TOOL_GITHUB_KEY=[Github key - see README.md for more information]
-ONLINE_TOOL_GITHUB_SECRET=[Github secret - see README.md for more information]
-DJANGO_SECRET_KEY=[Django secret key - see README.md for more information]
-SQL_ENGINE=django.db.backends.postgresql
-SQL_DATABASE=spdx_db
-SQL_USER=spdx
-SQL_PASSWORD=[SQL database password set while creating the RDS database]
-SQL_HOST=[RDS Endpoint]
-SQL_PORT=5432
-```
-
 * Build the image by running `docker-compose -f docker-compose.prod.yml build`
 * Push the image to AWS ECR
   * Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the region and account ID
@@ -59,6 +46,32 @@ SQL_PORT=5432
   * Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the region and account ID
   * Pull the nginx image by running `docker pull <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/spdx/nginx:<version>` replacing the <aws-account-id>, <aws-region>, and <version>
   * Pull the online-tools image by running `docker pull <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/spdx/online-tools:<version>` replacing the <aws-account-id>, <aws-region>, and <version>
+  * Create the spdx-prod.env file
+
+```
+DEBUG=0
+ONLINE_TOOL_GITHUB_KEY=[Github key - see README.md for more information]
+ONLINE_TOOL_GITHUB_SECRET=[Github secret - see README.md for more information]
+DJANGO_SECRET_KEY=[Django secret key - see README.md for more information]
+SQL_ENGINE=django.db.backends.postgresql
+SQL_DATABASE=spdx_db
+SQL_USER=postgres
+SQL_PASSWORD=[SQL database password set while creating the RDS database]
+SQL_HOST=[RDS Endpoint]
+SQL_PORT=5432
+```
+
+  * Launch the containers with the command `docker-compose -f docker-compose.prod.yml up -d`
+* Initialize the database
+  * Find the container ID for the spdx-online-tools by executing `docker ps`
+  * Open a shell in the spdx-online-tools container by executing `docker exec -it [spdx-online-tools-container-id] /bin/shell`
+  * Initialize the database using DJango by running `python manage.py migrate`
+  * Populate the license list database by running `python src/populate.py`
+* Restart the spdx
+  * run supervisorctl `supervisorctl`
+  * restart spdx `restart spdx`
+  * exit supervisorctl `exit`
+  
   
 
 # Credits
@@ -67,6 +80,7 @@ Based on the [Deploying Django to AWS with Docker and Let's Encrypt blog post](h
 
 # TODO
 
+* Get the github login working - I think this involves changing a URL from local host somewhere
 * Add environment variables OAUTH_APP_ID and OAUTH_APP_SECRET to the spdx-prod.env to enable license submittal API (see README for instructions)
 * Turn off debug in the spdx-prod.env file
 * Add SSL - see [Django with LetsEncrypt Blog](https://testdriven.io/blog/django-lets-encrypt/)
