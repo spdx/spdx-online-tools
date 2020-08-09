@@ -4,6 +4,29 @@ The deployment environment is Docker running on an AWS EC2 server serving the DJ
 
 Docker images are stored in Amazon ECR
 
+# Updating the image
+
+Following are the steps for updating the images:
+
+* On you local machine, update the docker-compose.prod.yml - these can be copied from the ECR repositories information in AWS
+  * replace `<aws-account-id>` with the AWS account ID
+  * replace `<aws-region>` with the AWS region
+  * replace `<version>` with the specific version of the nginx and spdx-online-tools-build to be deployed
+* Build the image by running `docker-compose -f docker-compose.prod.yml build`
+* Push the image to AWS ECR
+  * Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the region and account ID
+  * Push the images by running `docker-compose -f docker-compose.prod.yml push`
+  
+* Deploy the images on EC2
+  * Clone this repo on the EC2 instance - a convenient way to copy of the docker-compose files
+  * Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the region and account ID
+  * If the nginx image changed, pull the nginx image by running `docker pull <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/spdx/nginx:<version>` replacing the <aws-account-id>, <aws-region>, and <version>
+  * Pull the online-tools image by running `docker pull <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/spdx/online-tools:<version>` replacing the <aws-account-id>, <aws-region>, and <version>
+  * Launch the containers with the command `docker-compose -f docker-compose.prod.yml up -d`
+  * If needed upgrade the database [instructions to be filled in]
+
+
+
 # Clean Intialial Install
 
 Following are the steps for a clean initial installaction of the application:
