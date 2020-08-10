@@ -30,6 +30,8 @@ from spdx_license_matcher.utils import get_spdx_license_text
 
 from app.models import User, UserID
 
+from src.secret import getRedisHost
+
 NORMAL = "normal"
 TESTS = "tests"
 PROD = "prod"
@@ -480,7 +482,7 @@ def check_spdx_license(licenseText):
     """Check the license text against the spdx license list.
     """
     licenseText = str(licenseText.decode('string_escape'), 'utf-8')
-    r = redis.StrictRedis(host='localhost', port=6379, db=0)
+    r = redis.StrictRedis(host=getRedisHost(), port=6379, db=0)
     
     # if redis is empty build the spdx license list in the redis database
     if r.keys('*') == []:
