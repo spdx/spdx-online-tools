@@ -46,6 +46,9 @@ RUN apt-get update \
 RUN mkdir /licenses && cd /licenses && git clone https://github.com/spdx/license-list-data.git --depth=1 && cd license-list-data && git fetch --tags && git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
 RUN mkdir /licenses/current && cp /licenses/license-list-data/website/*.jsonld /licenses/current && cp /licenses/license-list-data/website/licenses.json /licenses/current && cp /licenses/license-list-data/website/exceptions.json /licenses/current
 
+# Clean up apt lists
+RUN rm -rf /var/lib/apt/lists/*
+
 # Move to spdxonlinetools folder
 WORKDIR /spdx
 
