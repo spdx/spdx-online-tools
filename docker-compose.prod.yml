@@ -1,18 +1,33 @@
-version: "3"
+version: "3.7"
 
 services:
+
+  nginx:
+    container_name: nginx_prod
+    build: ./nginx
+    image: 410487266669.dkr.ecr.us-west-2.amazonaws.com/spdx/nginx:0.1.0
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - spdx
+      
   spdx:
     container_name: spdx_prod
     build:
       context: ./
       dockerfile: dockerfile.prod
-    ports:
-      - 8000:8000
+    image: 410487266669.dkr.ecr.us-west-2.amazonaws.com/spdx/online-tools:0.1.1
+    expose:
+      - 8000
     volumes:
       - ./container_logs:/spdx/container_logs
+    env_file: spdx-prod.env
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - SPDX_REDIS_HOST=redis
+      - SPDXParser.LocalLicensesDir=/licenses/current
+      - SPDXParser.OnlyUseLocalLicenses=true
     depends_on:
       - redis
 
@@ -22,8 +37,8 @@ services:
     restart: always
     volumes:
       - data-volume:/data
-    ports:
-      - 6379:6379
+    expose:
+      - 6379
 
 volumes:
   data-volume:

@@ -7,6 +7,13 @@ WORKDIR /spdx
 # Copy the requirements.txt file into the container
 COPY requirements.txt .
 
+# install psycopg2 dependencies
+RUN apt-get update \
+    && apt-get -y install libpq-dev gcc python-dev musl-dev
+	
+# install psycopg2
+RUN pip install psycopg2-binary==2.7.5
+
 # Install the python dependencies
 RUN pip install -r requirements.txt
 
@@ -32,6 +39,15 @@ FROM openjdk:8
 
 # Copy complete python container into java container
 COPY --from=production / /
+
+# Fetch the latest tagged licenses from Github for use in the Java license compares
+RUN apt-get update \
+    && apt-get -y install git
+RUN mkdir /licenses && cd /licenses && git clone https://github.com/spdx/license-list-data.git --depth=1 && cd license-list-data && git fetch --tags && git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
+RUN mkdir /licenses/current && cp /licenses/license-list-data/website/*.jsonld /licenses/current && cp /licenses/license-list-data/website/licenses.json /licenses/current && cp /licenses/license-list-data/website/exceptions.json /licenses/current
+
+# Clean up apt lists
+RUN rm -rf /var/lib/apt/lists/*
 
 # Move to spdxonlinetools folder
 WORKDIR /spdx
