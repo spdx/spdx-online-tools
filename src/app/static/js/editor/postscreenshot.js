@@ -1,10 +1,7 @@
-const repositoryNameWithOwner = "<github-username>/<repository-name>";
-const githubToken = "<github-token>";
-
-async function takeScreenshotAndUpload() {
+async function takeScreenshotAndUpload(repositoryNameWithOwner, githubToken) {
   let screenshot = await makeScreenshot();
   let data = await getFileData(screenshot);
-  await postToGithub(data);
+  await postToGithub(data, repositoryNameWithOwner, githubToken);
 }
 
 async function makeScreenshot(selector = ".modal-content") {
@@ -29,7 +26,7 @@ async function getFileData(imgUrl) {
   });
 }
 
-async function postToGithub(data) {
+async function postToGithub(data, repositoryNameWithOwner, githubToken) {
   let xhr = new XMLHttpRequest();
   let filename =
     Math.random()

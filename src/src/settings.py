@@ -32,6 +32,8 @@ NAMESPACE_DEV_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPAC
 NAMESPACE_PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPACE_REPO_NAME)
 NAMESPACE_REPO_URL = NAMESPACE_DEV_REPO_URL
 
+DIFF_REP_WITH_OWNER = "spdx/licenseRequestImages"
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 

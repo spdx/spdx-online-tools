@@ -105,6 +105,7 @@ def submitNewLicense(request):
                 token = github_login.extra_data["access_token"]
                 username = github_login.extra_data["login"]
                 form = LicenseRequestForm(request.POST, auto_id='%s')
+                repositoryNameWithOwner = settings.DIFF_REP_WITH_OWNER
                 if form.is_valid() and request.is_ajax():
                     licenseAuthorName = form.cleaned_data['licenseAuthorName']
                     licenseName = form.cleaned_data['fullname']
