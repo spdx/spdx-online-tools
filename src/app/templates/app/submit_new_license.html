@@ -68,7 +68,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >License's Full Name
-        <span class="glyphicon glyphicon-question-sign" id="fullnameInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="fullnameInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.fullname }}
@@ -79,7 +79,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Short Identifier
-        <span class="glyphicon glyphicon-question-sign" id="shortIdentifierInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="shortIdentifierInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.shortIdentifier }}
@@ -90,7 +90,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Source / URL
-        <span class="glyphicon glyphicon-question-sign" id="sourceUrlInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="sourceUrlInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-4">
           {{ form.sourceUrl }}
@@ -111,7 +111,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Standard License Header
-        <span class="glyphicon glyphicon-question-sign" id="licenseHeaderInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="licenseHeaderInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-6">
           {{ form.licenseHeader }}
@@ -122,7 +122,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >License Text
-        <span class="glyphicon glyphicon-question-sign" id="textInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="textInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-6">
           {{ form.text }}
@@ -151,7 +151,7 @@
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Comments
-        <span class="glyphicon glyphicon-question-sign" id="commentsInfo" data-toggle="popover" data-placement="auto left"></span>
+        <span tabindex="0" class="glyphicon glyphicon-question-sign" id="commentsInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
         <div class="col-sm-6">
           {{ form.comments }}
@@ -169,31 +169,18 @@
 
 {% block script_block %}
 <script type="text/javascript">
+function initPopOvers() {
+    $('#fullnameInfo').popover({trigger: "click focus", title: "License Full Name", content: "{{ form.fullname.help_text }}", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#shortIdentifierInfo').popover({trigger: "click focus", title: "Short Identifier", content: "{{ form.shortIdentifier.help_text }}", html: "true", viewport: '.panel-body', container: 'body'});
+    $('#sourceUrlInfo').popover({trigger: "click focus", title: "Source URL", content: "{{ form.sourceUrl.help_text }}", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#licenseHeaderInfo').popover({trigger: "click focus", title: "Standard License Header", content: "{{ form.licenseHeader.help_text }}", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#commentsInfo').popover({trigger: "click focus", title: "Comments", content: "{{ form.comments.help_text}}", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#textInfo').popover({trigger: "click focus", title: "License Text", content: "{{ form.text.help_text }}", viewport: '.panel-body', container: '.panel-body'});
+}
+  </script>
+<script type="text/javascript">
 $(document).ready(function () {
-    var is_touch_device = "ontouchstart" in document.documentElement;
-    $('#fullnameInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "License Full Name", content: "\u2022 The full name may omit certain word, such as 'the,' for alphabetical sorting purposes. \
-    <br /> \u2022 No commas in full name of license or exception. \
-    <br /> \u2022 The word 'version' is not spelled out; 'v' or nothing is used to indicate license version (for space reasons) \
-    <br /> \u2022 For version, use lower case v and no period or space between v and the number. \
-    <br /> \u2022 No abbreviations are included (in parenthesis) after the full name.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#shortIdentifierInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Short Identifier", content: "\u2022 Short identifier to be used to identify a license or exception match to licenses or exceptions in the context of an SPDX file, a source file, or elsewhere. \
-    <br /> \u2022 Short identifiers consist of ASCII letters (A-Za-z), digits (0-9), full stops (.) and hyphen or minus signs (-) \
-    <br /> \u2022 Short identifiers consist of an abbreviation based on a common short name or acronym for the license or exception. \
-    <br /> \u2022 Where applicable, the abbreviation will be followed by a dash and then the version number, in X.Y format. \
-    <br /> \u2022 Where applicable, and if possible, the short identifier should be harmonized with other well-known open source naming sources (i.e., OSI, Fedora, etc.) \
-    <br /> \u2022 Short identifiers should be as short in length as possible while staying consistent with all other naming criteria.", html: "true", viewport: '.panel-body', container: 'body'});
-    $('#sourceUrlInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Source URL", content: "\u2022 Include URL for the official text of the license or exception. \
-    <br /> \u2022 If the license is OSI approved, also include URL for OSI license page. \
-    <br /> \u2022 Include another URL that has text version of license, if neither of the first two options are available. \
-    <br /> \u2022 Note that the source URL may refer to an original URL for the license which is no longer active. We don't remove inactive URLs. New or best available URLs may be added. \
-    <br /> \u2022 Link to the license or exception in its native language is used where specified (e.g. French for CeCILL). Link to English version where multiple, equivalent official translations (e.g. EUPL)", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#licenseHeaderInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Standard License Header", content: "\u2022 Should only include text intended to be put in the header of source files or other files as specified in the license or license appendix when specifically delineated. \
-    <br /> \u2022 Indicate if there is any variation in the header (i.e. for files developed by a contributor versus when applying license to original work) \
-    <br /> \u2022 Do not include NOTICE info intended for a separate notice file. \
-    <br /> \u2022 Leave this field blank if there is no standard header as specifically defined in the license.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#commentsInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Comments", content: "\u2022 Provide a short explanation regarding the need for this license or exception to be included on the SPDX License List. \
-    <br /> \u2022 Identify at least one program that uses it or any other related information.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#textInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "License Text", content: "Full license of the license text.", viewport: '.panel-body', container: '.panel-body'});
+    initPopOvers();
     $("#licenserequest").addClass('linkactive');
     $("#submitnewlicensepage").addClass('linkactive');
     $('input').addClass('form-control');
@@ -222,6 +209,16 @@ $(document).ready(function () {
     githubLoginLink += "?next=" + page_url;
     window.location = githubLoginLink;
   });
+</script>
+<script>
+$(document).on('mousedown', function (e) {
+    $('[data-toggle=popover]').each(function (index, elt) {
+        // hide any open popovers when anywhere else in the body is clicked
+        if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+            $(this).popover('hide');
+        }
+    });
+});
 </script>
 <script type="text/javascript">
 function removeDiv(elem){
@@ -554,7 +551,7 @@ function makeIssue(data){
 async function generate_text_diff(base, newtxt){
     var sm = new difflib.SequenceMatcher(base, newtxt);
     var opcodes = sm.get_opcodes();
-    
+
     // build the diff view and add it to the current DOM
     var diff = $(diffview.buildView({
         baseTextLines: base,
@@ -577,7 +574,7 @@ async function generate_text_diff(base, newtxt){
     $(".modal-dialog").addClass("diff-modal-dialog");
     $("#myModal").modal({
         backdrop: 'static',
-        keyboard: true, 
+        keyboard: true,
         show: true
     });
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -600,6 +597,7 @@ async function generate_text_diff(base, newtxt){
     });
   }
 </script>
+<script type="text/javascript" src="{% static 'js/editor/codemirror.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/script.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
