@@ -552,8 +552,8 @@ function makeIssue(data){
 
 /* generate diff of input license text and spdx license list license text of closely matched licenses */
 async function generate_text_diff(base, newtxt){
-    var repositoryNameWithOwner = {{repositoryNameWithOwner}};
-	var githubToken = {{token}};
+    var repositoryNameWithOwner = "{{ form.repositoryNameWithOwner }}";
+	var githubToken = "{{ form.githubtoken }}";
     var sm = new difflib.SequenceMatcher(base, newtxt);
     var opcodes = sm.get_opcodes();
     
