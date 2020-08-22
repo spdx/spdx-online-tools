@@ -203,7 +203,6 @@ def submitNewLicense(request):
                 github_login = request.user.social_auth.get(provider='github')
                 username = github_login.extra_data["login"]
                 email = User.objects.get(username=username).email
-                token = github_login.extra_data["access_token"]
             except UserSocialAuth.DoesNotExist as AttributeError:
                 github_login = None
         context_dict["github_login"] = github_login
