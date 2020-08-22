@@ -104,7 +104,7 @@ def submitNewLicense(request):
                 github_login = user.social_auth.get(provider='github')
                 token = github_login.extra_data["access_token"]
                 username = github_login.extra_data["login"]
-                form = LicenseRequestForm(request.POST, auto_id='%s', githubtoken=token)
+                form = LicenseRequestForm(request.POST, auto_id='%s')
                 if form.is_valid() and request.is_ajax():
                     licenseAuthorName = form.cleaned_data['licenseAuthorName']
                     licenseName = form.cleaned_data['fullname']
@@ -207,7 +207,7 @@ def submitNewLicense(request):
             except UserSocialAuth.DoesNotExist as AttributeError:
                 github_login = None
         context_dict["github_login"] = github_login
-        form = LicenseRequestForm(auto_id='%s', email=email, githubtoken=token)
+        form = LicenseRequestForm(auto_id='%s', email=email)
         context_dict['form'] = form
     return render(request,
         'app/submit_new_license.html', context_dict

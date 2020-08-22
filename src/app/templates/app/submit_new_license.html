@@ -553,7 +553,7 @@ function makeIssue(data){
 /* generate diff of input license text and spdx license list license text of closely matched licenses */
 async function generate_text_diff(base, newtxt){
     var repositoryNameWithOwner = "{{ form.repositoryNameWithOwner }}";
-	var githubToken = "{{ form.githubtoken }}";
+	var diffRepoGithubToken = "{{ form.diffRepoGithubToken }}";
     var sm = new difflib.SequenceMatcher(base, newtxt);
     var opcodes = sm.get_opcodes();
     
@@ -583,7 +583,7 @@ async function generate_text_diff(base, newtxt){
         show: true
     });
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await takeScreenshotAndUpload(repositoryNameWithOwner, githubToken);
+    await takeScreenshotAndUpload(repositoryNameWithOwner, diffRepoGithubToken);
     diffUrl =  'https://github.com/' + repositoryNameWithOwner + '/blob/master/' + localStorage.getItem('filename');
     LicenseData.data["diffUrl"] = diffUrl;
     $("#createIssue").on("click",function(){

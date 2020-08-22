@@ -118,6 +118,15 @@ def getOauthToolKitAppID():
 
 def getOauthToolKitAppSecret():
     return os.environ.get(key="OAUTH_APP_SECRET")
+	
+# The methods getDiffRepoGitToken and getDiffRepoWithOwner are used to configure the repository used for storing license diffs created during the license submittal process
+# The DIFF_REPO_GIT_TOKEN is a personal access token created in Github with access to the repo DIFF_REPO_WITH_OWNER
+    
+def getDiffRepoGitToken():
+    return os.environ.get(key="DIFF_REPO_GIT_TOKEN")
+    
+def getDiffRepoWithOwner():
+    return os.environ.get(key="DIFF_REPO_WITH_OWNER", failobj="spdx/licenseRequestImages")
 ```
 
 where:
