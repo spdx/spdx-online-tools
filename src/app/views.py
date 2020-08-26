@@ -43,6 +43,7 @@ try:
 except ImportError:
     from urllib.parse import urljoin
 import datetime
+import uuid
 from wsgiref.util import FileWrapper
 import os
 import subprocess
@@ -1828,6 +1829,32 @@ def checkusername(request):
     else :
         return HttpResponse(dumps({"data": "No username entered"}),status=400)
 
+
+def post_to_github(request):
+    """ Api to handle github upload of diff images """
+    if request.user.is_authenticated():
+        data = {}
+        if request.method == "POST":
+            try:
+                message = request.POST.get('message')
+                encodedContent = request.POST.get('content')
+                filename = str(uuid.uuid4()) + ".png"
+                statusCode, jsonResponse = utils.postToGithub(message, encodedContent, filename)
+                data['statusCode'] = str(statusCode)
+                if (statusCode == 201) :
+                    data['fileurl'] = jsonResponse["content"]["html_url"]
+                else :
+                    data['error_message'] = jsonResponse["message"]
+                    raise Exception("Post to Github returned {0} status code - message {1}".format(statusCode, jsonResponse["message"]))
+                return JsonResponse(data)
+            except:
+                """  Errors raised """
+                logger.error(str(format_exc()))
+                data["type"] = "error"
+                return HttpResponse(dumps({"message" : "Unexpected error while posting to github, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(),
+                                           "data" : data}), status=500)
+    else:
+        return HttpResponse(dumps({"message": "User should be logged in to use this feature"}), status=400)
 
 def handler400(request):
     return render_to_response('app/400.html',

@@ -340,7 +340,19 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     headers = {'Authorization': 'token ' + token}
     url = "{0}/issues".format(TYPE_TO_URL_LICENSE[urlType])
     r = requests.post(url, data=json.dumps(payload), headers=headers)
-    return r.status_code
+    return (r.status_code , r.json())
+
+
+def postToGithub(message, encodedContent, filename):
+    """ Function to create a new file on with encodedContent
+    """
+    token = settings.DIFF_REPO_GIT_TOKEN
+    repo = settings.DIFF_REPO_WITH_OWNER
+    payload = {'message' : message, 'content': encodedContent}
+    headers = {'Authorization': 'token ' + token}
+    url = "https://api.github.com/repos/{0}/contents/{1}".format(repo, filename)
+    r = requests.put(url, data=json.dumps(payload), headers=headers)
+    return r.status_code, r.json()
 
 
 def parseXmlString(xmlString):

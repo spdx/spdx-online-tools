@@ -19,7 +19,6 @@ from django.contrib.admin import widgets
 
 from app.models import UserID, LicenseNamespace, OrganisationName
 from app.widgets import RelatedFieldWidgetCanAdd
-from django.conf import settings
 
 OSI_CHOICES = (
     (0, "-"),
@@ -84,8 +83,6 @@ class LicenseRequestForm(forms.Form):
     comments = forms.CharField(label='Comments', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
     licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)
     text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
-    repositoryNameWithOwner = settings.DIFF_REPO_WITH_OWNER
-    diffRepoGithubToken = settings.DIFF_REPO_GIT_TOKEN
 
 
 class LicenseNamespaceRequestForm(forms.ModelForm):
