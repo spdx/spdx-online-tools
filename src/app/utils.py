@@ -340,7 +340,7 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     headers = {'Authorization': 'token ' + token}
     url = "{0}/issues".format(TYPE_TO_URL_LICENSE[urlType])
     r = requests.post(url, data=json.dumps(payload), headers=headers)
-    return (r.status_code , r.json())
+    return r.status_code
 
 
 def postToGithub(message, encodedContent, filename):
