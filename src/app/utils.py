@@ -343,6 +343,18 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     return r.status_code
 
 
+def postToGithub(message, encodedContent, filename):
+    """ Function to create a new file on with encodedContent
+    """
+    token = settings.DIFF_REPO_GIT_TOKEN
+    repo = settings.DIFF_REPO_WITH_OWNER
+    payload = {'message' : message, 'content': encodedContent}
+    headers = {'Authorization': 'token ' + token}
+    url = "https://api.github.com/repos/{0}/contents/{1}".format(repo, filename)
+    r = requests.put(url, data=json.dumps(payload), headers=headers)
+    return r.status_code, r.json()
+
+
 def parseXmlString(xmlString):
     """ View for generating a spdx license xml
     returns a dictionary with the xmlString license fields values

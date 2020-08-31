@@ -581,8 +581,7 @@ async function generate_text_diff(base, newtxt){
         show: true
     });
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await takeScreenshotAndUpload();
-    diffUrl =  'https://github.com/' + repositoryNameWithOwner + '/blob/master/' + localStorage.getItem('filename');
+    var diffUrl = await takeScreenshotAndUpload();
     LicenseData.data["diffUrl"] = diffUrl;
     $("#createIssue").on("click",function(){
         $("#myModal").modal("hide");

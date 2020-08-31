@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-from secret import getGithubKey, getGithubSecret, getSecretKey, getOauthToolKitAppID, getOauthToolKitAppSecret
+from secret import getGithubKey, getGithubSecret, getSecretKey, getOauthToolKitAppID, getOauthToolKitAppSecret, getDiffRepoGitToken, getDiffRepoWithOwner
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,6 +31,10 @@ NAMESPACE_TEST_REPO = "license-namespace-test"
 NAMESPACE_DEV_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPACE_TEST_REPO)
 NAMESPACE_PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPACE_REPO_NAME)
 NAMESPACE_REPO_URL = NAMESPACE_DEV_REPO_URL
+
+# Settings for license request diff image repo
+DIFF_REPO_WITH_OWNER = getDiffRepoWithOwner()
+DIFF_REPO_GIT_TOKEN = getDiffRepoGitToken()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
