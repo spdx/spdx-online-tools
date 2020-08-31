@@ -33,6 +33,7 @@ async function postToGithub(data) {
         enctype: 'multipart/form-data',
         url: "/app/post_to_github/",
         dataType: 'json',
+		async: false,
         timeout: 600000,
         data: data,
         success: function (data) {
