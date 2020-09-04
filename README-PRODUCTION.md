@@ -102,7 +102,5 @@ Based on the [Deploying Django to AWS with Docker and Let's Encrypt blog post](h
 
 # TODO
 
-* Get the github login working - I think this involves changing a URL from local host somewhere
 * Add environment variables OAUTH_APP_ID and OAUTH_APP_SECRET to the spdx-prod.env to enable license submittal API (see README for instructions)
 * Turn off debug in the spdx-prod.env file
-* Add SSL - see [Django with LetsEncrypt Blog](https://testdriven.io/blog/django-lets-encrypt/)
