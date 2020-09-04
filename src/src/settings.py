@@ -42,6 +42,9 @@ DIFF_REPO_GIT_TOKEN = getDiffRepoGitToken()
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = getSecretKey()
 
+# Set the secure proxy SSL header for operation in the AWS deployment environment
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get(key='DEBUG', failobj=1)
 

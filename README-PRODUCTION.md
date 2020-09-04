@@ -63,11 +63,12 @@ Following are the steps for a clean initial installaction of the application:
 * Push the image to AWS ECR
   * Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the region and account ID
   * Push the images by running `docker-compose -f docker-compose.prod.yml push`
-  
+* Setup the SSL Certificates
+  * Edit the file scripts/init-letsencrypt.sh replacing the email address and setting staging to 1 if testing, 0 if in production
+  * Execut the scriptrun `chmod +x init-letsencrypt.sh` and `sudo ./init-letsencrypt.sh`.
 * Deploy the images on EC2
   * Clone this repo on the EC2 instance - a convenient way to copy of the docker-compose files
   * Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the region and account ID
-  * Pull the nginx image by running `docker pull <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/spdx/nginx:<version>` replacing the <aws-account-id>, <aws-region>, and <version>
   * Pull the online-tools image by running `docker pull <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/spdx/online-tools:<version>` replacing the <aws-account-id>, <aws-region>, and <version>
   * Create the spdx-prod.env file
 
@@ -99,7 +100,7 @@ SQL_PORT=5432
 
 # Credits
 
-Based on the [Deploying Django to AWS with Docker and Let's Encrypt blog post](https://testdriven.io/blog/django-docker-https-aws/)
+Based on the [Deploying Django to AWS with Docker and Let's Encrypt blog post](https://testdriven.io/blog/django-docker-https-aws/) and [Nginx and Let’s Encrypt with Docker in Less Than 5 Minutes](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71)
 
 # TODO
 
