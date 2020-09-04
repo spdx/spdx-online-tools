@@ -11,7 +11,7 @@ Following are the steps for updating the images:
 * On you local machine, update the docker-compose.prod.yml - these can be copied from the ECR repositories information in AWS
   * replace `<aws-account-id>` with the AWS account ID
   * replace `<aws-region>` with the AWS region
-  * replace `<version>` with the specific version of the nginx and spdx-online-tools-build to be deployed
+  * replace `<version>` with the specific version of the spdx-online-tools-build to be deployed
 * Build the image by running `docker-compose -f docker-compose.prod.yml build`
 * Push the image to AWS ECR
   * Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the region and account ID
@@ -20,7 +20,6 @@ Following are the steps for updating the images:
 * Deploy the images on EC2
   * Clone this repo on the EC2 instance - a convenient way to copy of the docker-compose files
   * Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the region and account ID
-  * If the nginx image changed, pull the nginx image by running `docker pull <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/spdx/nginx:<version>` replacing the <aws-account-id>, <aws-region>, and <version>
   * Pull the online-tools image by running `docker pull <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/spdx/online-tools:<version>` replacing the <aws-account-id>, <aws-region>, and <version>
   * Launch the containers with the command `docker-compose -f docker-compose.prod.yml up -d`
   * If needed upgrade the database [instructions to be filled in]
@@ -45,7 +44,6 @@ Following are the steps for a clean initial installaction of the application:
   * Create an IAM role using the EC2 use case with the policy AmazonEC2ContainerRegistryPowerUser
   * Attach the role to the EC2 instance
 * Create a repository in the Amazon ECR spdx/online-tools
-* Create a repository in the Amazon ECR spdx/nginx
 * Create an RDS database
   * Instance name spdx-online-tools-db-production
   * Username spdx
@@ -58,7 +56,7 @@ Following are the steps for a clean initial installaction of the application:
 * On you local machine, update the docker-compose.prod.yml - these can be copied from the ECR repositories information in AWS
   * replace `<aws-account-id>` with the AWS account ID
   * replace `<aws-region>` with the AWS region
-  * replace `<version>` with the specific version of the nginx and spdx-online-tools-build to be deployed
+  * replace `<version>` with the specific version of the spdx-online-tools-build to be deployed
 * Build the image by running `docker-compose -f docker-compose.prod.yml build`
 * Push the image to AWS ECR
   * Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the region and account ID
