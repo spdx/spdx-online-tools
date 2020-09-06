@@ -4,13 +4,25 @@ services:
 
   nginx:
     container_name: nginx_prod
-    build: ./nginx
-    image: 410487266669.dkr.ecr.us-west-2.amazonaws.com/spdx/nginx:0.1.1
+    image: nginx:1.15-alpine
     restart: always
     ports:
       - 80:80
+      - 443:443
+    volumes:
+      - ./data/nginx:/etc/nginx/conf.d
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
     depends_on:
       - spdx
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+      
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
       
   spdx:
     container_name: spdx_prod
