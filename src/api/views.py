@@ -152,7 +152,7 @@ def getFileFormat(to_format):
     elif (to_format=="RDF"):
         return ".rdf"
     elif (to_format=="Spreadsheet"):
-        return ".xlsx"
+        return ".xls"
     elif (to_format=="HTML"):
         return ".html"
     else :
@@ -373,7 +373,7 @@ def compare(request):
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     """ Saving file to the media directory """
                     if (extensionGiven(rfilename)==False):
-                        rfilename = rfilename+".xlsx"
+                        rfilename = rfilename+".xls"
                     file1 = request.FILES["file1"]
                     file2 = request.FILES["file2"]
                     folder = "/".join(uploaded_file1_path.split('/')[:-1])

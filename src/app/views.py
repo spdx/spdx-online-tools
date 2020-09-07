@@ -648,7 +648,7 @@ def compare(request):
             errorlist = list()
             try:
                 if request.FILES["files"]:
-                    rfilename = request.POST["rfilename"]+".xlsx"
+                    rfilename = request.POST["rfilename"]+".xls"
                     folder = str(request.user)+"/"+ str(int(time()))
                     callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
                     erroroccurred = False
