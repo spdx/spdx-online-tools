@@ -487,6 +487,7 @@ function getCookie(name) {
 
 function makeIssue(data){
     data['csrfmiddlewaretoken'] = getCookie('csrftoken');
+	var msg = data["msg"];
     $.ajax({
         type: "POST",
         enctype: 'multipart/form-data',
@@ -497,7 +498,7 @@ function makeIssue(data){
         success: function (data) {
                     var githubCode = data.statusCode;
                     if(githubCode == '201'){
-                      var successMessage = "The license request has been successfully submitted.";
+                      var successMessage = 'The issue "' + msg + '" has been successfully submitted.';
                       $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
                           setTimeout(function() {
                             $("#messages").html("");

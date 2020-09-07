@@ -15,6 +15,7 @@ services:
       - SPDX_REDIS_HOST=redis
       - SPDXParser.LocalLicensesDir=/licenses/current
       - SPDXParser.OnlyUseLocalLicenses=true
+    env_file: .env
     depends_on:
       - redis
 
