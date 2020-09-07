@@ -669,8 +669,8 @@ def compare(request):
                         uploaded_file_url = fs.url(filename).replace("%20", " ")
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
                         try :
-                            """Call the java function to verify for valid RDF Files."""
-                            retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
+                            """Call the java function to verify for valid SPDX Files."""
+                            retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url)
                             if (len(retval) > 0):
                                 """If warnings raised"""
                                 warningoccurred = True
