@@ -130,3 +130,4 @@ src/app/media/
 # SSL certification data files
 data/certbot/
 
+container_logs

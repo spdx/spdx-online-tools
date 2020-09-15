@@ -152,7 +152,7 @@ def getFileFormat(to_format):
     elif (to_format=="RDF"):
         return ".rdf"
     elif (to_format=="Spreadsheet"):
-        return ".xlsx"
+        return ".xls"
     elif (to_format=="HTML"):
         return ".html"
     else :
@@ -373,7 +373,7 @@ def compare(request):
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     """ Saving file to the media directory """
                     if (extensionGiven(rfilename)==False):
-                        rfilename = rfilename+".xlsx"
+                        rfilename = rfilename+".xls"
                     file1 = request.FILES["file1"]
                     file2 = request.FILES["file2"]
                     folder = "/".join(uploaded_file1_path.split('/')[:-1])
@@ -381,7 +381,7 @@ def compare(request):
                     callfunc.append(uploaded_file1_path)
                     callfunc.append(uploaded_file2_path)
                     """ Call the java function with parameters as list"""
-                    retval1 = verifyclass.verifyRDFFile(uploaded_file1_path)
+                    retval1 = verifyclass.verify(uploaded_file1_path)
                     if (len(retval1) > 0):
                         erroroccurred = True
                         message = "The following error(s)/warning(s) were raised by " + str(uploaded_file1) + ": " +str(retval1)
