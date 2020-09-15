@@ -8,6 +8,7 @@ Docker images are stored in Amazon ECR
 
 Following are the steps for updating the images:
 
+* If the license matcher version has changed, update the requirements.txt file with the correct git tag
 * On you local machine, update the docker-compose.prod.yml - these can be copied from the ECR repositories information in AWS
   * replace `<aws-account-id>` with the AWS account ID
   * replace `<aws-region>` with the AWS region
@@ -75,6 +76,8 @@ DEBUG=0
 ONLINE_TOOL_GITHUB_KEY=[Github key - see README.md for more information]
 ONLINE_TOOL_GITHUB_SECRET=[Github secret - see README.md for more information]
 DJANGO_SECRET_KEY=[Django secret key - see README.md for more information]
+DIFF_REPO_WITH_OWNER=spdx/licenseRequestImages
+DIFF_REPO_GIT_TOKEN=[Github token for a github user with commit access to the DIFF_REPO_WITH_OWNER]
 SQL_ENGINE=django.db.backends.postgresql
 SQL_DATABASE=spdx_db
 SQL_USER=postgres
