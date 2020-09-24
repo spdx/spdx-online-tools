@@ -1291,30 +1291,33 @@ def archiveRequests(request, license_id=None):
     returns archive_requests.html template
     """
     context_dict = {}
-    if request.method == "POST" and request.is_ajax():
-        if request.user.is_authenticated():       
-            user = request.user
-            if utils.checkPermission(user):    
-                archive = request.POST.get('archive', True)
-                license_id = request.POST.get('license_id', False)
-                context_dict['authorized'] = "True"
-                if license_id:
-                    LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
-        else:
-            if (request.is_ajax()):
-                ajaxdict = {}
-                ajaxdict["type"] = "auth_error"
-                ajaxdict["data"] = "Please login using GitHub to use this feature."
-                response = dumps(ajaxdict)
-                return HttpResponse(response,status=401)
-            return HttpResponse("Please login using GitHub to use this feature.",status=401)
-    archiveRequests = LicenseRequest.objects.filter(archive='True').order_by('-submissionDatetime')
-    context_dict['archiveRequests'] = archiveRequests
-    if request.user.is_authenticated:
+    if request.user.is_authenticated():
         user = request.user
         github_login = user.social_auth.get(provider='github')
+        if utils.checkPermission(user):
+            context_dict['authorized'] = "True"
     else:
         github_login = None
+    if request.method == "POST" and request.is_ajax():
+        if not request.user.is_authenticated():
+            ajaxdict = {}
+            ajaxdict["type"] = "auth_error"
+            ajaxdict["data"] = "Please login using GitHub to use this feature."
+            response = dumps(ajaxdict)
+            return HttpResponse(response,status=401)
+        if 'authorized' not in context_dict:
+            ajaxdict = {}
+            ajaxdict["type"] = "auth_error"
+            ajaxdict["data"] = "You are not authorised to perform this action"
+            response = dumps(ajaxdict)
+            return HttpResponse(response, status=401)
+        archive = request.POST.get('archive', True)
+        license_id = request.POST.get('license_id', False)
+        if license_id:
+            LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+
+    archiveRequests = LicenseRequest.objects.filter(archive='True').order_by('-submissionDatetime')
+    context_dict['archiveRequests'] = archiveRequests
     context_dict['github_login'] = github_login
     return render(request,
         'app/archive_requests.html',context_dict
@@ -1393,30 +1396,32 @@ def licenseRequests(request, license_id=None):
     returns license_requests.html template
     """
     context_dict = {}
-    if request.method == "POST" and request.is_ajax():
-        if request.user.is_authenticated():       
-            user = request.user
-            if utils.checkPermission(user):
-                archive = request.POST.get('archive', False)
-                license_id = request.POST.get('license_id', False)
-                context_dict['authorized'] = "True"
-                if license_id:
-                    LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
-        else:
-            if (request.is_ajax()):
-                ajaxdict = {}
-                ajaxdict["type"] = "auth_error"
-                ajaxdict["data"] = "Please login using GitHub to use this feature."
-                response = dumps(ajaxdict)
-                return HttpResponse(response,status=401)
-            return HttpResponse("Please login using GitHub to use this feature.",status=401)
-    licenseRequests = LicenseRequest.objects.filter(archive='False').order_by('-submissionDatetime')
-    context_dict['licenseRequests'] = licenseRequests
-    if request.user.is_authenticated:
+    if request.user.is_authenticated():
         user = request.user
         github_login = user.social_auth.get(provider='github')
+        if utils.checkPermission(user):
+            context_dict['authorized'] = "True"
     else:
         github_login = None
+    if request.method == "POST" and request.is_ajax():
+        if (not request.user.is_authenticated()):
+            ajaxdict = {}
+            ajaxdict["type"] = "auth_error"
+            ajaxdict["data"] = "Please login using GitHub to use this feature."
+            response = dumps(ajaxdict)
+            return HttpResponse(response,status=401)
+        if 'authorized' not in context_dict:
+            ajaxdict = {}
+            ajaxdict["type"] = "auth_error"
+            ajaxdict["data"] = "You are not authorised to perform this action"
+            response = dumps(ajaxdict)
+            return HttpResponse(response, status=401)
+        archive = request.POST.get('archive', True)
+        license_id = request.POST.get('license_id', False)
+        if license_id:
+            LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+    licenseRequests = LicenseRequest.objects.filter(archive='False').order_by('-submissionDatetime')
+    context_dict['licenseRequests'] = licenseRequests
     context_dict['github_login'] = github_login
     return render(request,
         'app/license_requests.html',context_dict
