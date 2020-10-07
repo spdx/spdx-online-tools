@@ -643,13 +643,14 @@ def compare(request):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
-            compareclass = package.CompareMultpleSpdxDocs
+            compareclass = package.CompareSpdxDocs
+            helperclass = package.SpdxToolsHelper
             ajaxdict = dict()
             filelist = list()
             errorlist = list()
             try:
                 if request.FILES["files"]:
-                    rfilename = request.POST["rfilename"]+".xls"
+                    rfilename = request.POST["rfilename"]+".xlsx"
                     folder = str(request.user)+"/"+ str(int(time()))
                     callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
                     erroroccurred = False
@@ -669,33 +670,44 @@ def compare(request):
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename).replace("%20", " ")
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
-                        try :
-                            """Call the java function to verify for valid SPDX Files."""
-                            retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-                            if (len(retval) > 0):
-                                """If warnings raised"""
-                                warningoccurred = True
+                        nameoffile, fileext = os.path.splitext(filename)
+                        if nameoffile.endswith(".rdf") and fileext == ".xml":
+                            fileext = ".rdfxml"
+                        elif fileext == ".spdx":
+                            fileext = ".tag"
+                        try:
+                            filetype = helperclass.strToFileType(fileext[1:])
+                            try :
+                                """Call the java function to verify for valid SPDX Files."""
+                                retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url, filetype)
+                                if (len(retval) > 0):
+                                    """If warnings raised"""
+                                    warningoccurred = True
+                                    filelist.append(myfile.name)
+                                    errorlist.append(str(retval))
+                                else :
+                                    filelist.append(myfile.name)
+                                    errorlist.append("No errors found")
+                            except jpype.JavaException as ex :
+                                """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
+                                erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append(str(retval))
-                            else :
+                                errorlist.append(jpype.JavaException.message(ex))
+                            except :
+                                """ Other Exceptions"""
+                                erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append("No errors found")
-                        except jpype.JavaException as ex :
-                            """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
-                            erroroccurred = True
-                            filelist.append(myfile.name)
-                            errorlist.append(jpype.JavaException.message(ex))
+                                errorlist.append(format_exc())
                         except :
-                            """ Other Exceptions"""
+                            """Invalid file extension"""
                             erroroccurred = True
                             filelist.append(myfile.name)
-                            errorlist.append(format_exc())
-
+                            errorlist.append("Invalid file extension for "+filename+".  Must be .xls, .xlsx, .xml, .json, .yaml, .spdx, .rdfxml")
                     if (erroroccurred==False):
                         """ If no errors in any of the file,call the java function with parameters as list"""
                         try :
                             compareclass.onlineFunction(callfunc)
-                        except :
+                        except Exception as ex:
                             """Error raised by onlineFunction"""
                             if (request.is_ajax()):
                                 ajaxdict["type"] = "warning2"
