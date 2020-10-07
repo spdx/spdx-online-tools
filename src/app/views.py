@@ -62,8 +62,6 @@ from .forms import LicenseRequestForm, LicenseNamespaceRequestForm
 from .models import LicenseRequest, LicenseNamespace
 from spdx_license_matcher.utils import get_spdx_license_text
 
-
-
 import cgi
 
 def index(request):
@@ -460,8 +458,11 @@ def validate(request):
                         )
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename).replace("%20", " ")
+                    formatstr = request.POST["format"]
+                    serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
+                    fileformat = serFileTypeEnum.valueOf(formatstr)
                     """ Call the java function with parameters """
-                    retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url))
+                    retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url), fileformat)
                     if (len(retval) > 0):
                         """ If any warnings are returned """
                         if (request.is_ajax()):
