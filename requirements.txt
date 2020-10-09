@@ -13,4 +13,4 @@ gunicorn==19.10.0
 selenium==3.14.1
 django-oauth-toolkit==1.0.0
 django-rest-framework-social-oauth2==1.1.0
--e git://github.com/spdx/spdx-license-matcher.git@v1.0#egg=spdx-license-matcher
+-e git://github.com/spdx/spdx-license-matcher.git#egg=spdx-license-matcher
