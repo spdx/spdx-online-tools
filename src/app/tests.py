@@ -233,13 +233,13 @@ class CompareViewsTestCase(TestCase):
         """ Open files"""
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
         self.rdf_file2 = open("examples/SPDXRdfExample.rdf")
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        self.invalid_rdf = open("examples/SPDXRdfExample-v2.0_invalid.rdf")
 
     def exit(self):
         """ Close files"""
         self.rdf_file.close()
         self.rdf_file2.close()
-        self.tv_file.close()
+        self.invalid_rdf.close()
 
     def test_compare(self):
         """GET Request for compare"""
@@ -293,7 +293,7 @@ class CompareViewsTestCase(TestCase):
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
         resp = self.client.post(reverse("compare"),{'rfilename': 'comparetest','files': [self.rdf_file,self.rdf_file2]},follow=True,secure=True)
-        self.assertTrue(resp.status_code==406 or resp.status_code == 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertIn("medialink",resp.context)
         self.assertEqual(resp.redirect_chain,[])
         self.assertTrue(resp.context["medialink"].startswith(settings.MEDIA_URL))
@@ -306,8 +306,8 @@ class CompareViewsTestCase(TestCase):
         """POST Request for comparing two files"""
         self.initialise()
         self.client.force_login(User.objects.get_or_create(username='comparetestuser')[0])
-        resp = self.client.post(reverse("compare"),{'rfilename': 'comparetest','files' : [self.rdf_file,self.tv_file]},follow=True,secure=True)
-        self.assertEqual(resp.status_code,400)
+        resp = self.client.post(reverse("compare"),{'rfilename': 'comparetest','files' : [self.rdf_file,self.invalid_rdf]},follow=True,secure=True)
+        self.assertEqual(resp.status_code, 400)
         self.assertTrue('error' in resp.context)
         self.assertEqual(resp.redirect_chain,[])
         self.exit()
@@ -1107,7 +1107,7 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
         self.assertEqual(resp.redirect_chain,[])
         self.assertIn("404.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"licenseInformation")
-    
+
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_archive_license_requests_feature(self):
         """Check if the license is shifted to archive requests when archive button is pressed"""
