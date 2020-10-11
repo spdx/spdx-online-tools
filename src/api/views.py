@@ -37,7 +37,7 @@ import datetime
 import xml.etree.cElementTree as ET
 
 from traceback import format_exc
-from os.path import abspath, join
+from os.path import abspath, join, sep, splitext
 from time import time
 from requests import post
 from json import dumps, loads
@@ -99,8 +99,11 @@ def validate(request):
             uploaded_file_path = str(query.file.path)
             try :
                 if request.FILES["file"]:
+                    formatstr = request.POST["format"]
+                    serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
+                    fileformat = serFileTypeEnum.valueOf(formatstr)
                     """ Call the java function with parameter"""
-                    retval = verifyclass.verify(uploaded_file_path)
+                    retval = verifyclass.verify(uploaded_file_path, fileformat)
                     if (len(retval) > 0):
                         result = "The following error(s)/warning(s) were raised: " + str(retval)
                         returnstatus = status.HTTP_400_BAD_REQUEST
@@ -147,14 +150,38 @@ def extensionGiven(filename):
         return False
 
 def getFileFormat(to_format):
-    if (to_format=="Tag"):
+    if (to_format=="TAG"):
         return ".spdx"
-    elif (to_format=="RDF"):
-        return ".rdf"
-    elif (to_format=="Spreadsheet"):
+    elif (to_format=="RDFXML"):
+        return ".rdf.xml"
+    elif (to_format=="XLS"):
         return ".xls"
-    elif (to_format=="HTML"):
-        return ".html"
+    elif (to_format=="XLSX"):
+        return ".xlsx"
+    elif (to_format=="JSON"):
+        return ".json"
+    elif (to_format=="YAML"):
+        return ".yaml"
+    elif (to_format=="XML"):
+        return ".xml"
+    else :
+        return ".invalid"
+        
+def formatToContentType(to_format):
+    if (to_format=="TAG"):
+        return "text/tag-value"
+    elif (to_format=="RDFXML"):
+        return "application/rdf+xml"
+    elif (to_format=="XLS"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="XLSX"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="JSON"):
+        return "application/json"
+    elif (to_format=="YAML"):
+        return "text/yaml"
+    elif (to_format=="XML"):
+        return "application/xml"
     else :
         return ".invalid"
 
@@ -178,8 +205,10 @@ def convert(request):
             """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
+            serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
+            spdxConverter = package.SpdxConverter
+            verifyclass = package.Verify
             result = ""
-            tagToRdfFormat = None
             message = "Success"
             query = ConvertFileUpload.objects.create(
                 owner=request.user,
@@ -192,7 +221,7 @@ def convert(request):
             uploaded_file_path = str(query.file.path)
             try :
                 if request.FILES["file"]:
-                    folder = "/".join(uploaded_file_path.split('/')[:-1])
+                    folder = sep.join(uploaded_file_path.split(sep)[:-1])
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
                     convertfile =  request.POST["cfilename"]
@@ -201,93 +230,24 @@ def convert(request):
                         extension = getFileFormat(option2)
                         convertfile = convertfile + extension
                     """ Call the java function with parameters as list"""
-                    if (option1=="Tag"):
-                        print ("Verifing for Tag/Value Document")
-                        if (option2=="RDF"):
-                            try:
-                                tagToRdfFormat = request.POST["tagToRdfFormat"]
-                            except:
-                                tagToRdfFormat = 'RDF/XML-ABBREV'
-                            option3 = tagToRdfFormat
-                            if option3 not in ['RDF/XML-ABBREV','RDF/XML','N-TRIPLET','TURTLE']:
-                                message, returnstatus, httpstatus = convertError('400')
-                            tagtordfclass = package.TagToRDF
-                            retval = tagtordfclass.onlineFunction([
-                                uploaded_file_path,
-                                folder+"/"+convertfile,
-                                option3
-                            ])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="Spreadsheet"):
-                            tagtosprdclass = package.TagToSpreadsheet
-                            retval = tagtosprdclass.onlineFunction([
-                                uploaded_file_path,
-                                folder+"/"+convertfile
-                                ])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        else :
-                            message, returnstatus, httpstatus = convertError('400')
-                    elif (option1=="RDF"):
-                        print ("Verifing for RDF Document")
-                        if (option2=="Tag"):
-                            rdftotagclass = package.RdfToTag
-                            retval = rdftotagclass.onlineFunction([
-                                uploaded_file_path,
-                                folder+"/"+convertfile
-                                ])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="Spreadsheet"):
-                            rdftosprdclass = package.RdfToSpreadsheet
-                            retval = rdftosprdclass.onlineFunction([
-                                uploaded_file_path,
-                                folder+"/"+convertfile
-                                ])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="HTML"):
-                            rdftohtmlclass = package.RdfToHtml
-                            retval = rdftohtmlclass.onlineFunction([
-                                uploaded_file_path,
-                                folder+"/"+convertfile
-                                ])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        else :
-                            message, returnstatus, httpstatus = convertError('400')
-                    elif (option1=="Spreadsheet"):
-                        print ("Verifing for Spreadsheet Document")
-                        if (option2=="Tag"):
-                            sprdtotagclass = package.SpreadsheetToTag
-                            retval = sprdtotagclass.onlineFunction([
-                                uploaded_file_path,
-                                folder+"/"+convertfile
-                                ])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="RDF"):
-                            sprdtordfclass = package.SpreadsheetToRDF
-                            retval = sprdtordfclass.onlineFunction([
-                                uploaded_file_path,
-                                folder+"/"+convertfile
-                                ])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        else :
-                            message, returnstatus, httpstatus = convertError('400')
+                    fromFileFormat = serFileTypeEnum.valueOf(option1);
+                    toFileFormat = serFileTypeEnum.valueOf(option2);
+                    spdxConverter.convert(uploaded_file_path,
+                                folder+sep+convertfile, fromFileFormat, toFileFormat)
+                    retval = verifyclass.verify(folder+sep+convertfile, toFileFormat)
+                    if (len(retval) > 0):
+                        warningoccurred = True
                     if (warningoccurred == True ):
                         message = "The following error(s)/warning(s) were raised: " + str(retval)
-                        index = folder.split("/").index('media')
-                        result = "/"+"/".join(folder.split("/")[index:])+'/'+convertfile
+                        index = folder.split(sep).index('media')
+                        result = "/"+"/".join(folder.split(sep)[index:])+'/'+convertfile
                         returnstatus = status.HTTP_406_NOT_ACCEPTABLE
                         httpstatus = 406
                         jpype.detachThreadFromJVM()
                     else :
                         """return only the path starting with MEDIA_URL"""
-                        index = folder.split("/").index('media')
-                        result = "/"+("/".join(folder.split("/")[index:]))+'/'+convertfile
+                        index = folder.split(sep).index('media')
+                        result = "/"+("/".join(folder.split(sep)[index:]))+'/'+convertfile
                         returnstatus = status.HTTP_201_CREATED
                         httpstatus = 201
                         jpype.detachThreadFromJVM()
@@ -302,12 +262,11 @@ def convert(request):
                 message = format_exc()
                 returnstatus = status.HTTP_400_BAD_REQUEST
                 httpstatus = 400
-                jpype.detachThreadFromJVM() 
-            query.tagToRdfFormat=tagToRdfFormat
+                jpype.detachThreadFromJVM()
             query.message=message
             query.status = httpstatus
             query.result = result
-            ConvertFileUpload.objects.filter(file=uploaded_file).update(tagToRdfFormat=tagToRdfFormat,message=message, status=httpstatus, result=result)
+            ConvertFileUpload.objects.filter(file=uploaded_file).update(message=message, status=httpstatus, result=result)
             serial = ConvertSerializerReturn(instance=query)
             return Response(
                 serial.data,status=returnstatus
@@ -331,6 +290,13 @@ def convertError(status):
     jpype.detachThreadFromJVM()
     return (message, returnstatus, httpstatus)
 
+def file_path_to_spdx_ext(file_path):
+    nameoffile, fileext = splitext(file_path)
+    if (nameoffile.endswith(".rdf") and fileext == ".xml") or fileext == ".rdf":
+        fileext = ".rdfxml"
+    elif fileext == ".spdx":
+        fileext = ".tag"
+    return fileext[1:]
 
 @api_view(['GET', 'POST'])
 @renderer_classes((JSONRenderer,))
@@ -354,7 +320,8 @@ def compare(request):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
-            compareclass = package.CompareMultpleSpdxDocs
+            compareclass = package.CompareSpdxDocs
+            helperclass = package.SpdxToolsHelper
             result=""
             message="Success"
             erroroccurred = False
@@ -373,27 +340,33 @@ def compare(request):
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     """ Saving file to the media directory """
                     if (extensionGiven(rfilename)==False):
-                        rfilename = rfilename+".xls"
+                        rfilename = rfilename+".xlsx"
                     file1 = request.FILES["file1"]
                     file2 = request.FILES["file2"]
-                    folder = "/".join(uploaded_file1_path.split('/')[:-1])
-                    callfunc = [folder+"/"+rfilename]
+                    folder = sep.join(uploaded_file1_path.split(sep)[:-1])
+                    callfunc = [folder+sep+rfilename]
                     callfunc.append(uploaded_file1_path)
                     callfunc.append(uploaded_file2_path)
+                    try :
+                        filetype1 = helperclass.strToFileType(file_path_to_spdx_ext(uploaded_file1_path))
+                        filetype2 = helperclass.strToFileType(file_path_to_spdx_ext(uploaded_file2_path))
+                        retval1 = verifyclass.verify(uploaded_file1_path, filetype1)
+                        if (len(retval1) > 0):
+                            erroroccurred = True
+                            message = "The following error(s)/warning(s) were raised by " + str(uploaded_file1) + ": " +str(retval1)
+                        retval2 = verifyclass.verify(uploaded_file2_path, filetype2)
+                        if (len(retval2) > 0):
+                            erroroccurred = True
+                            message += "The following error(s)/warning(s) were raised by " + str(uploaded_file2) + ": " +str(retval2)
+                    except :
+                        erroroccurred = True
+                        message += "Invalid file extension.  Must be .xls, .xlsx, .xml, .json, .yaml, .spdx, .rdfxml"
                     """ Call the java function with parameters as list"""
-                    retval1 = verifyclass.verify(uploaded_file1_path)
-                    if (len(retval1) > 0):
-                        erroroccurred = True
-                        message = "The following error(s)/warning(s) were raised by " + str(uploaded_file1) + ": " +str(retval1)
-                    retval2 = verifyclass.verifyRDFFile(uploaded_file2_path)
-                    if (len(retval2) > 0):
-                        erroroccurred = True
-                        message += "The following error(s)/warning(s) were raised by " + str(uploaded_file2) + ": " +str(retval2)
                     try :
                         compareclass.onlineFunction(callfunc)
                         """Return only the path starting with MEDIA_URL"""
-                        index = folder.split("/").index('media')
-                        result = "/"+("/".join(folder.split("/")[index:]))+'/'+rfilename
+                        index = folder.split(sep).index('media')
+                        result = "/"+("/".join(folder.split(sep)[index:]))+'/'+rfilename
                         returnstatus = status.HTTP_201_CREATED
                         httpstatus = 201
                     except :
