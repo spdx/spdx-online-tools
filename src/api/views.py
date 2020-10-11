@@ -430,7 +430,7 @@ def check_license(request):
                 jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
             """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
-            package = jpype.JPackage("org.spdx.compare")
+            package = jpype.JPackage("org.spdx.utility.compare")
             compareclass = package.LicenseCompareHelper
             query = CheckLicenseFileUpload.objects.create(
                 owner=request.user,
