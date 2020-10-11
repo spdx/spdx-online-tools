@@ -163,7 +163,7 @@ class ValidateViewsTestCase(TestCase):
         """POST Request for validate without login or ANONYMOUS_LOGIN_DISABLED """
         if not settings.ANONYMOUS_LOGIN_ENABLED :
             self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-            resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
+            resp = self.client.post(reverse("validate"),{'file' : self.tv_file, 'format' : 'TAG'},follow=True,secure=True)
             self.assertNotEqual(resp.redirect_chain,[])
             self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
             self.tv_file.close()
@@ -182,7 +182,7 @@ class ValidateViewsTestCase(TestCase):
         """POST Request for validate validating tag value files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-        resp = self.client.post(reverse("validate"),{'file' : self.tv_file},follow=True,secure=True)
+        resp = self.client.post(reverse("validate"),{'file' : self.tv_file, 'format' : 'TAG'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.content,"This SPDX Document is valid.")
         self.client.logout()
@@ -191,7 +191,7 @@ class ValidateViewsTestCase(TestCase):
         """POST Request for validate validating rdf files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-        resp = self.client.post(reverse("validate"),{'file' : self.rdf_file},follow=True,secure=True)
+        resp = self.client.post(reverse("validate"),{'file' : self.rdf_file, 'format' : 'RDFXML'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.content,"This SPDX Document is valid.")
         self.rdf_file.close()
@@ -201,7 +201,7 @@ class ValidateViewsTestCase(TestCase):
         """POST Request for validate validating other files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         self.other_file = open("examples/Other.txt")
-        resp = self.client.post(reverse("validate"),{'file' : self.other_file},follow=True,secure=True)
+        resp = self.client.post(reverse("validate"),{'file' : self.other_file, 'format' : 'TAG'},follow=True,secure=True)
         self.assertTrue(resp.status_code,400)
         self.assertTrue('error' in resp.context)
         self.other_file.close()
@@ -211,7 +211,7 @@ class ValidateViewsTestCase(TestCase):
         """POST Request for validate validating tag value files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         self.invalid_tv_file = open("examples/SPDXTagExample-v2.0_invalid.spdx")
-        resp = self.client.post(reverse("validate"),{'file' : self.invalid_tv_file},follow=True)
+        resp = self.client.post(reverse("validate"),{'file' : self.invalid_tv_file, 'format' : 'TAG'},follow=True)
         self.assertTrue(resp.status_code,400)
         self.assertTrue('error' in resp.context)
         self.invalid_tv_file.close()
@@ -221,7 +221,7 @@ class ValidateViewsTestCase(TestCase):
         """POST Request for validate validating rdf files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
         self.invalid_rdf_file = open("examples/SPDXRdfExample-v2.0_invalid.rdf")
-        resp = self.client.post(reverse("validate"),{'file' : self.invalid_rdf_file},follow=True)
+        resp = self.client.post(reverse("validate"),{'file' : self.invalid_rdf_file, 'format' : 'RDFXML'},follow=True)
         self.assertTrue(resp.status_code,400)
         self.assertTrue('error' in resp.context)
         self.client.logout()
@@ -335,7 +335,7 @@ class ConvertViewsTestCase(TestCase):
         """POST Request for convert tag to rdf"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-        resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".rdf",'from_format' : "Tag", 'to_format' : "RDF", 'tagToRdfFormat': "TURTLE",'file' : self.tv_file},follow=True,secure=True)
+        resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".rdf.xml",'from_format' : "TAG", 'to_format' : "RDFXML", 'file' : self.tv_file},follow=True,secure=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
         self.assertEqual(resp.redirect_chain,[])
@@ -349,7 +349,7 @@ class ConvertViewsTestCase(TestCase):
         """POST Request for convert tag to spreadsheet"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
-        resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".xls",'from_format' : "Tag", 'to_format' : "Spreadsheet", 'file' : self.tv_file},follow=True)
+        resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".xlsx",'from_format' : "TAG", 'to_format' : "XLSX", 'file' : self.tv_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
         self.assertEqual(resp.redirect_chain,[])
@@ -363,7 +363,7 @@ class ConvertViewsTestCase(TestCase):
         """POST Request for convert rdf to tag"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-        resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".spdx",'from_format' : "RDF", 'to_format' : "Tag", 'file' : self.rdf_file},follow=True)
+        resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".spdx",'from_format' : "RDFXML", 'to_format' : "TAG", 'file' : self.rdf_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
         self.assertEqual(resp.redirect_chain,[])
@@ -377,7 +377,7 @@ class ConvertViewsTestCase(TestCase):
         """POST Request for convert rdf to spreadsheet"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-        resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".xls",'from_format' : "RDF", 'to_format' : "Spreadsheet", 'file' : self.rdf_file},follow=True)
+        resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".xls",'from_format' : "RDFXML", 'to_format' : "XLS", 'file' : self.rdf_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
         self.assertEqual(resp.redirect_chain,[])
@@ -387,21 +387,11 @@ class ConvertViewsTestCase(TestCase):
         self.rdf_file.close()
         self.client.logout()
 
-    # def test_convert_rdftohtml(self):
-    #     """POST Request for convert rdf to html"""
-    #     self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-    #     self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-    #     resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".html",'from_format' : "RDF", 'to_format' : "Html", 'file' : self.rdf_file},follow=True)
-    #     self.assertEqual(resp.status_code,200)
-    #     self.assertNotEqual(resp.redirect_chain,[])
-    #     self.rdf_file.close()
-    #     self.client.logout()
-
     def test_convert_xlsxtotag(self):
         """POST Request for convert spreadsheet to tag"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
-        resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".spdx",'from_format' : "Spreadsheet", 'to_format' : "Tag", 'file' : self.xls_file},follow=True)
+        resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".spdx",'from_format' : "XLS", 'to_format' : "TAG", 'file' : self.xls_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
         self.assertEqual(resp.redirect_chain,[])
@@ -415,7 +405,7 @@ class ConvertViewsTestCase(TestCase):
         """POST Request for convert spreadsheet to rdf"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
         self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
-        resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".rdf",'from_format' : "Spreadsheet", 'to_format' : "RDF", 'file' : self.xls_file},follow=True)
+        resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".rdf",'from_format' : "XLS", 'to_format' : "RDFXML", 'file' : self.xls_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
         self.assertEqual(resp.redirect_chain,[])

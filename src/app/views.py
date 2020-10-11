@@ -671,7 +671,7 @@ def compare(request):
                         uploaded_file_url = fs.url(filename).replace("%20", " ")
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
                         nameoffile, fileext = os.path.splitext(filename)
-                        if nameoffile.endswith(".rdf") and fileext == ".xml":
+                        if (nameoffile.endswith(".rdf") and fileext == ".xml") or fileext == ".rdf":
                             fileext = ".rdfxml"
                         elif fileext == ".spdx":
                             fileext = ".tag"
@@ -819,6 +819,24 @@ def getFileFormat(to_format):
         return ".xml"
     else :
         return ".invalid"
+        
+def formatToContentType(to_format):
+    if (to_format=="TAG"):
+        return "text/tag-value"
+    elif (to_format=="RDFXML"):
+        return "application/rdf+xml"
+    elif (to_format=="XLS"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="XLSX"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="JSON"):
+        return "application/json"
+    elif (to_format=="YAML"):
+        return "text/yaml"
+    elif (to_format=="XML"):
+        return "application/xml"
+    else :
+        return ".invalid"
 
 def convert(request):
     """ View for convert tool
@@ -848,7 +866,7 @@ def convert(request):
                     uploaded_file_url = fs.url(filename).replace("%20", " ")
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
-                    content_type =""
+                    content_type = formatToContentType(option2)
                     if "cfileformat" in request.POST :
                         cfileformat = request.POST["cfileformat"]
                     else :
