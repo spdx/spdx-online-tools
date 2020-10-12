@@ -152,6 +152,7 @@ $(document).ready(function () {
 	    $('#convertdoclabel').text("");
 	    $('#cfileformat').val("");
     } else {
+	    $('#to_format').val(id2);
 	    file_ext = $('#to_format').find(':selected').attr("data-ext");
 	    $('#convertdoclabel').text(file_ext);
 	    $('#cfileformat').val(file_ext);
