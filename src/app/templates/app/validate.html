@@ -11,17 +11,31 @@
 </div>
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead"> Tag-Value, RDF and XML SPDX Document</p> </div>
+<div class="panel-heading"> <p class="lead">Tag-Value, RDF, JSON, Spreadsheet, XML SPDX Document</p> </div>
 <div class="panel-body">
-  <div id="drop-area" class="container">
-    <form id="validateform" enctype="multipart/form-data" class="form-horizontal" method="post">
-      {% csrf_token %}
-      <h4>Upload file using the button or by dragging and dropping onto the dashed region</h4>
-      <input type="file" id="file" onchange="handleFiles(this.files)">
-      <label class="button" for="file">Select file</label>
-      <p class="file-name">No file selected</p>
+	<form id="validateform" enctype="multipart/form-data" class="form-horizontal" method="post">
+	  {% csrf_token %}
+	  <div class = "form-group">
+			&nbsp; File Type &nbsp;
+				<select name="format" id="format">
+					  <option value="0" data-value="0" selected="">-</option>
+					  <option value="XLSXSpreadsheet">XLSX Spreadsheet</option>
+					  <option value="XLSSpreadsheet">XLS Spreadsheet</option>
+					  <option value="RDFXML">RDF/XML</option>
+					  <option value="Tag">Tag/Value</option>
+					  <option value="JSON">JSON</option>
+					  <option value="YAML">YAML</option>
+					  <option value="XML">XML</option>
+                </select>	
+		</div>
+		<div id="drop-area" class="container">
+		  <h4>Upload file using the button or by dragging and dropping onto the dashed region</h4>
+		  <input type="file" id="file" onchange="handleFiles(this.files)">
+		  <label class="button" for="file">Select file</label>
+		  <p class="file-name">No file selected</p>
+		</div> 
     </form>
-  </div> <hr>
+<hr>
     <button id="validatebutton" name="validatebutton" class="btn btn-md btn-info" type="submit" disabled="true">Validate</button>
   {% include "app/modal.html" %} 
   <!--
@@ -89,6 +103,9 @@
 function checkform() {
   if (selected_file == "") {
     return ("No files selected.");
+  } else if (($('#format').val() == "0")){
+    $('#formatt').focus();
+    return("Please select the file format.");
   }
   else {
     return "1";

@@ -62,8 +62,6 @@ from .forms import LicenseRequestForm, LicenseNamespaceRequestForm
 from .models import LicenseRequest, LicenseNamespace
 from spdx_license_matcher.utils import get_spdx_license_text
 
-
-
 import cgi
 
 def index(request):
@@ -460,8 +458,11 @@ def validate(request):
                         )
                     filename = fs.save(myfile.name, myfile)
                     uploaded_file_url = fs.url(filename).replace("%20", " ")
+                    formatstr = request.POST["format"]
+                    serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
+                    fileformat = serFileTypeEnum.valueOf(formatstr)
                     """ Call the java function with parameters """
-                    retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url))
+                    retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url), fileformat)
                     if (len(retval) > 0):
                         """ If any warnings are returned """
                         if (request.is_ajax()):
@@ -642,13 +643,14 @@ def compare(request):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
-            compareclass = package.CompareMultpleSpdxDocs
+            compareclass = package.CompareSpdxDocs
+            helperclass = package.SpdxToolsHelper
             ajaxdict = dict()
             filelist = list()
             errorlist = list()
             try:
                 if request.FILES["files"]:
-                    rfilename = request.POST["rfilename"]+".xls"
+                    rfilename = request.POST["rfilename"]+".xlsx"
                     folder = str(request.user)+"/"+ str(int(time()))
                     callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
                     erroroccurred = False
@@ -668,33 +670,44 @@ def compare(request):
                         filename = fs.save(myfile.name, myfile)
                         uploaded_file_url = fs.url(filename).replace("%20", " ")
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
-                        try :
-                            """Call the java function to verify for valid SPDX Files."""
-                            retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url)
-                            if (len(retval) > 0):
-                                """If warnings raised"""
-                                warningoccurred = True
+                        nameoffile, fileext = os.path.splitext(filename)
+                        if (nameoffile.endswith(".rdf") and fileext == ".xml") or fileext == ".rdf":
+                            fileext = ".rdfxml"
+                        elif fileext == ".spdx":
+                            fileext = ".tag"
+                        try:
+                            filetype = helperclass.strToFileType(fileext[1:])
+                            try :
+                                """Call the java function to verify for valid SPDX Files."""
+                                retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url, filetype)
+                                if (len(retval) > 0):
+                                    """If warnings raised"""
+                                    warningoccurred = True
+                                    filelist.append(myfile.name)
+                                    errorlist.append(str(retval))
+                                else :
+                                    filelist.append(myfile.name)
+                                    errorlist.append("No errors found")
+                            except jpype.JavaException as ex :
+                                """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
+                                erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append(str(retval))
-                            else :
+                                errorlist.append(jpype.JavaException.message(ex))
+                            except :
+                                """ Other Exceptions"""
+                                erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append("No errors found")
-                        except jpype.JavaException as ex :
-                            """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
-                            erroroccurred = True
-                            filelist.append(myfile.name)
-                            errorlist.append(jpype.JavaException.message(ex))
+                                errorlist.append(format_exc())
                         except :
-                            """ Other Exceptions"""
+                            """Invalid file extension"""
                             erroroccurred = True
                             filelist.append(myfile.name)
-                            errorlist.append(format_exc())
-
+                            errorlist.append("Invalid file extension for "+filename+".  Must be .xls, .xlsx, .xml, .json, .yaml, .spdx, .rdfxml")
                     if (erroroccurred==False):
                         """ If no errors in any of the file,call the java function with parameters as list"""
                         try :
                             compareclass.onlineFunction(callfunc)
-                        except :
+                        except Exception as ex:
                             """Error raised by onlineFunction"""
                             if (request.is_ajax()):
                                 ajaxdict["type"] = "warning2"
@@ -790,14 +803,38 @@ def compare(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def getFileFormat(to_format):
-    if (to_format=="Tag"):
+    if (to_format=="TAG"):
         return ".spdx"
-    elif (to_format=="RDF"):
-        return ".rdf"
-    elif (to_format=="Spreadsheet"):
+    elif (to_format=="RDFXML"):
+        return ".rdf.xml"
+    elif (to_format=="XLS"):
         return ".xls"
-    elif (to_format=="HTML"):
-        return ".html"
+    elif (to_format=="XLSX"):
+        return ".xlsx"
+    elif (to_format=="JSON"):
+        return ".json"
+    elif (to_format=="YAML"):
+        return ".yaml"
+    elif (to_format=="XML"):
+        return ".xml"
+    else :
+        return ".invalid"
+        
+def formatToContentType(to_format):
+    if (to_format=="TAG"):
+        return "text/tag-value"
+    elif (to_format=="RDFXML"):
+        return "application/rdf+xml"
+    elif (to_format=="XLS"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="XLSX"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="JSON"):
+        return "application/json"
+    elif (to_format=="YAML"):
+        return "text/yaml"
+    elif (to_format=="XML"):
+        return "application/xml"
     else :
         return ".invalid"
 
@@ -815,6 +852,9 @@ def convert(request):
             """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
+            serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
+            spdxConverter = package.SpdxConverter
+            verifyclass = package.Verify
             ajaxdict=dict()
             try :
                 if request.FILES["file"]:
@@ -826,83 +866,18 @@ def convert(request):
                     uploaded_file_url = fs.url(filename).replace("%20", " ")
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
-                    functiontocall = option1 + "To" + option2
-                    warningoccurred = False
-                    content_type =""
+                    content_type = formatToContentType(option2)
                     if "cfileformat" in request.POST :
                         cfileformat = request.POST["cfileformat"]
                     else :
                         cfileformat = getFileFormat(option2)
                     convertfile =  request.POST["cfilename"] + cfileformat
+                    fromFileFormat = serFileTypeEnum.valueOf(option1);
+                    toFileFormat = serFileTypeEnum.valueOf(option2);
                     """ Call the java function with parameters as list """
-                    if (option1=="Tag"):
-                        print ("Verifing for Tag/Value Document")
-                        if (option2=="RDF"):
-                            option3 = request.POST["tagToRdfFormat"]
-                            content_type = "application/rdf+xml"
-                            tagtordfclass = package.TagToRDF
-                            retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+convertfile, option3])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="Spreadsheet"):
-                            content_type = "application/vnd.ms-excel"
-                            tagtosprdclass = package.TagToSpreadsheet
-                            retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        else :
-                            jpype.detachThreadFromJVM()
-                            context_dict["error"] = "Select the available conversion types."
-                            return render(request,
-                                'app/convert.html',context_dict,status=400
-                                )
-                    elif (option1=="RDF"):
-                        print ("Verifing for RDF Document")
-                        if (option2=="Tag"):
-                            content_type = "text/tag-value"
-                            rdftotagclass = package.RdfToTag
-                            retval = rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="Spreadsheet"):
-                            content_type = "application/vnd.ms-excel"
-                            rdftosprdclass = package.RdfToSpreadsheet
-                            retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="HTML"):
-                            content_type = "text/html"
-                            rdftohtmlclass = package.RdfToHtml
-                            retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        else :
-                            jpype.detachThreadFromJVM()
-                            context_dict["error"] = "Select the available conversion types."
-                            return render(request,
-                                'app/convert.html',context_dict,status=400
-                                )
-                    elif (option1=="Spreadsheet"):
-                        print ("Verifing for Spreadsheet Document")
-                        if (option2=="Tag"):
-                            content_type = "text/tag-value"
-                            sprdtotagclass = package.SpreadsheetToTag
-                            retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="RDF"):
-                            content_type = "application/rdf+xml"
-                            sprdtordfclass = package.SpreadsheetToRDF
-                            retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        else :
-                            jpype.detachThreadFromJVM()
-                            context_dict["error"] = "Select the available conversion types."
-                            return render(request,
-                                'app/convert.html',context_dict,status=400
-                                )
-                    if (warningoccurred==False) :
+                    spdxConverter.convert(str(settings.APP_DIR+uploaded_file_url),str(settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile), fromFileFormat, toFileFormat)
+                    warnings = verifyclass.verify(str(settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile), toFileFormat)
+                    if (len(warnings) == 0) :
                         """ If no warnings raised """
                         if (request.is_ajax()):
                             ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
@@ -920,12 +895,12 @@ def convert(request):
                     else :
                         if (request.is_ajax()):
                             ajaxdict["type"] = "warning"
-                            ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ": " + str(retval)
+                            ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ": " + str(warnings)
                             ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                             response = dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
                             return HttpResponse(response,status=406)
-                        context_dict["error"] = str(retval)
+                        context_dict["error"] = str(warnings)
                         context_dict["type"] = "warning"
                         context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(convertfile)
                         context_dict["Content-Type"] = content_type

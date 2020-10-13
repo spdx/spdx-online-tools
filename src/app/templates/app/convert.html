@@ -19,31 +19,26 @@
 		<div class = "form-group">
 		&nbsp; From &nbsp;
 			 <select name="from_format" id="from_format">
-			 	  <option value="0" name ="here" selected="">-</option>
-				  <option value="Tag">Tag</option>
-				  <option value="RDF">RDF</option>
-				  <option value="Spreadsheet">Spreadsheet</option>
+			 	  <option value="0" selected="">-</option>
+				  <option value="TAG">Tag</option>
+				  <option value="RDFXML">RDF/XML</option>
+				  <option value="XLSX">XLSX Spreadsheet</option>
+				  <option value="XLS">XLS Spreadsheet</option>
+				  <option value="JSON">JSON</option>
+				  <option value="XML">XML</option>
+				  <option value="YAML">YAML</option>
 			</select>
 			&nbsp; To &nbsp;
 			<select name="to_format" id="to_format">
-				  <option value="0" data-value="0" selected="">-</option>
-				  <option value="Spreadsheet" data-value="Tag" >Spreadsheet</option>
-				  <option value="RDF" data-value="Tag" >RDF</option>
-				  <option value="Tag" data-value="RDF">Tag</option>
-				  <option value="HTML" data-value="RDF">HTML</option>
-				  <option value="Spreadsheet" data-value="RDF">Spreadsheet</option>
-				  <option value="Tag" data-value="Spreadsheet">Tag</option>
-				  <option value="RDF" data-value="Spreadsheet">RDF</option>
-      </select>
-    </div>
-    <div class="tagToRdfOptions" style="display:block; margin:10px auto; color:grey;">
-      <span id="tagToRdfText">&nbsp; RDF Output Format &nbsp;</span>
-      <select name="tagToRdfFormat" id="tagToRdfFormat" disabled="true">
-        <option value="RDF/XML-ABBREV" selected="">RDF/XML-ABBREV</option>
-        <option value="RDF/XML">RDF/XML</option>
-        <option value="N-TRIPLET">N-TRIPLET</option>
-        <option value="TURTLE">TURTLE</option>
-      </select>
+			 	  <option value="0" data-value="INGORE" data-ext="" selected="">-</option>
+				  <option value="TAG" data-value="TAG" data-ext=".spdx">Tag</option>
+				  <option value="RDFXML" data-value="RDFXML" data-ext=".rdf.xml">RDF/XML</option>
+				  <option value="XLSX" data-value="XLSX" data-ext=".xlsx">XLSX Spreadsheet</option>
+				  <option value="XLS" data-value="XLS" data-ext=".xls">XLS Spreadsheet</option>
+				  <option value="JSON" data-value="JSON" data-ext=".json">JSON</option>
+				  <option value="XML" data-value="XML" data-ext=".xml">XML</option>
+				  <option value="YAML" data-value="YAML" data-ext=".yaml">YAML</option>
+            </select>
     </div>
     <div id="drop-area" class="container">
       <h4 id="doclabel">Upload SPDX Document using the button or by dragging and dropping onto the dashed region</h4>
@@ -138,14 +133,13 @@ $(document).ready(function () {
   $("#convertpage").addClass('linkactive');
 
   $("#from_format").change(function() {
-    $("#tagToRdfFormat").prop("disabled",'disabled');
-    $(".tagToRdfOptions").css("color",'grey');
     if ($(this).data('options') === undefined) {
       /*Taking an array of all options-2 and kind of embedding it on the select1*/
       $(this).data('options', $('#to_format option').clone());
     }
     var id = $(this).val();
-    var options = $(this).data('options').filter('[data-value=' + id + ']');
+    var id2 = $('#to_format').val();
+    var options = $(this).data('options').filter('[data-value!=' + id + ']');
     $('#to_format').html(options);
     if (id!="0"){
       $('#doclabel').text("Upload SPDX "+ id +" Document using the button or by dragging and dropping onto the dashed region");
@@ -153,61 +147,27 @@ $(document).ready(function () {
     else{
       $('#doclabel').text("Upload SPDX Document using the button or by dragging and dropping onto the dashed region");
     }
-    var id2 = $('#to_format').val();
-    if (id2=="Spreadsheet"){
-      $('#convertdoclabel').text(".xls");
-      $('#cfileformat').val(".xls");
-    }
-    else if (id2=="RDF"){
-      if(id=="Tag"){
-        $("#tagToRdfFormat").prop("disabled", false);
-        $(".tagToRdfOptions").css("color",'black');
-      }
-      $('#convertdoclabel').text(".rdf");
-      $('#cfileformat').val(".rdf");
-    }
-    else if (id2=="Tag"){
-      $('#convertdoclabel').text(".spdx");
-      $('#cfileformat').val(".spdx");
-    }
-    else if (id2=="HTML"){
-      $('#convertdoclabel').text(".html");
-      $('#cfileformat').val(".html");
-    }
-    else{
-      $('#convertdoclabel').text();
-      $('#cfileformat').val("");
+	if (id2 == id) {
+	    $('#to_format').val("0");
+	    $('#convertdoclabel').text("");
+	    $('#cfileformat').val("");
+    } else {
+	    $('#to_format').val(id2);
+	    file_ext = $('#to_format').find(':selected').attr("data-ext");
+	    $('#convertdoclabel').text(file_ext);
+	    $('#cfileformat').val(file_ext);
     }
   });
 
   $("#to_format").change(function() {
-    $("#tagToRdfFormat").prop("disabled",'disabled');
-    $(".tagToRdfOptions").css("color",'grey');
-    var id1 = $('#from_format').val();
     var id2 = $('#to_format').val();
-    if (id2=="Spreadsheet"){
-      $('#convertdoclabel').text(".xls");
-      $('#cfileformat').val(".xls");
-    }
-    else if (id2=="RDF"){
-      if(id1=="Tag"){
-        $("#tagToRdfFormat").prop("disabled",false);
-        $(".tagToRdfOptions").css("color",'black');
-      }
-      $('#convertdoclabel').text(".rdf");
-      $('#cfileformat').val(".rdf");
-    }
-    else if (id2=="Tag"){
-      $('#convertdoclabel').text(".spdx");
-      $('#cfileformat').val(".spdx");
-    }
-    else if (id2=="HTML"){
-      $('#convertdoclabel').text(".html");
-      $('#cfileformat').val(".html");
-    }
-    else{
-      $('#convertdoclabel').text();
-      $('#cfileformat').val("");
+    if (id2 == "0") {
+	    $('#convertdoclabel').text("");
+	    $('#cfileformat').val("");
+    } else {
+	    file_ext = $('#to_format').find(':selected').attr("data-ext");
+	    $('#convertdoclabel').text(file_ext);
+	    $('#cfileformat').val(file_ext);
     }
   });
 })
