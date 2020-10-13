@@ -225,7 +225,6 @@ def convert(request):
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
                     convertfile =  request.POST["cfilename"]
-                    warningoccurred = False
                     if (extensionGiven(convertfile)==False):
                         extension = getFileFormat(option2)
                         convertfile = convertfile + extension
@@ -236,8 +235,6 @@ def convert(request):
                                 folder+sep+convertfile, fromFileFormat, toFileFormat)
                     retval = verifyclass.verify(folder+sep+convertfile, toFileFormat)
                     if (len(retval) > 0):
-                        warningoccurred = True
-                    if (warningoccurred == True ):
                         message = "The following error(s)/warning(s) were raised: " + str(retval)
                         index = folder.split(sep).index('media')
                         result = "/"+"/".join(folder.split(sep)[index:])+'/'+convertfile
