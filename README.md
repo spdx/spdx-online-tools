@@ -97,6 +97,16 @@ Windows users need a Python installation and C++ compiler:
 python src/manage.py test
 ```
 
+## Running with Docker
+
+You need to have [docker desktop](https://docs.docker.com/desktop/) installed on your machine for the container environment. 
+As this pull request also covers docker-compose configs so it is as simple as running (for development build)
+```
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+For the production environment, see the [README-PRODUCTION.md](README-PRODUCTION.md) file
+
 ## GitHub Developer Sensitive Data
 
 The `src/src/settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is maintained as environment variables. Due to that lack of data, some features of SPDX Online Tools and its API won't be able to run as they require the user credentials in order to access the GitHub API. So, the user is supposed to either maintain a `.env` file in the `src/src/` folder or create environment variables in their os with their credentials in order to ensure proper functioning of the tool.
