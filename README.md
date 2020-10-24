@@ -100,12 +100,13 @@ python src/manage.py test
 ## Running with Docker
 
 You need to have [docker desktop](https://docs.docker.com/desktop/) installed on your machine for the container environment. 
-As this pull request also covers docker-compose configs so it is as simple as running (for development build)
+You can bring up the Docker image with the following docker-compose command:
+
 ```
 docker-compose -f docker-compose.dev.yml up --build
 ```
 
-For the production environment, see the [README-PRODUCTION.md](README-PRODUCTION.md) file
+For the production environment, see the [README-PRODUCTION.md](README-PRODUCTION.md) file.
 
 ## GitHub Developer Sensitive Data
 
