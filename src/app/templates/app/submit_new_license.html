@@ -155,7 +155,7 @@
       </label>
 		<div class="col-sm-4">
           {{ form.examples }}
-          <span class="help-block" id="addExample" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add an example project URL</span>
+          <span class="help-block" id="addExampleUrl" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add an example project URL</span>
         </div>
       </div>
     </div>
@@ -246,7 +246,7 @@ removeDiv(this);
 });
 
 $(document).on('click', '#addSourceUrl', function(){
-     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%;"> <input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceurl"> </label> <span id="removeSourceUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
+     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceurl"> </label> <span id="removeSourceUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
   $('#addSourceUrl').before(html);
 });
 
@@ -255,7 +255,7 @@ removeDiv(this);
 });
 
 $(document).on('click', '#addExampleUrl', function(){
-     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%;"> <input type="text" class="form-control" id="exampleUrl" placeholder="" name = "exampleurl"> </label> <span id="removeExampleUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
+     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="exampleUrl" placeholder="" name = "exampleurl"> </label> <span id="removeExampleUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
   $('#addExampleUrl').before(html);
 });
 </script>
@@ -275,6 +275,10 @@ function checkform() {
   else if (!validate_urls()){
     scrollUpAndHighlight($('#sourceUrl'))
     return("Please enter a valid URL. Hover over to '?' for more info");
+  } 
+  else if (!validate_example_urls()) {
+    scrollUpAndHighlight($('#addExampleUrl'))
+    return("Please enter a valid URL. Hover over to '?' for more info");
   }
   else if (($('#osiApproved').val() == "0")){
     scrollUpAndHighlight($('#osiApproved'))
@@ -287,6 +291,7 @@ function checkform() {
   else {
     return "1";
   }
+  return "not ready yet";
 }
 
 function validate_fullname(){
@@ -338,6 +343,13 @@ function validate_urls(){
       valid_urls = false;
     }
   })
+  return valid_urls;
+}
+
+
+function validate_example_urls(){
+  var valid_urls = true;
+  url_schema = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
     $('input[id="exampleUrl"]').each(function(){
     if(!url_schema.test($(this).val())){
       valid_urls = false;
