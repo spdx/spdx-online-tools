@@ -154,7 +154,7 @@
         <span class="glyphicon glyphicon-question-sign" id="exampleInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
 		<div class="col-sm-4">
-          {{ form.examples }}
+          {{ form.exampleUrl }}
           <span class="help-block" id="addExampleUrl" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add an example project URL</span>
         </div>
       </div>
@@ -246,7 +246,7 @@ removeDiv(this);
 });
 
 $(document).on('click', '#addSourceUrl', function(){
-     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceurl"> </label> <span id="removeSourceUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
+     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceUrl"> </label> <span id="removeSourceUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
   $('#addSourceUrl').before(html);
 });
 
@@ -255,7 +255,7 @@ removeDiv(this);
 });
 
 $(document).on('click', '#addExampleUrl', function(){
-     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="exampleUrl" placeholder="" name = "exampleurl"> </label> <span id="removeExampleUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
+     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="exampleUrl" placeholder="" name = "exampleUrl"> </label> <span id="removeExampleUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
   $('#addExampleUrl').before(html);
 });
 </script>
@@ -464,6 +464,7 @@ function scrollUpAndHighlight(element) {
                 $("#fullname").val("");
                 $("#shortIdentifier").val("");
                 $("#sourceUrl").val("");
+                $("#exampleUrl").val("");
                 $("#osiApproved").val(0);
                 $("#comments").val("");
                 $("#licenseHeader").val("");
@@ -473,6 +474,12 @@ function scrollUpAndHighlight(element) {
                 if(sources.length > 1){
                   for (var i = 1; i < sources.length; i++) {
                     sources[i].remove();
+                  }
+                }
+                var examples = $('[id="exampleUrl"]');
+                if(examples.length > 1){
+                  for (var i = 1; i < examples.length; i++) {
+                	  examples[i].remove();
                   }
                 }
                 $("#submitbutton").text("Submit");

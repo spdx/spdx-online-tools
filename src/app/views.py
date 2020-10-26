@@ -110,7 +110,7 @@ def submitNewLicense(request):
                     licenseIdentifier = form.cleaned_data['shortIdentifier']
                     licenseOsi = form.cleaned_data['osiApproved']
                     licenseSourceUrls = [form.cleaned_data['sourceUrl']]
-                    licenseExamples = [form.cleaned_data['examples']]
+                    licenseExamples = [form.cleaned_data['exampleUrl']]
                     licenseHeader = form.cleaned_data['licenseHeader']
                     licenseComments = form.cleaned_data['comments']
                     licenseText = form.cleaned_data['text']
