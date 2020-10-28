@@ -246,7 +246,7 @@ removeDiv(this);
 });
 
 $(document).on('click', '#addSourceUrl', function(){
-     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceUrl"> </label> <span id="removeSourceUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
+     var html = '<div style="padding:6px 0; margin-top:2;" id="addedSourceUrl"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceUrl"> </label> <span id="removeSourceUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
   $('#addSourceUrl').before(html);
 });
 
@@ -255,7 +255,7 @@ removeDiv(this);
 });
 
 $(document).on('click', '#addExampleUrl', function(){
-     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="exampleUrl" placeholder="" name = "exampleUrl"> </label> <span id="removeExampleUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
+     var html = '<div style="padding:6px 0; margin-top:2;" id="addedExampleUrl"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="exampleUrl" placeholder="" name = "exampleUrl"> </label> <span id="removeExampleUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
   $('#addExampleUrl').before(html);
 });
 </script>
@@ -339,7 +339,8 @@ function validate_urls(){
   var valid_urls = true;
   url_schema = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
   $('input[id="sourceUrl"]').each(function(){
-    if(!url_schema.test($(this).val())){
+	url = $(this).val();
+    if(url.trim() != "" && !url_schema.test(url)){
       valid_urls = false;
     }
   })
@@ -470,15 +471,15 @@ function scrollUpAndHighlight(element) {
                 $("#licenseHeader").val("");
                 $("#text").val("");
                 $("#userEmail").val("");
-                var sources = $('[id="sourceUrl"]');
-                if(sources.length > 1){
-                  for (var i = 1; i < sources.length; i++) {
+                var sources = $('[id="addedSourceUrl"]');
+                if(sources != null){
+                  for (var i = 0; i < sources.length; i++) {
                     sources[i].remove();
                   }
                 }
-                var examples = $('[id="exampleUrl"]');
-                if(examples.length > 1){
-                  for (var i = 1; i < examples.length; i++) {
+                var examples = $('[id="addedExampleUrl"]');
+                if(examples != null){
+                  for (var i = 0; i < examples.length; i++) {
                 	  examples[i].remove();
                   }
                 }

@@ -109,8 +109,8 @@ def submitNewLicense(request):
                     licenseName = form.cleaned_data['fullname']
                     licenseIdentifier = form.cleaned_data['shortIdentifier']
                     licenseOsi = form.cleaned_data['osiApproved']
-                    licenseSourceUrls = [form.cleaned_data['sourceUrl']]
-                    licenseExamples = [form.cleaned_data['exampleUrl']]
+                    licenseSourceUrls = request.POST.getlist('sourceUrl')
+                    licenseExamples = request.POST.getlist('exampleUrl')
                     licenseHeader = form.cleaned_data['licenseHeader']
                     licenseComments = form.cleaned_data['comments']
                     licenseText = form.cleaned_data['text']
