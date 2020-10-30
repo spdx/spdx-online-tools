@@ -109,7 +109,8 @@ def submitNewLicense(request):
                     licenseName = form.cleaned_data['fullname']
                     licenseIdentifier = form.cleaned_data['shortIdentifier']
                     licenseOsi = form.cleaned_data['osiApproved']
-                    licenseSourceUrls = [form.cleaned_data['sourceUrl']]
+                    licenseSourceUrls = request.POST.getlist('sourceUrl')
+                    licenseExamples = request.POST.getlist('exampleUrl')
                     licenseHeader = form.cleaned_data['licenseHeader']
                     licenseComments = form.cleaned_data['comments']
                     licenseText = form.cleaned_data['text']
@@ -162,10 +163,10 @@ def submitNewLicense(request):
                         licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
                             submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
                         licenseRequest.save()
-                        licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+                        licenseId = licenseRequest.id
                         serverUrl = request.build_absolute_uri('/')
                         licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                        statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
+                        statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
 
                     # If the license text matches with either rejected or yet not approved license then return 409 Conflict
                     else:

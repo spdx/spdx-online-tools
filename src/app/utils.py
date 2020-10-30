@@ -28,7 +28,7 @@ from spdx_license_matcher.computation import (checkTextStandardLicense,
 from spdx_license_matcher.difference import get_similarity_percent
 from spdx_license_matcher.utils import get_spdx_license_text
 
-from app.models import User, UserID
+from app.models import User, UserID, LicenseRequest, LicenseNamespace
 
 from src.secret import getRedisHost
 
@@ -319,15 +319,25 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
 
 
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType, matchId=None, diffUrl=None, msg=None):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId=None, diffUrl=None, msg=None):
     """ View for creating an GitHub issue
     when submitting a new license request
     """
     licenseUrls = ""
-    for url in licenseSourceUrls:
-        licenseUrls += url
-        licenseUrls += '\n'
-    body = "**1.** License Name: {0}\n**2.** Short identifier: {1}\n**3.** License Author or steward: {2}\n**4.** Comments: {3}\n**5.** Standard License Header: {4}\n**6.** License Request Url: {5}\n**7.** URL: {6}\n**8.** OSI Status: {7}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseHeader, licenseRequestUrl, licenseUrls, licenseOsi)
+    if licenseSourceUrls != None and len(licenseSourceUrls) > 0:
+        licenseUrls = licenseSourceUrls[0]
+        for i in range(1, len(licenseSourceUrls)):
+            licenseUrls += ', '
+            licenseUrls += licenseSourceUrls[i]
+            
+    licenseExampleUrls = ""
+    if licenseExamples != None and len(licenseExamples) > 0:
+        licenseExampleUrls = licenseExamples[0]
+        for i in range(1, len(licenseExamples)):
+            licenseExampleUrls += ', '
+            licenseExampleUrls += licenseExamples[i]
+  
+    body = "**1.** License Name: {0}\n**2.** Short identifier: {1}\n**3.** License Author or steward: {2}\n**4.** Comments: {3}\n**5.** Standard License Header: {4}\n**6.** License Request Url: {5}\n**7.** URL(s): {6}\n**8.** OSI Status: {7}\n**9.** Example Projects: {8}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseHeader, licenseRequestUrl, licenseUrls, licenseOsi, licenseExampleUrls)
     if diffUrl:
         body = body + "\n**8.** License Text Diff: {0}".format(diffUrl)
     if matchId:
@@ -457,12 +467,13 @@ def get_license_data(issues):
             licenseInfo = issue.get('body')
             if '[SPDX-Online-Tools]' in issue.get('title'):
                 licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
-                licenseIds.append(licenseIdentifier)
+                dbId = re.search(r'License Request Url:.+/app/license_requests/([0-9]+)', licenseInfo).group(1)
                 try:
-                    licenseXml = str(License.objects.get(shortIdentifier=licenseIdentifier).xml)
+                    licenseXml = str(LicenseRequest.objects.get(id=dbId, shortIdentifier=licenseIdentifier).xml)
                     licenseText = parseXmlString(licenseXml)['text']
                     licenseTexts.append(clean(licenseText))
-                except License.DoesNotExist:
+                    licenseIds.append(licenseIdentifier)
+                except LicenseRequest.DoesNotExist:
                     pass
     licenseData = dict(zip(licenseIds, licenseTexts))
     return licenseData
