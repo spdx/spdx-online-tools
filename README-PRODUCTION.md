@@ -23,10 +23,13 @@ Following are the steps for updating the images:
   * Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the region and account ID
   * Pull the online-tools image by running `docker pull <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/spdx/online-tools:<version>` replacing the <aws-account-id>, <aws-region>, and <version>
   * Launch the containers with the command `docker-compose -f docker-compose.prod.yml up -d`
-  * If needed upgrade the database [instructions to be filled in]
-
-
-
+  * If needed upgrade the database
+    * Bring up a shell in the spdx_prod docker image with the command `docker exec -it spdx_prod bash`
+	* Stop the current running image running SupervisorCTL with the command `supervisorctl` then enter the command `stop spdx` then `exit`
+	* Make migrations by running the command `python src/manage.py makemigrations`
+	* Migrate by running the command python `python src/manage.py migrate`
+	* Restart the service by running SupervisorCTL with the command `supervisorctl` then enter the command `start spdx` then `exit`
+	
 # Clean Intialial Install
 
 Following are the steps for a clean initial installaction of the application:
