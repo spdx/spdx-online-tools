@@ -47,7 +47,7 @@ SECRET_KEY = getSecretKey()
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get(key='DEBUG', failobj=1)
+DEBUG = os.environ.get(key='DEBUG', default=1)
 
 if not DEBUG:
     REPO_URL = PROD_REPO_URL
@@ -112,12 +112,12 @@ WSGI_APPLICATION = 'src.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get(key='SQL_ENGINE',failobj='django.db.backends.sqlite3'),
-        'NAME': os.environ.get(key='SQL_DATABASE', failobj=os.path.join(BASE_DIR, 'db.sqlite3')),
-        'USER': os.environ.get(key='SQL_USER', failobj='user'),
-        'PASSWORD': os.environ.get(key='SQL_PASSWORD', failobj='password'),
-        'HOST': os.environ.get(key='SQL_HOST', failobj='localhost'),
-        'PORT': os.environ.get(key='SQL_PORT', failobj='5432'),
+        'ENGINE': os.environ.get(key='SQL_ENGINE',default='django.db.backends.sqlite3'),
+        'NAME': os.environ.get(key='SQL_DATABASE', default=os.path.join(BASE_DIR, 'db.sqlite3')),
+        'USER': os.environ.get(key='SQL_USER', default='user'),
+        'PASSWORD': os.environ.get(key='SQL_PASSWORD', default='password'),
+        'HOST': os.environ.get(key='SQL_HOST', default='localhost'),
+        'PORT': os.environ.get(key='SQL_PORT', default='5432'),
     }
 }
 

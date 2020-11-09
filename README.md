@@ -137,7 +137,7 @@ def getDiffRepoGitToken():
     return os.environ.get(key="DIFF_REPO_GIT_TOKEN")
     
 def getDiffRepoWithOwner():
-    return os.environ.get(key="DIFF_REPO_WITH_OWNER", failobj="spdx/licenseRequestImages")
+    return os.environ.get(key="DIFF_REPO_WITH_OWNER", default="spdx/licenseRequestImages")
 ```
 
 where:
