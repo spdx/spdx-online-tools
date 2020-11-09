@@ -53,8 +53,12 @@ function checkform() {
               data: form,
               success: function (data) {
                   console.log("SUCCESS : ", data);
-                  $("#modal-header").removeClass("red-modal");
-                  $("#modal-header").addClass("green-modal");
+				  $("#modal-header").removeClass("red-modal");
+				  if (data["data"].toLowerCase().indexOf("perfect match") > -1 || data["data"].toLowerCase().indexOf("exact match") > -1) {
+                     $("#modal-header").addClass("green-modal");
+				  } else {
+				     $("#modal-header").addClass("yellow-modal");
+				  }
                   $("#modal-title").html("Success!");
                   $("#modal-body").html("<h3>"+data.data+"</h3>");
                   $("#myModal").modal({

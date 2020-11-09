@@ -147,6 +147,18 @@
         </div>
       </div>
     </div>
+	
+	<div class = "form-group">
+      <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Example project URLs
+        <span class="glyphicon glyphicon-question-sign" id="exampleInfo" data-toggle="popover" data-placement="auto left"></span>
+      </label>
+		<div class="col-sm-4">
+          {{ form.exampleUrl }}
+          <span class="help-block" id="addExampleUrl" style="color:#3197c4; text-align: left; font-weight: bold; font-style: italic; cursor:pointer;" >+ Add an example project URL</span>
+        </div>
+      </div>
+    </div>
 
     <div class = "form-group">
       <div class="col-sm-12">
@@ -191,8 +203,10 @@ $(document).ready(function () {
     <br /> \u2022 Indicate if there is any variation in the header (i.e. for files developed by a contributor versus when applying license to original work) \
     <br /> \u2022 Do not include NOTICE info intended for a separate notice file. \
     <br /> \u2022 Leave this field blank if there is no standard header as specifically defined in the license.", html: "true", viewport: '.panel-body', container: '.panel-body'});
-    $('#commentsInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Comments", content: "\u2022 Provide a short explanation regarding the need for this license or exception to be included on the SPDX License List. \
-    <br /> \u2022 Identify at least one program that uses it or any other related information.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#commentsInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Comments", content: "Provide a short explanation regarding the need for this license or exception to be included on the SPDX License List.", html: "true", viewport: '.panel-body', container: '.panel-body'});
+    $('#textInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "License Text", content: "Full license of the license text.", viewport: '.panel-body', container: '.panel-body'});
+	$('#exampleInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Example Projects", content: "\u2022 Provide the URLs for example projects where this license is used.\
+    <br /> \u2022 Identify more than one project.", html: "true", viewport: '.panel-body', container: '.panel-body'});
     $('#textInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "License Text", content: "Full license of the license text.", viewport: '.panel-body', container: '.panel-body'});
     $("#licenserequest").addClass('linkactive');
     $("#submitnewlicensepage").addClass('linkactive');
@@ -232,8 +246,17 @@ removeDiv(this);
 });
 
 $(document).on('click', '#addSourceUrl', function(){
-     var html = '<div style="padding:6px 0; margin-top:2;"> <label style="width:95%;"> <input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceurl"> </label> <span id="removeSourceUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
+     var html = '<div style="padding:6px 0; margin-top:2;" id="addedSourceUrl"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="sourceUrl" placeholder="" name = "sourceUrl"> </label> <span id="removeSourceUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
   $('#addSourceUrl').before(html);
+});
+
+$(document).on('click', '#removeExampleUrl', function(){
+removeDiv(this);
+});
+
+$(document).on('click', '#addExampleUrl', function(){
+     var html = '<div style="padding:6px 0; margin-top:2;" id="addedExampleUrl"> <label style="width:95%; font-weight:normal;"> <input type="text" class="form-control" id="exampleUrl" placeholder="" name = "exampleUrl"> </label> <span id="removeExampleUrl" style="cursor:pointer; font-size: 10px;" >&#10060;</span></div>';
+  $('#addExampleUrl').before(html);
 });
 </script>
 
@@ -252,6 +275,10 @@ function checkform() {
   else if (!validate_urls()){
     scrollUpAndHighlight($('#sourceUrl'))
     return("Please enter a valid URL. Hover over to '?' for more info");
+  } 
+  else if (!validate_example_urls()) {
+    scrollUpAndHighlight($('#addExampleUrl'))
+    return("Please enter a valid URL. Hover over to '?' for more info");
   }
   else if (($('#osiApproved').val() == "0")){
     scrollUpAndHighlight($('#osiApproved'))
@@ -264,6 +291,7 @@ function checkform() {
   else {
     return "1";
   }
+  return "not ready yet";
 }
 
 function validate_fullname(){
@@ -311,6 +339,19 @@ function validate_urls(){
   var valid_urls = true;
   url_schema = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
   $('input[id="sourceUrl"]').each(function(){
+	url = $(this).val();
+    if(url.trim() != "" && !url_schema.test(url)){
+      valid_urls = false;
+    }
+  })
+  return valid_urls;
+}
+
+
+function validate_example_urls(){
+  var valid_urls = true;
+  url_schema = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+    $('input[id="exampleUrl"]').each(function(){
     if(!url_schema.test($(this).val())){
       valid_urls = false;
     }
@@ -424,15 +465,22 @@ function scrollUpAndHighlight(element) {
                 $("#fullname").val("");
                 $("#shortIdentifier").val("");
                 $("#sourceUrl").val("");
+                $("#exampleUrl").val("");
                 $("#osiApproved").val(0);
                 $("#comments").val("");
                 $("#licenseHeader").val("");
                 $("#text").val("");
                 $("#userEmail").val("");
-                var sources = $('[id="sourceUrl"]');
-                if(sources.length > 1){
-                  for (var i = 1; i < sources.length; i++) {
+                var sources = $('[id="addedSourceUrl"]');
+                if(sources != null){
+                  for (var i = 0; i < sources.length; i++) {
                     sources[i].remove();
+                  }
+                }
+                var examples = $('[id="addedExampleUrl"]');
+                if(examples != null){
+                  for (var i = 0; i < examples.length; i++) {
+                	  examples[i].remove();
                   }
                 }
                 $("#submitbutton").text("Submit");
@@ -487,6 +535,7 @@ function getCookie(name) {
 
 function makeIssue(data){
     data['csrfmiddlewaretoken'] = getCookie('csrftoken');
+	var msg = data["msg"];
     $.ajax({
         type: "POST",
         enctype: 'multipart/form-data',
@@ -497,7 +546,7 @@ function makeIssue(data){
         success: function (data) {
                     var githubCode = data.statusCode;
                     if(githubCode == '201'){
-                      var successMessage = "The license request has been successfully submitted.";
+                      var successMessage = 'The issue "' + msg + '" has been successfully submitted.';
                       $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
                           setTimeout(function() {
                             $("#messages").html("");
@@ -581,8 +630,7 @@ async function generate_text_diff(base, newtxt){
         show: true
     });
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await takeScreenshotAndUpload();
-    diffUrl =  'https://github.com/' + repositoryNameWithOwner + '/blob/master/' + localStorage.getItem('filename');
+    var diffUrl = await takeScreenshotAndUpload();
     LicenseData.data["diffUrl"] = diffUrl;
     $("#createIssue").on("click",function(){
         $("#myModal").modal("hide");

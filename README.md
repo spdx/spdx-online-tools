@@ -97,6 +97,17 @@ Windows users need a Python installation and C++ compiler:
 python src/manage.py test
 ```
 
+## Running with Docker
+
+You need to have [docker desktop](https://docs.docker.com/desktop/) installed on your machine for the container environment. 
+You can bring up the Docker image with the following docker-compose command:
+
+```
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+For the production environment, see the [README-PRODUCTION.md](README-PRODUCTION.md) file.
+
 ## GitHub Developer Sensitive Data
 
 The `src/src/settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is maintained as environment variables. Due to that lack of data, some features of SPDX Online Tools and its API won't be able to run as they require the user credentials in order to access the GitHub API. So, the user is supposed to either maintain a `.env` file in the `src/src/` folder or create environment variables in their os with their credentials in order to ensure proper functioning of the tool.
@@ -118,6 +129,15 @@ def getOauthToolKitAppID():
 
 def getOauthToolKitAppSecret():
     return os.environ.get(key="OAUTH_APP_SECRET")
+	
+# The methods getDiffRepoGitToken and getDiffRepoWithOwner are used to configure the repository used for storing license diffs created during the license submittal process
+# The DIFF_REPO_GIT_TOKEN is a personal access token created in Github with access to the repo DIFF_REPO_WITH_OWNER
+    
+def getDiffRepoGitToken():
+    return os.environ.get(key="DIFF_REPO_GIT_TOKEN")
+    
+def getDiffRepoWithOwner():
+    return os.environ.get(key="DIFF_REPO_WITH_OWNER", failobj="spdx/licenseRequestImages")
 ```
 
 where:

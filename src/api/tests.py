@@ -78,22 +78,22 @@ class ValidateFileUploadTests(APITestCase):
         resp2 = self.client.get(reverse("validate-api")) 
         self.assertTrue(resp2.status_code,200)
         """ Valid Tag Value File"""
-        resp3 = self.client.post(reverse("validate-api"),{"file":self.tv_file},format="multipart")
+        resp3 = self.client.post(reverse("validate-api"),{"file":self.tv_file, "format" : "TAG"},format="multipart")
         self.assertEqual(resp3.status_code,201)
         self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp3.data["result"],"This SPDX Document is valid.")
         """ Valid RDF File"""
-        resp4 = self.client.post(reverse("validate-api"),{"file":self.rdf_file},format="multipart")
+        resp4 = self.client.post(reverse("validate-api"),{"file":self.rdf_file, "format" : "RDFXML"},format="multipart")
         self.assertEqual(resp4.status_code,201)
         self.assertEqual(resp4.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp4.data["result"],"This SPDX Document is valid.")
         """ Invalid Tag Value File"""
-        resp5 = self.client.post(reverse("validate-api"),{"file":self.invalid_tv_file},format="multipart")
+        resp5 = self.client.post(reverse("validate-api"),{"file":self.invalid_tv_file, "format" : "TAG"},format="multipart")
         self.assertEqual(resp5.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp5.status_code,400)
         self.assertNotEqual(resp5.data["result"],"This SPDX Document is valid.")
         """ Invalid RDF File"""
-        resp6 = self.client.post(reverse("validate-api"),{"file":self.invalid_rdf_file},format="multipart")
+        resp6 = self.client.post(reverse("validate-api"),{"file":self.invalid_rdf_file, "format" : "RDFXML"},format="multipart")
         self.assertEqual(resp6.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp6.status_code,400)
         self.assertNotEqual(resp6.data["result"],"This SPDX Document is valid.")
@@ -120,10 +120,9 @@ class ConvertFileUploadTests(APITestCase):
         u = User.objects.create_user(**self.credentials)
         u.is_staff = True
         u.save()
-        self.tag = "Tag"
-        self.rdf = "RDF"
-        self.xlsx = "Spreadsheet"
-        self.html ="HTML"
+        self.tag = "TAG"
+        self.rdf = "RDFXML"
+        self.xlsx = "XLS"
         self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
         self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"))
         self.xlsx_file = open(getExamplePath("SPDXSpreadsheetExample-2.0.xls"))
@@ -152,7 +151,6 @@ class ConvertFileUploadTests(APITestCase):
         self.assertTrue(resp.status_code==406 or resp.status_code == 201)
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
         self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
-        self.assertTrue(resp.data["tagToRdfFormat"]=="RDF/XML-ABBREV")
         self.client.logout()
 
     def test_convert_tagtoxlsx_api(self):
@@ -178,13 +176,6 @@ class ConvertFileUploadTests(APITestCase):
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
         self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
-
-    # def test_convert_rdftohtml_api(self):
-    #     self.client.login(username=self.username,password=self.password)
-    #     resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.html,"cfilename":"rdftohtml-apitest"},format="multipart")
-    #     self.assertTrue(resp.status_code==406 or resp.status_code == 201)
-    #     self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
-    #     self.client.logout()
 
     def test_convert_xlsxtordf_api(self):
         self.client.login(username=self.username,password=self.password)
@@ -251,12 +242,12 @@ class CompareFileUploadTests(APITestCase):
         resp2 = self.client.get(reverse("compare-api"))
         self.assertTrue(resp2.status_code,200)
         """Compare two valid RDF files"""
-        resp3 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.rdf_file2,"rfilename":"compare-apitest.xlsx"},format="multipart")
+        resp3 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.rdf_file2,"rfilename":"compare-apitest.xls"},format="multipart")
         self.assertTrue(resp3.status_code==406 or resp3.status_code == 201)
         self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertTrue(resp3.data["result"].startswith(settings.MEDIA_URL))
         """Compare with one  invalid RDF files"""
-        resp4 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.tv_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
+        resp4 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.tv_file,"rfilename":"compare-apitest.xls"},format="multipart")
         self.assertEqual(resp4.status_code,400)
         self.client.logout()
         self.tearDown()
@@ -266,10 +257,10 @@ class CompareFileUploadTests(APITestCase):
         resp5 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.rdf_file2},format="multipart")
         self.assertEqual(resp5.status_code,400)
         
-        resp6 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
+        resp6 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"rfilename":"compare-apitest.xls"},format="multipart")
         self.assertEqual(resp6.status_code,400)
         
-        resp7 = self.client.post(reverse("compare-api"),{"file2":self.rdf_file,"rfilename":"compare-apitest.xlsx"},format="multipart")
+        resp7 = self.client.post(reverse("compare-api"),{"file2":self.rdf_file,"rfilename":"compare-apitest.xls"},format="multipart")
         self.assertEqual(resp7.status_code,400)
         self.client.logout()
         self.tearDown()

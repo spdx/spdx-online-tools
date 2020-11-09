@@ -5,8 +5,10 @@ __pycache__
 *.pyd
 .Python
 env
+spdx-prod.env
 pip-log.txt
 pip-delete-this-directory.txt
+venv
 
 # Test and coverage
 .tox
