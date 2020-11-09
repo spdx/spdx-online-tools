@@ -1265,7 +1265,7 @@ def archiveRequests(request, license_id=None):
     returns archive_requests.html template
     """
     context_dict = {}
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
         github_login = user.social_auth.get(provider='github')
         if utils.checkPermission(user):
@@ -1273,7 +1273,7 @@ def archiveRequests(request, license_id=None):
     else:
         github_login = None
     if request.method == "POST" and request.is_ajax():
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             ajaxdict = {}
             ajaxdict["type"] = "auth_error"
             ajaxdict["data"] = "Please login using GitHub to use this feature."
@@ -1371,7 +1371,7 @@ def licenseRequests(request, license_id=None):
     returns license_requests.html template
     """
     context_dict = {}
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
         github_login = user.social_auth.get(provider='github')
         if utils.checkPermission(user):
@@ -1379,7 +1379,7 @@ def licenseRequests(request, license_id=None):
     else:
         github_login = None
     if request.method == "POST" and request.is_ajax():
-        if (not request.user.is_authenticated()):
+        if not request.user.is_authenticated:
             ajaxdict = {}
             ajaxdict["type"] = "auth_error"
             ajaxdict["data"] = "Please login using GitHub to use this feature."
@@ -1813,7 +1813,7 @@ def checkusername(request):
 
 def post_to_github(request):
     """ Api to handle github upload of diff images """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         data = {}
         if request.method == "POST":
             try:
