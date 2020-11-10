@@ -62,6 +62,10 @@
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">Submit a New License to the SPDX Licenses List</p> </div>
 <div class="panel-body" style="overflow: scroll;">
+<div class="panel-heading">
+Please review the <a href="https://github.com/spdx/license-list-XML/blob/master/DOCS/license-inclusion-principles.md">SPDX License List license inclusion principles</a> before submitting a new license.
+Once you have submitted a license, please follow the <a href="https://github.com/spdx/license-list-XML/issues">issue in Github</a> and be prepared to help create the required XML and test text files if the license is accepted for submission.
+</div>
 <form id="newlicense" enctype="multipart/form-data" class = "form-horizontal" method = "post" action='/submit_new_license/'>
 		{% csrf_token %}
 
