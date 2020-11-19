@@ -54,6 +54,9 @@ if not DEBUG:
 
 ALLOWED_HOSTS = ['*']
 
+if not DEBUG:
+    ALLOWED_HOSTS = ['.tools.spdx.org', '52.32.53.255']
+
 
 # Application definition
 
