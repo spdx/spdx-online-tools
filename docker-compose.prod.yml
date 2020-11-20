@@ -13,6 +13,8 @@ services:
       - ./data/nginx:/etc/nginx/conf.d
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
+      - static_volume:/spdx/src/app/static
+      - media_volume:/spdx/src/app/media
     depends_on:
       - spdx
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
@@ -34,6 +36,8 @@ services:
       - 8000
     volumes:
       - ./container_logs:/spdx/container_logs
+      - static_volume:/spdx/src/app/static
+      - media_volume:/spdx/src/app/media
     env_file: spdx-prod.env
     environment:
       - PYTHONDONTWRITEBYTECODE=1
@@ -54,3 +58,5 @@ services:
 
 volumes:
   data-volume:
+  static_volume:
+  media_volume:
