@@ -465,15 +465,17 @@ def get_license_data(issues):
     for issue in issues:
         if not issue.get('pull_request'):
             licenseInfo = issue.get('body')
-            if '[SPDX-Online-Tools]' in issue.get('title'):
-                licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
-                dbId = re.search(r'License Request Url:.+/app/license_requests/([0-9]+)', licenseInfo).group(1)
+            if '[SPDX-Online-Tools]' in issue.get('title'):         
                 try:
+                    licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
+                    dbId = re.search(r'License Request Url:.+/app/license_requests/([0-9]+)', licenseInfo).group(1)
                     licenseXml = str(LicenseRequest.objects.get(id=dbId, shortIdentifier=licenseIdentifier).xml)
                     licenseText = parseXmlString(licenseXml)['text']
                     licenseTexts.append(clean(licenseText))
                     licenseIds.append(licenseIdentifier)
                 except LicenseRequest.DoesNotExist:
+                    pass
+                except AttributeError:
                     pass
     licenseData = dict(zip(licenseIds, licenseTexts))
     return licenseData
