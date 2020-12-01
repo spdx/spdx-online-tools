@@ -506,7 +506,8 @@ def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
 def check_spdx_license(licenseText):
     """Check the license text against the spdx license list.
     """
-    licenseText = unicode(licenseText.decode('string_escape'), 'utf-8')
+    if not isinstance(licenseText, unicode):
+        licenseText = unicode(licenseText.decode('string_escape'), 'utf-8')
     r = redis.StrictRedis(host=getRedisHost(), port=6379, db=0)
     
     # if redis is empty build the spdx license list in the redis database
