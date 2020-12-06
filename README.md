@@ -39,6 +39,12 @@ Windows users need a Python installation and C++ compiler:
     python3 -m venv ./venv
     source venv/bin/activate
     ```
+	
+	On Windows:
+	```
+	py -m venv venv
+	venv\Scripts\activate
+	```
 3. Install the required python libraries given in the requirements.txt file.
     ```bash
     cd spdx-online-tools
@@ -100,6 +106,18 @@ python src/manage.py test
 ## Running with Docker
 
 You need to have [docker desktop](https://docs.docker.com/desktop/) installed on your machine for the container environment. 
+
+Prior to starting the docker image, you will need to create a file to set the environment variables described below.
+
+Create a file ".env" with the following content:
+
+```
+DIFF_REPO_GIT_TOKEN=XXXX
+DIFF_REPO_WITH_OWNER=XXXX
+ONLINE_TOOL_GITHUB_KEY=XXXX
+ONLINE_TOOL_GITHUB_SECRET=XXXX
+```
+
 You can bring up the Docker image with the following docker-compose command:
 
 ```
