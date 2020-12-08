@@ -47,13 +47,16 @@ SECRET_KEY = getSecretKey()
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get(key='DEBUG', default=1)
+DEBUG = os.environ.get(key='DEBUG', default=1) == 1
 
 if not DEBUG:
     REPO_URL = PROD_REPO_URL
     NAMESPACE_REPO_URL = NAMESPACE_PROD_REPO_URL
 
 ALLOWED_HOSTS = ['*']
+
+if not DEBUG:
+    ALLOWED_HOSTS = ['.tools.spdx.org', '52.32.53.255', '13.57.134.254']
 
 
 # Application definition

@@ -123,7 +123,6 @@ def submitNewLicense(request):
                         urlType = request.POST["urlType"]
 
                     matchingIds, matchingType = utils.check_spdx_license(licenseText)
-                    licenseText = licenseText.decode('unicode-escape')
                     matches = ['Perfect match', 'Standard License match', 'Close match']
                     if matchingType in matches:
                         data['matchType'] = matchingType
@@ -154,7 +153,6 @@ def submitNewLicense(request):
 
                     # Check if the license text doesn't matches with the rejected as well as not yet approved licenses
                     if not matches:
-                        licenseText = licenseText.decode('unicode-escape')
                         xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                             listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                         now = datetime.datetime.now()
