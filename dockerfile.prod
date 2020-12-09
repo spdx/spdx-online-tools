@@ -1,4 +1,4 @@
-# Using python2 as the base image
+# Using python3 as the base image
 FROM python:3 as base
 
 # Create the folder spdx and cd to it

@@ -1,4 +1,4 @@
-# Use the official python 2 base image
+# Use the official python 3 base image
 FROM python:3 as python-container
 
 # Copy the requirements.txt file into the container
