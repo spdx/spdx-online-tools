@@ -408,7 +408,7 @@ def parseXmlString(xmlString):
         if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')) > 0):
             textElem = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')[0]
             ET.register_namespace('', "http://www.spdx.org/license")
-            textStr = ET.tostring(textElem).strip()
+            textStr = ET.tostring(textElem, encoding='unicode').strip()
             if(len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>'):
                 textStr = textStr[42:]
                 textStr = textStr[:-7].strip().replace('&lt;', '<').replace('&gt;', '>').strip()
