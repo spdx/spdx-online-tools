@@ -356,10 +356,10 @@ def licenseInformation(request, licenseId):
     context_dict ={'licenseInformation': licenseInformation}
     if request.method == 'POST':
         tempFilename = 'output.xml'
-        xmlFile = open(tempFilename, 'wb')
+        xmlFile = open(tempFilename, 'wt', encoding='utf-8')
         xmlFile.write(xmlString)
         xmlFile.close()
-        xmlFile = open(tempFilename, 'r')
+        xmlFile = open(tempFilename, 'rt', encoding='utf-8')
         myfile = FileWrapper(xmlFile)
         response = HttpResponse(myfile, content_type='application/xml')
         response['Content-Disposition'] = 'attachment; filename=' + licenseRequest.shortIdentifier + '.xml'
@@ -411,10 +411,10 @@ def licenseNamespaceInformation(request, licenseId):
     context_dict ={'licenseInformation': licenseInformation}
     if request.method == 'POST':
         tempFilename = 'output.xml'
-        xmlFile = open(tempFilename, 'wb')
+        xmlFile = open(tempFilename, 'wt', encoding='utf-8')
         xmlFile.write(xmlString)
         xmlFile.close()
-        xmlFile = open(tempFilename, 'r')
+        xmlFile = open(tempFilename, 'rt', encoding='utf-8')
         myfile = FileWrapper(xmlFile)
         response = HttpResponse(myfile, content_type='application/xml')
         response['Content-Disposition'] = 'attachment; filename=' + licenseNamespaceRequest.shortIdentifier + '.xml'
@@ -568,7 +568,7 @@ def validate_xml(request):
                     try:
                         schema_url = 'https://raw.githubusercontent.com/spdx/license-list-XML/master/schema/ListedLicense.xsd'
                         schema_text = requests.get(schema_url, timeout=5).text
-                        xmlschema_doc = etree.fromstring(schema_text)
+                        xmlschema_doc = etree.fromstring(schema_text.encode('utf-8'))
                     except:
                         schema_url = settings.BASE_DIR + "/examples/xml-schema.xsd"
                         with open(schema_url) as f:
@@ -1447,13 +1447,12 @@ def beautify(request):
             """ Getting the license xml input by the user"""
             xmlString = request.POST.get("xml", None)
             if xmlString:
-                with open('test.xml','wb') as f:
+                with open('test.xml','wt', encoding='utf-8') as f:
                     f.write(xmlString)
                     f.close()
                 commandRun = subprocess.call(["python", "app/formatxml.py","test.xml","-i", "3"])
                 if commandRun == 0:
-                    data = codecs.open("test.xml", 'r', encoding='string_escape').read()
-                    data = str(data, 'utf-8')
+                    data = codecs.open("test.xml", 'r', encoding='utf-8').read()
                     os.remove('test.xml')
                     if (request.is_ajax()):
                         ajaxdict["type"] = "success"

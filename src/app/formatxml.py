@@ -100,7 +100,7 @@ def process(fname):
     blocks = pretty(root, 0)
     ser = fmt(blocks)
     
-    with open(fname, 'wb') as f:
+    with open(fname, 'wt', encoding='utf-8') as f:
         f.write(XML_PROLOG+"\n")
         f.write(ser)
     
