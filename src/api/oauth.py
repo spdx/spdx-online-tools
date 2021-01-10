@@ -24,7 +24,9 @@ def generate_github_access_token(github_client_id, github_client_secret, github_
         }),
         headers={'content-type': 'application/json'}
     )
-    token = re.search(r'access_token=([a-zA-Z0-9]+)', auth_response.content.decode('utf-8'))
+    auth_response_content = auth_response.content
+    auth_response_content = auth_response_content.decode('utf-8') if not isinstance(auth_response_content, str) else auth_response_content
+    token = re.search(r'access_token=([a-zA-Z0-9]+)', auth_response_content)
     if token is None:
         raise PermissionDenied(auth_response)
     return token.group(1)

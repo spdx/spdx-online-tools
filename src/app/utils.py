@@ -171,7 +171,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         fileName = fileName[:-4]
     fileName += ".xml"
     commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME, fileName)
-    xmlText = xmlText.encode('utf-8')
+    xmlText = xmlText.encode('utf-8') if isinstance(xmlText, str) else xmlText
     fileContent = base64.b64encode(xmlText)
     body = {
         "path":"src/"+fileName,
@@ -469,7 +469,7 @@ def get_license_data(issues):
                 try:
                     licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
                     dbId = re.search(r'License Request Url:.+/app/license_requests/([0-9]+)', licenseInfo).group(1)
-                    licenseXml = LicenseRequest.objects.get(id=dbId, shortIdentifier=licenseIdentifier).xml.decode('utf-8')
+                    licenseXml = LicenseRequest.objects.get(id=dbId, shortIdentifier=licenseIdentifier).xml
                     licenseXml = licenseXml.decode('utf-8') if not isinstance(licenseXml, str) else licenseXml
                     licenseText = parseXmlString(licenseXml)['text']
                     licenseTexts.append(clean(licenseText))

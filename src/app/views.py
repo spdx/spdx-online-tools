@@ -556,7 +556,7 @@ def validate_xml(request):
                 if "xmlText" in request.POST:
                     """ Saving file to the media directory """
                     xmlText = request.POST['xmlText']
-                    xmlText = xmlText.encode('utf-8')
+                    xmlText = xmlText.encode('utf-8') if isinstance(xmlText, str) else xmlText
                     folder = str(request.user) + "/" + str(int(time()))
                     if not os.path.isdir(str(settings.MEDIA_ROOT +"/"+ folder)):
                         os.makedirs(str(settings.MEDIA_ROOT +"/"+ folder))
