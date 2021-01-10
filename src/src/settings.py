@@ -46,7 +46,7 @@ SECRET_KEY = getSecretKey()
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get(key='DEBUG', failobj=1) == 1
+DEBUG = os.environ.get(key='DEBUG', failobj=1) in (True, 'True', 1, "1")
 
 if not DEBUG:
     REPO_URL = PROD_REPO_URL
