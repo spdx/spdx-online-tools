@@ -561,7 +561,7 @@ def validate_xml(request):
                     if not os.path.isdir(str(settings.MEDIA_ROOT +"/"+ folder)):
                         os.makedirs(str(settings.MEDIA_ROOT +"/"+ folder))
                     uploaded_file_url = settings.MEDIA_ROOT + '/' + folder + '/' + 'xmlFile.xml'
-                    with open(uploaded_file_url, 'wb') as f:
+                    with open(uploaded_file_url, 'wt', encoding='utf-8') as f:
                         f.write(xmlText)
                     """ Get schema text from GitHub,
                     if it fails use the file in examples folder """
@@ -1127,7 +1127,7 @@ def xml_upload(request):
                             )
                         filename = fs.save(xml_file.name, xml_file)
                         page_id = request.POST['page_id']
-                        with open(str(fs.location+'/'+filename), 'r') as f:
+                        with open(str(fs.location+'/'+filename), 'rt', encoding='utf-8' ) as f:
                             request.session[page_id] = [f.read(), ""]
                         if (request.is_ajax()):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
