@@ -152,5 +152,5 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAd
     points = insertOls(objList)
     textElement = getTextElement(points)
     license.append(textElement)
-    xmlString = ET.tostring(root, method='xml')
+    xmlString = ET.tostring(root, method='xml', encoding='unicode')
     return xmlString

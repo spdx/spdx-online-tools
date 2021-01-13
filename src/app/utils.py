@@ -171,7 +171,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         fileName = fileName[:-4]
     fileName += ".xml"
     commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME, fileName)
-    xmlText = xmlText.encode('utf-8')
+    xmlText = xmlText.encode('utf-8') if isinstance(xmlText, str) else xmlText
     fileContent = base64.b64encode(xmlText)
     body = {
         "path":"src/"+fileName,
@@ -408,7 +408,7 @@ def parseXmlString(xmlString):
         if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')) > 0):
             textElem = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')[0]
             ET.register_namespace('', "http://www.spdx.org/license")
-            textStr = ET.tostring(textElem).strip()
+            textStr = ET.tostring(textElem, encoding='unicode').strip()
             if(len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>'):
                 textStr = textStr[42:]
                 textStr = textStr[:-7].strip().replace('&lt;', '<').replace('&gt;', '>').strip()
@@ -469,7 +469,8 @@ def get_license_data(issues):
                 try:
                     licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
                     dbId = re.search(r'License Request Url:.+/app/license_requests/([0-9]+)', licenseInfo).group(1)
-                    licenseXml = str(LicenseRequest.objects.get(id=dbId, shortIdentifier=licenseIdentifier).xml)
+                    licenseXml = LicenseRequest.objects.get(id=dbId, shortIdentifier=licenseIdentifier).xml
+                    licenseXml = licenseXml.decode('utf-8') if not isinstance(licenseXml, str) else licenseXml
                     licenseText = parseXmlString(licenseXml)['text']
                     licenseTexts.append(clean(licenseText))
                     licenseIds.append(licenseIdentifier)
