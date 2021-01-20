@@ -10,7 +10,7 @@
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">License Requests List</p> </div>
-<div class="panel-body">
+<div class="panel-body" style="overflow: scroll;">
     <table id="requests_table" class="display dataTable">
       <thead>
         <tr>
@@ -18,7 +18,9 @@
           <th>Short Identifier</th>
           <th>License author name</th>
           <th>Submission Date (UTC)</th>
+          {% if github_login and authorized %}
           <th>Archive</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -31,7 +33,9 @@
             <td>{{elem.submissionDatetime}}</td>
             <td>
               {% csrf_token %}
+              {% if github_login and authorized %}
               <button id='archive_button{{elem.id}}' class='btn btn-success' width='25px' value='Archive'>Archive</button>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}

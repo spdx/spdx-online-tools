@@ -14,6 +14,7 @@
 from __future__ import unicode_literals
 
 from django.conf.urls import url,handler400, handler403, handler404, handler500
+from django.views.decorators.csrf import csrf_exempt
 
 from app import views
 #from django.contrib.auth import views as auth_views
@@ -61,6 +62,7 @@ urlpatterns = [
     url(r'^make_namespace_pr/$', views.namespace_pull_request, name='namespace-pull-request'),
     url(r'^promoted_namespace_requests/$', views.promoteNamespaceRequests, name='promoted-license-namespace-xml'),
     url(r'^promoted_namespace_requests/(?P<licenseId>\d+)/$', views.licenseNamespaceInformation, name='promoted-license-namespace-information'),
+    url(r'^post_to_github/$', csrf_exempt(views.post_to_github), name='post_to_github'),
     #url(r'^password_reset/$', auth_views.password_reset, name='password_reset'),
     #url(r'^password_reset/done/$', auth_views.password_reset_done, name='password_reset_done'),
     #url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',

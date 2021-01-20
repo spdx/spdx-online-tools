@@ -1,0 +1,62 @@
+version: "3.7"
+
+services:
+
+  nginx:
+    container_name: nginx_prod
+    image: nginx:1.15-alpine
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./data/nginx:/etc/nginx/conf.d
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+      - static_volume:/spdx/src/app/static
+      - media_volume:/spdx/src/app/media
+    depends_on:
+      - spdx
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+      
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+      
+  spdx:
+    container_name: spdx_prod
+    build:
+      context: ./
+      dockerfile: dockerfile.prod
+    image: 410487266669.dkr.ecr.us-west-2.amazonaws.com/spdx/online-tools:1.0.1
+    expose:
+      - 8000
+    volumes:
+      - ./container_logs:/spdx/container_logs
+      - static_volume:/spdx/src/app/static
+      - media_volume:/spdx/src/app/media
+    env_file: spdx-prod.env
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - SPDX_REDIS_HOST=redis
+      - SPDXParser.LocalLicensesDir=/licenses/current
+      - SPDXParser.OnlyUseLocalLicenses=true
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:5.0-alpine
+    container_name: redis
+    restart: always
+    volumes:
+      - data-volume:/data
+    expose:
+      - 6379
+
+volumes:
+  data-volume:
+  static_volume:
+  media_volume:

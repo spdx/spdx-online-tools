@@ -30,6 +30,8 @@ from spdx_license_matcher.utils import get_spdx_license_text
 
 from app.models import User, UserID
 
+from src.secret import getRedisHost
+
 NORMAL = "normal"
 TESTS = "tests"
 PROD = "prod"
@@ -51,6 +53,17 @@ def licenseNamespaceUtils():
     "licenseListRepoUrl": "https://github.com/spdx/license-list-data",
     "internetConnectionUrl": "www.google.com",
     }
+def checkPermission(user):
+    """ Getting user info for submitting github issue """
+    github_login = user.social_auth.get(provider='github')
+    token = github_login.extra_data["access_token"]
+    username = github_login.extra_data["login"]
+    test = requests.get('https://api.github.com/repos/spdx/license-list-XML/collaborators/'+username , headers={'Authorization': 'token {}'.format(token) })
+    if((test.status_code == 200) or (test.status_code == 204)):
+        return True
+    else:
+        logger.error("Permission denied while accessing the github api.")
+        return False
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, is_ns):
     logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
@@ -306,15 +319,25 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
 
 
 
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType, matchId=None, diffUrl=None, msg=None):
+def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId=None, diffUrl=None, msg=None):
     """ View for creating an GitHub issue
     when submitting a new license request
     """
     licenseUrls = ""
-    for url in licenseSourceUrls:
-        licenseUrls += url
-        licenseUrls += '\n'
-    body = "**1.** License Name: {0}\n**2.** Short identifier: {1}\n**3.** License Author or steward: {2}\n**4.** Comments: {3}\n**5.** Standard License Header: {4}\n**6.** License Request Url: {5}\n**7.** URL: {6}\n**8.** OSI Status: {7}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseHeader, licenseRequestUrl, licenseUrls, licenseOsi)
+    if licenseSourceUrls != None and len(licenseSourceUrls) > 0:
+        licenseUrls = licenseSourceUrls[0]
+        for i in range(1, len(licenseSourceUrls)):
+            licenseUrls += ', '
+            licenseUrls += licenseSourceUrls[i]
+            
+    licenseExampleUrls = ""
+    if licenseExamples != None and len(licenseExamples) > 0:
+        licenseExampleUrls = licenseExamples[0]
+        for i in range(1, len(licenseExamples)):
+            licenseExampleUrls += ', '
+            licenseExampleUrls += licenseExamples[i]
+  
+    body = "**1.** License Name: {0}\n**2.** Short identifier: {1}\n**3.** License Author or steward: {2}\n**4.** Comments: {3}\n**5.** Standard License Header: {4}\n**6.** License Request Url: {5}\n**7.** URL(s): {6}\n**8.** OSI Status: {7}\n**9.** Example Projects: {8}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseHeader, licenseRequestUrl, licenseUrls, licenseOsi, licenseExampleUrls)
     if diffUrl:
         body = body + "\n**8.** License Text Diff: {0}".format(diffUrl)
     if matchId:
@@ -328,6 +351,18 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     url = "{0}/issues".format(TYPE_TO_URL_LICENSE[urlType])
     r = requests.post(url, data=json.dumps(payload), headers=headers)
     return r.status_code
+
+
+def postToGithub(message, encodedContent, filename):
+    """ Function to create a new file on with encodedContent
+    """
+    token = settings.DIFF_REPO_GIT_TOKEN
+    repo = settings.DIFF_REPO_WITH_OWNER
+    payload = {'message' : message, 'content': encodedContent}
+    headers = {'Authorization': 'token ' + token}
+    url = "https://api.github.com/repos/{0}/contents/{1}".format(repo, filename)
+    r = requests.put(url, data=json.dumps(payload), headers=headers)
+    return r.status_code, r.json()
 
 
 def parseXmlString(xmlString):
@@ -430,14 +465,17 @@ def get_license_data(issues):
     for issue in issues:
         if not issue.get('pull_request'):
             licenseInfo = issue.get('body')
-            if '[SPDX-Online-Tools]' in issue.get('title'):
-                licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
-                licenseIds.append(licenseIdentifier)
+            if '[SPDX-Online-Tools]' in issue.get('title'):         
                 try:
-                    licenseXml = str(LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).xml)
+                    licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
+                    dbId = re.search(r'License Request Url:.+/app/license_requests/([0-9]+)', licenseInfo).group(1)
+                    licenseXml = str(LicenseRequest.objects.get(id=dbId, shortIdentifier=licenseIdentifier).xml)
                     licenseText = parseXmlString(licenseXml)['text']
                     licenseTexts.append(clean(licenseText))
+                    licenseIds.append(licenseIdentifier)
                 except LicenseRequest.DoesNotExist:
+                    pass
+                except AttributeError:
                     pass
     licenseData = dict(zip(licenseIds, licenseTexts))
     return licenseData
@@ -468,8 +506,9 @@ def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
 def check_spdx_license(licenseText):
     """Check the license text against the spdx license list.
     """
-    licenseText = unicode(licenseText.decode('string_escape'), 'utf-8')
-    r = redis.StrictRedis(host='localhost', port=6379, db=0)
+    if not isinstance(licenseText, unicode):
+        licenseText = unicode(licenseText.decode('string_escape'), 'utf-8')
+    r = redis.StrictRedis(host=getRedisHost(), port=6379, db=0)
     
     # if redis is empty build the spdx license list in the redis database
     if r.keys('*') == []:

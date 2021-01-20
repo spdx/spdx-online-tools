@@ -15,7 +15,7 @@
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">License Namespace Requests List</p> </div>
-<div class="panel-body">
+<div class="panel-body" style="overflow: scroll;">
     <table id="requests_table" class="display dataTable">
       <thead>
         <tr>
@@ -103,7 +103,7 @@
       		$("#modal-header").removeClass("red-modal green-modal");
       		$("#modal-header").addClass("yellow-modal");
       		$(".modal-footer").html('<button class="btn btn-success" id="github_auth_begin"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
-      		$("#modal-body").html('To promote a license namespace, you must log in using Github.  You will now be redirected to the github login.  Please allow the requested permissions.  If you do not have a github account, you can <a href="https://github.com/">sign up</a> for free or you can email your new license namespace to <a href="mailto:spdx-legal@spdx.org">spdx-legal@spdx.org</a>.');
+      		$("#modal-body").html('To promote a license namespace, you must log in using Github.  You will now be redirected to the github login.  Please allow the requested permissions.  If you do not have a github account, you can <a href="https://github.com/">sign up</a> for free or you can email your new license namespace to <a href="mailto:spdx-legal@lists.spdx.org">spdx-legal@lists.spdx.org</a>.');
               $("#myModal").modal({
                  backdrop: 'static',
                  keyboard: true,

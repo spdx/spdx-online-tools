@@ -45,6 +45,7 @@ try:
 except ImportError:
     from urllib.parse import urljoin
 import datetime
+import uuid
 from wsgiref.util import FileWrapper
 import os
 import subprocess
@@ -62,8 +63,6 @@ logger = logging.getLogger()
 from .forms import LicenseRequestForm, LicenseNamespaceRequestForm
 from .models import LicenseRequest, LicenseNamespace
 from spdx_license_matcher.utils import get_spdx_license_text
-
-
 
 import cgi
 
@@ -115,7 +114,8 @@ def submitNewLicense(request):
                     licenseName = form.cleaned_data['fullname']
                     licenseIdentifier = form.cleaned_data['shortIdentifier']
                     licenseOsi = form.cleaned_data['osiApproved']
-                    licenseSourceUrls = [form.cleaned_data['sourceUrl']]
+                    licenseSourceUrls = request.POST.getlist('sourceUrl')
+                    licenseExamples = request.POST.getlist('exampleUrl')
                     licenseHeader = form.cleaned_data['licenseHeader']
                     licenseComments = form.cleaned_data['comments']
                     licenseText = form.cleaned_data['text']
@@ -130,7 +130,6 @@ def submitNewLicense(request):
                         urlType = request.POST["urlType"]
 
                     matchingIds, matchingType = utils.check_spdx_license(licenseText)
-                    licenseText = licenseText.decode('unicode-escape')
                     matches = ['Perfect match', 'Standard License match', 'Close match']
                     if matchingType in matches:
                         data['matchType'] = matchingType
@@ -161,17 +160,16 @@ def submitNewLicense(request):
 
                     # Check if the license text doesn't matches with the rejected as well as not yet approved licenses
                     if not matches:
-                        licenseText = licenseText.decode('unicode-escape')
                         xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
                             listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                         now = datetime.datetime.now()
                         licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
                             submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
                         licenseRequest.save()
-                        licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+                        licenseId = licenseRequest.id
                         serverUrl = request.build_absolute_uri('/')
                         licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                        statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
+                        statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
 
                     # If the license text matches with either rejected or yet not approved license then return 409 Conflict
                     else:
@@ -463,9 +461,12 @@ def validate(request):
                         base_url=urljoin(settings.MEDIA_URL, folder+'/')
                         )
                     filename = fs.save(myfile.name, myfile)
-                    uploaded_file_url = fs.url(filename)
+                    uploaded_file_url = fs.url(filename).replace("%20", " ")
+                    formatstr = request.POST["format"]
+                    serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
+                    fileformat = serFileTypeEnum.valueOf(formatstr)
                     """ Call the java function with parameters """
-                    retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url))
+                    retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url), fileformat)
                     if (len(retval) > 0):
                         """ If any warnings are returned """
                         if (request.is_ajax()):
@@ -646,7 +647,8 @@ def compare(request):
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
             verifyclass = package.Verify
-            compareclass = package.CompareMultpleSpdxDocs
+            compareclass = package.CompareSpdxDocs
+            helperclass = package.SpdxToolsHelper
             ajaxdict = dict()
             filelist = list()
             errorlist = list()
@@ -670,35 +672,46 @@ def compare(request):
                         )
                     for myfile in request.FILES.getlist("files"):
                         filename = fs.save(myfile.name, myfile)
-                        uploaded_file_url = fs.url(filename)
+                        uploaded_file_url = fs.url(filename).replace("%20", " ")
                         callfunc.append(settings.APP_DIR+uploaded_file_url)
-                        try :
-                            """Call the java function to verify for valid RDF Files."""
-                            retval = verifyclass.verifyRDFFile(settings.APP_DIR+uploaded_file_url)
-                            if (len(retval) > 0):
-                                """If warnings raised"""
-                                warningoccurred = True
+                        nameoffile, fileext = os.path.splitext(filename)
+                        if (nameoffile.endswith(".rdf") and fileext == ".xml") or fileext == ".rdf":
+                            fileext = ".rdfxml"
+                        elif fileext == ".spdx":
+                            fileext = ".tag"
+                        try:
+                            filetype = helperclass.strToFileType(fileext[1:])
+                            try :
+                                """Call the java function to verify for valid SPDX Files."""
+                                retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url, filetype)
+                                if (len(retval) > 0):
+                                    """If warnings raised"""
+                                    warningoccurred = True
+                                    filelist.append(myfile.name)
+                                    errorlist.append(str(retval))
+                                else :
+                                    filelist.append(myfile.name)
+                                    errorlist.append("No errors found")
+                            except jpype.JavaException as ex :
+                                """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
+                                erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append(str(retval))
-                            else :
+                                errorlist.append(jpype.JavaException.message(ex))
+                            except :
+                                """ Other Exceptions"""
+                                erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append("No errors found")
-                        except jpype.JavaException as ex :
-                            """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
-                            erroroccurred = True
-                            filelist.append(myfile.name)
-                            errorlist.append(jpype.JavaException.message(ex))
+                                errorlist.append(format_exc())
                         except :
-                            """ Other Exceptions"""
+                            """Invalid file extension"""
                             erroroccurred = True
                             filelist.append(myfile.name)
-                            errorlist.append(format_exc())
-
+                            errorlist.append("Invalid file extension for "+filename+".  Must be .xls, .xlsx, .xml, .json, .yaml, .spdx, .rdfxml")
                     if (erroroccurred==False):
                         """ If no errors in any of the file,call the java function with parameters as list"""
                         try :
                             compareclass.onlineFunction(callfunc)
-                        except :
+                        except Exception as ex:
                             """Error raised by onlineFunction"""
                             if (request.is_ajax()):
                                 ajaxdict["type"] = "warning2"
@@ -794,14 +807,38 @@ def compare(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def getFileFormat(to_format):
-    if (to_format=="Tag"):
+    if (to_format=="TAG"):
         return ".spdx"
-    elif (to_format=="RDF"):
-        return ".rdf"
-    elif (to_format=="Spreadsheet"):
+    elif (to_format=="RDFXML"):
+        return ".rdf.xml"
+    elif (to_format=="XLS"):
         return ".xls"
-    elif (to_format=="HTML"):
-        return ".html"
+    elif (to_format=="XLSX"):
+        return ".xlsx"
+    elif (to_format=="JSON"):
+        return ".json"
+    elif (to_format=="YAML"):
+        return ".yaml"
+    elif (to_format=="XML"):
+        return ".xml"
+    else :
+        return ".invalid"
+        
+def formatToContentType(to_format):
+    if (to_format=="TAG"):
+        return "text/tag-value"
+    elif (to_format=="RDFXML"):
+        return "application/rdf+xml"
+    elif (to_format=="XLS"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="XLSX"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="JSON"):
+        return "application/json"
+    elif (to_format=="YAML"):
+        return "text/yaml"
+    elif (to_format=="XML"):
+        return "application/xml"
     else :
         return ".invalid"
 
@@ -819,6 +856,9 @@ def convert(request):
             """ Attach a Thread and start processing the request """
             jpype.attachThreadToJVM()
             package = jpype.JPackage("org.spdx.tools")
+            serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
+            spdxConverter = package.SpdxConverter
+            verifyclass = package.Verify
             ajaxdict=dict()
             try :
                 if request.FILES["file"]:
@@ -827,86 +867,21 @@ def convert(request):
                     myfile = request.FILES['file']
                     fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
                     filename = fs.save(myfile.name, myfile)
-                    uploaded_file_url = fs.url(filename)
+                    uploaded_file_url = fs.url(filename).replace("%20", " ")
                     option1 = request.POST["from_format"]
                     option2 = request.POST["to_format"]
-                    functiontocall = option1 + "To" + option2
-                    warningoccurred = False
-                    content_type =""
+                    content_type = formatToContentType(option2)
                     if "cfileformat" in request.POST :
                         cfileformat = request.POST["cfileformat"]
                     else :
                         cfileformat = getFileFormat(option2)
                     convertfile =  request.POST["cfilename"] + cfileformat
+                    fromFileFormat = serFileTypeEnum.valueOf(option1);
+                    toFileFormat = serFileTypeEnum.valueOf(option2);
                     """ Call the java function with parameters as list """
-                    if (option1=="Tag"):
-                        print ("Verifing for Tag/Value Document")
-                        if (option2=="RDF"):
-                            option3 = request.POST["tagToRdfFormat"]
-                            content_type = "application/rdf+xml"
-                            tagtordfclass = package.TagToRDF
-                            retval = tagtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+convertfile, option3])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="Spreadsheet"):
-                            content_type = "application/vnd.ms-excel"
-                            tagtosprdclass = package.TagToSpreadsheet
-                            retval = tagtosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        else :
-                            jpype.detachThreadFromJVM()
-                            context_dict["error"] = "Select the available conversion types."
-                            return render(request,
-                                'app/convert.html',context_dict,status=400
-                                )
-                    elif (option1=="RDF"):
-                        print ("Verifing for RDF Document")
-                        if (option2=="Tag"):
-                            content_type = "text/tag-value"
-                            rdftotagclass = package.RdfToTag
-                            retval = rdftotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="Spreadsheet"):
-                            content_type = "application/vnd.ms-excel"
-                            rdftosprdclass = package.RdfToSpreadsheet
-                            retval = rdftosprdclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="HTML"):
-                            content_type = "text/html"
-                            rdftohtmlclass = package.RdfToHtml
-                            retval = rdftohtmlclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        else :
-                            jpype.detachThreadFromJVM()
-                            context_dict["error"] = "Select the available conversion types."
-                            return render(request,
-                                'app/convert.html',context_dict,status=400
-                                )
-                    elif (option1=="Spreadsheet"):
-                        print ("Verifing for Spreadsheet Document")
-                        if (option2=="Tag"):
-                            content_type = "text/tag-value"
-                            sprdtotagclass = package.SpreadsheetToTag
-                            retval = sprdtotagclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        elif (option2=="RDF"):
-                            content_type = "application/rdf+xml"
-                            sprdtordfclass = package.SpreadsheetToRDF
-                            retval = sprdtordfclass.onlineFunction([settings.APP_DIR+uploaded_file_url,settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile])
-                            if (len(retval) > 0):
-                                warningoccurred = True
-                        else :
-                            jpype.detachThreadFromJVM()
-                            context_dict["error"] = "Select the available conversion types."
-                            return render(request,
-                                'app/convert.html',context_dict,status=400
-                                )
-                    if (warningoccurred==False) :
+                    spdxConverter.convert(str(settings.APP_DIR+uploaded_file_url),str(settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile), fromFileFormat, toFileFormat)
+                    warnings = verifyclass.verify(str(settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile), toFileFormat)
+                    if (len(warnings) == 0) :
                         """ If no warnings raised """
                         if (request.is_ajax()):
                             ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
@@ -924,12 +899,12 @@ def convert(request):
                     else :
                         if (request.is_ajax()):
                             ajaxdict["type"] = "warning"
-                            ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ": " + str(retval)
+                            ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ": " + str(warnings)
                             ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                             response = dumps(ajaxdict)
                             jpype.detachThreadFromJVM()
                             return HttpResponse(response,status=406)
-                        context_dict["error"] = str(retval)
+                        context_dict["error"] = str(warnings)
                         context_dict["type"] = "warning"
                         context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(convertfile)
                         context_dict["Content-Type"] = content_type
@@ -1158,7 +1133,6 @@ def xml_upload(request):
                             base_url=urljoin(settings.MEDIA_URL, folder+'/')
                             )
                         filename = fs.save(xml_file.name, xml_file)
-                        uploaded_file_url = fs.url(filename)
                         page_id = request.POST['page_id']
                         with open(str(fs.location+'/'+filename), 'r') as f:
                             request.session[page_id] = [f.read(), ""]
@@ -1295,13 +1269,35 @@ def archiveRequests(request, license_id=None):
     """ View for archive license requests
     returns archive_requests.html template
     """
+    context_dict = {}
+    if request.user.is_authenticated():
+        user = request.user
+        github_login = user.social_auth.get(provider='github')
+        if utils.checkPermission(user):
+            context_dict['authorized'] = "True"
+    else:
+        github_login = None
     if request.method == "POST" and request.is_ajax():
-        archive = request.POST.get('archive', False)
+        if not request.user.is_authenticated():
+            ajaxdict = {}
+            ajaxdict["type"] = "auth_error"
+            ajaxdict["data"] = "Please login using GitHub to use this feature."
+            response = dumps(ajaxdict)
+            return HttpResponse(response,status=401)
+        if 'authorized' not in context_dict:
+            ajaxdict = {}
+            ajaxdict["type"] = "auth_error"
+            ajaxdict["data"] = "You are not authorised to perform this action"
+            response = dumps(ajaxdict)
+            return HttpResponse(response, status=401)
+        archive = request.POST.get('archive', True)
         license_id = request.POST.get('license_id', False)
         if license_id:
             LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
+
     archiveRequests = LicenseRequest.objects.filter(archive='True').order_by('-submissionDatetime')
-    context_dict={'archiveRequests': archiveRequests}
+    context_dict['archiveRequests'] = archiveRequests
+    context_dict['github_login'] = github_login
     return render(request,
         'app/archive_requests.html',context_dict
         )
@@ -1336,6 +1332,7 @@ def promoteNamespaceRequests(request, license_id=None):
             licenseOsi = ""
             licenseHeader = ""
             licenseComments = ""
+            licenseExamples = []
             user = request.user
             github_login = user.social_auth.get(provider='github')
             token = github_login.extra_data["access_token"]
@@ -1362,7 +1359,7 @@ def promoteNamespaceRequests(request, license_id=None):
             if 'urlType' in request.POST:
                 # This is present only when executing submit license via tests
                 urlType = request.POST["urlType"]
-            statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
+            statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
             return_tuple = (statusCode, licenseRequest)
             statusCode = return_tuple[0]
             if statusCode == 201:
@@ -1378,13 +1375,34 @@ def licenseRequests(request, license_id=None):
     """ View for license requests which are not archived
     returns license_requests.html template
     """
+    context_dict = {}
+    if request.user.is_authenticated():
+        user = request.user
+        github_login = user.social_auth.get(provider='github')
+        if utils.checkPermission(user):
+            context_dict['authorized'] = "True"
+    else:
+        github_login = None
     if request.method == "POST" and request.is_ajax():
+        if (not request.user.is_authenticated()):
+            ajaxdict = {}
+            ajaxdict["type"] = "auth_error"
+            ajaxdict["data"] = "Please login using GitHub to use this feature."
+            response = dumps(ajaxdict)
+            return HttpResponse(response,status=401)
+        if 'authorized' not in context_dict:
+            ajaxdict = {}
+            ajaxdict["type"] = "auth_error"
+            ajaxdict["data"] = "You are not authorised to perform this action"
+            response = dumps(ajaxdict)
+            return HttpResponse(response, status=401)
         archive = request.POST.get('archive', True)
         license_id = request.POST.get('license_id', False)
         if license_id:
             LicenseRequest.objects.filter(pk=license_id).update(archive=archive)
     licenseRequests = LicenseRequest.objects.filter(archive='False').order_by('-submissionDatetime')
-    context_dict={'licenseRequests': licenseRequests}
+    context_dict['licenseRequests'] = licenseRequests
+    context_dict['github_login'] = github_login
     return render(request,
         'app/license_requests.html',context_dict
         )
@@ -1494,6 +1512,7 @@ def issue(request):
                     licenseIdentifier = request.POST['licenseIdentifier']
                     licenseOsi = request.POST['licenseOsi']
                     licenseSourceUrls = request.POST.getlist('licenseSourceUrls')
+                    licenseExamples = request.POST.getlist('exampleUrl')
                     licenseHeader = request.POST['licenseHeader']
                     licenseComments = request.POST['comments']
                     licenseText = request.POST['inputLicenseText']
@@ -1511,10 +1530,10 @@ def issue(request):
                     licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
                         submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
                     licenseRequest.save()
-                    licenseId = LicenseRequest.objects.get(shortIdentifier=licenseIdentifier).id
+                    licenseRequestId = licenseRequest.id
                     serverUrl = request.build_absolute_uri('/')
-                    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                    statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType, matchId, diffUrl, msg)
+                    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
+                    statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId, diffUrl, msg)
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
                 except UserSocialAuth.DoesNotExist:
@@ -1796,6 +1815,32 @@ def checkusername(request):
     else :
         return HttpResponse(dumps({"data": "No username entered"}),status=400)
 
+
+def post_to_github(request):
+    """ Api to handle github upload of diff images """
+    if request.user.is_authenticated():
+        data = {}
+        if request.method == "POST":
+            try:
+                message = request.POST.get('message')
+                encodedContent = request.POST.get('content')
+                filename = str(uuid.uuid4()) + ".png"
+                statusCode, jsonResponse = utils.postToGithub(message, encodedContent, filename)
+                data['statusCode'] = str(statusCode)
+                if (statusCode == 201) :
+                    data['fileurl'] = jsonResponse["content"]["html_url"]
+                else :
+                    data['error_message'] = jsonResponse["message"]
+                    raise Exception("Post to Github returned {0} status code - message {1}".format(statusCode, jsonResponse["message"]))
+                return JsonResponse(data)
+            except:
+                """  Errors raised """
+                logger.error(str(format_exc()))
+                data["type"] = "error"
+                return HttpResponse(dumps({"message" : "Unexpected error while posting to github, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(),
+                                           "data" : data}), status=500)
+    else:
+        return HttpResponse(dumps({"message": "User should be logged in to use this feature"}), status=400)
 
 def handler400(request):
     return render_to_response('app/400.html',

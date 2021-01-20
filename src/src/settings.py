@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-from secret import getGithubKey, getGithubSecret, getSecretKey, getOauthToolKitAppID, getOauthToolKitAppSecret
+from secret import getGithubKey, getGithubSecret, getSecretKey, getOauthToolKitAppID, getOauthToolKitAppSecret, getDiffRepoGitToken, getDiffRepoWithOwner
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,20 +32,30 @@ NAMESPACE_DEV_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPAC
 NAMESPACE_PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPACE_REPO_NAME)
 NAMESPACE_REPO_URL = NAMESPACE_DEV_REPO_URL
 
+# Settings for license request diff image repo
+DIFF_REPO_WITH_OWNER = getDiffRepoWithOwner()
+DIFF_REPO_GIT_TOKEN = getDiffRepoGitToken()
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = getSecretKey()
 
+# Set the secure proxy SSL header for operation in the AWS deployment environment
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get(key='DEBUG', failobj=1) in (True, 'True', 1, "1")
 
 if not DEBUG:
     REPO_URL = PROD_REPO_URL
     NAMESPACE_REPO_URL = NAMESPACE_PROD_REPO_URL
 
 ALLOWED_HOSTS = ['*']
+
+if not DEBUG:
+    ALLOWED_HOSTS = ['.tools.spdx.org', '52.32.53.255', '13.57.134.254']
 
 
 # Application definition
@@ -104,8 +114,12 @@ WSGI_APPLICATION = 'src.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': os.environ.get(key='SQL_ENGINE',failobj='django.db.backends.sqlite3'),
+        'NAME': os.environ.get(key='SQL_DATABASE', failobj=os.path.join(BASE_DIR, 'db.sqlite3')),
+        'USER': os.environ.get(key='SQL_USER', failobj='user'),
+        'PASSWORD': os.environ.get(key='SQL_PASSWORD', failobj='password'),
+        'HOST': os.environ.get(key='SQL_HOST', failobj='localhost'),
+        'PORT': os.environ.get(key='SQL_PORT', failobj='5432'),
     }
 }
 
@@ -209,7 +223,7 @@ REST_FRAMEWORK = {
 # The online tool uses spdx-tools-2.1.6-SNAPSHOT-jar-with-dependencies.jar from the compiled target folder of java tools
 # renamed (for now) as tool.jar in the main src directory of spdx-online tool
 
-JAR_ABSOLUTE_PATH =  os.path.join(os.path.abspath("."),"tool.jar")
+JAR_ABSOLUTE_PATH = os.path.join(BASE_DIR, "tool.jar")
 # URL Path Variables
 
 LOGIN_REDIRECT_URL = "/app/"

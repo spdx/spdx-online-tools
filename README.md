@@ -1,4 +1,4 @@
-[![GSoC Logo](https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-logo-horizontal.svg)](https://summerofcode.withgoogle.com/projects/#5747767629578240)
+[![GSoC Logo](./title_img/spdx-online-tool.jpg)](https://summerofcode.withgoogle.com/projects/#5747767629578240)
 
 # spdx-online-tools
 
@@ -28,7 +28,7 @@ sudo apt-get install g++ python-dev
 
 Windows users need a Python installation and C++ compiler:
 
-* Install some version of Python (2.7 or higher), e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
+* Install Python 2.7 version, e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
 * Install a [Windows C++ Compiler](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
 ## Installation
@@ -97,36 +97,56 @@ Windows users need a Python installation and C++ compiler:
 python src/manage.py test
 ```
 
+## Running with Docker
+
+You need to have [docker desktop](https://docs.docker.com/desktop/) installed on your machine for the container environment. 
+You can bring up the Docker image with the following docker-compose command:
+
+```
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+For the production environment, see the [README-PRODUCTION.md](README-PRODUCTION.md) file.
+
 ## GitHub Developer Sensitive Data
 
-The `settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is not checked into source. Due to that lack of data, some features of SPDX Online Tools and its API won't be able to run as they require the user credentials in order to access the GitHub API. So, the user is supposed to enter their credentials in the `src/src/secret.py ` file in order to ensure proper functioning of the tool.
+The `src/src/settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is maintained as environment variables. Due to that lack of data, some features of SPDX Online Tools and its API won't be able to run as they require the user credentials in order to access the GitHub API. So, the user is supposed to either maintain a `.env` file in the `src/src/` folder or create environment variables in their os with their credentials in order to ensure proper functioning of the tool.
 
 The `src/src/secret.py` file contains the following lines along with some methods required to run the tests properly. These include:
 
 ```python
 def getGithubKey():
-    return 'GHKEYXXX'
+    return os.environ.get(key="ONLINE_TOOL_GITHUB_KEY")
 
 def getGithubSecret():
-    return 'GHSECRETXXX'
+    return os.environ.get(key="ONLINE_TOOL_GITHUB_SECRET")
 
 def getSecretKey():
-    return 'DJANGOSECRETXXX'
+    return os.environ.get(key="DJANGO_SECRET_KEY")
 
 def getOauthToolKitAppID():
-    return 'OauthAppIDXXX'
+    return os.environ.get(key="OAUTH_APP_ID")
 
 def getOauthToolKitAppSecret():
-    return 'OauthAppSecretXXX'
+    return os.environ.get(key="OAUTH_APP_SECRET")
+	
+# The methods getDiffRepoGitToken and getDiffRepoWithOwner are used to configure the repository used for storing license diffs created during the license submittal process
+# The DIFF_REPO_GIT_TOKEN is a personal access token created in Github with access to the repo DIFF_REPO_WITH_OWNER
+    
+def getDiffRepoGitToken():
+    return os.environ.get(key="DIFF_REPO_GIT_TOKEN")
+    
+def getDiffRepoWithOwner():
+    return os.environ.get(key="DIFF_REPO_WITH_OWNER", failobj="spdx/licenseRequestImages")
 ```
 
 where:
 
-* GHKEYXXX is the Client ID for the Github Oauth Apps
-* GHSECRETXXX is the Client secret for the Github Oauth Apps
-* DJANGOSECRETXXX is the Django secret
-* OauthAppIDXXX is the client ID of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
-* OauthAppSecretXXX is the client secret of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
+* ONLINE_TOOL_GITHUB_KEY is the Client ID for the Github Oauth Apps
+* ONLINE_TOOL_GITHUB_SECRET is the Client secret for the Github Oauth Apps
+* DJANGO_SECRET_KEY is the Django secret
+* OAUTH_APP_ID is the client ID of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
+* OAUTH_APP_SECRET is the client secret of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
 
 **Note:** While setting up the GitHub OAuth App, set the `Homepage URL` to `http://localhost:8000/` and the `Authorization callback URL` to `http://localhost:8000/oauth/complete/github`
 
@@ -136,7 +156,7 @@ where:
 
 1. Start the server.
     ```bash
-    python manage.py runserver
+    python src/manage.py runserver
     ```
 2. Send the request to the url with the form input values accordingly. Curl examples are given below.
 
@@ -158,16 +178,16 @@ where:
     ```
 7. For the license submittal API, first create a a django oauth toolkit application and follow the steps given below:
     #### Django Oauth Toolkit App
-    * Go to admin page and login(if you don't have an admin account then create one using `python manage.py createsuperuser`).
-    * Create a new application by going to the `Add application` section.
-    * Copy the client id and client secret of the app and paste it in secret.py file under   getOauthToolKitAppID and secret and fill the other details of the app as follows:
+    * Go to admin page and login(if you don't have an admin account then create one using `python src/manage.py createsuperuser`).
+    * Create a new application by going to the `Applications` section.
+    * Copy the client id and client secret of the app and paste it in `src/src/secret.py` file under   getOauthToolKitAppID and secret and fill the other details of the app as follows:
         * `User`: `<admin you created>`
         * `client type`: `confidential`
         * `authorization grant type`: `resource owner password based`
     
         and SAVE the app.
     #### Authorize oauth app with github to get code and send a request to the license submittal API
-    * Visit `http://github.com/login/oauth/authorize/?client_id=<github-client-id>` it will then redirect you to a url, copy the `code` query string present in the url and send it via curl command if you want to use the API. if you want to run tests and test the API then paste the `code` in the secret.py file in the `getAuthCode` method.
+    * Visit `http://github.com/login/oauth/authorize/?client_id=<github-client-id>` it will then redirect you to a url, copy the `code` query string present in the url and send it via curl command if you want to use the API. if you want to run tests and test the API then paste the `code` in the `src/src/secret.py` file in the `getAuthCode` method.
 
         **Note** You can only use your code once. If you want to use the license submittal API again, you can generate a new code by following the above point. The code is valid for 10 minutes only.
 
