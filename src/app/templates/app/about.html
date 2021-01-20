@@ -20,7 +20,6 @@
 Project by-<br> Rohit Lodha, GSoC 2017 <br> Tushar Mittal, GSoC 2018 <br> Galo Castillo, GSoC 2018 <br> Umang Taneja, GSoC 2019 <br> Tanjong Agbor Smith, GSoC 2019
 </strong>
 </p>
-
 {% endblock %}
 
 {% block script_block %}
@@ -29,4 +28,15 @@ $(document).ready(function () {
     $("#aboutpage").addClass('linkactive');
   });
 </script>
+<footer style="margin-left: 21%;
+margin-top: 20px;
+font-size: 1.1em;">
+<b>Spdx online tools version :  
+<span style="color:#0097c4;">  {{ spdx_online_tools_version }}</span>
+<br>
+Java Tools version : <span style="color:#0097c4;">  {{ java_tools_version }}</span>
+</b>
+</footer>
+
 {% endblock %}
+
