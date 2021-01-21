@@ -28,7 +28,7 @@ from spdx_license_matcher.computation import (checkTextStandardLicense,
 from spdx_license_matcher.difference import get_similarity_percent
 from spdx_license_matcher.utils import get_spdx_license_text
 
-from app.models import User, UserID
+from app.models import User, UserID, LicenseRequest, LicenseNamespace
 
 from src.secret import getRedisHost
 
