@@ -120,6 +120,7 @@
   function checkFile(file){
     if(file){
       $(".file-name").html("<b>Selected File: </b>"+file.name);
+      $("#cfilename").val(file.name.split('.').slice(0,-1).join('.') || file.name);
       selected_file = file;
     }
     else{
