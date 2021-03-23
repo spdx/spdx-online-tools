@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 import xml.etree.ElementTree as ET
-from itertools import chain, izip, tee
+from itertools import chain, tee
 
 entityMap = {
     '>': '&gt;',
@@ -20,7 +20,7 @@ symbolBullets = r"^(\s*)([*\u2022\-])(\s)"
 def previous_and_current(some_iterable):
     prevs, items = tee(some_iterable, 2)
     prevs = chain([None], prevs)
-    return izip(prevs, items)
+    return zip(prevs, items)
 
 
 def escapeXmlData(string):
