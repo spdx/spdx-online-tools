@@ -1,7 +1,7 @@
 Django>=1.11.18,<1.12
 jpype1==0.6.3
 numpy==1.16.4
-djangorestframework==3.9.1
+djangorestframework==3.11.2
 bs4==0.0.1
 requests==2.22
 lxml==4.6.3
