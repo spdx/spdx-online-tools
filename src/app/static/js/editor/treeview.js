@@ -352,7 +352,8 @@ function updateTextEditor(textEditor, treeEditor){
         /* call convert function */
         convertTreeToText($("#"+treeEditor));
         /* update text editor */
-        textEditor.setValue(beautify(new_xml));
+        beautify(new_xml);
+        textEditor.setValue(beautifiedXmlText);
         textEditor.refresh();
         return new_xml;
     }

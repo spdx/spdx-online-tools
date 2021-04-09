@@ -11,13 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+
 
 from django.contrib.auth.models import User, Group          
 
 from rest_framework import serializers
 
-from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload
+from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload,SubmitLicenseModel
  
 
 class ValidateSerializer(serializers.HyperlinkedModelSerializer):
@@ -83,3 +83,19 @@ class CheckLicenseSerializerReturn(serializers.ModelSerializer):
     class Meta:
         model = CheckLicenseFileUpload
         fields = ('created', 'file', 'owner','result','status')
+
+class SubmitLicenseSerializer(serializers.HyperlinkedModelSerializer):
+    """POST license submit API request fields"""
+    owner = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='id'
+    )
+    class Meta:
+        model = SubmitLicenseModel
+        fields = ('created','owner','fullname','shortIdentifier','licenseAuthorName','userEmail','sourceUrl','osiApproved','comments','licenseHeader','text','result','status')
+
+class SubmitLicenseSerializerReturn(serializers.ModelSerializer):
+    """Response Fields to be returned to the user"""
+    class Meta:
+        model = SubmitLicenseModel
+        fields = ('created','owner','result','status')

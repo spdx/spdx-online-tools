@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+
 from django.db import models
 from datetime import datetime
 from django import forms
@@ -27,12 +27,20 @@ class UserID(models.Model):
 class LicenseNames(models.Model):
     name = models.CharField(max_length=200)
 
-class LicenseRequest(models.Model):
+class License(models.Model):
+    licenseAuthorName = models.CharField(max_length=100, default="", blank=True, null=True)
     fullname = models.CharField(max_length=70)
     shortIdentifier = models.CharField(max_length=25)
     submissionDatetime = models.DateTimeField(auto_now_add=True)
     userEmail = models.EmailField(max_length=35)
+    notes = models.CharField(max_length=255, default="")
     xml = models.TextField()
+    archive = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+class LicenseRequest(License):
 
     def __unicode__(self):
         return "%s" % (self.fullname)
@@ -42,3 +50,40 @@ class LicenseRequest(models.Model):
     class Meta:
         verbose_name = "LicenseRequest"
         verbose_name_plural = "LicenseRequests"
+
+
+class OrganisationName(models.Model):
+    name = models.CharField(max_length=250)
+    orgId = models.CharField(max_length=25)
+
+    def __unicode__(self):
+        return "%s" % (self.name)
+
+    def __str__(self):
+        return "{0} [{1}]".format(self.name, self.orgId)
+
+    class Meta:
+        verbose_name = "OrganisationName"
+        verbose_name_plural = "OrganisationNames"
+
+
+class LicenseNamespace(License):
+    organisation = models.ForeignKey(OrganisationName, null=True, blank=True, on_delete=models.CASCADE)
+    publiclyShared = models.BooleanField(default=True)
+    description = models.TextField()
+    namespace = models.CharField(max_length=200)
+    url = models.CharField(max_length=200)
+    license_list_url= models.URLField(max_length=250)
+    github_repo_url= models.URLField(max_length=250)
+    promoted = models.BooleanField(default=False)
+    license_request = models.ForeignKey(LicenseRequest, null=True, blank=True, on_delete=models.CASCADE)
+
+    def __unicode__(self):
+        return "%s" % (self.namespace)
+
+    def __str__(self):
+        return "%s" % (self.namespace)
+
+    class Meta:
+        verbose_name = "LicenseNamespace"
+        verbose_name_plural = "LicenseNamespaces"

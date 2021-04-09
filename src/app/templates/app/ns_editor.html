@@ -1,0 +1,129 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% load staticfiles %}
+
+{% block head_block %}
+    <link href="{% static 'css/editor.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/codemirror.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/fullscreen.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/show-hint.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/foldgutter.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/treeview.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/diffview.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body1 %}
+    {% include "app/modal.html" %}
+{% endblock %}
+
+{% block body2 %}
+    <div class="container-fluid">
+        <input type="hidden" id="xmlText" value="{{xml_text}}">
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#text" id="tabTextEditor">Text Editor</a></li>
+            <li><a data-toggle="tab" href="#tree" id="tabTreeEditor">Tree Editor</a></li>
+            <li><a data-toggle="tab" href="#split" id="tabSplitView">Split View</a></li>
+        </ul>
+        <div class="tab-content">
+            <div id="text" class="tab-pane fade in active">
+                <div class="text-editor-options">
+                    <center>
+                    <button id="dec-fontsize" class="btn"> <b>-</b> </button> Font Size <button id="inc-fontsize" class="btn"> <b>+</b> </button>&nbsp;
+                    <button id="fullscreen" class="btn btn-default">Fullscreen</button>
+                    <button class="btn btn-md btn-default" id="beautify">Beautify</button>
+                    </center>
+                </div>
+                <textarea class="codemirror-textarea">{{xml_text}}</textarea>
+            </div>
+            <div id="tree" class="tab-pane fade">
+                <div class="treeContainer">
+                    <ul id="treeView" class="treeView">
+                        <li></li>
+                    </ul>
+                </div>
+            </div>
+            <div id="split" class="tab-pane fade">
+                <div class="col-md-6 splitTextEditorContainer">
+                    <textarea class="codemirror-textarea">{{xml_text}}</textarea>
+                </div>
+                <div class="col-md-6 splitTreeEditorContainer">
+                    <ul id="splitTreeView" class="splitTreeView">
+                        <li></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div><hr>
+    <div class="document-options">
+        <center>
+            <button class="btn btn-success" id="download" data-toggle="tooltip" data-placement="left" title="Download the XML Document">Download</button>
+            <button class="btn btn-primary" id="generateDiff" data-toggle="tooltip" title="Generate a diff to see all the changes made" data-placement="top">Generate Diff</button>
+            <button class="btn btn-warning" id="validateXML" data-toggle="tooltip" title="Validate the XML against the SPDX License Schema" data-placement="top">Validate</button>
+            <button class="btn btn-info" id="makePullRequest" data-toggle="tooltip" title="Make a Pull Request in the SPDX XML License Repository to get your changes reviewed and merged" data-placement="right">Submit Changes</button>
+        </center>
+    </div>
+    <form style="display:none" id="form">
+        {% csrf_token %}
+    </form>
+    <p id="githubLoginLink" hidden> {% url 'social:begin' 'github' %}</p>
+    <p id="licenseName" hidden> {{license_name}} </p>
+    {% if github_login %}
+    <p id="githubLogin" hidden>True</p>
+    <div id="prFormContainer" hidden>
+        <img src={% static "images/ajax-loader.gif" %} alt="Loading GIF" class="ajax-loader">
+        <form id="githubPRForm" class="form-inline">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="branchName">Branch Name:</label>
+                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Pull Request will be made from this branch to master branch" style="font-size:12px;"></span>
+                <input type="text" class="form-control" id="branchName" name="branchName">
+            </div><br>
+            <div class="checkbox">
+                <label><input type="checkbox" id="updateUpstream"> Update with upstream master </label> <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Select this if you want to update your forked repo with the upstream repo, before making the pull request" style="font-size:12px;"></span>
+            </div>
+            <div class="form-group">
+                <label for="fileName">File Name:</label>
+                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Name of the XML file" style="font-size:12px;"></span>
+                <input type="text" class="form-control" id="fileName" name="fileName" value={{license_name}}> .xml
+            </div><br>
+            <div class="form-group">
+                <label for="commitMessage">Commit Message:</label>
+                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Git commit message, a brief description of your changes" style="font-size:12px;"></span>
+                <input type="text" class="form-control" id="commitMessage" name="commitMessage">
+            </div><br>
+            <div class="form-group">
+                <label for="prTitle">Pull Request Title:</label>
+                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request title, can be edited later." style="font-size:12px;"></span>
+                <input type="text" class="form-control" id="prTitle" name="prTitle">
+            </div><br>
+            <div class="form-group">
+                <label for="prBody">Pull Request Body:</label>
+                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request body, can be edited later." style="font-size:12px;"></span>
+                <textarea class="form-control" rows="5" id="prBody" name="prBody" style="resize:none; width:200px;"></textarea>
+            </div><br>
+            </textarea>
+        </form>
+    </div>
+    {% else %}
+    <p id="githubLogin" hidden>False</p>
+    {% endif %}
+{% endblock %}
+
+{% block script_block %}
+<script type="text/javascript" src="{% static 'js/editor/codemirror.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/xml.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/fullscreen.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/foldgutter.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/foldcode.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/xml-fold.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/matchtags.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/closebrackets.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/closetag.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/trailingspace.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/show-hint.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/xml-hint.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/ns_script.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/treeview.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
+{% endblock %}

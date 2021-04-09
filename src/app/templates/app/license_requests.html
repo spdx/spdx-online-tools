@@ -3,61 +3,113 @@
 {% load staticfiles %}
 {% block body1 %}
 
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css"> 
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.css">
 
 <div id="messages" class="messages">
 </div>
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">License Requests List</p> </div>
-<div class="panel-body">
+<div class="panel-body" style="overflow: scroll;">
     <table id="requests_table" class="display dataTable">
       <thead>
         <tr>
           <th>Fullname</th>
           <th>Short Identifier</th>
+          <th>License author name</th>
           <th>Submission Date (UTC)</th>
+          {% if github_login and authorized %}
+          <th>Archive</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
         {% if licenseRequests %}
-        {% for elem in licenseRequests %}    
+        {% for elem in licenseRequests %}
           <tr class='clickableRow' id={{elem.id}}>
             <td>{{elem.fullname}}</td>
             <td>{{elem.shortIdentifier}}</td>
+            <td>{{elem.licenseAuthorName}}</td>
             <td>{{elem.submissionDatetime}}</td>
+            <td>
+              {% csrf_token %}
+              {% if github_login and authorized %}
+              <button id='archive_button{{elem.id}}' class='btn btn-success' width='25px' value='Archive'>Archive</button>
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
         {% endif %}
       </tbody>
     </table>
 
-{% include "app/modal.html" %} 
+{% include "app/modal.html" %}
 </div>
 {% endblock %}
 {% block script_block %}
 
-<style>
-    th {text-align: center;} 
-</style>
-
 <script type="text/javascript">
   $(document).ready(function () {
+      $("#licenserequest").addClass('linkactive');
       $("#licenserequestspage").addClass('linkactive');
       });
 </script>
 
 <script type="text/javascript">
   $(document).ready( function () {
-      $('#requests_table').DataTable();
-});
+      $('#requests_table').DataTable({
+        'info': false,
+        'order': false
+      });
+  });
 </script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.js"></script>
 
 <script type="text/javascript">
-$(".clickableRow").click(function() {
-    var $licenseId = $(this).closest("tr").attr('id');
-    location.href="/app/license_requests/" + $licenseId;
-});
+
+  $('tbody tr').each(function (i,e) {
+    $(e).children('td:not(:last)').click(function () {
+      var $licenseId = $(this).closest("tr").attr('id');
+      location.href="/app/license_requests/" + $licenseId;
+    });
+    $('body').on('click', 'button[id^="archive_button"]', function (en) {
+      en.stopImmediatePropagation();
+      $("#modal-header").addClass("yellow-modal");
+	    $(".modal-footer").html('<button class="btn btn-success" id="confirm_archive"><span class="glyphicon glyphicon-off"></span> Confirm</button>');
+      $("#modal-body").html('Are you sure you want to archive this license?');
+      $("#myModal").modal({
+        backdrop: 'static',
+        keyboard: true,
+        show: true,
+      })
+      var license = $(this).closest('tr');
+      $(document).on('click','button#confirm_archive', function(event){
+        event.preventDefault();
+        $("#myModal").modal("hide");
+        archiveLicense(license);
+      });
+    });
+  });
+
+function archiveLicense(license) {
+  var archive = 'True';
+  var $licenseId = license.attr('id');
+  $.ajax({
+    url: '/app/archive_requests/',
+    type: 'POST',
+    data: {
+      'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+      'archive': archive,
+      'license_id': $licenseId
+      },
+    dataType: 'json'
+  });
+  license.remove();
+  if(!$('tbody tr').length) {
+    var emptyRowContent = '<tr><td colspan="5" class="dataTables_empty" valign="top">No data available in table</td></tr>';
+    $("#requests_table tbody").append(emptyRowContent);
+  }
+}
+
 </script>
 {% endblock %}

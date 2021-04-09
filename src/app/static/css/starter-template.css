@@ -10,3 +10,11 @@ body {
   float: left;
   color:red;
 }
+
+input[type="checkbox"]{
+  width: 20px; /*Desired width*/
+  height: 20px; /*Desired height*/
+  cursor: pointer;
+  margin-left: 0px !important;
+  margin-top: -3px !important;
+}
