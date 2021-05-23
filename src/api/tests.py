@@ -123,9 +123,9 @@ class ConvertFileUploadTests(APITestCase):
         self.tag = "TAG"
         self.rdf = "RDFXML"
         self.xlsx = "XLS"
-        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
-        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"))
-        self.xlsx_file = open(getExamplePath("SPDXSpreadsheetExample-2.0.xls"))
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.2.spdx"))
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf.xml"))
+        self.xlsx_file = open(getExamplePath("SPDXSpreadsheetExample-v2.2.xls"))
 
     def tearDown(self):
         try:

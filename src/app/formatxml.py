@@ -115,7 +115,7 @@ def pretty(node, level):
     tail = singlespaceline(node.tail)
     # print("\t", level, tag, 'text=', text, 'tail=', tail, node.attrib)
     start_tag = "<" + tag
-    if node.attrib:
+    if node.attrib and tag in ATTRS_SEQ:
         for a in ATTRS_SEQ[tag]:
             if a in node.attrib:
                 start_tag += ' {}="{}"'.format(a, node.attrib[a])
