@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+from src.secret import getGithubKey, getGithubSecret, getSecretKey, getOauthToolKitAppID, getOauthToolKitAppSecret, getDiffRepoGitToken, getDiffRepoWithOwner
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,17 +19,44 @@ APP_DIR = os.path.join(BASE_DIR,'app')
 API_DIR = os.path.join(BASE_DIR,'api')
 TEMPLATE_DIR = os.path.join(APP_DIR, 'templates')
 STATIC_PATH = os.path.join(APP_DIR,'static')
+EXAMPLES_DIR = os.path.join(BASE_DIR,'examples')
+
+LICENSE_REPO_NAME = "license-list-XML"
+LICENSE_TEST_REPO_NAME = "TEST-LicenseList-XML"
+DEV_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(LICENSE_TEST_REPO_NAME)
+PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(LICENSE_REPO_NAME)
+REPO_URL = DEV_REPO_URL
+
+NAMESPACE_REPO_NAME = "license-namespace"
+NAMESPACE_TEST_REPO = "license-namespace-test"
+NAMESPACE_DEV_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPACE_TEST_REPO)
+NAMESPACE_PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPACE_REPO_NAME)
+NAMESPACE_REPO_URL = NAMESPACE_DEV_REPO_URL
+
+# Settings for license request diff image repo
+DIFF_REPO_WITH_OWNER = getDiffRepoWithOwner()
+DIFF_REPO_GIT_TOKEN = getDiffRepoGitToken()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'wmf(fc)l3jitafjt1^ys8x@&2@++p589vfg++1(@_+^=rqfqft'
+SECRET_KEY = getSecretKey()
+
+# Set the secure proxy SSL header for operation in the AWS deployment environment
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get(key='DEBUG', default=1) == 1
+
+if not DEBUG:
+    REPO_URL = PROD_REPO_URL
+    NAMESPACE_REPO_URL = NAMESPACE_PROD_REPO_URL
 
 ALLOWED_HOSTS = ['*']
+
+if not DEBUG:
+    ALLOWED_HOSTS = ['.tools.spdx.org', '52.32.53.255', '13.57.134.254']
 
 
 # Application definition
@@ -44,6 +72,8 @@ INSTALLED_APPS = [
     'api',
     'rest_framework',
     'social_django',
+    'oauth2_provider',
+    'rest_framework_social_oauth2',
 ]
 
 MIDDLEWARE = [
@@ -85,8 +115,12 @@ WSGI_APPLICATION = 'src.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': os.environ.get(key='SQL_ENGINE',default='django.db.backends.sqlite3'),
+        'NAME': os.environ.get(key='SQL_DATABASE', default=os.path.join(BASE_DIR, 'db.sqlite3')),
+        'USER': os.environ.get(key='SQL_USER', default='user'),
+        'PASSWORD': os.environ.get(key='SQL_PASSWORD', default='password'),
+        'HOST': os.environ.get(key='SQL_HOST', default='localhost'),
+        'PORT': os.environ.get(key='SQL_PORT', default='5432'),
     }
 }
 
@@ -110,14 +144,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'social_core.backends.open_id.OpenIdAuth',
-    'social_core.backends.google.GoogleOpenId',
-    'social_core.backends.google.GoogleOAuth2',
-    'social_core.backends.google.GoogleOAuth',
-    'social_core.backends.twitter.TwitterOAuth',
-    'social_core.backends.yahoo.YahooOpenId',
     'social_core.backends.github.GithubOAuth2',
     'django.contrib.auth.backends.ModelBackend',
+    'rest_framework_social_oauth2.backends.DjangoOAuth2',
 ]
 
 SOCIAL_AUTH_PIPELINE = (
@@ -133,9 +162,9 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.user_details',
 )
 
-SOCIAL_AUTH_GITHUB_KEY = '<>'
-SOCIAL_AUTH_GITHUB_SECRET = '<>'
-SOCIAL_AUTH_GITHUB_SCOPE = ['public_repo']
+SOCIAL_AUTH_GITHUB_KEY = getGithubKey()
+SOCIAL_AUTH_GITHUB_SECRET = getGithubSecret()
+SOCIAL_AUTH_GITHUB_SCOPE = ['public_repo', 'user:email']
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -169,27 +198,41 @@ MEDIA_URL = '/media/'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAdminUser',
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
-    )
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        #'oauth2_provider.ext.rest_framework.OAuth2Authentication',  # django-oauth-toolkit < 1.0.0
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
+        'rest_framework_social_oauth2.authentication.SocialAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
 }
 
 # Absolute Path for tool.jar
 # The online tool uses spdx-tools-2.1.6-SNAPSHOT-jar-with-dependencies.jar from the compiled target folder of java tools
 # renamed (for now) as tool.jar in the main src directory of spdx-online tool
 
-JAR_ABSOLUTE_PATH =  os.path.join(os.path.abspath("."),"tool.jar")
+JAR_ABSOLUTE_PATH = os.path.join(BASE_DIR, "tool.jar")
 # URL Path Variables
 
 LOGIN_REDIRECT_URL = "/app/"
 REGISTER_REDIRECT_UTL = "/app/login/"
 LOGIN_URL = "/app/login/"
 HOME_URL="/app/"
+
+# oauthtoolkit app credentials
+OAUTHTOOLKIT_APP_CLIENT_ID = getOauthToolKitAppID()
+OAUTHTOOLKIT_APP_CLIENT_SECRET = getOauthToolKitAppSecret()
+BACKEND = 'github'
+DRFSO2_PROPRIETARY_BACKEND_NAME = 'Github'
+DRFSO2_URL_NAMESPACE = 'github_social'
 
 # Online tool usage without login
 ANONYMOUS_LOGIN_ENABLED = True

@@ -91,7 +91,7 @@ var xml_schema = {
  * initialXmlText: contains initial xml text, global variable
  * latestXmlText: contains updated and valid xml text , global variable
  */
-var editor = "", splitTextEditor = "", initialXmlText = "", latestXmlText = '';
+var editor = "", splitTextEditor = "", initialXmlText = "", latestXmlText = '', beautifiedXmlText = '';
 $(document).ready(function(){
     /* initialize bootstrap tooltip */
     $('[data-toggle="tooltip"]').tooltip();
@@ -159,8 +159,10 @@ $(document).ready(function(){
     $(".CodeMirror").css("font-size",fontSize+'px');
     editor.setSize(($(window).width)*(0.9), 500);
     splitTextEditor.setSize(($(".splitTextEditorContainer").width)*(0.9), 550);
-    initialXmlText = beautify(editor.getValue().trim());
-    latestXmlText = beautify(editor.getValue().trim());
+    beautify(editor.getValue().trim());
+    initialXmlText = beautifiedXmlText;
+    beautify(editor.getValue().trim());
+    latestXmlText = beautifiedXmlText;
 
     /* Decrease editor font size */
     $("#dec-fontsize").click(function(){
@@ -230,7 +232,8 @@ $(document).ready(function(){
     /* beautify XML */
     $("#beautify").on("click",function(){
         var xmlText = editor.getValue().trim();
-        editor.setValue(beautify(xmlText));
+        beautify(xmlText);
+        editor.setValue(beautifiedXmlText);
         editor.focus();
     })
 
@@ -268,7 +271,8 @@ $(document).ready(function(){
                 $('#tabSplitView, #tabTreeEditor').removeAttr("data-toggle");
                 $(this).attr("data-toggle","tab");
                 /* update the text editor with the value of split view editor */
-                latestXmlText = beautify(splitTextEditor.getValue().trim());
+                beautify(splitTextEditor.getValue().trim());
+                latestXmlText = beautifiedXmlText;
                 editor.setValue(latestXmlText);
                 /* refresh and focus on the editor */
                 setTimeout(function(){
@@ -287,7 +291,8 @@ $(document).ready(function(){
             $(this).attr("data-toggle","tab");
             /* convert the xml text to tree and update latestXmlText */
             convertTextToTree(editor, 'treeView')
-            latestXmlText = beautify(editor.getValue().trim());
+            beautify(editor.getValue().trim());
+            latestXmlText = beautifiedXmlText;
         }
         else if(activeTab=='tabSplitView'){
             /* check for any open textboxes */
@@ -297,7 +302,8 @@ $(document).ready(function(){
                 $(this).attr("data-toggle","tab");
                 /* convert the xml text in split editor to tree and update latestXmlText */
                 convertTextToTree(splitTextEditor, 'treeView')
-                latestXmlText = beautify(splitTextEditor.getValue().trim());
+                beautify(splitTextEditor.getValue().trim());
+                latestXmlText = beautifiedXmlText;
             }
         }
     })
@@ -327,7 +333,9 @@ $(document).ready(function(){
             $('#tabTreeEditor, #tabTextEditor').removeAttr("data-toggle");
             $(this).attr("data-toggle","tab");
             /* update the split text editor with the value of text editor */
-            latestXmlText = beautify(editor.getValue().trim());
+            currentXmlText = editor.getValue().trim();
+            beautify(currentXmlText);
+            latestXmlText = beautifiedXmlText;
             splitTextEditor.setValue(latestXmlText);
             /* use the text in split text editor to updated split tree editor */
             convertTextToTree(splitTextEditor, 'splitTreeView');
@@ -546,7 +554,7 @@ function checkPRForm(){
     return true;
 }
 /* sends ajax request to pull_request view */
-function makePR(){
+function makePR(data=null){
     /* if invalid values in form return */
     var check = checkPRForm();
     if(check!=true) return check;
@@ -569,11 +577,15 @@ function makePR(){
     else if(activeTab=="tabSplitView"){
         xmlText = splitTextEditor.getValue().trim()
     }
+    else if(data){
+        xmlText = data.xml;
+    }
     else{
         xmlText = latestXmlText
     }
     /* send ajax request with form data */
-    xmlText = beautify(xmlText);
+    beautify(xmlText);
+    xmlText = beautifiedXmlText;
     var form = new FormData($("#githubPRForm")[0]);
     form.append("branchName", $("#branchName").val());
     form.append("updateUpstream", $("#updateUpstream").is(":checked"));
@@ -650,72 +662,42 @@ function generate_diff(base, newtxt){
     $(".modal-dialog").addClass("diff-modal-dialog");
 }
 
+function getCookie(name) {
+    var value = "; " + document.cookie;
+    var parts = value.split("; " + name + "=");
+    if (parts.length == 2) return parts.pop().split(";").shift();
+}
+
+
 /* XML beautify script */
 function beautify(text){
-    var shift = ['\n'], i;
-    for(i=0;i<100;i++){
-        shift.push(shift[i]+'    '); 
-    }
-    var array = text.replace(/>\s{0,}</g,"><")
-                 .replace(/\s{0,}</g,"~::~<")
-                 .replace(/\s*xmlns\:/g,"~::~xmlns:")
-                 .replace(/\s*xmlns\=/g,"~::~xmlns=")
-                 .split('~::~');
-    var len = array.length;
-    var inComment = false;
-    var deep = 0;
-    var str = "";
-        
-    for(i=0;i<len;i++){
-        /* if start comment or <![CDATA[...]]> or <!DOCTYPE */
-        if(array[i].search(/<!/) > -1){ 
-            str += shift[deep]+array[i];
-            inComment = true;
-            // if end comment  or <![CDATA[...]]> //
-            if(array[i].search(/-->/) > -1 || array[i].search(/\]>/) > -1 || array[i].search(/!DOCTYPE/) > -1 ){ 
-                inComment = false; 
+    csrf = getCookie('csrftoken');
+    $.ajax({
+        type: "POST",
+        url: "/app/beautify/",
+        dataType: 'json',
+        timeout: 600000,
+        async: false,
+        data: {
+            "xml" : text,
+            "csrfmiddlewaretoken" : csrf,
+        },
+        success: function(data) {
+            beautifiedXmlText = data.data.toString();
+        },
+        error: function (e) {
+            try {
+                //var obj = JSON.parse(e.responseText);
+                console.log(e);
+                //displayModal(obj.data, "error");
+                beautifiedXmlText = text;
             }
-        } 
-        /* end comment  or <![CDATA[...]]> */
-        else if(array[i].search(/-->/)>-1 || array[i].search(/\]>/) > -1){ 
-            str += array[i];
-            inComment = false; 
+            catch (e){
+                console.log(e)
+                displayModal(e,"error");
+            }
         }
-        /* <elm></elm> */
-        else if( /^<\w/.exec(array[i-1]) && /^<\/\w/.exec(array[i]) &&
-        /^<[\w:\-\.\,]+/.exec(array[i-1]) == /^<\/[\w:\-\.\,]+/.exec(array[i])[0].replace('/','')){
-            str += array[i];
-            if(!inComment) deep--;
-        }
-        /* <elm> */
-        else if(array[i].search(/<\w/) > -1 && array[i].search(/<\//) == -1 && array[i].search(/\/>/) == -1 ){
-            str = !inComment ? str += shift[deep++]+array[i] : str += array[i];
-        } 
-        /* <elm>...</elm> */
-        else if(array[i].search(/<\w/) > -1 && array[i].search(/<\//) > -1){
-            str = !inComment ? str += shift[deep]+array[i] : str += array[i];
-        } 
-        /* </elm> */
-        else if(array[i].search(/<\//) > -1){
-            str = !inComment ? str += shift[--deep]+array[i] : str += array[i];
-        }
-        /* <elm/> */
-        else if(array[i].search(/\/>/) > -1 ){ 
-            str = !inComment ? str += shift[deep]+array[i] : str += array[i];
-        } 
-        /* <? xml ... ?> */
-        else if(array[i].search(/<\?/) > -1){ 
-            str += shift[deep]+array[i];
-        } 
-        /* xmlns */
-        else if( array[i].search(/xmlns\:/) > -1  || array[i].search(/xmlns\=/) > -1){ 
-            str += ' '+array[i];
-        }
-        else {
-            str += array[i];
-        }
-    }
-    return  (str[0] == '\n') ? str.slice(1) : str;
+    });
 }
 
 /* display message using modal */

@@ -11,18 +11,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+
 
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.admin import widgets 
+from django.contrib.admin import widgets
 
-from app.models import UserID
+from app.models import UserID, LicenseNamespace, OrganisationName
+from app.widgets import RelatedFieldWidgetCanAdd
 
 OSI_CHOICES = (
     (0, "-"),
-    ("yes", "Yes"),
-    ("no", "No"),
+    ("Approved", "Approved"),
+    ("Not Submitted", "Not Submitted"),
+    ("Pending", "Submitted, but pending"),
+    ("Rejected", "Rejected")
 )
 
 class UserRegisterForm(forms.ModelForm):
@@ -57,17 +60,55 @@ class InfoForm(forms.ModelForm):
         fields = ('first_name','last_name','email')
 
 class OrgInfoForm(forms.ModelForm):
-    
+
     class Meta:
         model = UserID
         fields = ('organisation',)
 
 class LicenseRequestForm(forms.Form):
-    fullname = forms.CharField(label='Fullname', max_length=70)
+
+    def __init__(self, *args, **kwargs):
+        if 'email' in kwargs:
+            self.email = kwargs.pop('email')
+        else:
+            self.email = ""
+        super(LicenseRequestForm, self).__init__(*args,**kwargs)
+        self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email)
+
+    licenseAuthorName = forms.CharField(label="License Author name", max_length=100, required=False)
+    fullname = forms.CharField(label="Fullname", max_length=70)
     shortIdentifier = forms.CharField(label='Short identifier', max_length=25)
     sourceUrl = forms.CharField(label='Source / URL', required=False)
-    osiApproved = forms.CharField(label="OSI Approved", widget=forms.Select(choices=OSI_CHOICES))
-    notes = forms.CharField(label='Notes', required=False)
+    osiApproved = forms.CharField(label="OSI Status", widget=forms.Select(choices=OSI_CHOICES))
+    exampleUrl = forms.CharField(label='Example Projects / URL', required=True)
+    comments = forms.CharField(label='Comments', required=False, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
     licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)
     text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
-    userEmail = forms.EmailField(label='Email', max_length=35)
+
+
+class LicenseNamespaceRequestForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        if 'email' in kwargs:
+            self.email = kwargs.pop('email')
+        else:
+            self.email = ""
+        super(LicenseNamespaceRequestForm, self).__init__(*args, **kwargs)
+        self.fields['shortIdentifier'].required = False
+        self.fields['url'].required = True
+        self.fields['license_list_url'].required = False
+        self.fields['github_repo_url'].required = False
+        self.fields['organisation'].required = False
+        self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email)
+
+    organisation = forms.ModelChoiceField(
+       required=False,
+       queryset=OrganisationName.objects.all(),
+       widget=RelatedFieldWidgetCanAdd(OrganisationName))
+
+    class Meta:
+        model = LicenseNamespace
+        fields = ('organisation', 'licenseAuthorName',
+                  'fullname', 'userEmail', 'url',
+                  'license_list_url', 'github_repo_url',
+                  'publiclyShared', 'namespace',
+                  'description', 'archive', 'shortIdentifier')

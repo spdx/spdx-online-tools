@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+
 
 from django.urls import path
 
@@ -22,4 +22,5 @@ urlpatterns = [
     path('convert/', views.convert, name='convert-api'),
     path('compare/', views.compare, name='compare-api'),
     path('check_license/', views.check_license, name='check_license-api'),
+    path('submit_license/', views.submit_license, name='submit_license-api'),
 ]

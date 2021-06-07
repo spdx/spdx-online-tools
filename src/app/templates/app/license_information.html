@@ -9,13 +9,22 @@
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
     {% if licenseInformation %}
-<div class="panel-heading"> <p class="lead">{{licenseInformation.fullname}}</p> </div>
+<div class="panel-heading"> <p class="lead">{{licenseInformation.fullname}}
+        {% if licenseInformation.archive %}
+            <span class="label label-success">Archived</span>
+        {% endif %}
+    </p>
+</div>  
     {% endif %}
 <div class="panel-body">
     {% if licenseInformation %}
     <div class="licenseField col-sm-12">
         <p class="fieldName">Fullname</p>
         <p>{{licenseInformation.fullname}}</p>
+    </div>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">License author name</p>
+        <p>{{licenseInformation.licenseAuthorName}}</p>
     </div>
     <div class="licenseField col-sm-12">
         <p class="fieldName">Short Identifier</p>
@@ -47,7 +56,7 @@
         <p class="fieldName">Submission Date</p>
         <p>{{licenseInformation.submissionDatetime}}</p>
     </div>
-    <div class"col-sm-12">
+    <div class="col-sm-12">
         <div class="col-sm-12">
             <a href="/app/license_requests/" class="btn">Go Back</a>
         </div>
@@ -58,6 +67,13 @@
                 <button type="submit" class="btn btn-md btn-info" id="downloadBtn">Download the XML</button>
             </form>
         </div>
+        <div class="col-sm-12" style="margin-top: 5px">
+            <form id="edit-license-xml" name="edit_license_xml" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="supporttype" />
+                <button id="editButton" class="btn btn-md btn-info">Edit the XML</button>
+            </form>
+        </div>
     </div>
     {% endif %}
 </div>
@@ -65,28 +81,24 @@
 {% endblock %}
 {% block script_block %}
 
-<style>
-    .licenseField {float: left;
-                margin-top: 1.5em;}
-    .fieldName {
-                font-size: 1.4em;
-                color: #3197c4;}
-    div p {text-align: left;}
-    .lead {text-align: center;}
-    #downloadBtn {padding: 0.4em 0.4em;
-        background-color: #3197c4;
-        color: white;
-        border: none;}
-        #downloadBtn:hover {
-  background-color: RoyalBlue;
-}
-
-    
-</style>
-
 <script type="text/javascript">
+    function send_edit_request(form){
+      /* sending the request */
+      var win_href = window.location.href;
+      var license_id = win_href.split('/')[5];
+      window.location.href = "/app/edit_license_xml/"+license_id+"/";
+    }
     $(document).ready(function () {
-        $("#licenserequestspage").addClass('linkactive');
+        if (document.location.href.match(/archive_requests/))
+            $("#archiverequestspage").addClass('linkactive');
+        else
+            $("#licenserequestspage").addClass('linkactive');
         });
+    $("#editButton").on('click', function(event){
+      /* if the user uploads the file */
+      var form = new FormData($("#edit-license-xml")[0]);
+      event.preventDefault();
+      send_edit_request(form);
+    });
   </script>
 {% endblock %}
