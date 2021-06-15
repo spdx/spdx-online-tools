@@ -1,4 +1,0 @@
-Django==2.1.2
-djangorestframework==3.8.2
-JPype1==0.6.3
-pytz==2018.5
