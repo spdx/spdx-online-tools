@@ -215,6 +215,9 @@ REST_FRAMEWORK = {
     ),
 }
 
+# To avoid unwanted migrations in the future, either explicitly set DEFAULT_AUTO_FIELD to AutoField
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 # Absolute Path for tool.jar
 # The online tool uses spdx-tools-2.1.6-SNAPSHOT-jar-with-dependencies.jar from the compiled target folder of java tools
 # renamed (for now) as tool.jar in the main src directory of spdx-online tool

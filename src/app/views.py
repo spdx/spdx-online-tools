@@ -13,7 +13,7 @@
 
 
 
-from django.shortcuts import render,render_to_response
+from django.shortcuts import render
 from django.http import HttpResponse,HttpResponseRedirect
 from django.contrib.auth import authenticate,login ,logout,update_session_auth_hash
 from django.conf import settings
@@ -566,7 +566,7 @@ def validate_xml(request):
                     if not os.path.isdir(str(settings.MEDIA_ROOT +"/"+ folder)):
                         os.makedirs(str(settings.MEDIA_ROOT +"/"+ folder))
                     uploaded_file_url = settings.MEDIA_ROOT + '/' + folder + '/' + 'xmlFile.xml'
-                    with open(uploaded_file_url, 'wt', encoding='utf-8') as f:
+                    with open(uploaded_file_url, 'wb') as f:
                         f.write(xmlText)
                     """ Get schema text from GitHub,
                     if it fails use the file in examples folder """
@@ -874,8 +874,8 @@ def convert(request):
                     else :
                         cfileformat = getFileFormat(option2)
                     convertfile =  request.POST["cfilename"] + cfileformat
-                    fromFileFormat = serFileTypeEnum.valueOf(option1);
-                    toFileFormat = serFileTypeEnum.valueOf(option2);
+                    fromFileFormat = serFileTypeEnum.valueOf(option1)
+                    toFileFormat = serFileTypeEnum.valueOf(option2)
                     """ Call the java function with parameters as list """
                     spdxConverter.convert(str(settings.APP_DIR+uploaded_file_url),str(settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile), fromFileFormat, toFileFormat)
                     warnings = verifyclass.verify(str(settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile), toFileFormat)
@@ -1840,22 +1840,17 @@ def post_to_github(request):
         return HttpResponse(dumps({"message": "User should be logged in to use this feature"}), status=400)
 
 def handler400(request, exception=None):
-    return render_to_response('app/400.html',
-        context_instance = RequestContext(request)
-    )
+    context = {}
+    return render(request, 'app/400.html', context)
 
 def handler403(request, exception=None):
-    return render_to_response('app/403.html',
-        context_instance = RequestContext(request)
-    )
+    context = {}
+    return render(request, 'app/403.html', context)
 
 def handler404(request, exception=None):
-    return render_to_response('app/404.html',
-        context_instance = RequestContext(request),
-        status=404
-    )
+    context = {}
+    return render(request, 'app/404.html', context)
 
 def handler500(request, exception=None):
-    return render_to_response('app/500.html',
-        context_instance = RequestContext(request)
-    )
+    context = {}
+    return render(request, 'app/500.html', context)

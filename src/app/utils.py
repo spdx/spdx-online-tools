@@ -47,6 +47,9 @@ NORMAL:  settings.NAMESPACE_REPO_URL,
 TESTS: settings.NAMESPACE_DEV_REPO_URL,
 }
 
+logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
+logger = logging.getLogger()
+
 # For license namespace utils
 def licenseNamespaceUtils():
     return {
@@ -66,8 +69,6 @@ def checkPermission(user):
         return False
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, is_ns):
-    logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
-    logger = logging.getLogger()
 
     if not xmlText:
         logger.error("Error occurred while getting xml text. The xml text is empty")
