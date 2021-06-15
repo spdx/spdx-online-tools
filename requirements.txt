@@ -5,6 +5,7 @@ djangorestframework==3.11.0
 bs4==0.0.1
 requests==2.24
 lxml==4.6.3
+webdriver-manager==3.4.2
 social-auth-core==4.1.0
 social-auth-app-django==4.0.0
 python-dotenv==0.14.0
