@@ -140,7 +140,7 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAd
         licenseOsi = "true"
     else:
         licenseOsi = "false"
-    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName, listVersionAdded=listVersionAdded)
+    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, listVersionAdded=listVersionAdded, name=licenseName)
     crossRefs = ET.SubElement(license, "crossRefs")
     for sourceUrl in licenseSourceUrls:
         ET.SubElement(crossRefs, "crossRef").text = sourceUrl
