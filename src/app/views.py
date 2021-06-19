@@ -690,11 +690,11 @@ def compare(request):
                                 else :
                                     filelist.append(myfile.name)
                                     errorlist.append("No errors found")
-                            except jpype.JavaException as ex :
+                            except jpype.JException as ex :
                                 """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
                                 erroroccurred = True
                                 filelist.append(myfile.name)
-                                errorlist.append(jpype.JavaException.message(ex))
+                                errorlist.append(jpype.JException.message(ex))
                             except :
                                 """ Other Exceptions"""
                                 erroroccurred = True
