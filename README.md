@@ -160,11 +160,13 @@ def getDiffRepoWithOwner():
 
 where:
 
-* ONLINE_TOOL_GITHUB_KEY is the Client ID for the Github Oauth Apps
+* ONLINE_TOOL_GITHUB_KEY is the Client ID for the Github Oauth Apps (To create your Oauth application see [this](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app))
 * ONLINE_TOOL_GITHUB_SECRET is the Client secret for the Github Oauth Apps
 * DJANGO_SECRET_KEY is the Django secret
 * OAUTH_APP_ID is the client ID of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
 * OAUTH_APP_SECRET is the client secret of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
+* DIFF_REPO_GIT_TOKEN is the Github user's Personal Access Token which has write access to DIFF_REPO_WITH_OWNER (Follow [this](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) to create your Github Personal access token with full repo and user scope access)
+* DIFF_REPO_WITH_OWNER is the repo where images related to license submittable process are uploaded
 
 **Note:** While setting up the GitHub OAuth App, set the `Homepage URL` to `http://localhost:8000/` and the `Authorization callback URL` to `http://localhost:8000/oauth/complete/github`
 
