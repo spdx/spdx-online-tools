@@ -20,6 +20,7 @@ from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,Ch
 from api.serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,CheckLicenseSerializer,SubmitLicenseSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn,CheckLicenseSerializerReturn,SubmitLicenseSerializerReturn
 from api.oauth import generate_github_access_token,convert_to_auth_token,get_user_from_token
 from app.models import LicenseRequest
+from app.core import initialise_jpype, license_validate_helper, license_check_helper
 from rest_framework import status
 from rest_framework.decorators import api_view,renderer_classes,permission_classes
 from rest_framework.permissions import AllowAny
@@ -83,58 +84,37 @@ def validate(request):
     elif request.method == 'POST':
         """ Return validate tool result on the post file"""
         serializer = ValidateSerializer(data=request.data)
+        
         if serializer.is_valid():
-            if (jpype.isJVMStarted()==0):
-                """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =settings.JAR_ABSOLUTE_PATH
-                jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """Attach a Thread and start processing the request """
-            jpype.attachThreadToJVM()
-            package = jpype.JPackage("org.spdx.tools")
-            verifyclass = package.Verify
-            query = ValidateFileUpload.objects.create(
-                owner=request.user,
-                file=request.data.get('file')
-            )
+            initialise_jpype()
+            output = license_validate_helper(request)
+            jpype.detachThreadFromJVM()
+
+            httpstatus = output.get('status', None)
+            context_dict = output.get('context', None)
+            response = output.get('response', None)
+            message = output.get('message', None)
+
+            if context_dict:
+                result = context_dict.get('error', None)
+            elif response:
+                result = response
+            else:
+                result = message
+            
+            if httpstatus == 200:
+                returnstatus = status.HTTP_200_OK
+            elif httpstatus == 400:
+                returnstatus = status.HTTP_400_BAD_REQUEST
+            else:
+                returnstatus = status.HTTP_404_NOT_FOUND
+            
+            query = ValidateFileUpload.objects.create(owner=request.user, file=request.data.get('file'))
+            query.result = result
+            query.status = httpstatus
             uploaded_file = str(query.file)
             uploaded_file_path = str(query.file.path)
-            try :
-                if request.FILES["file"]:
-                    formatstr = request.POST["format"]
-                    serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
-                    fileformat = serFileTypeEnum.valueOf(formatstr)
-                    """ Call the java function with parameter"""
-                    retval = verifyclass.verify(uploaded_file_path, fileformat)
-                    if (len(retval) > 0):
-                        result = "The following error(s)/warning(s) were raised: " + str(retval)
-                        returnstatus = status.HTTP_400_BAD_REQUEST
-                        httpstatus = 400
-                        jpype.detachThreadFromJVM()
-                    else :
-                        result = "This SPDX Document is valid."
-                        returnstatus = status.HTTP_201_CREATED
-                        httpstatus = 201
-                        jpype.detachThreadFromJVM()
-                else :
-                    result = "File Not Uploaded"
-                    returnstatus = status.HTTP_400_BAD_REQUEST
-                    httpstatus = 400
-                    jpype.detachThreadFromJVM()
-            except jpype.JException as ex :
-                """ Error raised by verifyclass.verify without exiting the application"""
-                result = jpype.JException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
-                returnstatus = status.HTTP_400_BAD_REQUEST
-                httpstatus = 400
-                jpype.detachThreadFromJVM()
-            except :
-                """ Other errors raised"""
-                result = format_exc()
-                returnstatus = status.HTTP_400_BAD_REQUEST
-                httpstatus = 400
-                jpype.detachThreadFromJVM()
-            query.result=result
-            query.status=httpstatus
-            ValidateFileUpload.objects.filter(file=uploaded_file).update(result=result,status=httpstatus)
+            ValidateFileUpload.objects.filter(file=uploaded_file).update(result=result, status=httpstatus)
             serial = ValidateSerializerReturn(instance=query)
             return Response(
                 serial.data, status=returnstatus
@@ -323,17 +303,7 @@ def compare(request):
             result=""
             message="Success"
             erroroccurred = False
-            rfilename = request.POST["rfilename"]
-            query = CompareFileUpload.objects.create(
-                owner=request.user,
-                file1=request.data.get('file1'),
-                file2=request.data.get('file2'),
-                rfilename = rfilename,
-            )
-            uploaded_file1 = str(query.file1)
-            uploaded_file2 = str(query.file2)
-            uploaded_file1_path = str(query.file1.path)
-            uploaded_file2_path = str(query.file2.path)
+            
             try :
                 if (request.FILES["file1"] and request.FILES["file2"]):
                     """ Saving file to the media directory """
@@ -422,63 +392,37 @@ def check_license(request):
         """ Return check license tool result on the post file"""
         serializer = CheckLicenseSerializer(data=request.data)
         if serializer.is_valid():
-            if (jpype.isJVMStarted()==0):
-                """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =settings.JAR_ABSOLUTE_PATH
-                jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ Attach a Thread and start processing the request """
-            jpype.attachThreadToJVM()
-            package = jpype.JPackage("org.spdx.utility.compare")
-            compareclass = package.LicenseCompareHelper
-            query = CheckLicenseFileUpload.objects.create(
-                owner=request.user,
-                file=request.data.get('file')
-            )
+            initialise_jpype()
+            query = CheckLicenseFileUpload.objects.create(owner=request.user, file=request.data.get('file'))
             uploaded_file = str(query.file)
             uploaded_file_path = str(query.file.path)
             """ Reading the license text file into a string variable """
             licensetext = query.file.read()
-            try :
-                if request.FILES["file"]:
-                    """Call the java function with parameter"""
-                    matching_licenses = compareclass.matchingStandardLicenseIds(licensetext)
-                    if (matching_licenses and len(matching_licenses) > 0):
-                        matching_str = "The following license ID(s) match: "
-                        matching_str+= matching_licenses[0]
-                        for i in range(1,len(matching_licenses)):
-                            matching_str += ", "
-                            matching_str += matching_licenses[i]
-                        result = matching_str
-                        returnstatus = status.HTTP_201_CREATED
-                        httpstatus = 201
-                        jpype.detachThreadFromJVM()
+            request.data['licensetext'] = str(licensetext)
+            output = license_check_helper(request)
+            jpype.detachThreadFromJVM()
 
-                    else:
-                        result = "There are no matching SPDX listed licenses"
-                        returnstatus = status.HTTP_400_BAD_REQUEST
-                        httpstatus = 400
-                        jpype.detachThreadFromJVM()
+            httpstatus = output.get('status', None)
+            context_dict = output.get('context', None)
+            response = output.get('response', None)
+            message = output.get('message', None)
 
-                else :
-                    result = "File Not Uploaded"
-                    returnstatus = status.HTTP_400_BAD_REQUEST
-                    httpstatus = 400
-                    jpype.detachThreadFromJVM()
+            if context_dict:
+                result = context_dict.get('error', None)
+            elif response:
+                result = response
+            else:
+                result = message
             
-            except jpype.JException as ex :
-                """ Java exception raised without exiting the application """
-                result = jpype.JException.message(ex) 
+            if httpstatus == 200:
+                returnstatus = status.HTTP_200_OK
+            elif httpstatus == 400:
                 returnstatus = status.HTTP_400_BAD_REQUEST
-                httpstatus = 400
-                jpype.detachThreadFromJVM()
-            except :
-                """ Other errors raised"""
-                result = format_exc()
-                returnstatus = status.HTTP_400_BAD_REQUEST
-                httpstatus = 400
-                jpype.detachThreadFromJVM()
+            else:
+                returnstatus = status.HTTP_404_NOT_FOUND
+            
             query.result = result
-            query.status=httpstatus
+            query.status = httpstatus
             CheckLicenseFileUpload.objects.filter(file=uploaded_file).update(result=result,status=httpstatus)
             serial = CheckLicenseSerializerReturn(instance=query)
             return Response(
