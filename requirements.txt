@@ -13,6 +13,6 @@ gevent==21.1.2
 gunicorn==20.1.0
 #for testing
 selenium==3.14.1
-django-oauth-toolkit==1.3.2
+django-oauth-toolkit==1.5.0
 django-rest-framework-social-oauth2==1.1.0
 -e git://github.com/spdx/spdx-license-matcher.git@v2.1#egg=spdx-license-matcher
