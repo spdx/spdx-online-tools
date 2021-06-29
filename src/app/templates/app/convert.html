@@ -67,6 +67,7 @@
 		</div>
     <hr>
 		<input type="hidden" id="cfileformat" name="cfileformat" value="">
+        <p id ="warning-msg" hidden="true"></p>
 		<button class=" btn btn-md btn-info" id="convertbutton" type="submit" >Convert</button>
 </form>
 </div>
@@ -122,6 +123,7 @@
       $(".file-name").html("<b>Selected File: </b>"+file.name);
       $("#cfilename").val(file.name.split('.').slice(0,-1).join('.') || file.name);
       selected_file = file;
+      checkFilesSize([file], "#warning-msg");
     }
     else{
       $(".file-name").html("No file selected");
