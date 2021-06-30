@@ -30,7 +30,7 @@ from oauthlib.common import generate_token
 from rest_framework.authtoken.models import Token
 
 from requests import get
-from json import dumps
+from json import dumps, loads
 from api.oauth import generate_github_access_token,get_user_from_token
 from api.views import generateLicenseXml
 
@@ -79,12 +79,12 @@ class ValidateFileUploadTests(APITestCase):
         self.assertTrue(resp2.status_code,200)
         """ Valid Tag Value File"""
         resp3 = self.client.post(reverse("validate-api"),{"file":self.tv_file, "format" : "TAG"},format="multipart")
-        self.assertEqual(resp3.status_code,201)
+        self.assertEqual(resp3.status_code,200)
         self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp3.data["result"],"This SPDX Document is valid.")
         """ Valid RDF File"""
         resp4 = self.client.post(reverse("validate-api"),{"file":self.rdf_file, "format" : "RDFXML"},format="multipart")
-        self.assertEqual(resp4.status_code,201)
+        self.assertEqual(resp4.status_code,200)
         self.assertEqual(resp4.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp4.data["result"],"This SPDX Document is valid.")
         """ Invalid Tag Value File"""
@@ -123,9 +123,9 @@ class ConvertFileUploadTests(APITestCase):
         self.tag = "TAG"
         self.rdf = "RDFXML"
         self.xlsx = "XLS"
-        self.tv_file = open(getExamplePath("SPDXTagExample-v2.2.spdx"))
-        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf.xml"))
-        self.xlsx_file = open(getExamplePath("SPDXSpreadsheetExample-v2.2.xls"))
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.2.spdx"), 'rb')
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf.xml"), 'rb')
+        self.xlsx_file = open(getExamplePath("SPDXSpreadsheetExample-v2.2.xls"), 'rb')
 
     def tearDown(self):
         try:
@@ -148,7 +148,8 @@ class ConvertFileUploadTests(APITestCase):
     def test_convert_tagtordf_api(self):
         self.client.login(username=self.username,password=self.password)
         resp = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.rdf,"cfilename":"tagtordf-apitest"},format="multipart")
-        self.assertTrue(resp.status_code==406 or resp.status_code == 201)
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(resp.data['message'], 'Success')
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
         self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
@@ -156,7 +157,8 @@ class ConvertFileUploadTests(APITestCase):
     def test_convert_tagtoxlsx_api(self):
         self.client.login(username=self.username,password=self.password)
         resp = self.client.post(reverse("convert-api"),{"file":self.tv_file,"from_format":self.tag,"to_format":self.xlsx,"cfilename":"tagtoxlsx-apitest"},format="multipart")
-        self.assertTrue(resp.status_code==406 or resp.status_code == 201)
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(resp.data['message'], 'Success')
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
         self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
@@ -164,15 +166,17 @@ class ConvertFileUploadTests(APITestCase):
     def test_convert_rdftotag_api(self):
         self.client.login(username=self.username,password=self.password)
         resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.tag,"cfilename":"rdftotag-apitest"},format="multipart")
-        self.assertTrue(resp.status_code==406 or resp.status_code == 201)
-        self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(resp.data['message'], 'Success')
+        self.assertTrue(resp.data['result'].startswith(settings.MEDIA_URL))
         self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
 
     def test_convert_rdftoxlsx_api(self):
         self.client.login(username=self.username,password=self.password)
         resp = self.client.post(reverse("convert-api"),{"file":self.rdf_file,"from_format":self.rdf,"to_format":self.xlsx,"cfilename":"rdftoxlsx-apitest"},format="multipart")
-        self.assertTrue(resp.status_code==406 or resp.status_code == 201)
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(resp.data['message'], 'Success')
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
         self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
@@ -180,7 +184,8 @@ class ConvertFileUploadTests(APITestCase):
     def test_convert_xlsxtordf_api(self):
         self.client.login(username=self.username,password=self.password)
         resp = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.rdf,"cfilename":"xlsxtordf-apitest"},format="multipart")
-        self.assertTrue(resp.status_code==406 or resp.status_code == 201)
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(resp.data['message'], 'Success')
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
         self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
@@ -188,7 +193,8 @@ class ConvertFileUploadTests(APITestCase):
     def test_convert_xlsxtotag_api(self):
         self.client.login(username=self.username,password=self.password)
         resp = self.client.post(reverse("convert-api"),{"file":self.xlsx_file,"from_format":self.xlsx,"to_format":self.tag,"cfilename":"xlsxtotag-apitest"},format="multipart")
-        self.assertTrue(resp.status_code==406 or resp.status_code == 201)
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(resp.data['message'], 'Success')
         self.assertTrue(resp.data["result"].startswith(settings.MEDIA_URL))
         self.assertEqual(resp.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.client.logout()
@@ -243,7 +249,7 @@ class CompareFileUploadTests(APITestCase):
         self.assertTrue(resp2.status_code,200)
         """Compare two valid RDF files"""
         resp3 = self.client.post(reverse("compare-api"),{"file1":self.rdf_file,"file2":self.rdf_file2,"rfilename":"compare-apitest.xls"},format="multipart")
-        self.assertTrue(resp3.status_code==406 or resp3.status_code == 201)
+        self.assertEqual(resp3.status_code,200)
         self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertTrue(resp3.data["result"].startswith(settings.MEDIA_URL))
         """Compare with one  invalid RDF files"""
@@ -298,7 +304,7 @@ class CheckLicenseFileUploadTests(APITestCase):
         self.assertTrue(resp2.status_code,200)
         """ Valid License File"""
         resp3 = self.client.post(reverse("check_license-api"),{"file":self.license_file},format="multipart")
-        self.assertEqual(resp3.status_code,201)
+        self.assertEqual(resp3.status_code,200)
         self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp3.data["result"],"The following license ID(s) match: AFL-1.1")
         """ Other File"""
