@@ -20,7 +20,6 @@ from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,Ch
 from api.serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,CheckLicenseSerializer,SubmitLicenseSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn,CheckLicenseSerializerReturn,SubmitLicenseSerializerReturn
 from api.oauth import generate_github_access_token,convert_to_auth_token,get_user_from_token
 from app.models import LicenseRequest
-from app.core import initialise_jpype, license_validate_helper, license_check_helper
 from rest_framework import status
 from rest_framework.decorators import api_view,renderer_classes,permission_classes
 from rest_framework.permissions import AllowAny
@@ -31,11 +30,13 @@ from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils.datastructures import MultiValueDict
 
 import jpype
 import re
 import datetime
 import xml.etree.cElementTree as ET
+import app.core as core
 
 from traceback import format_exc
 from os.path import abspath, join, sep, splitext
@@ -86,8 +87,8 @@ def validate(request):
         serializer = ValidateSerializer(data=request.data)
         
         if serializer.is_valid():
-            initialise_jpype()
-            output = license_validate_helper(request)
+            core.initialise_jpype()
+            output = core.license_validate_helper(request)
             jpype.detachThreadFromJVM()
 
             httpstatus = output.get('status', None)
@@ -179,18 +180,32 @@ def convert(request):
         """ Return convert tool result on the post file"""
         serializer = ConvertSerializer(data=request.data)
         if serializer.is_valid():
-            if (jpype.isJVMStarted()==0):
-                """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =settings.JAR_ABSOLUTE_PATH
-                jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ Attach a Thread and start processing the request """
-            jpype.attachThreadToJVM()
-            package = jpype.JPackage("org.spdx.tools")
-            serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
-            spdxConverter = package.SpdxConverter
-            verifyclass = package.Verify
-            result = ""
-            message = "Success"
+            core.initialise_jpype()
+            output = core.license_convert_helper(request)
+            jpype.detachThreadFromJVM()
+
+            httpstatus = output.get('status', None)
+            context_dict = output.get('context', None)
+            response = output.get('response', None)
+            message = output.get('message', 'Success')
+
+            if context_dict:
+                result = context_dict.get('medialink', None)
+            elif response:
+                result = response
+            else:
+                result = message
+            
+            if httpstatus == 200:
+                returnstatus = status.HTTP_200_OK
+            elif httpstatus == 400:
+                returnstatus = status.HTTP_400_BAD_REQUEST
+            else:
+                returnstatus = status.HTTP_404_NOT_FOUND
+            
+            if httpstatus != 200:
+                message = 'Failed'
+            
             query = ConvertFileUpload.objects.create(
                 owner=request.user,
                 file=request.data.get('file'),
@@ -200,51 +215,10 @@ def convert(request):
             )
             uploaded_file = str(query.file)
             uploaded_file_path = str(query.file.path)
-            try :
-                if request.FILES["file"]:
-                    folder = sep.join(uploaded_file_path.split(sep)[:-1])
-                    option1 = request.POST["from_format"]
-                    option2 = request.POST["to_format"]
-                    convertfile =  request.POST["cfilename"]
-                    if (extensionGiven(convertfile)==False):
-                        extension = getFileFormat(option2)
-                        convertfile = convertfile + extension
-                    """ Call the java function with parameters as list"""
-                    fromFileFormat = serFileTypeEnum.valueOf(option1);
-                    toFileFormat = serFileTypeEnum.valueOf(option2);
-                    spdxConverter.convert(uploaded_file_path,
-                                folder+sep+convertfile, fromFileFormat, toFileFormat)
-                    retval = verifyclass.verify(folder+sep+convertfile, toFileFormat)
-                    if (len(retval) > 0):
-                        message = "The following error(s)/warning(s) were raised: " + str(retval)
-                        index = folder.split(sep).index('media')
-                        result = "/"+"/".join(folder.split(sep)[index:])+'/'+convertfile
-                        returnstatus = status.HTTP_406_NOT_ACCEPTABLE
-                        httpstatus = 406
-                        jpype.detachThreadFromJVM()
-                    else :
-                        """return only the path starting with MEDIA_URL"""
-                        index = folder.split(sep).index('media')
-                        result = "/"+("/".join(folder.split(sep)[index:]))+'/'+convertfile
-                        returnstatus = status.HTTP_201_CREATED
-                        httpstatus = 201
-                        jpype.detachThreadFromJVM()
-                else :
-                    message, returnstatus, httpstatus = convertError('404')
-            except jpype.JException as ex :
-                message = jpype.JException.message(ex)
-                returnstatus = status.HTTP_400_BAD_REQUEST
-                httpstatus = 400
-                jpype.detachThreadFromJVM() 
-            except :
-                message = format_exc()
-                returnstatus = status.HTTP_400_BAD_REQUEST
-                httpstatus = 400
-                jpype.detachThreadFromJVM()
-            query.message=message
+            query.message = message
             query.status = httpstatus
             query.result = result
-            ConvertFileUpload.objects.filter(file=uploaded_file).update(message=message, status=httpstatus, result=result)
+            ConvertFileUpload.objects.filter(file=uploaded_file).update(status=httpstatus, result=result, message=message)
             serial = ConvertSerializerReturn(instance=query)
             return Response(
                 serial.data,status=returnstatus
@@ -290,84 +264,48 @@ def compare(request):
         """ Return compare tool result on the post file"""
         serializer = CompareSerializer(data=request.data)
         if serializer.is_valid():
-            if (jpype.isJVMStarted()==0):
-                """ If JVM not already started, start it, attach a Thread and start processing the request """
-                classpath =settings.JAR_ABSOLUTE_PATH
-                jpype.startJVM(jpype.getDefaultJVMPath(),"-ea","-Djava.class.path=%s"%classpath)
-            """ Attach a Thread and start processing the request """
-            jpype.attachThreadToJVM()
-            package = jpype.JPackage("org.spdx.tools")
-            verifyclass = package.Verify
-            compareclass = package.CompareSpdxDocs
-            helperclass = package.SpdxToolsHelper
-            result=""
-            message="Success"
-            erroroccurred = False
-            
-            try :
-                if (request.FILES["file1"] and request.FILES["file2"]):
-                    """ Saving file to the media directory """
-                    if (extensionGiven(rfilename)==False):
-                        rfilename = rfilename+".xlsx"
-                    file1 = request.FILES["file1"]
-                    file2 = request.FILES["file2"]
-                    folder = sep.join(uploaded_file1_path.split(sep)[:-1])
-                    callfunc = [folder+sep+rfilename]
-                    callfunc.append(uploaded_file1_path)
-                    callfunc.append(uploaded_file2_path)
-                    try :
-                        filetype1 = helperclass.strToFileType(file_path_to_spdx_ext(uploaded_file1_path))
-                        filetype2 = helperclass.strToFileType(file_path_to_spdx_ext(uploaded_file2_path))
-                        retval1 = verifyclass.verify(uploaded_file1_path, filetype1)
-                        if (len(retval1) > 0):
-                            erroroccurred = True
-                            message = "The following error(s)/warning(s) were raised by " + str(uploaded_file1) + ": " +str(retval1)
-                        retval2 = verifyclass.verify(uploaded_file2_path, filetype2)
-                        if (len(retval2) > 0):
-                            erroroccurred = True
-                            message += "The following error(s)/warning(s) were raised by " + str(uploaded_file2) + ": " +str(retval2)
-                    except :
-                        erroroccurred = True
-                        message += "Invalid file extension.  Must be .xls, .xlsx, .xml, .json, .yaml, .spdx, .rdfxml"
-                    """ Call the java function with parameters as list"""
-                    try :
-                        compareclass.onlineFunction(callfunc)
-                        """Return only the path starting with MEDIA_URL"""
-                        index = folder.split(sep).index('media')
-                        result = "/"+("/".join(folder.split(sep)[index:]))+'/'+rfilename
-                        returnstatus = status.HTTP_201_CREATED
-                        httpstatus = 201
-                    except :
-                        message += "While running compare tool " + format_exc()
-                        returnstatus = status.HTTP_400_BAD_REQUEST
-                        httpstatus = 400
-                    if (erroroccurred == False):
-                        returnstatus = status.HTTP_201_CREATED
-                        httpstatus = 201
-                    else :
-                        returnstatus = status.HTTP_406_BAD_REQUEST
-                        httpstatus = 406
-                    jpype.detachThreadFromJVM()
-                else :
-                    message = "File Not Uploaded"
-                    returnstatus = status.HTTP_400_BAD_REQUEST
-                    httpstatus = 400
-                    jpype.detachThreadFromJVM()
-            except jpype.JException as ex :
-                """ Error raised by verifyclass.verify without exiting the application"""
-                message = jpype.JException.message(ex) #+ "This SPDX Document is not a valid RDF/XML or tag/value format"
-                returnstatus = status.HTTP_400_BAD_REQUEST
-                httpstatus = 400
-                jpype.detachThreadFromJVM()
-            except :
-                message = format_exc()
-                returnstatus = status.HTTP_400_BAD_REQUEST
-                httpstatus = 400
-                jpype.detachThreadFromJVM()
+            core.initialise_jpype()
+            file1 = request.data.get('file1')
+            file2 = request.data.get('file2')
+            files = [file1, file2]
+            request.FILES.setlist('files', files)
+            output = core.license_compare_helper(request)
+            httpstatus = output.get('status', None)
+            context_dict = output.get('context', None)
+            response = output.get('response', None)
+            message = output.get('message', 'Success')
 
-            query.message=message
-            query.result=result
-            query.status=httpstatus
+            if context_dict:
+                result = context_dict.get('medialink', None)
+            elif response:
+                result = response
+            else:
+                result = message
+            
+            if httpstatus == 200:
+                returnstatus = status.HTTP_200_OK
+            elif httpstatus == 400:
+                returnstatus = status.HTTP_400_BAD_REQUEST
+            else:
+                returnstatus = status.HTTP_404_NOT_FOUND
+
+            if httpstatus != 200:
+                message = 'Failed'
+
+            rfilename = request.POST["rfilename"]
+            query = CompareFileUpload.objects.create(
+                owner=request.user,
+                file1=file1,
+                file2=file2,
+                rfilename = rfilename,
+            )
+            uploaded_file1 = str(query.file1)
+            uploaded_file2 = str(query.file2)
+            uploaded_file1_path = str(query.file1.path)
+            uploaded_file2_path = str(query.file2.path)
+            query.message = message
+            query.result = result
+            query.status = httpstatus
             CompareFileUpload.objects.filter(file1=uploaded_file1).filter(file2=uploaded_file2).update(message=message, result=result, status=httpstatus)
             serial = CompareSerializerReturn(instance=query)
             return Response(
@@ -392,14 +330,14 @@ def check_license(request):
         """ Return check license tool result on the post file"""
         serializer = CheckLicenseSerializer(data=request.data)
         if serializer.is_valid():
-            initialise_jpype()
+            core.initialise_jpype()
             query = CheckLicenseFileUpload.objects.create(owner=request.user, file=request.data.get('file'))
             uploaded_file = str(query.file)
             uploaded_file_path = str(query.file.path)
             """ Reading the license text file into a string variable """
             licensetext = query.file.read()
-            request.data['licensetext'] = str(licensetext)
-            output = license_check_helper(request)
+            request.data['licensetext'] = licensetext
+            output = core.license_check_helper(request)
             jpype.detachThreadFromJVM()
 
             httpstatus = output.get('status', None)

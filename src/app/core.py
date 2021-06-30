@@ -11,6 +11,7 @@ from json import dumps, loads
 from time import time
 from traceback import format_exc
 from urllib.parse import urljoin
+from app.views import formatToContentType, getFileFormat
 
 import app.utils as utils
 
@@ -48,7 +49,7 @@ def license_compare_helper(request):
             callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
             erroroccurred = False
             warningoccurred = False
-            if (len(request.FILES.getlist("files"))<2):
+            if (len(request.FILES.getlist("files")) < 2):
                 context_dict["error"] = "Please select atleast 2 files"
                 result['status'] = 404
                 result['context'] = context_dict
