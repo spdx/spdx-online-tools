@@ -37,6 +37,10 @@ import re
 import datetime
 import xml.etree.cElementTree as ET
 import app.core as core
+import api.utils as utils
+
+from app.generateXml import generateLicenseXml
+from app.utils import createIssue
 
 from traceback import format_exc
 from os.path import abspath, join, sep, splitext
@@ -72,6 +76,7 @@ class CompareViewSet(ModelViewSet):
     serializer_class = CompareSerializerReturn
     parser_classes = (MultiPartParser, FormParser,)
 
+
 @api_view(['GET', 'POST'])
 @renderer_classes((JSONRenderer,))
 def validate(request):
@@ -88,28 +93,10 @@ def validate(request):
         
         if serializer.is_valid():
             core.initialise_jpype()
-            output = core.license_validate_helper(request)
+            response = core.license_validate_helper(request)
+            httpstatus, _, result = utils.get_json_response_data(response)
             jpype.detachThreadFromJVM()
-
-            httpstatus = output.get('status', None)
-            context_dict = output.get('context', None)
-            response = output.get('response', None)
-            message = output.get('message', None)
-
-            if context_dict:
-                result = context_dict.get('error', None)
-            elif response:
-                result = response
-            else:
-                result = message
-            
-            if httpstatus == 200:
-                returnstatus = status.HTTP_200_OK
-            elif httpstatus == 400:
-                returnstatus = status.HTTP_400_BAD_REQUEST
-            else:
-                returnstatus = status.HTTP_404_NOT_FOUND
-            
+            returnstatus = utils.get_return_code(httpstatus)
             query = ValidateFileUpload.objects.create(owner=request.user, file=request.data.get('file'))
             query.result = result
             query.status = httpstatus
@@ -125,47 +112,6 @@ def validate(request):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
                 )
 
-def extensionGiven(filename):
-    if (filename.find(".")!=-1):
-        return True
-    else:
-        return False
-
-def getFileFormat(to_format):
-    if (to_format=="TAG"):
-        return ".spdx"
-    elif (to_format=="RDFXML"):
-        return ".rdf.xml"
-    elif (to_format=="XLS"):
-        return ".xls"
-    elif (to_format=="XLSX"):
-        return ".xlsx"
-    elif (to_format=="JSON"):
-        return ".json"
-    elif (to_format=="YAML"):
-        return ".yaml"
-    elif (to_format=="XML"):
-        return ".xml"
-    else :
-        return ".invalid"
-        
-def formatToContentType(to_format):
-    if (to_format=="TAG"):
-        return "text/tag-value"
-    elif (to_format=="RDFXML"):
-        return "application/rdf+xml"
-    elif (to_format=="XLS"):
-        return "application/vnd.ms-excel"
-    elif (to_format=="XLSX"):
-        return "application/vnd.ms-excel"
-    elif (to_format=="JSON"):
-        return "application/json"
-    elif (to_format=="YAML"):
-        return "text/yaml"
-    elif (to_format=="XML"):
-        return "application/xml"
-    else :
-        return ".invalid"
 
 @api_view(['GET', 'POST'])
 @renderer_classes((JSONRenderer,))
@@ -181,27 +127,10 @@ def convert(request):
         serializer = ConvertSerializer(data=request.data)
         if serializer.is_valid():
             core.initialise_jpype()
-            output = core.license_convert_helper(request)
+            response = core.license_convert_helper(request)
             jpype.detachThreadFromJVM()
-
-            httpstatus = output.get('status', None)
-            context_dict = output.get('context', None)
-            response = output.get('response', None)
-            message = output.get('message', 'Success')
-
-            if context_dict:
-                result = context_dict.get('medialink', None)
-            elif response:
-                result = response
-            else:
-                result = message
-            
-            if httpstatus == 200:
-                returnstatus = status.HTTP_200_OK
-            elif httpstatus == 400:
-                returnstatus = status.HTTP_400_BAD_REQUEST
-            else:
-                returnstatus = status.HTTP_404_NOT_FOUND
+            httpstatus, result, message = utils.get_json_response_data(response)
+            returnstatus = utils.get_return_code(httpstatus)
             
             if httpstatus != 200:
                 message = 'Failed'
@@ -229,27 +158,6 @@ def convert(request):
                 )
 
 
-def convertError(status):
-    print("Error while converting file")
-    if status=='400':
-        message = "Select valid conversion types."
-        returnstatus = status.HTTP_400_BAD_REQUEST
-        httpstatus = 400
-    elif status=='404':
-        message = "File Not Found"
-        returnstatus = status.HTTP_400_BAD_REQUEST
-        httpstatus = 400
-    jpype.detachThreadFromJVM()
-    return (message, returnstatus, httpstatus)
-
-def file_path_to_spdx_ext(file_path):
-    nameoffile, fileext = splitext(file_path)
-    if (nameoffile.endswith(".rdf") and fileext == ".xml") or fileext == ".rdf":
-        fileext = ".rdfxml"
-    elif fileext == ".spdx":
-        fileext = ".tag"
-    return fileext[1:]
-
 @api_view(['GET', 'POST'])
 @renderer_classes((JSONRenderer,))
 def compare(request):
@@ -269,26 +177,10 @@ def compare(request):
             file2 = request.data.get('file2')
             files = [file1, file2]
             request.FILES.setlist('files', files)
-            output = core.license_compare_helper(request)
-            httpstatus = output.get('status', None)
-            context_dict = output.get('context', None)
-            response = output.get('response', None)
-            message = output.get('message', 'Success')
-
-            if context_dict:
-                result = context_dict.get('medialink', None)
-            elif response:
-                result = response
-            else:
-                result = message
+            response = core.license_compare_helper(request)
+            httpstatus, result, message = utils.get_json_response_data(response)
+            returnstatus = utils.get_return_code(httpstatus)
             
-            if httpstatus == 200:
-                returnstatus = status.HTTP_200_OK
-            elif httpstatus == 400:
-                returnstatus = status.HTTP_400_BAD_REQUEST
-            else:
-                returnstatus = status.HTTP_404_NOT_FOUND
-
             if httpstatus != 200:
                 message = 'Failed'
 
@@ -337,27 +229,11 @@ def check_license(request):
             """ Reading the license text file into a string variable """
             licensetext = query.file.read()
             request.data['licensetext'] = licensetext
-            output = core.license_check_helper(request)
+            response = core.license_check_helper(request)
             jpype.detachThreadFromJVM()
 
-            httpstatus = output.get('status', None)
-            context_dict = output.get('context', None)
-            response = output.get('response', None)
-            message = output.get('message', None)
-
-            if context_dict:
-                result = context_dict.get('error', None)
-            elif response:
-                result = response
-            else:
-                result = message
-            
-            if httpstatus == 200:
-                returnstatus = status.HTTP_200_OK
-            elif httpstatus == 400:
-                returnstatus = status.HTTP_400_BAD_REQUEST
-            else:
-                returnstatus = status.HTTP_404_NOT_FOUND
+            httpstatus, result, message = utils.get_json_response_data(response)
+            returnstatus = utils.get_return_code(httpstatus)
             
             query.result = result
             query.status = httpstatus
@@ -425,7 +301,7 @@ def submit_license(request):
             result=request.data.get('result')
             listVersionAdded = ''
             licenseNotes = ''
-            result = validate_license_fields(licenseName, licenseIdentifier)
+            result = utils.validate_license_fields(licenseName, licenseIdentifier)
             if result != '1':
                 return Response({
                     "result": [result]
@@ -471,64 +347,3 @@ def submit_license(request):
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
                 )
-
-
-def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
-    """ View for generating a spdx license xml
-    returns the license xml as a string
-    """
-    root = ET.Element("SPDXLicenseCollection", xmlns="http://www.spdx.org/license")
-    if licenseOsi=="Approved":
-        licenseOsi = "true"
-    else:
-        licenseOsi = "false"
-    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName, listVersionAdded=listVersionAdded)
-    crossRefs = ET.SubElement(license, "crossRefs")
-    for sourceUrl in licenseSourceUrls:
-        ET.SubElement(crossRefs, "crossRef").text = sourceUrl
-    ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
-    ET.SubElement(license, "notes").text = licenseNotes
-    licenseTextElement = ET.SubElement(license, "text")
-    licenseLines = licenseText.replace('\r','').split('\n')
-    for licenseLine in licenseLines:
-        ET.SubElement(licenseTextElement, "p").text = licenseLine
-    xmlString = ET.tostring(root, method='xml').replace('>','>\n')
-    return xmlString
-
-
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType):
-    """ View for creating an GitHub issue
-    when submitting a new license request
-    """
-    body = '**1.** License Name: ' + licenseName + '\n**2.** Short identifier: ' + licenseIdentifier + '\n**3.** License Author or steward: ' + licenseAuthorName + '\n**4.** Comments: ' + licenseComments + '\n**5.** Standard License Header: ' + licenseHeader + '\n**6.** License Request Url: ' + licenseRequestUrl + '\n**7.** URL: '
-    for url in licenseSourceUrls:
-        body += url
-        body += '\n'
-    body += '**8.** OSI Status: ' + licenseOsi
-    title = 'New license request: ' + licenseIdentifier + ' [SPDX-Online-Tools]'
-    payload = {'title' : title, 'body': body, 'labels': ['new license/exception request']}
-    headers = {'Authorization': 'token ' + token}
-    url = TYPE_TO_URL[urlType]
-    r = post(url, data=dumps(payload), headers=headers)
-    return r.status_code
-
-
-def validate_license_fields(licenseName, licenseIdentifier):
-    """ Validate the licenseName and licenseIdentifier
-    when submitting a new license
-    """
-    no_comma_match = bool(re.compile(r'^((?!,).)*$').match(licenseName))
-    no_version_match = bool(re.compile(r'^((?!version).)*$').match(licenseName))
-    lower_v_match = bool(re.compile(r'^((?!v\.|v\s).)*$').match(licenseName))
-    the_match = bool(re.compile(r'^(?!the|The.*$).*$').match(licenseName))
-
-    if not no_comma_match:
-        return 'No commas allowed in the fullname of license or exception.'
-    elif not no_version_match:
-        return 'The word "version" is not spelled out. Use "v" instead of "version".'
-    elif not lower_v_match:
-        return 'For version, use lower case v and no period or space between v and the version number.'
-    elif not the_match:
-        return 'The fullname must omit certain words such as "the " for alphabetical sorting purposes.'
-    else:
-        return '1'
