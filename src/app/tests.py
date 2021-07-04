@@ -16,6 +16,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.options import Options
+from webdriver_manager.firefox import GeckoDriverManager
 import time
 
 from app.models import UserID
@@ -394,7 +395,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_xlsxtotag(self):
         """POST Request for convert spreadsheet to tag"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
+        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls", "rb")
         resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".spdx",'from_format' : "XLS", 'to_format' : "TAG", 'file' : self.xls_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -408,7 +409,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_xlsxtordf(self):
         """POST Request for convert spreadsheet to rdf"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls")
+        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls", "rb")
         resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".rdf",'from_format' : "XLS", 'to_format' : "RDFXML", 'file' : self.xls_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -422,15 +423,15 @@ class ConvertViewsTestCase(TestCase):
     def test_other_convert_formats(self):
         """POST Request for converting invalid formats"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.xls_file = open(getExamplePath("SPDXSpreadsheetExample-2.0.xls"))
+        self.xls_file = open(getExamplePath("SPDXSpreadsheetExample-2.0.xls"), "rb")
         resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".html",'from_format' : "Spreadsheet", 'to_format' : "HTML", 'file' : self.xls_file},follow=True)
         self.assertEqual(resp.status_code,400)
         self.assertIn("error", resp.context)
-        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"))
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"), "rb")
         resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".pdf",'from_format' : "RDF", 'to_format' : "PDF", 'file' : self.rdf_file},follow=True)
         self.assertEqual(resp.status_code,400)
         self.assertIn("error", resp.context)
-        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"), "rb")
         resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".txt",'from_format' : "Tag", 'to_format' : "text", 'file' : self.tv_file},follow=True,secure=True)
         self.assertEqual(resp.status_code,400)
         self.assertIn("error", resp.context)
@@ -646,7 +647,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(firefox_options=options)
+        self.selenium = webdriver.Firefox(executable_path=GeckoDriverManager().install(), firefox_options=options)
         self.initialXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license></SPDXLicenseCollection>'
         self.invalidXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license>'
         super(LicenseXMLEditorTestCase, self).setUp()
@@ -1078,7 +1079,7 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(firefox_options=options)
+        self.selenium = webdriver.Firefox(executable_path=GeckoDriverManager().install(), firefox_options=options)
         super(ArchiveLicenseRequestsViewsTestCase, self).setUp()
 
     def tearDown(self):
@@ -1270,7 +1271,7 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(firefox_options=options)
+        self.selenium = webdriver.Firefox(executable_path=GeckoDriverManager().install(), firefox_options=options)
         #login
         TEST_LOGIN_INFO = {
         "provider": "github",
@@ -1345,7 +1346,7 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(firefox_options=options)
+        self.selenium = webdriver.Firefox(executable_path=GeckoDriverManager().install(), firefox_options=options)
         super(ArchiveLicenseNamespaceViewsTestCase, self).setUp()
 
     def tearDown(self):
