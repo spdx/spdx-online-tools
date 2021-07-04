@@ -537,3 +537,41 @@ def check_spdx_license(licenseText):
             matchedLicenseIds = max(matches, key=matches.get)
             matchType = 'Close match'
     return matchedLicenseIds, matchType
+
+
+def getFileFormat(to_format):
+    if (to_format=="TAG"):
+        return ".spdx"
+    elif (to_format=="RDFXML"):
+        return ".rdf.xml"
+    elif (to_format=="XLS"):
+        return ".xls"
+    elif (to_format=="XLSX"):
+        return ".xlsx"
+    elif (to_format=="JSON"):
+        return ".json"
+    elif (to_format=="YAML"):
+        return ".yaml"
+    elif (to_format=="XML"):
+        return ".xml"
+    else :
+        return ".invalid"
+
+
+def formatToContentType(to_format):
+    if (to_format=="TAG"):
+        return "text/tag-value"
+    elif (to_format=="RDFXML"):
+        return "application/rdf+xml"
+    elif (to_format=="XLS"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="XLSX"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="JSON"):
+        return "application/json"
+    elif (to_format=="YAML"):
+        return "text/yaml"
+    elif (to_format=="XML"):
+        return "application/xml"
+    else :
+        return ".invalid"

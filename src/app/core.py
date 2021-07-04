@@ -11,7 +11,6 @@ from json import dumps, loads
 from time import time
 from traceback import format_exc
 from urllib.parse import urljoin
-from app.views import formatToContentType, getFileFormat
 
 import app.utils as utils
 
@@ -378,11 +377,11 @@ def license_convert_helper(request):
             uploaded_file_url = fs.url(filename).replace("%20", " ")
             option1 = request.POST["from_format"]
             option2 = request.POST["to_format"]
-            content_type = formatToContentType(option2)
+            content_type = utils.formatToContentType(option2)
             if "cfileformat" in request.POST :
                 cfileformat = request.POST["cfileformat"]
             else :
-                cfileformat = getFileFormat(option2)
+                cfileformat = utils.getFileFormat(option2)
             convertfile =  request.POST["cfilename"] + cfileformat
             fromFileFormat = serFileTypeEnum.valueOf(option1);\
             toFileFormat = serFileTypeEnum.valueOf(option2)
