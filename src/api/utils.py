@@ -13,7 +13,8 @@ def get_json_response_data(response):
     if contextDict:
         medialink = contextDict.get('medialink', None)
         error = contextDict.get('error', None)
-        outputs = [medialink, result, error]
+        output = contextDict.get('output', None)
+        outputs = [medialink, output, error]
         result = next(output for output in outputs if output is not None)
     return httpStatus, result, message
 

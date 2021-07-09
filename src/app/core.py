@@ -298,6 +298,7 @@ def license_check_helper(request):
     result = {}
     context_dict = {}
     licensetext = request.POST.get('licensetext')
+    licensetext = licensetext if licensetext else request.data.get('licensetext')
     try:
         matchingId, matchingType = utils.check_spdx_license(licensetext)
         if not matchingId:
@@ -313,7 +314,7 @@ def license_check_helper(request):
             result['status'] = 404
             return result
         else:
-            matching_str = matchingType + " found! The following license ID(s) match: "
+            matching_str = "The following license ID(s) match: "
             if isinstance(matchingId, list):
                 matchingId = ",".join(matchingId)
             matching_str += matchingId
@@ -323,7 +324,7 @@ def license_check_helper(request):
                 response = dumps(ajaxdict)
                 result['response'] = response
                 return result
-            context_dict["success"] = str(matching_str)
+            context_dict["output"] = str(matching_str)
             result['context'] = context_dict
             result['status'] = 200
             return result

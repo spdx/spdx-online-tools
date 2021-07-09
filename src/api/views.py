@@ -32,6 +32,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDict
 
+import codecs
 import jpype
 import re
 import datetime
@@ -227,8 +228,8 @@ def check_license(request):
             uploaded_file = str(query.file)
             uploaded_file_path = str(query.file.path)
             """ Reading the license text file into a string variable """
-            licensetext = query.file.read()
-            request.data['licensetext'] = licensetext
+            licensetext = codecs.open(uploaded_file_path, 'r', encoding='unicode_escape').read()
+            request.data['licensetext'] = str(licensetext)
             response = core.license_check_helper(request)
             jpype.detachThreadFromJVM()
 

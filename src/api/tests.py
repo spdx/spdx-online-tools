@@ -310,7 +310,7 @@ class CheckLicenseFileUploadTests(APITestCase):
         """ Other File"""
         resp4 = self.client.post(reverse("check_license-api"),{"file":self.other_file},format="multipart")
         self.assertEqual(resp4.data['owner'],User.objects.get_by_natural_key(self.username).id)
-        self.assertEqual(resp4.status_code,400)
+        self.assertEqual(resp4.status_code,404)
         self.assertEqual(resp4.data["result"],"There are no matching SPDX listed licenses")
         
     def test_checklicense_without_argument(self):
