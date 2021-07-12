@@ -453,7 +453,7 @@ def validate(request):
             if response and status:
                 return HttpResponse(response, status=status)
             elif context_dict and status:
-                return render('app/validate.html', context_dict, status=status)
+                return render(request, 'app/validate.html', context_dict, status=status)
             else:
                 return HttpResponse(message, status=status)
 
@@ -563,7 +563,7 @@ def compare(request):
             if response and status:
                 return HttpResponse(response, status=status)
             elif context_dict and status:
-                return render('app/compare.html', context_dict, status=status)
+                return render(request, 'app/compare.html', context_dict, status=status)
             elif response:
                 return HttpResponse(response)
         else :
@@ -592,7 +592,7 @@ def convert(request):
             if response and status:
                 return HttpResponse(response, status=status)
             elif context_dict and status:
-                return render('app/convert.html', context_dict, status=status)
+                return render(request, 'app/convert.html', context_dict, status=status)
             elif response:
                 return HttpResponse(response)
         else :
@@ -617,7 +617,7 @@ def check_license(request):
             if response and status:
                 return HttpResponse(response, status=status)
             elif context_dict and status:
-                return render('app/check_license.html', context_dict, status=status)
+                return render(request, 'app/check_license.html', context_dict, status=status)
             elif response:
                 return HttpResponse(response)
         else:
