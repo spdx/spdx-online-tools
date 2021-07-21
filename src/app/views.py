@@ -191,10 +191,9 @@ def submitNewLicense(request):
             """ Other errors raised """
             logger.error(str(format_exc()))
             if (request.is_ajax()):
-                ajaxdict["type"] = "error"
-                ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                response = dumps(ajaxdict)
-                return HttpResponse(response,status=500)
+                ajaxdict['error'] = str(format_exc())
+                ajaxdict['inputlicensetext'] = request.POST['text']
+                return JsonResponse(ajaxdict)
             return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
     else:
         email=""
@@ -1101,35 +1100,47 @@ def issue(request):
                 try:
                     github_login = user.social_auth.get(provider='github')
                     token = github_login.extra_data["access_token"]
-                    licenseAuthorName = request.POST['licenseAuthorName']
-                    licenseName = request.POST['licenseName']
-                    licenseIdentifier = request.POST['licenseIdentifier']
-                    licenseOsi = request.POST['licenseOsi']
-                    licenseSourceUrls = request.POST.getlist('licenseSourceUrls')
-                    licenseExamples = request.POST.getlist('exampleUrl')
-                    licenseHeader = request.POST['licenseHeader']
-                    licenseComments = request.POST['comments']
-                    licenseText = request.POST['inputLicenseText']
-                    userEmail = request.POST['userEmail']
-                    licenseNotes = request.POST['licenseNotes']
-                    listVersionAdded = request.POST['listVersionAdded']
-                    matchId = request.POST['matchIds']
-                    diffUrl = request.POST['diffUrl']
-                    msg = request.POST.get('msg', None)
-                    urlType = utils.NORMAL
-                    data = {}
-                    xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
-                        listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
-                    now = datetime.datetime.now()
-                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
-                    licenseRequest.save()
-                    licenseRequestId = licenseRequest.id
-                    serverUrl = request.build_absolute_uri('/')
-                    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
-                    statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId, diffUrl, msg)
-                    data['statusCode'] = str(statusCode)
-                    return JsonResponse(data)
+
+                    if request.POST.get('error',None):
+                        occured_at = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
+                        made_by = github_login.extra_data['login']
+                        error_message = request.POST['error']
+                        license_text = request.POST['inputlicensetext']
+                        data = {}
+                        statusCode = utils.createErrorIssue(occured_at, made_by, error_message, license_text, token)
+                        data['statusCode'] = str(statusCode)
+                        return JsonResponse(data)
+                    else:
+                        licenseAuthorName = request.POST['licenseAuthorName']
+                        licenseName = request.POST['licenseName']
+                        licenseIdentifier = request.POST['licenseIdentifier']
+                        licenseOsi = request.POST['licenseOsi']
+                        licenseSourceUrls = request.POST.getlist('licenseSourceUrls')
+                        licenseExamples = request.POST.getlist('exampleUrl')
+                        licenseHeader = request.POST['licenseHeader']
+                        licenseComments = request.POST['comments']
+                        licenseText = request.POST['inputLicenseText']
+                        userEmail = request.POST['userEmail']
+                        licenseNotes = request.POST['licenseNotes']
+                        listVersionAdded = request.POST['listVersionAdded']
+                        matchId = request.POST['matchIds']
+                        diffUrl = request.POST['diffUrl']
+                        msg = request.POST.get('msg', None)
+                        urlType = utils.NORMAL
+                        data = {}
+                        xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                            listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+                        now = datetime.datetime.now()
+                        licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
+                            submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+                        licenseRequest.save()
+                        licenseRequestId = licenseRequest.id
+                        serverUrl = request.build_absolute_uri('/')
+                        licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
+                        statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId, diffUrl, msg)
+                        data['statusCode'] = str(statusCode)
+                        return JsonResponse(data)
+
                 except UserSocialAuth.DoesNotExist:
                     """ User not authenticated with GitHub """
                     if (request.is_ajax()):

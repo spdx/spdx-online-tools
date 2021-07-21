@@ -354,6 +354,21 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     return r.status_code
 
 
+def createErrorIssue(occured_at, made_by, error_message, license_text, token):
+    """ View for creating an GitHub issue
+    with the complete Error Report to the 
+    SPDX Online tools repository.
+    """
+  
+    body = "**1.** Occured At: {0}\n**2.** Made By: {1}\n**3.** Error Message: {2}\n**4.** License Text: {3}\n".format(occured_at, made_by, error_message, license_text)
+    title = "Error Report"
+    payload = {'title' : title, 'body': body}
+    headers = {'Authorization': 'token ' + token}
+    url = "https://api.github.com/repos/spdx/spdx-online-tools/issues"
+    r = requests.post(url, data=json.dumps(payload), headers=headers)
+    return r.status_code
+
+
 def postToGithub(message, encodedContent, filename):
     """ Function to create a new file on with encodedContent
     """
