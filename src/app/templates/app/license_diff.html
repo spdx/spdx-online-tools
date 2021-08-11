@@ -1,0 +1,149 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+{% block head_block %}
+    <link href="{% static 'css/editor.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/diffview.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body1 %}
+<div id="messages" class="messages">
+</div>
+<p class ="lead"> {{ error }}</p>
+<div class="panel panel-default">
+<div class="panel-heading"> <p class="lead"> Diff Section</p> </div>
+<div class="panel-body" style= "overflow:scroll;">
+<form id="diffform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
+		{% csrf_token %}
+		<textarea id="licensetext" name="licensetext" rows="18" style="width: 100%"></textarea>
+		<button id="licensediffbutton" class=" btn btn-md btn-info" type="submit">License Diff</button>
+</form>
+{% include "app/modal.html" %} 
+</div>
+{% endblock %}
+{% block script_block %}
+<script type="text/javascript">
+$(document).ready(function () {
+    $("#licensediffpage").addClass('linkactive');
+    });
+</script>
+<script type="text/javascript">
+function checkform() {
+  if ($('#licensetext').val() == "") {
+    $('#licensetext').focus();
+    return ("No text entered.");
+  }
+  else {
+    return "1";
+  }
+}
+</script>
+
+
+<script type="text/javascript">
+  $('#diffform').on('submit', function(event){
+    event.preventDefault();
+    console.log("HLLLEOSEJ")
+    var diff = checkform();
+    if (diff=="1"){
+      $("#licensediffbutton").text("Checking...");
+      $("#licensediffbutton").prop('disabled', true);
+      $("#messages").html("");
+      var form = new FormData($("#diffform")[0]);
+      $.ajax({
+              type: "POST",
+              enctype: 'multipart/form-data',
+              url: "/app/diff/",
+              processData: false,
+              contentType: false,
+              cache: false,
+              dataType: 'json',
+              data: form,
+              success: function (data) {
+                  console.log("SUCCESS : ", data);
+                  var matchType = data.matchType;
+                  var issueUrl = data.issueUrl;
+                  var matchIds = data.matchIds;
+                  var status = data.status;
+                  if(issueUrl){
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Found!");
+                    $("#modal-body").html("<h3>" + data.matchingStr + "</h3>");
+                  }
+				          else if(matchType == "Close match"){
+				            $("#modal-header").addClass("yellow-modal");
+                    var inputLicenseText = data.inputLicenseText.replace(/\r\n/g,'\n');
+                    var originalLicenseText = data.originalLicenseText;
+                    var matchingGuidelinesUrl = 'https://spdx.org/spdx-license-list/matching-guidelines'
+                    var message = `Close match found! The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX Matching guidelines. Press show differences to continue.`
+                    $("#modal-header").removeClass("red-modal green-modal");
+		                $("#modal-header").addClass("yellow-modal");
+		                $(".modal-footer").html(`<a href=${matchingGuidelinesUrl}><button class="btn btn-success btn-space" id="matchingguidelines"><span class="glyphicon glyphicon-link"></span> SPDX Matching Guidelines</button></a><button class="btn btn-success btn-space" id="showDiff"><span class="glyphicon glyphicon-link"></span> Show differences</button><button class="btn btn-primary btn-space" id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>`);
+		                $("#modal-body").html(message);
+                    $("#myModal").modal({
+                      backdrop: 'static',
+                      keyboard: true,
+                      show: true
+                    });
+                    $(document).on('click','button#ok', function(event){
+                      $("#myModal").modal("hide");
+                    });
+                    $(document).off().on('click','button#showDiff', function(event){
+                      generate_text_diff(originalLicenseText.split('\n\n'), inputLicenseText.split('\n\n'));
+                    });
+				          }
+                  else if (matchType == "Perfect match" || matchType == "Standard License match") {
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Found!");
+                    $("#modal-body").html("<h3>" + data.matchingStr + "</h3>");
+                  }
+                  else {
+                    $("#modal-header").addClass("green-modal");
+                    $("#modal-title").html("Not Found!");
+                    var message = "The given license was not found in the SPDX database.";
+                    $("#modal-body").html("<h3>" + message + "</h3>");
+                  }
+                  $("#myModal").modal({
+                        backdrop: 'static',
+                        keyboard: true, 
+                        show: true
+                    });
+                  $("#licensediffbutton").text("License diff");
+                  $("#licensediffbutton").prop('disabled', false);
+              },
+              error: function (e) {
+                  console.log("ERROR : ", e);
+                  $("#modal-header").removeClass("green-modal");
+                  try {
+                    var obj = JSON.parse(e.responseText);
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Error!");
+                    $("#modal-body").text(obj.data);
+                  }
+                  catch (e){
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Error!");
+                    $("#modal-body").text("The application could not be connected. Please try later.");
+                  }
+                  $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true, 
+                          show: true
+                  });
+                  $("#licensediffbutton").text("Check License");
+                  $("#licensediffbutton").prop('disabled', false);
+              }
+          });
+    }
+    else{
+      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+      setTimeout(function() {
+        $("#messages").html("");
+      }, 5000);
+    }
+});
+
+</script>
+<script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
+{% endblock %}
