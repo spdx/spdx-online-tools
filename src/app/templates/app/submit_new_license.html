@@ -70,6 +70,20 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Explain why this license meets the
+        <a href="https://github.com/spdx/license-list-XML/blob/master/DOCS/license-inclusion-principles.md">
+          license inclusion principles
+        </a>
+        <span class="glyphicon glyphicon-question-sign" id="commentsInfo" data-toggle="popover" data-placement="auto left"></span>
+      </label>
+        <div class="col-sm-6">
+          {{ form.comments }}
+        </div>
+      </div>
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
       <label class="control-label col-sm-3" >License's Full Name
         <span class="glyphicon glyphicon-question-sign" id="fullnameInfo" data-toggle="popover" data-placement="auto left"></span>
       </label>
@@ -163,16 +177,6 @@ Once you have submitted a license, please follow the <a href="https://github.com
       </div>
     </div>
 
-    <div class = "form-group">
-      <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Comments
-        <span class="glyphicon glyphicon-question-sign" id="commentsInfo" data-toggle="popover" data-placement="auto left"></span>
-      </label>
-        <div class="col-sm-6">
-          {{ form.comments }}
-        </div>
-      </div>
-    </div>
     <hr>
 		<input type="hidden" id="cfileformat" name="submit" value="">
 		<button class=" btn btn-md btn-info" id="submitbutton" type="submit" >Submit</button>
@@ -270,6 +274,10 @@ function checkform() {
     scrollUpAndHighlight($('#fullname'))
     message = validate_fullname()
     return (message + "Hover over to '?' for more info.");
+  }
+  else if (($('#comments').val().trim() == "")){
+    scrollUpAndHighlight($('#comments'))
+    return("Please explain why this license meets the license inclusion principles.");
   }
   else if (($('#shortIdentifier').val().trim() == "") || !validate_identifier()){
     scrollUpAndHighlight($('#shortIdentifier'))
