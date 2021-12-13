@@ -4,7 +4,7 @@ numpy==1.16.4
 djangorestframework==3.9.1
 bs4==0.0.1
 requests==2.22
-lxml==4.6.3
+lxml==4.6.5
 social-auth-core >= 3.3.0, < 4.0.0
 social-auth-app-django==3.4.0
 python-dotenv==0.13.0
