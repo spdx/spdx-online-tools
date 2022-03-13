@@ -31,6 +31,7 @@ urlpatterns = [
     path('convert/', views.convert, name='convert'),
     path('compare/', views.compare, name='compare'),
     path('check_license/', views.check_license, name='check-license'),
+    path('diff/', views.license_diff, name='license-diff'),
     path('login/', views.loginuser, name='login'),
     path('register/', views.register, name='register'),
     path('logout/', views.logoutuser, name='logout'),
