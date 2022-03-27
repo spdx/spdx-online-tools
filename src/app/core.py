@@ -306,7 +306,7 @@ def license_check_helper(request):
         matchingId, matchingType = utils.check_spdx_license(licensetext)
         if not matchingId:
             if (request.is_ajax()):
-                ajaxdict=dict()
+                ajaxdict = dict()
                 ajaxdict["data"] = "There are no matching SPDX listed licenses"
                 response = dumps(ajaxdict)
                 result['response'] = response
@@ -321,11 +321,12 @@ def license_check_helper(request):
             if isinstance(matchingId, list):
                 matchingId = ",".join(matchingId)
             matching_str += matchingId
-            if (request.is_ajax()):
+            if request.is_ajax():
                 ajaxdict = dict()
                 ajaxdict["data"] = matching_str
                 response = dumps(ajaxdict)
                 result['response'] = response
+                result['status'] = 200
                 return result
             context_dict["output"] = str(matching_str)
             result['context'] = context_dict
@@ -333,8 +334,8 @@ def license_check_helper(request):
             return result
     except jpype.JException as ex :
         """ Java exception raised without exiting the application """
-        if (request.is_ajax()):
-            ajaxdict=dict()
+        if request.is_ajax():
+            ajaxdict = dict()
             ajaxdict["data"] = jpype.JException.message(ex)
             response = dumps(ajaxdict)
             result['response'] = response
@@ -346,7 +347,7 @@ def license_check_helper(request):
         return result
     except :
         """ Other exception raised """
-        if (request.is_ajax()):
+        if request.is_ajax():
             ajaxdict = dict()
             ajaxdict["data"] = format_exc()
             response = dumps(ajaxdict)

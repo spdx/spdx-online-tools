@@ -11,12 +11,15 @@
 </div>
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead"> Diff Section</p> </div>
+<div class="panel-heading">
+    <p class="lead">License Diff Section</p>
+    <p class="lead"><h4>Check license text with existing licenses</h4></p>
+</div>
 <div class="panel-body" style= "overflow:scroll;">
 <form id="diffform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
 		<textarea id="licensetext" name="licensetext" rows="18" style="width: 100%"></textarea>
-		<button id="licensediffbutton" class=" btn btn-md btn-info" type="submit">License Diff</button>
+		<button id="licensediffbutton" class=" btn btn-md btn-info" type="submit">Check License Diff</button>
 </form>
 {% include "app/modal.html" %} 
 </div>
@@ -43,9 +46,9 @@ function checkform() {
 <script type="text/javascript">
   $('#diffform').on('submit', function(event){
     event.preventDefault();
-    console.log("HLLLEOSEJ")
-    var diff = checkform();
-    if (diff=="1"){
+    var check = checkform();
+    console.log(check)
+    if (check=="1"){
       $("#licensediffbutton").text("Checking...");
       $("#licensediffbutton").prop('disabled', true);
       $("#messages").html("");
@@ -62,23 +65,16 @@ function checkform() {
               success: function (data) {
                   console.log("SUCCESS : ", data);
                   var matchType = data.matchType;
-                  var issueUrl = data.issueUrl;
                   var matchIds = data.matchIds;
-                  var status = data.status;
-                  if(issueUrl){
-                    $("#modal-header").addClass("red-modal");
-                    $("#modal-title").html("Found!");
-                    $("#modal-body").html("<h3>" + data.matchingStr + "</h3>");
-                  }
-				          else if(matchType == "Close match"){
-				            $("#modal-header").addClass("yellow-modal");
+                  if(matchType == "Close match"){
+                    $("#modal-header").addClass("yellow-modal");
                     var inputLicenseText = data.inputLicenseText.replace(/\r\n/g,'\n');
                     var originalLicenseText = data.originalLicenseText;
                     var matchingGuidelinesUrl = 'https://spdx.org/spdx-license-list/matching-guidelines'
                     var message = `Close match found! The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX Matching guidelines. Press show differences to continue.`
                     $("#modal-header").removeClass("red-modal green-modal");
 		                $("#modal-header").addClass("yellow-modal");
-		                $(".modal-footer").html(`<a href=${matchingGuidelinesUrl}><button class="btn btn-success btn-space" id="matchingguidelines"><span class="glyphicon glyphicon-link"></span> SPDX Matching Guidelines</button></a><button class="btn btn-success btn-space" id="showDiff"><span class="glyphicon glyphicon-link"></span> Show differences</button><button class="btn btn-primary btn-space" id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>`);
+		                $(".modal-footer").html(`<a href=${matchingGuidelinesUrl} target="_blank"><button class="btn btn-success btn-space" id="matchingguidelines"><span class="glyphicon glyphicon-link"></span> SPDX Matching Guidelines</button></a><button class="btn btn-success btn-space" id="showDiff"><span class="glyphicon glyphicon-link"></span> Show differences</button>`);
 		                $("#modal-body").html(message);
                     $("#myModal").modal({
                       backdrop: 'static',
@@ -93,12 +89,13 @@ function checkform() {
                     });
 				          }
                   else if (matchType == "Perfect match" || matchType == "Standard License match") {
-                    $("#modal-header").addClass("red-modal");
+                    var message = `Perfect match found! The license matches with the license ID(s): <strong>${matchIds}</strong>`
+                    $("#modal-header").addClass("green-modal");
                     $("#modal-title").html("Found!");
-                    $("#modal-body").html("<h3>" + data.matchingStr + "</h3>");
+                    $("#modal-body").html(message);
                   }
                   else {
-                    $("#modal-header").addClass("green-modal");
+                    $("#modal-header").addClass("red-modal");
                     $("#modal-title").html("Not Found!");
                     var message = "The given license was not found in the SPDX database.";
                     $("#modal-body").html("<h3>" + message + "</h3>");
@@ -143,7 +140,39 @@ function checkform() {
     }
 });
 
+/* generate diff of input license text and spdx license list license text of closely matched licenses */
+async function generate_text_diff(base, newtxt){
+    var sm = new difflib.SequenceMatcher(base, newtxt);
+    var opcodes = sm.get_opcodes();
+
+    // build the diff view and add it to the current DOM
+    var diff = $(diffview.buildView({
+        baseTextLines: base,
+        newTextLines: newtxt,
+        opcodes: opcodes,
+        // set the display titles for each resource
+        baseTextName: "Base Text",
+        newTextName: "New Text",
+        contextSize: null,
+        viewType: 1
+    }))
+    diff.children().remove("thead");
+    diff.children().children().remove("th");
+    /* display result in modal */
+    displayModal("","success");
+    $("#modal-body").html(diff);
+    $("#modal-title").text("Close Match");
+    $("#modal-body").addClass("diff-modal-body");
+    $(".modal-dialog").addClass("diff-modal-dialog");
+    $("#myModal").modal({
+        backdrop: 'static',
+        keyboard: true,
+        show: true
+    });
+}
+
 </script>
 <script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/treeview.js' %}"></script>
 {% endblock %}

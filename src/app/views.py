@@ -634,14 +634,14 @@ def license_diff(request):
     returns license_diff.html template
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
-        context_dict={}
+        context_dict = {}
         if request.method == 'POST':
             result = core.license_diff_helper(request)
             return JsonResponse(result)
         else:
             """GET,HEAD"""
             return render(request,
-                'app/license_diff.html',context_dict
+                'app/license_diff.html', context_dict
                 )
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
