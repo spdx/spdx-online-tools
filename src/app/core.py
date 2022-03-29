@@ -1,5 +1,8 @@
 """This file contains the core logic used in the SPDX Online Tools' APP and API"""
 
+import json
+
+from django.http.response import JsonResponse
 import jpype
 import os
 
@@ -303,7 +306,7 @@ def license_check_helper(request):
         matchingId, matchingType = utils.check_spdx_license(licensetext)
         if not matchingId:
             if (request.is_ajax()):
-                ajaxdict=dict()
+                ajaxdict = dict()
                 ajaxdict["data"] = "There are no matching SPDX listed licenses"
                 response = dumps(ajaxdict)
                 result['response'] = response
@@ -318,11 +321,12 @@ def license_check_helper(request):
             if isinstance(matchingId, list):
                 matchingId = ",".join(matchingId)
             matching_str += matchingId
-            if (request.is_ajax()):
+            if request.is_ajax():
                 ajaxdict = dict()
                 ajaxdict["data"] = matching_str
                 response = dumps(ajaxdict)
                 result['response'] = response
+                result['status'] = 200
                 return result
             context_dict["output"] = str(matching_str)
             result['context'] = context_dict
@@ -330,8 +334,8 @@ def license_check_helper(request):
             return result
     except jpype.JException as ex :
         """ Java exception raised without exiting the application """
-        if (request.is_ajax()):
-            ajaxdict=dict()
+        if request.is_ajax():
+            ajaxdict = dict()
             ajaxdict["data"] = jpype.JException.message(ex)
             response = dumps(ajaxdict)
             result['response'] = response
@@ -343,7 +347,7 @@ def license_check_helper(request):
         return result
     except :
         """ Other exception raised """
-        if (request.is_ajax()):
+        if request.is_ajax():
             ajaxdict = dict()
             ajaxdict["data"] = format_exc()
             response = dumps(ajaxdict)
@@ -467,3 +471,57 @@ def license_convert_helper(request):
         result['status'] = 400
         return result
 
+
+def license_diff_helper(request):
+    """
+    A helper function to check if the given license text is present in the SPDX License List.
+    """
+    data = {}
+    licensetext = request.POST.get('licensetext')
+    licensetext = licensetext if licensetext else request.data.get('licensetext')
+    try:
+        matchingIds, matchingType = utils.check_spdx_license(licensetext)
+        matches = ['Perfect match', 'Standard License match', 'Close match']
+        if matchingType in matches:
+            data['matchType'] = matchingType
+            if isinstance(matchingIds, list):
+                matchingIds = ", ".join(matchingIds)
+            data['inputLicenseText'] = licensetext
+            originalLicenseText = utils.get_spdx_license_text(matchingIds)
+            data['originalLicenseText'] = originalLicenseText
+            data['matchIds'] = matchingIds
+            statusCode = 200
+            data['statusCode'] = str(statusCode)
+            return data
+        if not matchingIds:
+            data["data"] = "There are no matching SPDX listed licenses"
+            response = dumps(data)
+            data['response'] = response
+            data['status'] = 201
+            return data
+    except jpype.JException as ex :
+        """ Java exception raised without exiting the application """
+        if (request.is_ajax()):
+            ajaxdict=dict()
+            ajaxdict["data"] = jpype.JException.message(ex)
+            response = dumps(ajaxdict)
+            data['response'] = response
+            data['status'] = 404
+            return data
+        data["error"] = jpype.JException.message(ex)
+        data['context'] = data
+        data['status'] = 404
+        return data
+    except :
+        """ Other exception raised """
+        if (request.is_ajax()):
+            ajaxdict = dict()
+            ajaxdict["data"] = format_exc()
+            response = dumps(ajaxdict)
+            data['response'] = response
+            data['status'] = 404
+            return data
+        data["error"] = format_exc()
+        data['context'] = data
+        data['status'] = 404
+        return data

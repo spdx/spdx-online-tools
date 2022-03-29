@@ -144,7 +144,9 @@ Once you have submitted a license, please follow the <a href="https://github.com
         <div class="col-sm-6">
           {{ form.text }}
         </div>
+          <a href="/app/diff" target="_blank">Check License Diff</a>
       </div>
+
     </div>
 
     <div class = "form-group">
@@ -614,7 +616,7 @@ function makeIssue(data){
 async function generate_text_diff(base, newtxt){
     var sm = new difflib.SequenceMatcher(base, newtxt);
     var opcodes = sm.get_opcodes();
-    
+
     // build the diff view and add it to the current DOM
     var diff = $(diffview.buildView({
         baseTextLines: base,
@@ -637,7 +639,7 @@ async function generate_text_diff(base, newtxt){
     $(".modal-dialog").addClass("diff-modal-dialog");
     $("#myModal").modal({
         backdrop: 'static',
-        keyboard: true, 
+        keyboard: true,
         show: true
     });
     await new Promise(resolve => setTimeout(resolve, 2000));

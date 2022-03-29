@@ -18,7 +18,7 @@ from django.http import HttpResponse,HttpResponseRedirect
 from django.contrib.auth import authenticate,login ,logout,update_session_auth_hash
 from django.conf import settings
 from django import forms
-from django.template import RequestContext
+from django.template import RequestContext, context
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
 from django.contrib.auth.forms import PasswordChangeForm
@@ -627,6 +627,26 @@ def check_license(request):
                 )
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
+
+
+def license_diff(request):
+    """ View for diff section tool
+    returns license_diff.html template
+    """
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
+        context_dict = {}
+        if request.method == 'POST':
+            result = core.license_diff_helper(request)
+            return JsonResponse(result)
+        else:
+            """GET,HEAD"""
+            return render(request,
+                'app/license_diff.html', context_dict
+                )
+    else:
+        return HttpResponseRedirect(settings.LOGIN_URL)
+
+
 
 def xml_upload(request):
     """ View for uploading XML file
