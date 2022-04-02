@@ -33,6 +33,7 @@
 			</div>	
 		</div>
 		<hr>
+        <p id ="warning-msg" hidden="true"></p>
 		<button class=" btn btn-md btn-info" type="submit" id="comparebutton" name="compare">Compare</button>
 </form>
 </div>
@@ -100,6 +101,7 @@
 	        $("#messages").html("");
 	      }, 5000);
 		}
+		checkFilesSize(selected_files, "#warning-msg");
   }
 
 function checkform() {
@@ -118,6 +120,7 @@ function checkform() {
 $(".reset").on("click", function(){
 	selected_files = [];
 	$(".file-name").html("No file selected");
+	removeWarningElement("#warning-msg");
 })
 </script>
 
