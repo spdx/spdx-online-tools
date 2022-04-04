@@ -100,7 +100,7 @@ def process(fname):
     blocks = pretty(root, 0)
     ser = fmt(blocks)
     
-    with open(fname, 'w') as f:
+    with open(fname, 'wt', encoding='utf-8') as f:
         f.write(XML_PROLOG+"\n")
         f.write(ser)
     
@@ -121,7 +121,7 @@ def pretty(node, level):
                 start_tag += ' {}="{}"'.format(a, node.attrib[a])
                 del node.attrib[a]
         if node.attrib:
-            logger.error('more attrs remaining in {}: {}'.format(tag, node.attrib.keys()))
+            logger.error('more attrs remaining in {}: {}'.format(tag, list(node.attrib.keys())))
     start_tag += ">"
     end_tag = "</" + tag + ">"
     if tag in config['block']:
@@ -214,7 +214,7 @@ def singlespaceline(txt):
 if NAMESPACE:
     full_TAGS_inline = list(NAMESPACE+e for e in TAGS_inline)
     full_TAGS_block = list(NAMESPACE+e for e in TAGS_block)
-    full_ATTRS_SEQ = dict((NAMESPACE+k, v) for k,v in ATTRS_SEQ.items())
+    full_ATTRS_SEQ = dict((NAMESPACE+k, v) for k,v in list(ATTRS_SEQ.items()))
 
 if __name__ == '__main__':
 
@@ -253,4 +253,4 @@ if __name__ == '__main__':
             process(fname)
         except et.ParseError as e:
             logger.error('XML Parse Error: ' + str(e))
-            print('XML Parse Error: ' + str(e))
+            print(('XML Parse Error: ' + str(e)))

@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -32,7 +32,7 @@ def user_directory_path(instance, filename):
 class ValidateFileUpload(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(User, to_field='id')
+    owner = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
     file = models.FileField(upload_to=user_directory_path)
     result = models.CharField(max_length=128,null=False,blank=False)
     status = models.IntegerField(default=200,blank=False)
@@ -40,7 +40,7 @@ class ValidateFileUpload(models.Model):
 class ConvertFileUpload(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(User, to_field='id')
+    owner = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
     from_format = models.CharField(max_length=16,null=False,blank=False)
     to_format = models.CharField(max_length=16,null=False,blank=False)
     tagToRdfFormat = models.CharField(max_length=16,null=True,blank=True)
@@ -53,7 +53,7 @@ class ConvertFileUpload(models.Model):
 class CompareFileUpload(models.Model):
     
     created = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(User, to_field='id')
+    owner = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
     result = models.CharField(max_length=32,null=False,blank=False)
     message = models.CharField(max_length=64,null=False,blank=False)
     file1 = models.FileField(upload_to=user_directory_path)
@@ -64,7 +64,7 @@ class CompareFileUpload(models.Model):
 class CheckLicenseFileUpload(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(User, to_field='id')
+    owner = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
     file = models.FileField(upload_to=user_directory_path)
     result = models.CharField(max_length=128,null=False,blank=False)
     status = models.IntegerField(default=200,blank=False)
@@ -72,7 +72,7 @@ class CheckLicenseFileUpload(models.Model):
 class SubmitLicenseModel(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(User, to_field='id')
+    owner = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
     licenseAuthorName = models.CharField(max_length=100, default="", blank=True, null=True)
     fullname = models.CharField(max_length=70)
     shortIdentifier = models.CharField(max_length=25)

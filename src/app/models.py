@@ -11,14 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+
 from django.db import models
 from datetime import datetime
 from django import forms
 from django.contrib.auth.models import User
 
 class UserID(models.Model):
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     organisation = models.CharField("Organisation",max_length=64, null=False, blank=False)
     lastlogin = models.DateField("Last Login",default=datetime.now,blank=True)
     def __str__(self):
@@ -68,7 +68,7 @@ class OrganisationName(models.Model):
 
 
 class LicenseNamespace(License):
-    organisation = models.ForeignKey(OrganisationName, null=True, blank=True)
+    organisation = models.ForeignKey(OrganisationName, null=True, blank=True, on_delete=models.CASCADE)
     publiclyShared = models.BooleanField(default=True)
     description = models.TextField()
     namespace = models.CharField(max_length=200)
@@ -76,7 +76,7 @@ class LicenseNamespace(License):
     license_list_url= models.URLField(max_length=250)
     github_repo_url= models.URLField(max_length=250)
     promoted = models.BooleanField(default=False)
-    license_request = models.ForeignKey(LicenseRequest, null=True, blank=True)
+    license_request = models.ForeignKey(LicenseRequest, null=True, blank=True, on_delete=models.CASCADE)
 
     def __unicode__(self):
         return "%s" % (self.namespace)

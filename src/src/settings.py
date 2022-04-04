@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-from secret import getGithubKey, getGithubSecret, getSecretKey, getOauthToolKitAppID, getOauthToolKitAppSecret, getDiffRepoGitToken, getDiffRepoWithOwner
+from src.secret import getGithubKey, getGithubSecret, getSecretKey, getOauthToolKitAppID, getOauthToolKitAppSecret, getDiffRepoGitToken, getDiffRepoWithOwner
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,6 +19,7 @@ APP_DIR = os.path.join(BASE_DIR,'app')
 API_DIR = os.path.join(BASE_DIR,'api')
 TEMPLATE_DIR = os.path.join(APP_DIR, 'templates')
 STATIC_PATH = os.path.join(APP_DIR,'static')
+EXAMPLES_DIR = os.path.join(BASE_DIR,'examples')
 
 LICENSE_REPO_NAME = "license-list-XML"
 LICENSE_TEST_REPO_NAME = "TEST-LicenseList-XML"
@@ -46,7 +47,7 @@ SECRET_KEY = getSecretKey()
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get(key='DEBUG', failobj=1) in (True, 'True', 1, "1")
+DEBUG = os.environ.get(key='DEBUG', default=1) == 1
 
 if not DEBUG:
     REPO_URL = PROD_REPO_URL
@@ -114,12 +115,12 @@ WSGI_APPLICATION = 'src.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get(key='SQL_ENGINE',failobj='django.db.backends.sqlite3'),
-        'NAME': os.environ.get(key='SQL_DATABASE', failobj=os.path.join(BASE_DIR, 'db.sqlite3')),
-        'USER': os.environ.get(key='SQL_USER', failobj='user'),
-        'PASSWORD': os.environ.get(key='SQL_PASSWORD', failobj='password'),
-        'HOST': os.environ.get(key='SQL_HOST', failobj='localhost'),
-        'PORT': os.environ.get(key='SQL_PORT', failobj='5432'),
+        'ENGINE': os.environ.get(key='SQL_ENGINE',default='django.db.backends.sqlite3'),
+        'NAME': os.environ.get(key='SQL_DATABASE', default=os.path.join(BASE_DIR, 'db.sqlite3')),
+        'USER': os.environ.get(key='SQL_USER', default='user'),
+        'PASSWORD': os.environ.get(key='SQL_PASSWORD', default='password'),
+        'HOST': os.environ.get(key='SQL_HOST', default='localhost'),
+        'PORT': os.environ.get(key='SQL_PORT', default='5432'),
     }
 }
 
@@ -143,12 +144,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'social_core.backends.open_id.OpenIdAuth',
-    'social_core.backends.google.GoogleOpenId',
-    'social_core.backends.google.GoogleOAuth2',
-    'social_core.backends.google.GoogleOAuth',
-    'social_core.backends.twitter.TwitterOAuth',
-    'social_core.backends.yahoo.YahooOpenId',
     'social_core.backends.github.GithubOAuth2',
     'django.contrib.auth.backends.ModelBackend',
     'rest_framework_social_oauth2.backends.DjangoOAuth2',
@@ -205,6 +200,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
@@ -218,6 +214,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
 }
+
+# To avoid unwanted migrations in the future, either explicitly set DEFAULT_AUTO_FIELD to AutoField
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Absolute Path for tool.jar
 # The online tool uses spdx-tools-2.1.6-SNAPSHOT-jar-with-dependencies.jar from the compiled target folder of java tools

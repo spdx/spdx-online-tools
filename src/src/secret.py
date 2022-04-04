@@ -14,7 +14,7 @@ def getGithubSecret():
 
 def getSecretKey():
     return "NON_EMPTY_DJANGO_SECRET" if os.environ.get(key="DJANGO_SECRET_KEY") == "" \
-        else os.environ.get(key="DJANGO_SECRET_KEY", failobj="NON_EMPTY_DJANGO_SECRET")
+        else os.environ.get(key="DJANGO_SECRET_KEY", default="NON_EMPTY_DJANGO_SECRET")
 
 # The methods getDiffRepoGitToken and getDiffRepoWithOwner are used to configure the repository used for storing license diffs created during the license submittal process
     
@@ -22,7 +22,8 @@ def getDiffRepoGitToken():
     return os.environ.get(key="DIFF_REPO_GIT_TOKEN")
     
 def getDiffRepoWithOwner():
-    return os.environ.get(key="DIFF_REPO_WITH_OWNER", failobj="spdx/licenseRequestImages")
+    return "spdx/licenseRequestImages" if os.environ.get(key="DIFF_REPO_WITH_OWNER") == "" \
+        else os.environ.get(key="DIFF_REPO_WITH_OWNER", default="spdx/licenseRequestImages")
     
 # The methods: getAccessToken, getGithubUserId and getGithubUserName
 # are important for license submit tests, given that github authentication
@@ -57,4 +58,5 @@ def getAuthCode():
     return os.environ.get(key="AUTH_CODE")
 
 def getRedisHost():
-    return os.environ.get(key="SPDX_REDIS_HOST", failobj="localhost")
+    return "localhost" if os.environ.get(key="SPDX_REDIS_HOST") == "" \
+        else os.environ.get(key="SPDX_REDIS_HOST", default="localhost")

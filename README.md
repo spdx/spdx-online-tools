@@ -16,7 +16,7 @@ The tool provides an easy all-in-one website to upload and parse SPDX documents 
 
 ## Requirements (Linux/Debian/Ubuntu)  
 
-Either the Sun/Oracle JDK/JRE Variant or OpenJDK. Python 2.6+.
+Either the Sun/Oracle JDK/JRE Variant or OpenJDK. Python 3.7+.
 
 Debian/Ubuntu users will have to install g++ and python-dev first:  
 
@@ -28,17 +28,23 @@ sudo apt-get install g++ python-dev
 
 Windows users need a Python installation and C++ compiler:
 
-* Install Python 2.7 version, e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
+* Install Python 3.7 version, e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
 * Install a [Windows C++ Compiler](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
 ## Installation
 
 1. Clone or download the repository.
-2. Create a new virtual environment for the project. To download virtual environment run `pip install virtualenv`
+2. Create a new virtual environment for the project.
     ```bash
-    virtualenv venv
+    python3 -m venv ./venv
     source venv/bin/activate
     ```
+	
+	On Windows:
+	```
+	py -m venv venv
+	venv\Scripts\activate
+	```
 3. Install the required python libraries given in the requirements.txt file.
     ```bash
     cd spdx-online-tools
@@ -100,6 +106,18 @@ python src/manage.py test
 ## Running with Docker
 
 You need to have [docker desktop](https://docs.docker.com/desktop/) installed on your machine for the container environment. 
+
+Prior to starting the docker image, you will need to create a file to set the environment variables described below.
+
+Create a file ".env" with the following content:
+
+```
+DIFF_REPO_GIT_TOKEN=XXXX
+DIFF_REPO_WITH_OWNER=XXXX
+ONLINE_TOOL_GITHUB_KEY=XXXX
+ONLINE_TOOL_GITHUB_SECRET=XXXX
+```
+
 You can bring up the Docker image with the following docker-compose command:
 
 ```
@@ -137,16 +155,18 @@ def getDiffRepoGitToken():
     return os.environ.get(key="DIFF_REPO_GIT_TOKEN")
     
 def getDiffRepoWithOwner():
-    return os.environ.get(key="DIFF_REPO_WITH_OWNER", failobj="spdx/licenseRequestImages")
+    return os.environ.get(key="DIFF_REPO_WITH_OWNER", default="spdx/licenseRequestImages")
 ```
 
 where:
 
-* ONLINE_TOOL_GITHUB_KEY is the Client ID for the Github Oauth Apps
+* ONLINE_TOOL_GITHUB_KEY is the Client ID for the Github Oauth Apps (To create your Oauth application see [this](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app))
 * ONLINE_TOOL_GITHUB_SECRET is the Client secret for the Github Oauth Apps
 * DJANGO_SECRET_KEY is the Django secret
 * OAUTH_APP_ID is the client ID of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
 * OAUTH_APP_SECRET is the client secret of the django oauth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
+* DIFF_REPO_GIT_TOKEN is the Github user's Personal Access Token which has write access to DIFF_REPO_WITH_OWNER (Follow [this](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) to create your Github Personal access token with full repo and user scope access)
+* DIFF_REPO_WITH_OWNER is the repo where images related to license submittable process are uploaded
 
 **Note:** While setting up the GitHub OAuth App, set the `Homepage URL` to `http://localhost:8000/` and the `Authorization callback URL` to `http://localhost:8000/oauth/complete/github`
 

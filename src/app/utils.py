@@ -47,6 +47,9 @@ NORMAL:  settings.NAMESPACE_REPO_URL,
 TESTS: settings.NAMESPACE_DEV_REPO_URL,
 }
 
+logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
+logger = logging.getLogger()
+
 # For license namespace utils
 def licenseNamespaceUtils():
     return {
@@ -66,8 +69,6 @@ def checkPermission(user):
         return False
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, is_ns):
-    logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : %(message)s")
-    logger = logging.getLogger()
 
     if not xmlText:
         logger.error("Error occurred while getting xml text. The xml text is empty")
@@ -171,7 +172,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         fileName = fileName[:-4]
     fileName += ".xml"
     commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME, fileName)
-    xmlText = xmlText.encode('utf-8')
+    xmlText = xmlText.encode('utf-8') if isinstance(xmlText, str) else xmlText
     fileContent = base64.b64encode(xmlText)
     body = {
         "path":"src/"+fileName,
@@ -408,7 +409,7 @@ def parseXmlString(xmlString):
         if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')) > 0):
             textElem = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')[0]
             ET.register_namespace('', "http://www.spdx.org/license")
-            textStr = ET.tostring(textElem).strip()
+            textStr = ET.tostring(textElem, encoding='unicode').strip()
             if(len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>'):
                 textStr = textStr[42:]
                 textStr = textStr[:-7].strip().replace('&lt;', '<').replace('&gt;', '>').strip()
@@ -465,11 +466,12 @@ def get_license_data(issues):
     for issue in issues:
         if not issue.get('pull_request'):
             licenseInfo = issue.get('body')
-            if '[SPDX-Online-Tools]' in issue.get('title'):         
+            if '[SPDX-Online-Tools]' in issue.get('title'):
                 try:
                     licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
                     dbId = re.search(r'License Request Url:.+/app/license_requests/([0-9]+)', licenseInfo).group(1)
-                    licenseXml = str(LicenseRequest.objects.get(id=dbId, shortIdentifier=licenseIdentifier).xml)
+                    licenseXml = LicenseRequest.objects.get(id=dbId, shortIdentifier=licenseIdentifier).xml
+                    licenseXml = licenseXml.decode('utf-8') if not isinstance(licenseXml, str) else licenseXml
                     licenseText = parseXmlString(licenseXml)['text']
                     licenseTexts.append(clean(licenseText))
                     licenseIds.append(licenseIdentifier)
@@ -477,7 +479,7 @@ def get_license_data(issues):
                     pass
                 except AttributeError:
                     pass
-    licenseData = dict(zip(licenseIds, licenseTexts))
+    licenseData = dict(list(zip(licenseIds, licenseTexts)))
     return licenseData
 
 
@@ -496,7 +498,7 @@ def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
     issues.extend(get_yet_not_approved_licenses_issues(urlType))
     licenseData = get_license_data(issues)
     matches = get_close_matches(inputLicenseText, licenseData)
-    matches = matches.keys()
+    matches = list(matches.keys())
     if not matches:
         return matches, ''
     issueUrl = get_issue_url_by_id(matches[0], issues)
@@ -506,24 +508,22 @@ def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
 def check_spdx_license(licenseText):
     """Check the license text against the spdx license list.
     """
-    if not isinstance(licenseText, unicode):
-        licenseText = unicode(licenseText.decode('string_escape'), 'utf-8')
     r = redis.StrictRedis(host=getRedisHost(), port=6379, db=0)
     
     # if redis is empty build the spdx license list in the redis database
     if r.keys('*') == []:
         build_spdx_licenses()
-    spdxLicenseIds = r.keys()
+    spdxLicenseIds = list(r.keys())
     spdxLicenseTexts = r.mget(spdxLicenseIds)
-    licenseData = dict(zip(spdxLicenseIds, spdxLicenseTexts))
+    licenseData = dict(list(zip(spdxLicenseIds, spdxLicenseTexts)))
     matches = get_close_matches(licenseText, licenseData)
 
     if not matches:
         matchedLicenseIds = None
         matchType = 'No match'
     
-    elif 1.0 in matches.values() or all(0.99 < score for score in matches.values()):
-        matchedLicenseIds = matches.keys()
+    elif 1.0 in list(matches.values()) or all(0.99 < score for score in list(matches.values())):
+        matchedLicenseIds = list(matches.keys())
         matchType = 'Perfect match'
     
     else:
@@ -537,3 +537,41 @@ def check_spdx_license(licenseText):
             matchedLicenseIds = max(matches, key=matches.get)
             matchType = 'Close match'
     return matchedLicenseIds, matchType
+
+
+def getFileFormat(to_format):
+    if (to_format=="TAG"):
+        return ".spdx"
+    elif (to_format=="RDFXML"):
+        return ".rdf.xml"
+    elif (to_format=="XLS"):
+        return ".xls"
+    elif (to_format=="XLSX"):
+        return ".xlsx"
+    elif (to_format=="JSON"):
+        return ".json"
+    elif (to_format=="YAML"):
+        return ".yaml"
+    elif (to_format=="XML"):
+        return ".xml"
+    else :
+        return ".invalid"
+
+
+def formatToContentType(to_format):
+    if (to_format=="TAG"):
+        return "text/tag-value"
+    elif (to_format=="RDFXML"):
+        return "application/rdf+xml"
+    elif (to_format=="XLS"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="XLSX"):
+        return "application/vnd.ms-excel"
+    elif (to_format=="JSON"):
+        return "application/json"
+    elif (to_format=="YAML"):
+        return "text/yaml"
+    elif (to_format=="XML"):
+        return "application/xml"
+    else :
+        return ".invalid"

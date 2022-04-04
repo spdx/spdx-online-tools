@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 import xml.etree.ElementTree as ET
-from itertools import chain, izip, tee
+from itertools import chain, tee
 
 entityMap = {
     '>': '&gt;',
@@ -20,11 +20,11 @@ symbolBullets = r"^(\s*)([*\u2022\-])(\s)"
 def previous_and_current(some_iterable):
     prevs, items = tee(some_iterable, 2)
     prevs = chain([None], prevs)
-    return izip(prevs, items)
+    return list(zip(prevs, items))
 
 
 def escapeXmlData(string):
-    for initial,final in entityMap.items():
+    for initial,final in list(entityMap.items()):
         string.replace(initial, final)
     return string
 
@@ -140,7 +140,7 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAd
         licenseOsi = "true"
     else:
         licenseOsi = "false"
-    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, name=licenseName, listVersionAdded=listVersionAdded)
+    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, listVersionAdded=listVersionAdded, name=licenseName)
     crossRefs = ET.SubElement(license, "crossRefs")
     for sourceUrl in licenseSourceUrls:
         ET.SubElement(crossRefs, "crossRef").text = sourceUrl
@@ -152,5 +152,5 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAd
     points = insertOls(objList)
     textElement = getTextElement(points)
     license.append(textElement)
-    xmlString = ET.tostring(root, method='xml')
+    xmlString = ET.tostring(root, method='xml', encoding='unicode')
     return xmlString

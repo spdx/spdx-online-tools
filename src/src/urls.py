@@ -25,7 +25,8 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url,include
+from django.conf.urls import include
+from django.urls import path, re_path
 from django.contrib import admin
 from django.views.generic import RedirectView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -43,20 +44,17 @@ router.register(r'convert', views.ConvertViewSet)
 router.register(r'compare', views.CompareViewSet)
 
 urlpatterns = [
-    # Examples:
-    # url(r'^$', 'src.views.home', name='home'),
-    # url(r'^blog/', include('blog.urls')),
-		url(r'^(/)?$', RedirectView.as_view(url=settings.HOME_URL),name="root"),
-    url(r'^admin/', admin.site.urls),
-    url(r'^app/', include('app.urls')),
-    url(r'^api/', include('api.urls')),
-    url(r'^api2/', include(router.urls)),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^oauth/', include('social_django.urls', namespace='social')),
-    url(r'^auth/', include('rest_framework_social_oauth2.urls', namespace='github_social')),
+	re_path(r'^(/)?$', RedirectView.as_view(url=settings.HOME_URL),name="root"),
+    path('admin/', admin.site.urls),
+    path('app/', include('app.urls')),
+    path('api/', include('api.urls')),
+    path('api2/', include(router.urls)),
+    path('api-auth/', include(("rest_framework.urls", 'api_auth'), namespace='rest_framework')),
+    path('oauth/', include('social_django.urls', namespace='social')),
+    path('auth/', include(("rest_framework_social_oauth2.urls", 'github_auth'), namespace='github_social')),
 ]
 
 urlpatterns += staticfiles_urlpatterns()
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    
+

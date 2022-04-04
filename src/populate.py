@@ -28,8 +28,8 @@ if __name__ == "__main__":
     
     print("Adding License names (this might take some time if running for first time)")
     total_count, new_count = populate(license_url, "licenses")
-    print("Total Licenses Found: %d\nNew Licenses added to database: %d"%(total_count, new_count))
+    print(("Total Licenses Found: %d\nNew Licenses added to database: %d"%(total_count, new_count)))
     
     print("Adding Exception names")
     total_count, new_count = populate(exception_url, "exceptions")
-    print("Total Exceptions Found: %d\nNew Exceptions added to database: %d"%(total_count, new_count))
+    print(("Total Exceptions Found: %d\nNew Exceptions added to database: %d"%(total_count, new_count)))

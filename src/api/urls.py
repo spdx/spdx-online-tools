@@ -11,16 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
 
-from django.conf.urls import url
+
+from django.urls import path
 
 from api import views
 
 urlpatterns = [
-    url(r'^validate/$', views.validate, name='validate-api'),
-    url(r'^convert/$', views.convert, name='convert-api'),
-    url(r'^compare/$', views.compare, name='compare-api'),
-    url(r'^check_license/$', views.check_license, name='check_license-api'),
-    url(r'^submit_license/$', views.submit_license, name='submit_license-api'),
+    path('validate/', views.validate, name='validate-api'),
+    path('convert/', views.convert, name='convert-api'),
+    path('compare/', views.compare, name='compare-api'),
+    path('check_license/', views.check_license, name='check_license-api'),
+    path('submit_license/', views.submit_license, name='submit_license-api'),
 ]
