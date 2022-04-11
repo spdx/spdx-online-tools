@@ -8,7 +8,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Use JDK 8
-FROM openjdk:8
+FROM openjdk:slim
 
 # Copy complete python container into java container
 COPY --from=python-container / /
