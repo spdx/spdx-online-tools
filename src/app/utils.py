@@ -533,9 +533,9 @@ def check_spdx_license(licenseText):
             if not isTextStandard:
                 matchedLicenseIds = licenseID
                 matchType = 'Standard License match'
-        else:
-            matchedLicenseIds = max(matches, key=matches.get)
-            matchType = 'Close match'
+            else:
+                matchedLicenseIds = max(matches, key=matches.get)
+                matchType = 'Close match'
     return matchedLicenseIds, matchType
 
 
