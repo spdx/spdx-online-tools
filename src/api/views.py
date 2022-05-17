@@ -78,17 +78,12 @@ class CompareViewSet(ModelViewSet):
     parser_classes = (MultiPartParser, FormParser,)
 
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 @renderer_classes((JSONRenderer,))
 def validate(request):
     """ Handle Validate api request """
-    if request.method == 'GET':
-        """ Return all validate api request """
-        query = ValidateFileUpload.objects.all()
-        serializer = ValidateSerializer(query, many=True)
-        return Response(serializer.data)
 
-    elif request.method == 'POST':
+    if request.method == 'POST':
         """ Return validate tool result on the post file"""
         serializer = ValidateSerializer(data=request.data)
         
@@ -114,16 +109,12 @@ def validate(request):
                 )
 
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 @renderer_classes((JSONRenderer,))
 def convert(request):
     """ Handle Convert api request """
-    if request.method == 'GET':
-        """ Return all convert api request """
-        query = ConvertFileUpload.objects.all()
-        serializer = ConvertSerializer(query, many=True)
-        return Response(serializer.data)
-    elif request.method == 'POST':
+    
+    if request.method == 'POST':
         """ Return convert tool result on the post file"""
         serializer = ConvertSerializer(data=request.data)
         if serializer.is_valid():
@@ -159,17 +150,12 @@ def convert(request):
                 )
 
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 @renderer_classes((JSONRenderer,))
 def compare(request):
     """ Handle Compare api request """
-    if request.method == 'GET':
-        """ Return all compare api request """
-        query = CompareFileUpload.objects.all()
-        serializer = CompareSerializerReturn(query, many=True)
-        return Response(serializer.data)
 
-    elif request.method == 'POST':
+    if request.method == 'POST':
         """ Return compare tool result on the post file"""
         serializer = CompareSerializer(data=request.data)
         if serializer.is_valid():
@@ -209,17 +195,12 @@ def compare(request):
                 serializer.errors,status=status.HTTP_400_BAD_REQUEST
                 )
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 @renderer_classes((JSONRenderer,))
 def check_license(request):
     """ Handle Check License api request """
-    if request.method == 'GET':
-        """ Return all check license api request """
-        query = CheckLicenseFileUpload.objects.all()
-        serializer = CheckLicenseSerializer(query, many=True)
-        return Response(serializer.data)
 
-    elif request.method == 'POST':
+    if request.method == 'POST':
         """ Return check license tool result on the post file"""
         serializer = CheckLicenseSerializer(data=request.data)
         if serializer.is_valid():
@@ -249,18 +230,13 @@ def check_license(request):
                 )
 
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 @renderer_classes((JSONRenderer,))
 @permission_classes((AllowAny, ))
 def submit_license(request):
     """ Handle submit license api request """
-    if request.method == 'GET':
-        """ Return all check license api request """
-        query = SubmitLicenseModel.objects.all()
-        serializer = SubmitLicenseSerializer(query, many=True)
-        return Response(serializer.data)
 
-    elif request.method == 'POST':
+    if request.method == 'POST':
         """ Return the result of license submittal on the post license details """
         serializer = SubmitLicenseSerializer(data=request.data)
         if serializer.is_valid():

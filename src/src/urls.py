@@ -32,7 +32,9 @@ from django.views.generic import RedirectView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf import settings
 from django.conf.urls.static import static
-from rest_framework import routers
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import routers, permissions
 from api import views
 
 
@@ -43,6 +45,20 @@ router.register(r'validate', views.ValidateViewSet)
 router.register(r'convert', views.ConvertViewSet)
 router.register(r'compare', views.CompareViewSet)
 
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Blog API",
+        default_version="v1",
+        description="A sample API for learning DRF",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="hello@example.com"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
+
 urlpatterns = [
 	re_path(r'^(/)?$', RedirectView.as_view(url=settings.HOME_URL),name="root"),
     path('admin/', admin.site.urls),
@@ -52,6 +68,8 @@ urlpatterns = [
     path('api-auth/', include(("rest_framework.urls", 'api_auth'), namespace='rest_framework')),
     path('oauth/', include('social_django.urls', namespace='social')),
     path('auth/', include(("rest_framework_social_oauth2.urls", 'github_auth'), namespace='github_social')),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

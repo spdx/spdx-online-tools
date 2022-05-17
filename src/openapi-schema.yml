@@ -1,0 +1,754 @@
+openapi: 3.0.2
+info:
+  title: ''
+  version: ''
+paths:
+  /api2/validate/:
+    get:
+      operationId: listValidateFileUploads
+      description: Returns all validate api request
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ValidateReturn'
+          description: ''
+      tags:
+      - api2
+    post:
+      operationId: createValidateFileUpload
+      description: Returns all validate api request
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ValidateReturn'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ValidateReturn'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateReturn'
+          description: ''
+      tags:
+      - api2
+  /api2/validate/{id}/:
+    get:
+      operationId: retrieveValidateFileUpload
+      description: Returns all validate api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this validate file upload.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateReturn'
+          description: ''
+      tags:
+      - api2
+    put:
+      operationId: updateValidateFileUpload
+      description: Returns all validate api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this validate file upload.
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ValidateReturn'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ValidateReturn'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateReturn'
+          description: ''
+      tags:
+      - api2
+    patch:
+      operationId: partialUpdateValidateFileUpload
+      description: Returns all validate api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this validate file upload.
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ValidateReturn'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ValidateReturn'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateReturn'
+          description: ''
+      tags:
+      - api2
+    delete:
+      operationId: destroyValidateFileUpload
+      description: Returns all validate api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this validate file upload.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api2
+  /api2/convert/:
+    get:
+      operationId: listConvertFileUploads
+      description: Returns all convert api request
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConvertReturn'
+          description: ''
+      tags:
+      - api2
+    post:
+      operationId: createConvertFileUpload
+      description: Returns all convert api request
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConvertReturn'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConvertReturn'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvertReturn'
+          description: ''
+      tags:
+      - api2
+  /api2/convert/{id}/:
+    get:
+      operationId: retrieveConvertFileUpload
+      description: Returns all convert api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this convert file upload.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvertReturn'
+          description: ''
+      tags:
+      - api2
+    put:
+      operationId: updateConvertFileUpload
+      description: Returns all convert api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this convert file upload.
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConvertReturn'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConvertReturn'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvertReturn'
+          description: ''
+      tags:
+      - api2
+    patch:
+      operationId: partialUpdateConvertFileUpload
+      description: Returns all convert api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this convert file upload.
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConvertReturn'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConvertReturn'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvertReturn'
+          description: ''
+      tags:
+      - api2
+    delete:
+      operationId: destroyConvertFileUpload
+      description: Returns all convert api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this convert file upload.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api2
+  /api2/compare/:
+    get:
+      operationId: listCompareFileUploads
+      description: Returns all compare api request
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CompareReturn'
+          description: ''
+      tags:
+      - api2
+    post:
+      operationId: createCompareFileUpload
+      description: Returns all compare api request
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompareReturn'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompareReturn'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareReturn'
+          description: ''
+      tags:
+      - api2
+  /api2/compare/{id}/:
+    get:
+      operationId: retrieveCompareFileUpload
+      description: Returns all compare api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this compare file upload.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareReturn'
+          description: ''
+      tags:
+      - api2
+    put:
+      operationId: updateCompareFileUpload
+      description: Returns all compare api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this compare file upload.
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompareReturn'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompareReturn'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareReturn'
+          description: ''
+      tags:
+      - api2
+    patch:
+      operationId: partialUpdateCompareFileUpload
+      description: Returns all compare api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this compare file upload.
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompareReturn'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompareReturn'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareReturn'
+          description: ''
+      tags:
+      - api2
+    delete:
+      operationId: destroyCompareFileUpload
+      description: Returns all compare api request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this compare file upload.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api2
+  /api/validate/:
+    post:
+      operationId: createvalidate
+      description: Handle Validate api request
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/convert/:
+    post:
+      operationId: createconvert
+      description: Handle Convert api request
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/compare/:
+    post:
+      operationId: createcompare
+      description: Handle Compare api request
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/check_license/:
+    post:
+      operationId: createcheck_license
+      description: Handle Check License api request
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/submit_license/:
+    post:
+      operationId: createsubmit_license
+      description: Handle submit license api request
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /auth/token/:
+    post:
+      operationId: createToken
+      description: 'Implements an endpoint to provide access tokens
+
+
+        The endpoint is used in the following flows:
+
+
+        * Authorization code
+
+        * Password
+
+        * Client credentials'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - auth
+  /auth/convert-token/:
+    post:
+      operationId: createConvertToken
+      description: 'Implements an endpoint to convert a provider token to an access
+        token
+
+
+        The endpoint is used in the following flows:
+
+
+        * Authorization code
+
+        * Client credentials'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - auth
+  /auth/revoke-token/:
+    post:
+      operationId: createRevokeToken
+      description: Implements an endpoint to revoke access or refresh tokens
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - auth
+  /auth/invalidate-sessions/:
+    post:
+      operationId: createinvalidate_sessions
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - auth
+components:
+  schemas:
+    ValidateReturn:
+      type: object
+      properties:
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        file:
+          type: string
+          format: binary
+        owner:
+          type: integer
+        result:
+          type: string
+          maxLength: 128
+        status:
+          type: integer
+      required:
+      - file
+      - owner
+      - result
+    ConvertReturn:
+      type: object
+      properties:
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        file:
+          type: string
+          format: binary
+        owner:
+          type: integer
+        result:
+          type: string
+          maxLength: 32
+        from_format:
+          type: string
+          maxLength: 16
+        to_format:
+          type: string
+          maxLength: 16
+        tagToRdfFormat:
+          type: string
+          nullable: true
+          maxLength: 16
+        cfilename:
+          type: string
+          maxLength: 32
+        message:
+          type: string
+          maxLength: 64
+        status:
+          type: integer
+      required:
+      - file
+      - owner
+      - result
+      - from_format
+      - to_format
+      - cfilename
+      - message
+    CompareReturn:
+      type: object
+      properties:
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        file1:
+          type: string
+          format: binary
+        file2:
+          type: string
+          format: binary
+        owner:
+          type: integer
+        result:
+          type: string
+          maxLength: 32
+        rfilename:
+          type: string
+          maxLength: 32
+        message:
+          type: string
+          maxLength: 64
+        status:
+          type: integer
+      required:
+      - file1
+      - file2
+      - owner
+      - result
+      - rfilename
+      - message
