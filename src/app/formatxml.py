@@ -2,6 +2,7 @@
 #
 # quick-n-dirty formatter for SPDX licenses in XML format
 #
+# SPDX-FileCopyrightText: 2017 Alexios Zavras
 # Copyright (c) 2017 Alexios Zavras
 # SPDX-License-Identifier: MIT
 #
