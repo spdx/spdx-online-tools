@@ -24,7 +24,8 @@ OSI_CHOICES = (
     ("Approved", "Approved"),
     ("Not Submitted", "Not Submitted"),
     ("Pending", "Submitted, but pending"),
-    ("Rejected", "Rejected")
+    ("Rejected", "Rejected"),
+    ("Unknown", "Don't know")
 )
 
 class UserRegisterForm(forms.ModelForm):
