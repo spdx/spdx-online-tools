@@ -12,23 +12,31 @@
 # limitations under the License.
 
 import base64
+import datetime
 import json
 import logging
 import re
 import socket
+import os
 import xml.etree.cElementTree as ET
+from django.template import context
 
 import redis
 import requests
 from django.conf import settings
+from django.http import HttpResponse,JsonResponse
+from django.urls import reverse
 from spdx_license_matcher.build_licenses import build_spdx_licenses
 from spdx_license_matcher.computation import (checkTextStandardLicense,
                                               get_close_matches,
                                               getListedLicense)
 from spdx_license_matcher.difference import get_similarity_percent
 from spdx_license_matcher.utils import get_spdx_license_text
+from social_django.models import UserSocialAuth
+
 
 from app.models import User, UserID, LicenseRequest, LicenseNamespace
+from app.generateXml import generateLicenseXml
 
 from src.secret import getRedisHost
 
@@ -354,6 +362,26 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     return r.status_code
 
 
+def createErrorIssue(occured_at, made_by, error_message, licenseID, licenseName, license_text, token):
+    """ View for creating an GitHub issue
+    with the complete Error Report to the 
+    SPDX Online tools repository.
+    """
+  
+    body = """
+    **1.** Occured At: {0}
+    **2.** Made By: {1}
+    **3.** Error Message: {2}
+    **4.** License Text: {3}
+    """.format(occured_at, made_by, error_message, license_text)
+    title = "Error Report - {0}/{1}".format(licenseID, licenseName)
+    payload = {'title' : title, 'body': body}
+    headers = {'Authorization': 'token ' + token}
+    url = "{0}/issues".format(settings.ERROR_ISSUE_REPO_URL)
+    r = requests.post(url, data=json.dumps(payload), headers=headers)
+    return r.status_code
+
+
 def postToGithub(message, encodedContent, filename):
     """ Function to create a new file on with encodedContent
     """
@@ -575,3 +603,59 @@ def formatToContentType(to_format):
         return "application/xml"
     else :
         return ".invalid"
+
+
+def handle_issue_request(request):
+    """Handles the issue create request view"""
+    ajaxdict = {}
+
+    if request.user.is_authenticated:
+        user = request.user
+        try:
+            github_login = user.social_auth.get(provider='github')
+            token = github_login.extra_data["access_token"]
+            licenseText = request.POST['inputLicenseText']
+            licenseName = request.POST['licenseName']
+            licenseIdentifier = request.POST['licenseIdentifier']
+            data = {}
+
+            if request.POST.get('error',None):
+                occured_at = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d")
+                made_by = github_login.extra_data['login']
+                error_message = request.POST['error']
+                statusCode = createErrorIssue(occured_at, made_by, error_message, licenseIdentifier, licenseName, licenseText, token)
+            else:
+                licenseAuthorName = request.POST['licenseAuthorName']
+                licenseOsi = request.POST['licenseOsi']
+                licenseSourceUrls = request.POST.getlist('licenseSourceUrls')
+                licenseExamples = request.POST.getlist('exampleUrl')
+                licenseHeader = request.POST['licenseHeader']
+                licenseComments = request.POST['comments']
+                userEmail = request.POST['userEmail']
+                licenseNotes = request.POST['licenseNotes']
+                listVersionAdded = request.POST['listVersionAdded']
+                matchId = request.POST['matchIds']
+                diffUrl = request.POST['diffUrl']
+                msg = request.POST.get('msg', None)
+                urlType = NORMAL
+                xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
+                    listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+                now = datetime.datetime.now()
+                licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
+                    submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+                licenseRequest.save()
+                licenseRequestId = licenseRequest.id
+                serverUrl = request.build_absolute_uri('/')
+                licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
+                statusCode = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId, diffUrl, msg)
+            data['statusCode'] = str(statusCode)
+            return JsonResponse(data)
+
+        except UserSocialAuth.DoesNotExist:
+            """ User not authenticated with GitHub """
+            if (request.is_ajax()):
+                ajaxdict["type"] = "auth_error"
+                ajaxdict["data"] = "Please login using GitHub to use this feature."
+                response = json.dumps(ajaxdict)
+                return HttpResponse(response,status=401)
+            return HttpResponse("Please login using GitHub to use this feature.",status=401)

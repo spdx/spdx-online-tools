@@ -33,6 +33,9 @@ NAMESPACE_DEV_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPAC
 NAMESPACE_PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(NAMESPACE_REPO_NAME)
 NAMESPACE_REPO_URL = NAMESPACE_DEV_REPO_URL
 
+ERROR_ISSUE_REPO_NAME = "spdx-online-tools"
+ERROR_ISSUE_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(ERROR_ISSUE_REPO_NAME)
+
 # Settings for license request diff image repo
 DIFF_REPO_WITH_OWNER = getDiffRepoWithOwner()
 DIFF_REPO_GIT_TOKEN = getDiffRepoGitToken()

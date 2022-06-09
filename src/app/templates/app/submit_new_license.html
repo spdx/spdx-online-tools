@@ -469,11 +469,23 @@ function scrollUpAndHighlight(element) {
                   }
                 }
                 else{
-                  var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org with SPDX ID for the license you are submitting";
-                  $("#messages").html('<div class="alert alert-warning alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Warning! </strong>'+ warningMessage +'</div>');
-                      setTimeout(function() {
-                        $("#messages").html("");
-                      }, 7000);
+                  var errorMessage = 'Error occured while submitting the license. Please contact spdx-legal@lists.spdx.org with SPDX ID for submitting the license. Would you like to submit this problem to github so that the developers can look at it?';
+                    $("#modal-header").removeClass("yellow-modal green-modal");
+                    $("#modal-header").addClass("red-modal");
+		                $(".modal-footer").html(`<button class="btn btn-primary btn-space" id="submiterrorissue"><span class="glyphicon glyphicon-ok"></span> Yes</button><button class="btn btn-primary btn-space" id="no"><span class="glyphicon glyphicon-remove"></span> No</button>`);
+		                $("#modal-body").html(errorMessage);
+                    $("#myModal").modal({
+                      backdrop: 'static',
+                      keyboard: true,
+                      show: true
+                    });
+                    $(document).on('click','button#submiterrorissue', function(event){
+                      $("#myModal").modal("hide");
+                      makeIssue(data);
+                    });
+                    $(document).on('click','button#no', function(event){
+                      $("#myModal").modal("hide");
+                    });
                 }
                 $("#fullname").val("");
                 $("#shortIdentifier").val("");
@@ -559,7 +571,7 @@ function makeIssue(data){
         success: function (data) {
                     var githubCode = data.statusCode;
                     if(githubCode == '201'){
-                      var successMessage = 'The issue "' + msg + '" has been successfully submitted.';
+                      var successMessage = 'The issue has been successfully submitted.';
                       $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
                           setTimeout(function() {
                             $("#messages").html("");

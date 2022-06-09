@@ -191,10 +191,9 @@ def submitNewLicense(request):
             """ Other errors raised """
             logger.error(str(format_exc()))
             if (request.is_ajax()):
-                ajaxdict["type"] = "error"
-                ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                response = dumps(ajaxdict)
-                return HttpResponse(response,status=500)
+                ajaxdict['error'] = str(format_exc())
+                ajaxdict['inputlicensetext'] = request.POST['text']
+                return JsonResponse(ajaxdict)
             return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
     else:
         email=""
@@ -1113,55 +1112,13 @@ def issue(request):
     """ View that handles create issue request """
     if request.user.is_authenticated:
         if request.method=="POST":
-            context_dict = {}
-            ajaxdict = {}
             try:
-                if request.user.is_authenticated:
-                    user = request.user
-                try:
-                    github_login = user.social_auth.get(provider='github')
-                    token = github_login.extra_data["access_token"]
-                    licenseAuthorName = request.POST['licenseAuthorName']
-                    licenseName = request.POST['licenseName']
-                    licenseIdentifier = request.POST['licenseIdentifier']
-                    licenseOsi = request.POST['licenseOsi']
-                    licenseSourceUrls = request.POST.getlist('licenseSourceUrls')
-                    licenseExamples = request.POST.getlist('exampleUrl')
-                    licenseHeader = request.POST['licenseHeader']
-                    licenseComments = request.POST['comments']
-                    licenseText = request.POST['inputLicenseText']
-                    userEmail = request.POST['userEmail']
-                    licenseNotes = request.POST['licenseNotes']
-                    listVersionAdded = request.POST['listVersionAdded']
-                    matchId = request.POST['matchIds']
-                    diffUrl = request.POST['diffUrl']
-                    msg = request.POST.get('msg', None)
-                    urlType = utils.NORMAL
-                    data = {}
-                    xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
-                        listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
-                    now = datetime.datetime.now()
-                    licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
-                    licenseRequest.save()
-                    licenseRequestId = licenseRequest.id
-                    serverUrl = request.build_absolute_uri('/')
-                    licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
-                    statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId, diffUrl, msg)
-                    data['statusCode'] = str(statusCode)
-                    return JsonResponse(data)
-                except UserSocialAuth.DoesNotExist:
-                    """ User not authenticated with GitHub """
-                    if (request.is_ajax()):
-                        ajaxdict["type"] = "auth_error"
-                        ajaxdict["data"] = "Please login using GitHub to use this feature."
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response,status=401)
-                    return HttpResponse("Please login using GitHub to use this feature.",status=401)
+                utils.handle_issue_request(request)
             except:
                 """ Other errors raised """
                 logger.error(str(format_exc()))
                 if (request.is_ajax()):
+                    ajaxdict = {}
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
                     response = dumps(ajaxdict)
