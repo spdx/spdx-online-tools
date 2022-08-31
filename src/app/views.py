@@ -110,14 +110,13 @@ def submitNewLicense(request):
                 if form.is_valid() and request.is_ajax():
                     licenseAuthorName = form.cleaned_data['licenseAuthorName']
                     licenseName = form.cleaned_data['fullname']
-                    licenseIdentifier = form.cleaned_data['shortIdentifier']
+                    licenseIdentifier = form.cleaned_data['shortIdentifier
                     licenseOsi = form.cleaned_data['osiApproved']
                     licenseSourceUrls = request.POST.getlist('sourceUrl')
                     licenseExamples = request.POST.getlist('exampleUrl')
                     licenseHeader = form.cleaned_data['licenseHeader']
                     licenseComments = form.cleaned_data['comments']
                     licenseText = form.cleaned_data['text']
-                    userEmail = form.cleaned_data['userEmail']
                     licenseNotes = ''
                     listVersionAdded = ''
                     data = {}
@@ -348,7 +347,7 @@ def licenseInformation(request, licenseId):
     licenseInformation['fullname'] = licenseRequest.fullname
     licenseInformation['shortIdentifier'] = licenseRequest.shortIdentifier
     licenseInformation['submissionDatetime'] = licenseRequest.submissionDatetime
-    licenseInformation['userEmail'] = licenseRequest.userEmail
+  
     licenseInformation['licenseAuthorName'] = licenseRequest.licenseAuthorName
     licenseInformation['archive'] = licenseRequest.archive
     xmlString = licenseRequest.xml
@@ -1129,7 +1128,7 @@ def issue(request):
                     licenseHeader = request.POST['licenseHeader']
                     licenseComments = request.POST['comments']
                     licenseText = request.POST['inputLicenseText']
-                    userEmail = request.POST['userEmail']
+                  
                     licenseNotes = request.POST['licenseNotes']
                     listVersionAdded = request.POST['listVersionAdded']
                     matchId = request.POST['matchIds']
