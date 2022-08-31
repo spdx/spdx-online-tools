@@ -110,7 +110,7 @@ def submitNewLicense(request):
                 if form.is_valid() and request.is_ajax():
                     licenseAuthorName = form.cleaned_data['licenseAuthorName']
                     licenseName = form.cleaned_data['fullname']
-                    licenseIdentifier = form.cleaned_data['shortIdentifier
+                    licenseIdentifier = form.cleaned_data['shortIdentifier']
                     licenseOsi = form.cleaned_data['osiApproved']
                     licenseSourceUrls = request.POST.getlist('sourceUrl')
                     licenseExamples = request.POST.getlist('exampleUrl')
