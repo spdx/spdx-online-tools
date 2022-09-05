@@ -123,17 +123,6 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Standard License Header
-        <span class="glyphicon glyphicon-question-sign" id="licenseHeaderInfo" data-toggle="popover" data-placement="auto left"></span>
-      </label>
-        <div class="col-sm-6">
-          {{ form.licenseHeader }}
-        </div>
-      </div>
-    </div>
-
-    <div class = "form-group">
-      <div class="col-sm-12">
       <label class="control-label col-sm-3" >Text of license
       </label>
         <div class="col-sm-6">
@@ -164,7 +153,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 	
 	<div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >URLs to project that use license
+      <label class="control-label col-sm-3" >URL to project(s) that use license
       </label>
 		<div class="col-sm-4">
           {{ form.exampleUrl }}
@@ -186,11 +175,6 @@ Once you have submitted a license, please follow the <a href="https://github.com
 <script type="text/javascript">
 $(document).ready(function () {
     var is_touch_device = "ontouchstart" in document.documentElement;
-   
-    $('#licenseHeaderInfo').popover({trigger: is_touch_device ? "click" : "hover", title: "Standard License Header", content: "\u2022 Should only include text intended to be put in the header of source files or other files as specified in the license or license appendix when specifically delineated. \
-    <br /> \u2022 Indicate if there is any variation in the header (i.e. for files developed by a contributor versus when applying license to original work) \
-    <br /> \u2022 Do not include NOTICE info intended for a separate notice file. \
-    <br /> \u2022 Leave this field blank if there is no standard header as specifically defined in the license.", html: "true", viewport: '.panel-body', container: '.panel-body'});
 
     $("#licenserequest").addClass('linkactive');
     $("#submitnewlicensepage").addClass('linkactive');
@@ -456,7 +440,6 @@ function scrollUpAndHighlight(element) {
                 $("#exampleUrl").val("");
                 $("#osiApproved").val(0);
                 $("#comments").val("");
-                $("#licenseHeader").val("");
                 $("#text").val("");
                 $("#userEmail").val("");
                 var sources = $('[id="addedSourceUrl"]');
