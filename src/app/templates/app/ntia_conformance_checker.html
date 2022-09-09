@@ -12,7 +12,7 @@
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">Tag-Value, RDF, JSON, Spreadsheet, XML SPDX Document</p> </div>
 <div class="panel-body">
-	<form id="validateform" enctype="multipart/form-data" class="form-horizontal" method="post">
+	<form id="checkform" enctype="multipart/form-data" class="form-horizontal" method="post">
 	  {% csrf_token %}
 	  <div class = "form-group">
 			&nbsp; File Type &nbsp;
@@ -24,22 +24,20 @@
 					  <option value="TAG">Tag/Value</option>
 					  <option value="JSON">JSON</option>
 					  <option value="YAML">YAML</option>
-					  <option value="XML">XML</option>f
-                </select>	
+					  <option value="XML">XML</option>
+                </select>
 		</div>
 		<div id="drop-area" class="container">
-		  <h4>Upload file using the button or by dragging and dropping onto the dashed region</h4>
+		  <h4>Upload file using the button or by dragging and dropping onto the dashed region </h4>
 		  <input type="file" id="file" onchange="handleFiles(this.files)">
 		  <label class="button" for="file">Select file</label>
 		  <p class="file-name">No file selected</p>
-		</div> 
+		</div>
     </form>
 <hr>
-    <button id="validatebutton" name="validatebutton" class="btn btn-md btn-info" type="submit" disabled="true">Validate</button>
-  {% include "app/modal.html" %} 
-  <!--
-  <output id="list"></output>
-  -->
+    <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check NTIA's Required Elements</button>
+  {% include "app/modal.html" %}
+
 </div>
 
 {% endblock %}
@@ -53,7 +51,7 @@
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, preventDefaults, false)
   });
-  
+
   function preventDefaults (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -62,19 +60,19 @@
   ['dragenter', 'dragover'].forEach(eventName => {
     dropArea.addEventListener(eventName, highlight, false)
   });
-  
+
   ['dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, unhighlight, false)
   });
-  
+
   function highlight(e) {
     dropArea.classList.add('highlight')
   }
-  
+
   function unhighlight(e) {
     dropArea.classList.remove('highlight')
   }
-  
+
   dropArea.addEventListener('drop', handleDrop, false)
 
   function handleDrop(e) {
@@ -86,16 +84,16 @@
   function handleFiles(files) {
     ([...files]).forEach(checkFile)
   }
-  
+
   function checkFile(file){
     if(file){
       $(".file-name").html("<b>Selected File: </b>"+file.name);
-      $("#validatebutton").prop('disabled', false);
+      $("#checkbutton").prop('disabled', false);
       selected_file = file;
     }
     else{
       $(".file-name").html("No file selected");
-      $("#validatebutton").prop('disabled', true);
+      $("#checkbutton").prop('disabled', true);
     }
   }
 
@@ -113,19 +111,19 @@ function checkform() {
 </script>
 
 <script type="text/javascript">
-  $('#validatebutton').on('click', function(event){
+  $('#checkbutton').on('click', function(event){
     event.preventDefault();
     var check = checkform();
     if (check=="1"){
-      $("#validatebutton").text("Validating...");
-      $("#validatebutton").prop('disabled', true);
+      $("#checkbutton").text("Checking...");
+      $("#checkbutton").prop('disabled', true);
       $("#messages").html("");
-      var form = new FormData($("#validateform")[0]);
+      var form = new FormData($("#checkform")[0]);
       form.append("file", selected_file);
       $.ajax({
               type: "POST",
               enctype: 'multipart/form-data',
-              url: "/app/validate/",
+              url: "/app/checker/",
               processData: false,
               contentType: false,
               cache: false,
@@ -141,11 +139,11 @@ function checkform() {
                   $("#modal-body").html("<h3>"+data.data+"</h3>");
                   $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   });
-                  $("#validatebutton").text("Validate");
-                  $("#validatebutton").prop('disabled', false);
+                  $("#checkbutton").text("Validate");
+                  $("#checkbutton").prop('disabled', false);
               },
               error: function (e) {
                   console.log("ERROR : ", e);
@@ -172,11 +170,11 @@ function checkform() {
                   }
                   $("#myModal").modal({
                           backdrop: 'static',
-                          keyboard: true, 
+                          keyboard: true,
                           show: true
                   });
-                  $("#validatebutton").text("Validate");
-                  $("#validatebutton").prop('disabled', false);
+                  $("#checkbutton").text("Check NTIA's Required Elements");
+                  $("#checkbutton").prop('disabled', false);
               }
           });
     }
@@ -191,65 +189,8 @@ function checkform() {
 </script>
 <script type="text/javascript">
 $(document).ready(function () {
-    $("#validatepage").addClass('linkactive');
+    $("#checkerpage").addClass('linkactive');
     });
 </script>
-<!--
-<script>
-  function handleFileSelect2(evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
-
-    var files = evt.dataTransfer.files; // FileList object.
-    console.log(evt.dataTransfer)
-    console.log(document.getElementById('file'))
-    document.getElementById('file').files = evt.dataTransfer.files;
-    console.log(document.getElementById('file').files)
-    // files is a FileList of File objects. List some properties.
-    var output = [];
-    for (var i = 0, f; f = files[i]; i++) {
-      output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
-                  f.size, ' bytes, last modified: ',
-                  f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
-                  '</li>');
-    }
-    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';    //append
-  }
-
-  function handleDragOver(evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
-    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
-  }
-
-  // Setup the dnd listeners.
-  var dropZone = document.getElementById('drop_zone');
-  dropZone.addEventListener('dragover', handleDragOver, false);
-  dropZone.addEventListener('drop', handleFileSelect2, false);
-</script>
-<script>
-  function handleFileSelect(evt) {
-    var files = evt.target.files; // FileList object
-    // files is a FileList of File objects. List some properties.
-    var output = [];
-    for (var i = 0, f; f = files[i]; i++) {
-      output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
-                  f.size, ' bytes, last modified: ',
-                  f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
-                  '</li>');
-    }
-    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';     //append
-  }
-
-  document.getElementById('file').addEventListener('change', handleFileSelect, false);
-</script>
-<script>
-if (window.File && window.FileReader && window.FileList && window.Blob) {
-  // Great success! All the File APIs are supported.
-} else {
-  alert('The File APIs are not fully supported in this browser.');
-}
-</script>
--->
 
 {% endblock %}
