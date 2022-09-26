@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from django.http import JsonResponse
 from rest_framework.parsers import FileUploadParser,FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload,SubmitLicenseModel
-from api.serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,CheckLicenseSerializer,SubmitLicenseSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn,CheckLicenseSerializerReturn,SubmitLicenseSerializerReturn
+from api.serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,CheckLicenseSerializer,SubmitLicenseSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn,SubmitLicenseSerializerReturn
 from api.oauth import generate_github_access_token,convert_to_auth_token,get_user_from_token
 from app.models import LicenseRequest
 from rest_framework import status
@@ -38,6 +38,7 @@ import datetime
 import xml.etree.cElementTree as ET
 import app.core as core
 import api.utils as utils
+import app.utils as app_utils
 
 from app.generateXml import generateLicenseXml
 from app.utils import createIssue
@@ -221,31 +222,23 @@ def check_license(request):
     elif request.method == 'POST':
         """ Return check license tool result on the post file"""
         serializer = CheckLicenseSerializer(data=request.data)
-        if serializer.is_valid():
-            core.initialise_jpype()
-            query = CheckLicenseFileUpload.objects.create(owner=request.user, file=request.data.get('file'))
-            uploaded_file = str(query.file)
-            uploaded_file_path = str(query.file.path)
-            """ Reading the license text file into a string variable """
-            licensetext = codecs.open(uploaded_file_path, 'r', encoding='unicode_escape').read()
-            request.data['licensetext'] = str(licensetext)
-            response = core.license_check_helper(request)
-            jpype.detachThreadFromJVM()
-
-            httpstatus, result, message = utils.get_json_response_data(response)
-            returnstatus = utils.get_return_code(httpstatus)
-            
-            query.result = result
-            query.status = httpstatus
-            CheckLicenseFileUpload.objects.filter(file=uploaded_file).update(result=result,status=httpstatus)
-            serial = CheckLicenseSerializerReturn(instance=query)
-            return Response(
-                serial.data, status=returnstatus
-                )
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        core.initialise_jpype()
+        query = CheckLicenseFileUpload.objects.create(owner=request.user, file=request.data.get('file'))
+        """ Reading the license text file into a string variable """
+        license_text = codecs.open(str(query.file.path), 'r', encoding='unicode_escape').read()
+        matching_id, matching_type, all_matches = app_utils.check_spdx_license(license_text)
+        jpype.detachThreadFromJVM()
+        query.result = f"{matching_type}: {matching_id}"
+        query.status = 200 if matching_id else 404
+        query.save()
+        response = {
+            "matched_license": matching_id,
+            "match_type": matching_type,
+            "all_matches": all_matches,
+        }
+        return JsonResponse(response, status=query.status)
 
 
 @api_view(['GET', 'POST'])

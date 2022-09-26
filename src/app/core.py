@@ -303,7 +303,7 @@ def license_check_helper(request):
     licensetext = request.POST.get('licensetext')
     licensetext = licensetext if licensetext else request.data.get('licensetext')
     try:
-        matchingId, matchingType = utils.check_spdx_license(licensetext)
+        matchingId, matchingType, _ = utils.check_spdx_license(licensetext)
         if not matchingId:
             if (request.is_ajax()):
                 ajaxdict = dict()
@@ -480,7 +480,7 @@ def license_diff_helper(request):
     licensetext = request.POST.get('licensetext')
     licensetext = licensetext if licensetext else request.data.get('licensetext')
     try:
-        matchingIds, matchingType = utils.check_spdx_license(licensetext)
+        matchingIds, matchingType, _ = utils.check_spdx_license(licensetext)
         matches = ['Perfect match', 'Standard License match', 'Close match']
         if matchingType in matches:
             data['matchType'] = matchingType
