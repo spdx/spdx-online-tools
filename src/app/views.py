@@ -117,7 +117,6 @@ def submitNewLicense(request):
                     licenseHeader = form.cleaned_data['licenseHeader']
                     licenseComments = form.cleaned_data['comments']
                     licenseText = form.cleaned_data['text']
-                    userEmail = form.cleaned_data['userEmail']
                     licenseNotes = ''
                     listVersionAdded = ''
                     data = {}
@@ -147,7 +146,7 @@ def submitNewLicense(request):
                             data['licenseHeader'] = licenseHeader
                             data['licenseNotes'] = licenseNotes
                             data['licenseAuthorName'] = licenseAuthorName
-                            data['userEmail'] = userEmail
+                        
                             data['comments'] = licenseComments
                         data['matchIds'] = matchingIds
                         statusCode = 409
@@ -162,7 +161,7 @@ def submitNewLicense(request):
                             listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                         now = datetime.datetime.now()
                         licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                            submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+                            submissionDatetime=now, notes=licenseNotes, xml=xml)
                         licenseRequest.save()
                         licenseId = licenseRequest.id
                         serverUrl = request.build_absolute_uri('/')
@@ -348,7 +347,7 @@ def licenseInformation(request, licenseId):
     licenseInformation['fullname'] = licenseRequest.fullname
     licenseInformation['shortIdentifier'] = licenseRequest.shortIdentifier
     licenseInformation['submissionDatetime'] = licenseRequest.submissionDatetime
-    licenseInformation['userEmail'] = licenseRequest.userEmail
+  
     licenseInformation['licenseAuthorName'] = licenseRequest.licenseAuthorName
     licenseInformation['archive'] = licenseRequest.archive
     xmlString = licenseRequest.xml
@@ -1129,7 +1128,7 @@ def issue(request):
                     licenseHeader = request.POST['licenseHeader']
                     licenseComments = request.POST['comments']
                     licenseText = request.POST['inputLicenseText']
-                    userEmail = request.POST['userEmail']
+                  
                     licenseNotes = request.POST['licenseNotes']
                     listVersionAdded = request.POST['listVersionAdded']
                     matchId = request.POST['matchIds']
