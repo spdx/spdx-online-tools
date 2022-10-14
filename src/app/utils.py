@@ -101,8 +101,8 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
             }
     else:
         if(updateUpstream=="true"):
-            """ If user wants to update the forked repo with upstream master """
-            update_url = "{0}/git/refs/heads/master".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL])
+            """ If user wants to update the forked repo with upstream main """
+            update_url = "{0}/git/refs/heads/main".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL])
             response = requests.get(update_url, headers=headers)
             data = json.loads(response.text)
             sha = data["object"]["sha"]
@@ -110,24 +110,24 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
                 "sha":sha,
                 "force": True
             }
-            update_url = "{0}repos/{1}/{2}/git/refs/heads/master".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME)
+            update_url = "{0}repos/{1}/{2}/git/refs/heads/main".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME)
             response = requests.patch(update_url, headers=headers, data=json.dumps(body))
             if response.status_code!=200:
                 logger.error("[Pull Request] Error occured while updating fork, for {0} user. {1}".format(username, response.text))
                 return {
                     "type":"error",
-                    "message":"Error occured while updating fork with the upstream master. Please try again later or contact the SPDX Team."
+                    "message":"Error occured while updating fork with the upstream main. Please try again later or contact the SPDX Team."
                 }
 
 
-    """ Getting ref of master branch """
-    ref_url = "{0}repos/{1}/{2}/git/refs/heads/master".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME)
+    """ Getting ref of main branch """
+    ref_url = "{0}repos/{1}/{2}/git/refs/heads/main".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME)
     response = requests.get(ref_url, headers=headers)
     if response.status_code != 200:
-        logger.error("[Pull Request] Error occured while getting ref of master branch, for {0} user. {1}".format(username, response.text))
+        logger.error("[Pull Request] Error occured while getting ref of main branch, for {0} user. {1}".format(username, response.text))
         return {
             "type":"error",
-            "message":"Some error occured while getting the ref of master branch. Please try again later or contact the SPDX Team."
+            "message":"Some error occured while getting the ref of main branch. Please try again later or contact the SPDX Team."
         }
     data = json.loads(response.text)
     sha = str(data["object"]["sha"])
@@ -203,7 +203,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         "title": prTitle,
         "body": prBody,
         "head": "%s:%s"%(username, branchName),
-        "base": "master",
+        "base": "main",
     }
     response = requests.post(pr_url, headers=headers, data=json.dumps(body))
     if response.status_code != 201:
