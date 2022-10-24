@@ -22,11 +22,11 @@
       {% csrf_token %}
       <div class="form-group">
           <label for="branchName">Branch Name:</label>
-          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Pull Request will be made from this branch to master branch" style="font-size:12px;"></span>
+          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Pull Request will be made from this branch to main branch" style="font-size:12px;"></span>
           <input type="text" class="form-control" id="branchName" name="branchName">
       </div><br>
       <div class="checkbox">
-          <label><input type="checkbox" id="updateUpstream"> Update with upstream master </label> <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Select this if you want to update your forked repo with the upstream repo, before making the pull request" style="font-size:12px;"></span>
+          <label><input type="checkbox" id="updateUpstream"> Update with upstream main </label> <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Select this if you want to update your forked repo with the upstream repo, before making the pull request" style="font-size:12px;"></span>
       </div>
       <div class="form-group">
           <label for="fileName">File Name:</label>
@@ -62,7 +62,7 @@
 <div class="panel-heading"> <p class="lead">Submit a New License to the SPDX Licenses List</p> </div>
 <div class="panel-body" style="overflow: scroll;">
 <div class="panel-heading">
-Please review the <a href="https://github.com/spdx/license-list-XML/blob/master/DOCS/license-inclusion-principles.md">SPDX License List license inclusion principles</a> before submitting a new license.
+Please review the <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-inclusion-principles.md">SPDX License List license inclusion principles</a> before submitting a new license.
 Once you have submitted a license, please follow the <a href="https://github.com/spdx/license-list-XML/issues">issue in Github</a> and be prepared to help create the required XML and test text files if the license is accepted for submission.
 </div>
 <form id="newlicense" enctype="multipart/form-data" class = "form-horizontal" method = "post" action='/submit_new_license/'>
@@ -71,7 +71,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
     <div class = "form-group">
       <div class="col-sm-12">
       <label class="control-label col-sm-3" >Briefly explain why this license meets the
-        <a href="https://github.com/spdx/license-list-XML/blob/master/DOCS/license-inclusion-principles.md">
+        <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-inclusion-principles.md">
           license inclusion principles
         </a>
       </label>
