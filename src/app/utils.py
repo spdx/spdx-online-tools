@@ -233,10 +233,10 @@ def save_profile(backend, user, response, *args, **kwargs):
 
 def check_license_name(name):
     """ Check if a license name exists """
-    license_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json"
+    license_json = "https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json"
     data = requests.get(license_json).text
     data = json.loads(data)
-    url= "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/"
+    url= "https://raw.githubusercontent.com/spdx/license-list-XML/main/src/"
     for license in data["licenses"]:
         if(license["licenseId"] == name):
             url+=name
@@ -246,10 +246,10 @@ def check_license_name(name):
             return [url, license["licenseId"]]
 
     """ Check if an exception name exists """
-    exceptions_json = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/exceptions.json"
+    exceptions_json = "https://raw.githubusercontent.com/spdx/license-list-data/main/json/exceptions.json"
     data = requests.get(exceptions_json).text
     data = json.loads(data)
-    url= "https://raw.githubusercontent.com/spdx/license-list-XML/master/src/exceptions/"
+    url= "https://raw.githubusercontent.com/spdx/license-list-XML/main/src/exceptions/"
     for exception in data["exceptions"]:
         if(exception["licenseExceptionId"] == name):
             url += name
