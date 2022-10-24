@@ -59,10 +59,10 @@
 <p class ="lead"> {{ medialink }}</p>
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead">Submit a New License to the SPDX Licenses List</p> </div>
+<div class="panel-heading"> <p class="lead">Submit a New License to the SPDX License List</p> </div>
 <div class="panel-body" style="overflow: scroll;">
 <div class="panel-heading">
-Please review the <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-inclusion-principles.md">SPDX License List license inclusion principles</a> before submitting a new license.
+Please review the <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-inclusion-principles.md">SPDX License List inclusion principles</a> before submitting a new license.
 Once you have submitted a license, please follow the <a href="https://github.com/spdx/license-list-XML/issues">issue in Github</a> and be prepared to help create the required XML and test text files if the license is accepted for submission.
 </div>
 <form id="newlicense" enctype="multipart/form-data" class = "form-horizontal" method = "post" action='/submit_new_license/'>
@@ -114,7 +114,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >&nbsp;OSI Status&nbsp;</label>
+      <label class="control-label col-sm-3" >OSI Status</label>
         <div class="col-sm-4">
           {{ form.osiApproved }}
         </div>
@@ -187,7 +187,7 @@ $(document).ready(function () {
 		$("#modal-header").removeClass("red-modal green-modal");
 		$("#modal-header").addClass("yellow-modal");
 		$(".modal-footer").html('<button class="btn btn-success" id="github_auth_begin"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
-		$("#modal-body").html('To submit a license, you must log in using Github.  You will now be redirected to the github login.  Please allow the requested permissions.  If you do not have a github account, you can <a href="https://github.com/">sign up</a> for free or you can email your new license request to <a href="mailto:spdx-legal@lists.spdx.org">spdx-legal@lists.spdx.org</a>.');
+		$("#modal-body").html('To submit a license, you must log in using Github.  You will now be redirected to the Github login.  Please allow the requested permissions.  If you do not have a Github account, you can <a href="https://github.com/">sign up</a> for free or you can email your new license request to <a href="mailto:spdx-legal@lists.spdx.org">spdx-legal@lists.spdx.org</a>.');
         $("#myModal").modal({
            backdrop: 'static',
            keyboard: true,
