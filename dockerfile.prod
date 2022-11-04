@@ -1,5 +1,5 @@
-# Using python3 as the base image
-FROM python:3 as base
+# Using python3.10.6 as the base image
+FROM python:3.10.6 as base
 
 # Create the folder spdx and cd to it
 WORKDIR /spdx
