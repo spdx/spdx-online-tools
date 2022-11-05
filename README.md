@@ -196,7 +196,7 @@ where:
     ```bash
     curl -X POST -u <admin>:<password> -F "file=@<fileInput>" -H "Accept: application/json" http://localhost:8000/api/check_license/ | json_pp
     ```
-7. For the license submittal API, first create a a django oauth toolkit application and follow the steps given below:
+7. For the license submittal API, first create a django oauth toolkit application and follow the steps given below:
     #### Django Oauth Toolkit App
     * Go to admin page and login(if you don't have an admin account then create one using `python src/manage.py createsuperuser`).
     * Create a new application by going to the `Applications` section.
@@ -218,4 +218,4 @@ where:
 
 ## Dependencies
 
-The project uses [spdx java tools](https://github.com/spdx/tools/) for various tools of the website.
+The project uses [spdx java tools](https://github.com/spdx/tools-java) for various tools of the website.
