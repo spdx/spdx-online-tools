@@ -523,7 +523,7 @@ def check_spdx_license(licenseText):
         matchType = 'No match'
     else:
         matchedLicenseIds = max(matches, key=matches.get)
-        if matches[matchedLicenseIds] > 0.99:
+        if matches[matchedLicenseIds] == 1.0:
             matchType = 'Perfect match'
         else:
             matchType = 'Close match'
