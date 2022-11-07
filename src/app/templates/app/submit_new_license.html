@@ -22,30 +22,30 @@
       {% csrf_token %}
       <div class="form-group">
           <label for="branchName">Branch Name:</label>
-          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Pull Request will be made from this branch to main branch" style="font-size:12px;"></span>
+
           <input type="text" class="form-control" id="branchName" name="branchName">
       </div><br>
       <div class="checkbox">
-          <label><input type="checkbox" id="updateUpstream"> Update with upstream main </label> <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Select this if you want to update your forked repo with the upstream repo, before making the pull request" style="font-size:12px;"></span>
+          <label><input type="checkbox" id="updateUpstream"> Update your fork with upstream main before making PR? </label> 
       </div>
       <div class="form-group">
-          <label for="fileName">File Name:</label>
-          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Name of the XML file" style="font-size:12px;"></span>
+          <label for="fileName">XML File Name:</label>
+          
           <input type="text" class="form-control" id="fileName" name="fileName" value={{license_name}}> .xml
       </div><br>
       <div class="form-group">
           <label for="commitMessage">Commit Message:</label>
-          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Git commit message, a brief description of your changes" style="font-size:12px;"></span>
+         
           <input type="text" class="form-control" id="commitMessage" name="commitMessage">
       </div><br>
       <div class="form-group">
           <label for="prTitle">Pull Request Title:</label>
-          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request title, can be edited later." style="font-size:12px;"></span>
+        
           <input type="text" class="form-control" id="prTitle" name="prTitle">
       </div><br>
       <div class="form-group">
-          <label for="prBody">Pull Request Body:</label>
-          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request body, can be edited later." style="font-size:12px;"></span>
+          <label for="prBody">Pull Request Body text:</label>
+          
           <textarea class="form-control" rows="5" id="prBody" name="prBody" style="resize:none; width:200px;"></textarea>
       </div><br>
       </textarea>
