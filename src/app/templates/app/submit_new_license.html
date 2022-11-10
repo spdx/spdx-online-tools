@@ -22,30 +22,30 @@
       {% csrf_token %}
       <div class="form-group">
           <label for="branchName">Branch Name:</label>
-          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Pull Request will be made from this branch to main branch" style="font-size:12px;"></span>
+
           <input type="text" class="form-control" id="branchName" name="branchName">
       </div><br>
       <div class="checkbox">
-          <label><input type="checkbox" id="updateUpstream"> Update with upstream main </label> <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Select this if you want to update your forked repo with the upstream repo, before making the pull request" style="font-size:12px;"></span>
+          <label><input type="checkbox" id="updateUpstream"> Update your fork with upstream main before making PR? </label> 
       </div>
       <div class="form-group">
-          <label for="fileName">File Name:</label>
-          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Name of the XML file" style="font-size:12px;"></span>
+          <label for="fileName">XML File Name:</label>
+          
           <input type="text" class="form-control" id="fileName" name="fileName" value={{license_name}}> .xml
       </div><br>
       <div class="form-group">
           <label for="commitMessage">Commit Message:</label>
-          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Git commit message, a brief description of your changes" style="font-size:12px;"></span>
+         
           <input type="text" class="form-control" id="commitMessage" name="commitMessage">
       </div><br>
       <div class="form-group">
           <label for="prTitle">Pull Request Title:</label>
-          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request title, can be edited later." style="font-size:12px;"></span>
+        
           <input type="text" class="form-control" id="prTitle" name="prTitle">
       </div><br>
       <div class="form-group">
-          <label for="prBody">Pull Request Body:</label>
-          <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request body, can be edited later." style="font-size:12px;"></span>
+          <label for="prBody">Pull Request Body text:</label>
+          
           <textarea class="form-control" rows="5" id="prBody" name="prBody" style="resize:none; width:200px;"></textarea>
       </div><br>
       </textarea>
@@ -70,7 +70,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Briefly explain why this license meets the
+      <label class="control-label col-sm-3" >Briefly explain how this license <br />meets the
         <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-inclusion-principles.md">
           license inclusion principles
         </a>
@@ -83,7 +83,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Full name of license (if applicable) <br /> Enter known title. If none, suggest one or leave blank
+      <label class="control-label col-sm-3" >Full name or title of license 
       </label>
         <div class="col-sm-4">
           {{ form.fullname }}
@@ -93,7 +93,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Suggest short identifier <br />Short identifiers consist of ASCII letters (A-Z, a-z), digits (0-9), full stops (.) and hyphen or minus signs (-)
+      <label class="control-label col-sm-3" >Suggest short identifier <br />(See <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-fields.md">Fields, section B</a> for more details)
       </label>
         <div class="col-sm-4">
           {{ form.shortIdentifier }}
@@ -229,23 +229,23 @@ function checkform() {
   }
   else if (($('#comments').val().trim() == "")){
     scrollUpAndHighlight($('#comments'))
-    return("Please explain why this license meets the license inclusion principles.");
+    return("Please explain how this license meets the license inclusion principles.");
   }
   else if (($('#shortIdentifier').val().trim() == "") || !validate_identifier()){
     scrollUpAndHighlight($('#shortIdentifier'))
-    return("Please enter a valid license identifier. It consist of ASCII letters (A-Za-z), digits (0-9), full stops (.) and hyphen or minus signs (-) only. Hover over to '?' for more info");
+    return("Please suggest a valid license identifier. It consist of ASCII letters (A-Za-z), digits (0-9), full stops (.) and hyphen or minus signs (-) only.");
   }
   else if (!validate_urls()){
     scrollUpAndHighlight($('#sourceUrl'))
-    return("Please enter a valid URL. Hover over to '?' for more info");
+    return("Please enter a valid URL.");
   } 
   else if (!validate_example_urls()) {
     scrollUpAndHighlight($('#addExampleUrl'))
-    return("Please enter a valid URL. Hover over to '?' for more info");
+    return("Please enter a valid URL.");
   }
   else if (($('#osiApproved').val() == "0")){
     scrollUpAndHighlight($('#osiApproved'))
-    return("Please select if the OSI is approved or not.");
+    return("Please select OSI status.");
   }
   else if (($('#text').val().trim() == "")){
     scrollUpAndHighlight($('#text'))
@@ -419,7 +419,7 @@ function scrollUpAndHighlight(element) {
                   }
                 }
                 else{
-                  var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org with SPDX ID for the license you are submitting";
+                  var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org for the license you are submitting";
                   $("#messages").html('<div class="alert alert-warning alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Warning! </strong>'+ warningMessage +'</div>');
                       setTimeout(function() {
                         $("#messages").html("");
@@ -514,7 +514,7 @@ function makeIssue(data){
                           }, 7000);
                     }
                     else{
-                      var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org with SPDX ID for the license you are submitting";
+                      var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org for the license you are submitting";
                       $("#messages").html('<div class="alert alert-warning alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Warning! </strong>'+ warningMessage +'</div>');
                           setTimeout(function() {
                             $("#messages").html("");
