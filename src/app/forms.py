@@ -73,7 +73,7 @@ class LicenseRequestForm(forms.Form):
         else:
             self.email = ""
         super(LicenseRequestForm, self).__init__(*args,**kwargs)
-        self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email)
+        self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email, required=False)
 
     licenseAuthorName = forms.CharField(label="License Author name", max_length=100, required=False)
     fullname = forms.CharField(label="Fullname", max_length=70)
@@ -98,7 +98,7 @@ class LicenseNamespaceRequestForm(forms.ModelForm):
         self.fields['license_list_url'].required = False
         self.fields['github_repo_url'].required = False
         self.fields['organisation'].required = False
-        self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email)
+        self.fields["userEmail"] = forms.EmailField(label='Email', initial=self.email, required=False)
 
     organisation = forms.ModelChoiceField(
        required=False,
