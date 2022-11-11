@@ -1,0 +1,196 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+{% block head_block %}
+  <link href="{% static 'css/dragdrop.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body1 %}
+<div id="messages" class="messages">
+</div>
+<p class ="lead"> {{ error }}</p>
+<div class="panel panel-default">
+<div class="panel-heading"> <p class="lead">Tag-Value, RDF, JSON, Spreadsheet, XML SPDX Document</p> </div>
+<div class="panel-body">
+	<form id="checkform" enctype="multipart/form-data" class="form-horizontal" method="post">
+	  {% csrf_token %}
+	  <div class = "form-group">
+			&nbsp; File Type &nbsp;
+				<select name="format" id="format">
+					  <option value="0" data-value="0" selected="">-</option>
+					  <option value="XLSX">XLSX Spreadsheet</option>
+					  <option value="XLS">XLS Spreadsheet</option>
+					  <option value="RDFXML">RDF/XML</option>
+					  <option value="TAG">Tag/Value</option>
+					  <option value="JSON">JSON</option>
+					  <option value="YAML">YAML</option>
+					  <option value="XML">XML</option>
+                </select>
+		</div>
+		<div id="drop-area" class="container">
+		  <h4>Upload file using the button or by dragging and dropping onto the dashed region </h4>
+		  <input type="file" id="file" onchange="handleFiles(this.files)">
+		  <label class="button" for="file">Select file</label>
+		  <p class="file-name">No file selected</p>
+		</div>
+    </form>
+<hr>
+    <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check NTIA's Required Elements</button>
+  {% include "app/modal.html" %}
+
+</div>
+
+{% endblock %}
+
+{% block script_block %}
+
+<script type="text/javascript">
+  /* Javascript to handel drag and drop */
+  let dropArea = document.getElementById('drop-area');
+  var selected_file = "";
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false)
+  });
+
+  function preventDefaults (e) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false)
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false)
+  });
+
+  function highlight(e) {
+    dropArea.classList.add('highlight')
+  }
+
+  function unhighlight(e) {
+    dropArea.classList.remove('highlight')
+  }
+
+  dropArea.addEventListener('drop', handleDrop, false)
+
+  function handleDrop(e) {
+    let dt = e.dataTransfer
+    let files = dt.files
+    handleFiles(files)
+  }
+
+  function handleFiles(files) {
+    ([...files]).forEach(checkFile)
+  }
+
+  function checkFile(file){
+    if(file){
+      $(".file-name").html("<b>Selected File: </b>"+file.name);
+      $("#checkbutton").prop('disabled', false);
+      selected_file = file;
+    }
+    else{
+      $(".file-name").html("No file selected");
+      $("#checkbutton").prop('disabled', true);
+    }
+  }
+
+function checkform() {
+  if (selected_file == "") {
+    return ("No files selected.");
+  } else if (($('#format').val() == "0")){
+    $('#formatt').focus();
+    return("Please select the file format.");
+  }
+  else {
+    return "1";
+  }
+}
+</script>
+
+<script type="text/javascript">
+  $('#checkbutton').on('click', function(event){
+    event.preventDefault();
+    var check = checkform();
+    if (check=="1"){
+      $("#checkbutton").text("Checking...");
+      $("#checkbutton").prop('disabled', true);
+      $("#messages").html("");
+      var form = new FormData($("#checkform")[0]);
+      form.append("file", selected_file);
+      $.ajax({
+              type: "POST",
+              enctype: 'multipart/form-data',
+              url: "/app/ntia_checker/",
+              processData: false,
+              contentType: false,
+              cache: false,
+              dataType: 'json',
+              timeout: 600000,
+              data: form,
+              success: function (data) {
+                  console.log("SUCCESS : ", data);
+                  $("#modal-header").removeClass("red-modal");
+                  $("#modal-header").removeClass("yellow-modal");
+                  $("#modal-header").addClass("green-modal");
+                  $("#modal-title").html("Success!");
+                  $("#modal-body").html("<h3>"+data.data+"</h3>");
+                  $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true,
+                          show: true
+                  });
+                  $("#checkbutton").text("Check NTIA's Required Elements");
+                  $("#checkbutton").prop('disabled', false);
+              },
+              error: function (e) {
+                  console.log("ERROR : ", e);
+                  $("#modal-header").removeClass("green-modal");
+                  try {
+                  	var obj = JSON.parse(e.responseText);
+                  	if (obj.type=="warning"){
+	                    $("#modal-header").removeClass("red-modal");
+	                    $("#modal-header").addClass("yellow-modal");
+	                    $("#modal-title").html("Warning!");
+	                  }
+	                else if (obj.type=="error"){
+	                    $("#modal-header").removeClass("yellow-modal");
+	                    $("#modal-header").addClass("red-modal");
+	                    $("#modal-title").html("Error!");
+	                  }
+	                $("#modal-body").text(obj.data);
+                  }
+                  catch (e){
+                  	$("#modal-header").removeClass("yellow-modal");
+                    $("#modal-header").addClass("red-modal");
+                    $("#modal-title").html("Error!");
+                    $("#modal-body").text("The application could not be connected. Please try later.");
+                  }
+                  $("#myModal").modal({
+                          backdrop: 'static',
+                          keyboard: true,
+                          show: true
+                  });
+                  $("#checkbutton").text("Check NTIA's Required Elements");
+                  $("#checkbutton").prop('disabled', false);
+              }
+          });
+    }
+    else{
+      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+      setTimeout(function() {
+        $("#messages").html("");
+      }, 5000);
+    }
+});
+
+</script>
+<script type="text/javascript">
+$(document).ready(function () {
+    $("#checkerpage").addClass('linkactive');
+    });
+</script>
+
+{% endblock %}

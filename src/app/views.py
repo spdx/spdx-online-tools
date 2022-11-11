@@ -27,6 +27,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from src.version import spdx_online_tools_version
 from src.version import java_tools_version
+from ntia_conformance_checker.cli_tools import check_anything
 
 import codecs
 import jpype
@@ -431,6 +432,36 @@ def licenseNamespaceInformation(request, licenseId):
         )
 
 
+def ntia_check(request):
+    """ View for ntia checker tool
+    returns ntia_conformance_checker.html template
+    """
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
+        context_dict={}
+        if request.method == 'POST':
+            core.initialise_jpype()
+            result = core.ntia_check_helper(request)
+            jpype.detachThreadFromJVM()
+            context_dict = result.get('context', None)
+            status = result.get('status', None)
+            response = result.get('response', None)
+            message = result.get('message', None)
+
+            if response and status:
+                return HttpResponse(response, status=status)
+            elif context_dict and status:
+                return render(request, 'app/ntia_conformance_checker.html', context_dict, status=status)
+            else:
+                return HttpResponse(message, status=status)
+
+
+        else :
+            """ GET,HEAD """
+            return render(request,
+             'app/ntia_conformance_checker.html',context_dict
+             )
+    else :
+        return HttpResponseRedirect(settings.LOGIN_URL)
 
 
 def validate(request):
