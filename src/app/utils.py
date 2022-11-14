@@ -339,7 +339,7 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
             licenseExampleUrls += ', '
             licenseExampleUrls += licenseExamples[i]
   
-    body = "**1.** License Name: {0}\n**2.** Short identifier: {1}\n**3.** License Author or steward: {2}\n**4.** Comments: {3}\n**5.** Standard License Header: {4}\n**6.** License Request Url: {5}\n**7.** URL(s): {6}\n**8.** OSI Status: {7}\n**9.** Example Projects: {8}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseHeader, licenseRequestUrl, licenseUrls, licenseOsi, licenseExampleUrls)
+    body = "**1.** License Name: {0}\n**2.** Short identifier: {1}\n**3.** License Author or steward: {2}\n**4.** Comments: {3}\n**5.** License Request Url: {4}\n**6.** URL(s): {5}\n**7.** OSI Status: {6}\n**8.** Example Projects: {7}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseRequestUrl, licenseUrls, licenseOsi, licenseExampleUrls)
     if diffUrl:
         body = body + "\n**8.** License Text Diff: {0}".format(diffUrl)
     if matchId:
