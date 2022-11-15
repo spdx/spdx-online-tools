@@ -518,26 +518,22 @@ def check_spdx_license(licenseText):
     spdxLicenseTexts = r.mget(spdxLicenseIds)
     licenseData = dict(list(zip(spdxLicenseIds, spdxLicenseTexts)))
     matches = get_close_matches(licenseText, licenseData)
-
     if not matches:
         matchedLicenseIds = None
         matchType = 'No match'
-    
-    elif 1.0 in list(matches.values()) or all(0.99 < score for score in list(matches.values())):
-        matchedLicenseIds = list(matches.keys())
-        matchType = 'Perfect match'
-    
     else:
-        for licenseID in matches:
-            listedLicense = getListedLicense(licenseID)
-            isTextStandard = checkTextStandardLicense(listedLicense, licenseText)
-            if not isTextStandard:
-                matchedLicenseIds = licenseID
-                matchType = 'Standard License match'
-            else:
-                matchedLicenseIds = max(matches, key=matches.get)
-                matchType = 'Close match'
-    return matchedLicenseIds, matchType
+        matchedLicenseIds = max(matches, key=matches.get)
+        if matches[matchedLicenseIds] == 1.0:
+            matchType = 'Perfect match'
+        else:
+            matchType = 'Close match'
+            for licenseID in matches:
+                listedLicense = getListedLicense(licenseID)
+                isTextDifferent = checkTextStandardLicense(listedLicense, licenseText)
+                if not isTextDifferent:
+                    matchedLicenseIds = licenseID
+                    matchType = 'Standard License match'
+    return matchedLicenseIds, matchType, matches
 
 
 def getFileFormat(to_format):

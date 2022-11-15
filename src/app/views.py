@@ -127,7 +127,7 @@ def submitNewLicense(request):
                         # This is present only when executing submit license via tests
                         urlType = request.POST["urlType"]
 
-                    matchingIds, matchingType = utils.check_spdx_license(licenseText)
+                    matchingIds, matchingType, _ = utils.check_spdx_license(licenseText)
                     matches = ['Perfect match', 'Standard License match', 'Close match']
                     if matchingType in matches:
                         data['matchType'] = matchingType
