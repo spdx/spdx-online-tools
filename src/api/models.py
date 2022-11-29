@@ -61,13 +61,6 @@ class CompareFileUpload(models.Model):
     rfilename = models.CharField(max_length=32,null=False,blank=False)
     status = models.IntegerField(default=200,blank=False)
 
-class CheckLicenseFileUpload(models.Model):
-
-    created = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(User, to_field='id', on_delete=models.CASCADE)
-    file = models.FileField(upload_to=user_directory_path)
-    result = models.CharField(max_length=128,null=False,blank=False)
-    status = models.IntegerField(default=200,blank=False)
 
 class SubmitLicenseModel(models.Model):
 

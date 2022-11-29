@@ -16,7 +16,7 @@ from django.contrib.auth.models import User, Group
 
 from rest_framework import serializers
 
-from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload,SubmitLicenseModel
+from api.models import ValidateFileUpload, ConvertFileUpload, CompareFileUpload, SubmitLicenseModel
  
 
 class ValidateSerializer(serializers.HyperlinkedModelSerializer):
@@ -67,21 +67,14 @@ class CompareSerializerReturn(serializers.ModelSerializer):
         model = CompareFileUpload
         fields = ('created', 'file1','file2', 'owner','result','rfilename','message','status')
 
-class CheckLicenseSerializer(serializers.HyperlinkedModelSerializer):
-    """POST validate API request fields"""
-    owner = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='id'
-    )
-    class Meta:
-        model = CheckLicenseFileUpload
-        fields = ('created', 'file', 'owner')
 
-class CheckLicenseSerializerReturn(serializers.ModelSerializer):
-    """Response Fields to be returned to the user"""
+class CheckLicenseSerializer(serializers.Serializer):
+    """POST validate API request fields"""
+    file = serializers.FileField()
+
     class Meta:
-        model = CheckLicenseFileUpload
-        fields = ('created', 'file', 'owner','result','status')
+        fields = ('file', )
+
 
 class SubmitLicenseSerializer(serializers.HyperlinkedModelSerializer):
     """POST license submit API request fields"""
