@@ -382,7 +382,7 @@ function scrollUpAndHighlight(element) {
                   else if(matchType == "Close match"){
                     var inputLicenseText = data.inputLicenseText.replace(/\r\n/g,'\n');
                     var originalLicenseText = data.originalLicenseText;
-                    var matchingGuidelinesUrl = 'https://spdx.org/spdx-license-list/matching-guidelines'
+                    var matchingGuidelinesUrl = 'https://spdx.github.io/spdx-spec/v2.3/license-matching-guidelines-and-templates/'
                     var message = `Close match found! The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX Matching guidelines. Press show differences to continue.`
                     LicenseData.data = data;
                     $("#modal-header").removeClass("red-modal green-modal");
