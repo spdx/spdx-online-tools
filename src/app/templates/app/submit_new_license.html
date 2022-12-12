@@ -387,16 +387,19 @@ function scrollUpAndHighlight(element) {
                     LicenseData.data = data;
                     $("#modal-header").removeClass("red-modal green-modal");
 		                $("#modal-header").addClass("yellow-modal");
-		                $(".modal-footer").html(`<a href=${matchingGuidelinesUrl}><button class="btn btn-success btn-space" id="matchingguidelines"><span class="glyphicon glyphicon-link"></span> SPDX Matching Guidelines</button></a><button class="btn btn-success btn-space" id="showDiff"><span class="glyphicon glyphicon-link"></span> Show differences</button><button class="btn btn-primary btn-space" id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>`);
+		                $(".modal-footer").html(`<button class="btn btn-success btn-space" id="matchingguidelines"><span class="glyphicon glyphicon-link"></span> SPDX Matching Guidelines</button><button class="btn btn-success btn-space" id="showDiff"><span class="glyphicon glyphicon-link"></span> Show differences</button><button class="btn btn-primary btn-space" id="diffCancel"><span class="glyphicon glyphicon-cancel"></span> Cancel</button>`);
 		                $("#modal-body").html(message);
                     $("#myModal").modal({
                       backdrop: 'static',
                       keyboard: true,
                       show: true
                     });
-                    $(document).on('click','button#ok', function(event){
+					$("#diffCancel").click(function(event){
                       $("#myModal").modal("hide");
                     });
+					$("#matchingguidelines").click(function(event) {
+					  window.location = matchingGuidelinesUrl;
+					});
                     $(document).off().on('click','button#showDiff', function(event){
                       generate_text_diff(originalLicenseText.split('\n\n'), inputLicenseText.split('\n\n'));
                     });
