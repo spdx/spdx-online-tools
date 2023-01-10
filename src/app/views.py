@@ -1173,7 +1173,7 @@ def issue(request):
                         listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                     now = datetime.datetime.now()
                     licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                        submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+                        submissionDatetime=now, notes=licenseNotes, xml=xml)
                     licenseRequest.save()
                     licenseRequestId = licenseRequest.id
                     serverUrl = request.build_absolute_uri('/')
