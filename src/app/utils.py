@@ -174,7 +174,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     fileName += ".xml"
     commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_TEST_REPO_NAME, fileName)
     xmlText = xmlText.encode('utf-8') if isinstance(xmlText, str) else xmlText
-    fileContent = base64.b64encode(xmlText)
+    fileContent = base64.b64encode(xmlText).decode()
     body = {
         "path":"src/"+fileName,
         "message":commitMessage,
