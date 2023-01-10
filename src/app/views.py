@@ -27,6 +27,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from src.version import spdx_online_tools_version
 from src.version import java_tools_version
+from src.version import ntia_conformance_checker_version
 from ntia_conformance_checker.cli_tools import check_anything
 
 import codecs
@@ -80,7 +81,8 @@ def about(request):
     """
     context_dict={
                 'spdx_online_tools_version':spdx_online_tools_version,
-                'java_tools_version':java_tools_version
+                'java_tools_version':java_tools_version,
+                'ntia_conformance_checker_version':ntia_conformance_checker_version,
                 }
     return render(request,
         'app/about.html',context_dict
