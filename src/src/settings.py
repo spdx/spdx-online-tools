@@ -21,11 +21,12 @@ TEMPLATE_DIR = os.path.join(APP_DIR, 'templates')
 STATIC_PATH = os.path.join(APP_DIR,'static')
 EXAMPLES_DIR = os.path.join(BASE_DIR,'examples')
 
-LICENSE_REPO_NAME = "license-list-XML"
+LICENSE_PROD_REPO_NAME = "license-list-XML"
 LICENSE_TEST_REPO_NAME = "TEST-LicenseList-XML"
 DEV_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(LICENSE_TEST_REPO_NAME)
-PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(LICENSE_REPO_NAME)
+PROD_REPO_URL = 'https://api.github.com/repos/spdx/{0}'.format(LICENSE_PROD_REPO_NAME)
 REPO_URL = DEV_REPO_URL
+LICENSE_REPO_NAME = LICENSE_TEST_REPO_NAME
 
 NAMESPACE_REPO_NAME = "license-namespace"
 NAMESPACE_TEST_REPO = "license-namespace-test"
@@ -52,6 +53,7 @@ DEBUG = os.environ.get(key='DEBUG', default=1) == 1
 if not DEBUG:
     REPO_URL = PROD_REPO_URL
     NAMESPACE_REPO_URL = NAMESPACE_PROD_REPO_URL
+    LICENSE_REPO_NAME = LICENSE_PROD_REPO_NAME
 
 ALLOWED_HOSTS = ['*']
 
