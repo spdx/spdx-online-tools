@@ -16,7 +16,7 @@ from traceback import format_exc
 from urllib.parse import urljoin
 
 import app.utils as utils
-from ntia_conformance_checker.cli_tools import check_anything
+import subprocess
 
 
 
@@ -207,29 +207,19 @@ def ntia_check_helper(request):
             filename = fs.save(myfile.name, myfile)
             uploaded_file_url = fs.url(filename).replace("%20", " ")
             """ Call the python function with parameters """
-            retval = check_anything.check_minimum_elements(str(settings.APP_DIR + uploaded_file_url)).messages
-            if (len(retval) > 0):
-                """ If any warnings are returned """
-                if (request.is_ajax()):
-                    ajaxdict["type"] = "warning"
-                    ajaxdict["data"] = "The following warning(s) were raised: " + str(retval)
-                    response = dumps(ajaxdict)
-                    result['response'] = response
-                    result['status'] = 400
-                    return result
-                context_dict["error"] = retval
-                result['context'] = context_dict
-                result['status'] = 400
-                return result
+            data = subprocess.run(
+                ["ntia-checker", "--output", "print", "--verbose", "--file", 
+                settings.APP_DIR + uploaded_file_url],
+                capture_output=True,
+                text=True)
+            print(data)
             if (request.is_ajax()):
                 """ Valid SPDX Document """
-                ajaxdict["data"] = "This SPDX Document is valid."
+                ajaxdict["data"] = data
                 response = dumps(ajaxdict)
                 result['response'] = response
                 result['status'] = 200
                 return result
-            message = "This SPDX Document is valid."
-            result['message'] = message
             result['status'] = 200
             return result
         else:
