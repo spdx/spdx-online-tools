@@ -16,7 +16,7 @@ from traceback import format_exc
 from urllib.parse import urljoin
 
 import app.utils as utils
-from ntia_conformance_checker.cli_tools import check_anything
+from ntia_conformance_checker import SbomChecker
 
 
 
@@ -206,13 +206,15 @@ def ntia_check_helper(request):
                                    )
             filename = fs.save(myfile.name, myfile)
             uploaded_file_url = fs.url(filename).replace("%20", " ")
-            """ Call the python function with parameters """
-            retval = check_anything.check_minimum_elements(str(settings.APP_DIR + uploaded_file_url)).messages
-            if (len(retval) > 0):
+            """ Call the python SBOM Checker """
+            schecker = SbomChecker(str(settings.APP_DIR + uploaded_file_url))
+            missingComponents = schecker.print_components_missing_info()
+            retval = missingComponents + "\n" + schecker.print_table_output()
+            if not missingComponents.startswith("No components with missing information."):
                 """ If any warnings are returned """
                 if (request.is_ajax()):
                     ajaxdict["type"] = "warning"
-                    ajaxdict["data"] = "The following warning(s) were raised: " + str(retval)
+                    ajaxdict["data"] = "The following warning(s) were raised:\n" + str(retval)
                     response = dumps(ajaxdict)
                     result['response'] = response
                     result['status'] = 400
@@ -223,7 +225,7 @@ def ntia_check_helper(request):
                 return result
             if (request.is_ajax()):
                 """ Valid SPDX Document """
-                ajaxdict["data"] = "This SPDX Document is valid."
+                ajaxdict["data"] = "This SPDX Document is valid:\n" + retval
                 response = dumps(ajaxdict)
                 result['response'] = response
                 result['status'] = 200

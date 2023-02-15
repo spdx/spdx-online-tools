@@ -28,7 +28,6 @@ from django.http import JsonResponse
 from src.version import spdx_online_tools_version
 from src.version import java_tools_version
 from src.version import ntia_conformance_checker_version
-from ntia_conformance_checker.cli_tools import check_anything
 
 import codecs
 import jpype
