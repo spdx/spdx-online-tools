@@ -214,10 +214,9 @@ def ntia_check_helper(request):
             tempstdout = StringIO()
             sys.stdout = tempstdout
             schecker.print_components_missing_info()
-            print("\n")
             schecker.print_table_output()
             sys.stdout = oldStdout
-            retval = tempstdout.getvalue().replace(",",", ")
+            retval = tempstdout.getvalue().replace(",",", ").replace("\n","<br/>")
             if not retval.startswith("No components with missing information."):
                 """ If any warnings are returned """
                 if (request.is_ajax()):
