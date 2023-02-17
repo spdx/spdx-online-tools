@@ -160,7 +160,7 @@ function checkform() {
 	                    $("#modal-header").addClass("red-modal");
 	                    $("#modal-title").html("Error!");
 	                  }
-	                $("#modal-body").text(obj.data);
+	                $("#modal-body").html(obj.data);
                   }
                   catch (e){
                   	$("#modal-header").removeClass("yellow-modal");
