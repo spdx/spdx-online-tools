@@ -7,11 +7,10 @@ COPY requirements.txt .
 # Install the python dependencies
 RUN pip install -r requirements.txt
 
-# Use JDK 8
-FROM openjdk:slim
-
-# Copy complete python container into java container
-COPY --from=python-container / /
+# Use JDK 11
+ENV JAVA_HOME=/opt/java/openjdk
+COPY --from=eclipse-temurin:11 $JAVA_HOME $JAVA_HOME
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Fetch the latest tagged licenses from Github for use in the Java license compares
 RUN apt-get update \

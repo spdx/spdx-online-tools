@@ -14,6 +14,8 @@ Following are the steps for updating the images:
   * replace `<aws-region>` with the AWS region
   * replace `<version>` with the specific version of the spdx-online-tools-build to be deployed
 * Build the image by running `docker-compose -f docker-compose.prod.yml build`
+* Test the image for vulnerability by running `docker scan [image]` where [image] is the image name from the docker-compose.prod.yml file
+  * Update any dependencies as needed based on the vulnerability report
 * Push the image to AWS ECR
   * Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the region and account ID
   * Push the images by running `docker-compose -f docker-compose.prod.yml push`
