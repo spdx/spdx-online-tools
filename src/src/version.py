@@ -9,7 +9,7 @@ from subprocess import run, PIPE
 from re import search
 
 
-def get_tools_version(jarName):
+def get_tools_version(jar_name):
     """Returns JAVA Tools version.
 
     Arguments:
@@ -18,18 +18,18 @@ def get_tools_version(jarName):
     Returns:
         string -- JAVA Tools version
     """
-    path = join(dirname(abspath(__file__)), "..", jarName)
-    output = run(["java", "-jar", path, "Version"], stdout=PIPE).stdout.decode("utf-8")
-    match = search("SPDX Tool Version: ([0-9]+(\.[0-9]+)+);", output)
+    jar_path = join(dirname(abspath(__file__)), '..', jar_name)
+    output = run(['java', '-jar', jar_path, 'Version'], stdout=PIPE).stdout.decode('utf-8')
+    match = search('SPDX Tool Version: ([0-9]+(\.[0-9]+)+);', output)
     if match:
         return match.group(1)
-    return ""
+    return 'Unknown'
 
 
-spdx_online_tools_version = "1.1.1"
+spdx_online_tools_version = '1.1.1'
 
 """
 Visit https://github.com/spdx/tools-java/releases to know about the tools releases.
 """
-java_tools_version = get_tools_version("tool.jar")
-ntia_conformance_checker_version = version("ntia-conformance-checker")
+java_tools_version = get_tools_version('tool.jar')
+ntia_conformance_checker_version = version('ntia-conformance-checker')
