@@ -353,7 +353,7 @@ class SubmitLicenseModelsTests(APITestCase):
         self.userEmail = "test@mail.com"
         self.licenseAuthorName = ""
         self.listVersionAdded = ""
-        self.xml = '<SPDXLicenseCollection xmlns="http://www.spdx.org/license"> <license isOsiApproved="false" licenseId="0BSD" listVersionAdded="" name="BSD Zero Clause License"> <crossRefs> <crossRef> http://landley.net/toybox/license.html</crossRef> </crossRefs> <standardLicenseHeader /> <notes /> <text> <p> &lt;text&gt; &lt;copyrightText&gt; &lt;p&gt;Copyright (C) 2006 by Rob Landley &amp;lt;rob@landley.net&amp;gt;&lt;/p&gt; &lt;/copyrightText&gt; &lt;p&gt;Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.&lt;/p&gt; &lt;p&gt;THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.&lt;/p&gt; &lt;/text&gt;</p> </text> </license> </SPDXLicenseCollection> '
+        self.xml = '<SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license isOsiApproved="false" licenseId="0BSD" listVersionAdded="" name="BSD Zero Clause License"><crossRefs><crossRef>http://landley.net/toybox/license.html</crossRef></crossRefs><standardLicenseHeader /><notes /><text><p>&lt;text&gt; &lt;copyrightText&gt; &lt;p&gt;Copyright (C) 2006 by Rob Landley &amp;lt;rob@landley.net&amp;gt;&lt;/p&gt; &lt;/copyrightText&gt; &lt;p&gt;Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.&lt;/p&gt; &lt;p&gt;THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.&lt;/p&gt; &lt;/text&gt;</p></text></license></SPDXLicenseCollection>'
         self.data = {"fullname": self.fullname, "shortIdentifier": self.shortIdentifier,
                     "sourceUrl": self.sourceUrl,'osiApproved': self.osiApproved, 'notes': self.notes,
                     "licenseHeader": self.licenseHeader, "text": self.text, "userEmail": self.userEmail,
@@ -392,16 +392,16 @@ class SubmitLicenseModelsTests(APITestCase):
     def test_generate_xml(self):
         """View for generating an xml from license submittal form fields"""
         xml = generateLicenseXml(self.osiApproved, self.shortIdentifier, self.fullname, self.listVersionAdded,
-                                self.urls, self.licenseHeader, self.notes, self.text).replace("\n"," ")
+                                self.urls, self.licenseHeader, self.notes, self.text)
         self.assertEqual(self.xml, xml)
 
     def test_submitlicense_api_with_invalid_code(self):
         """ Post submit license api with empty authentication code"""
         resp3 = self.client.post(reverse("submit_license-api"),{"code":self.emptyCode,"fullname":self.fullname,"shortIdentifier":self.shortIdentifier,"licenseAuthorName":self.licenseAuthorName,"userEmail":self.userEmail,"text":self.text,"osiApproved":self.osiApproved,"sourceUrl":self.sourceUrl},format="multipart")
-        self.assertIn("No authentication code provided.",resp3.content)
+        self.assertIn("No authentication code provided.", str(resp3.content))
         """ Post submit license api with invalid authentication code"""
         resp4 = self.client.post(reverse("submit_license-api"),{"code":self.invalidCode,"fullname":self.fullname,"shortIdentifier":self.shortIdentifier,"licenseAuthorName":self.licenseAuthorName,"userEmail":self.userEmail,"text":self.text,"osiApproved":self.osiApproved,"sourceUrl":self.sourceUrl},format="multipart")
-        self.assertIn("Authentication code provided is incorrect.",resp4.content)
+        self.assertIn("Authentication code provided is incorrect.", str(resp4.content))
 
     @skipIf(not getAuthCode(), "You need to set the authentication code in the secret.py file for this test to be executed properly.")
     def test_submitlicense_api_with_valid_fields(self):
@@ -435,4 +435,4 @@ class SubmitLicenseModelsTests(APITestCase):
         """ Test with incorrect osi choice"""
         resp9 = self.client.post(reverse("submit_license-api"),{"osiApproved":self.incorrectOsiApproved},format="multipart")
         self.assertEqual(resp9.status_code,400)
-        self.assertIn("is not a valid choice.",resp9.content)
+        self.assertIn("is not a valid choice.", str(resp9.content))
