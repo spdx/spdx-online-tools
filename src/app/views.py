@@ -16,13 +16,10 @@ from django.shortcuts import render
 from django.http import HttpResponse,HttpResponseRedirect
 from django.contrib.auth import authenticate,login ,logout,update_session_auth_hash
 from django.conf import settings
-from django import forms
-from django.template import RequestContext, context
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
-from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from src.version import spdx_online_tools_version
@@ -33,15 +30,13 @@ import codecs
 import jpype
 import requests
 from lxml import etree
-import re
 import os
 import logging
 import json
 from traceback import format_exc
-from json import dumps, loads
+from json import dumps
 from time import time
 from urllib.parse import urljoin
-import xml.etree.cElementTree as ET
 import datetime
 import uuid
 from wsgiref.util import FileWrapper
@@ -63,7 +58,6 @@ from .forms import LicenseRequestForm, LicenseNamespaceRequestForm
 from .models import LicenseRequest, LicenseNamespace
 from spdx_license_matcher.utils import get_spdx_license_text
 
-import cgi
 
 def index(request):
     """ View for index
@@ -1205,112 +1199,84 @@ def issue(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 
-def pull_request(request):
-    """ View that handles pull request """
+def handle_pull_request(request, is_ns):
+    """Handler for pull request"""
     if request.user.is_authenticated:
-        if request.method=="POST":
-            context_dict = {}
+        if request.method == "POST":
             ajaxdict = {}
             try:
                 if request.user.is_authenticated:
                     user = request.user
                 try:
-                    """ Getting user info and calling the makePullRequest function """
-                    github_login = user.social_auth.get(provider='github')
+                    """Getting user info and calling the makePullRequest function"""
+                    github_login = user.social_auth.get(provider="github")
                     token = github_login.extra_data["access_token"]
                     username = github_login.extra_data["login"]
-                    response = utils.makePullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"], False)
-                    if(response["type"]=="success"):
-                        """ PR made successfully """
-                        if (request.is_ajax()):
+                    response = utils.makePullRequest(
+                        username,
+                        token,
+                        request.POST["branchName"],
+                        request.POST["updateUpstream"],
+                        request.POST["fileName"],
+                        request.POST["commitMessage"],
+                        request.POST["prTitle"],
+                        request.POST["prBody"],
+                        request.POST["xmlText"],
+                        is_ns,
+                    )
+                    if response["type"] == "success":
+                        """PR made successfully"""
+                        if request.is_ajax():
                             ajaxdict["type"] = "success"
                             ajaxdict["data"] = response["pr_url"]
                             response = dumps(ajaxdict)
-                            return HttpResponse(response,status=200)
-                        return HttpResponse(response["pr_url"],status=200)
+                            return HttpResponse(response, status=200)
+                        return HttpResponse(response["pr_url"], status=200)
                     else:
-                        """ Error while making PR """
-                        if (request.is_ajax()):
+                        """Error while making PR"""
+                        if request.is_ajax():
                             ajaxdict["type"] = "pr_error"
                             ajaxdict["data"] = response["message"]
                             response = dumps(ajaxdict)
-                            return HttpResponse(response,status=500)
-                        return HttpResponse(response["message"],status=500)
+                            return HttpResponse(response, status=500)
+                        return HttpResponse(response["message"], status=500)
                 except UserSocialAuth.DoesNotExist:
-                    """ User not authenticated with GitHub """
-                    if (request.is_ajax()):
+                    """User not authenticated with GitHub"""
+                    if request.is_ajax():
                         ajaxdict["type"] = "auth_error"
                         ajaxdict["data"] = "Please login using GitHub to use this feature."
                         response = dumps(ajaxdict)
-                        return HttpResponse(response,status=401)
+                        return HttpResponse(response, status=401)
                     return HttpResponse("Please login using GitHub to use this feature.",status=401)
             except:
-                """ Other errors raised """
+                """Other errors raised"""
                 logger.error(str(format_exc()))
-                if (request.is_ajax()):
+                if request.is_ajax():
                     ajaxdict["type"] = "error"
-                    ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
+                    ajaxdict["data"] = (
+                        "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: "
+                        + format_exc()
+                    )
                     response = dumps(ajaxdict)
-                    return HttpResponse(response,status=500)
-                return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
+                    return HttpResponse(response, status=500)
+                return HttpResponse(
+                    "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(),
+                    status=500,
+                )
         else:
             return HttpResponseRedirect(settings.HOME_URL)
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
+
+
+def pull_request(request):
+    """ View that handles pull request """
+    handle_pull_request(request, is_ns=False)
 
 
 def namespace_pull_request(request):
     """ View that handles pull request for a license namespace """
-    if request.user.is_authenticated:
-        if request.method=="POST":
-            context_dict = {}
-            ajaxdict = {}
-            try:
-                if request.user.is_authenticated:
-                    user = request.user
-                try:
-                    """ Getting user info and calling the makePullRequest function """
-                    github_login = user.social_auth.get(provider='github')
-                    token = github_login.extra_data["access_token"]
-                    username = github_login.extra_data["login"]
-                    response = utils.makePullRequest(username, token, request.POST["branchName"], request.POST["updateUpstream"], request.POST["fileName"], request.POST["commitMessage"], request.POST["prTitle"], request.POST["prBody"], request.POST["xmlText"], True)
-                    if(response["type"]=="success"):
-                        """ PR made successfully """
-                        if (request.is_ajax()):
-                            ajaxdict["type"] = "success"
-                            ajaxdict["data"] = response["pr_url"]
-                            response = dumps(ajaxdict)
-                            return HttpResponse(response,status=200)
-                        return HttpResponse(response["pr_url"],status=200)
-                    else:
-                        """ Error while making PR """
-                        if (request.is_ajax()):
-                            ajaxdict["type"] = "pr_error"
-                            ajaxdict["data"] = response["message"]
-                            response = dumps(ajaxdict)
-                            return HttpResponse(response,status=500)
-                        return HttpResponse(response["message"],status=500)
-                except UserSocialAuth.DoesNotExist:
-                    """ User not authenticated with GitHub """
-                    if (request.is_ajax()):
-                        ajaxdict["type"] = "auth_error"
-                        ajaxdict["data"] = "Please login using GitHub to use this feature."
-                        response = dumps(ajaxdict)
-                        return HttpResponse(response,status=401)
-                    return HttpResponse("Please login using GitHub to use this feature.",status=401)
-            except:
-                """ Other errors raised """
-                logger.error(str(format_exc()))
-                if (request.is_ajax()):
-                    ajaxdict["type"] = "error"
-                    ajaxdict["data"] = "Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc()
-                    response = dumps(ajaxdict)
-                    return HttpResponse(response,status=500)
-                return HttpResponse("Unexpected error, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(), status=500)
-        else:
-            return HttpResponseRedirect(settings.HOME_URL)
-    else:
-        return HttpResponseRedirect(settings.LOGIN_URL)
+    handle_pull_request(request, is_ns=True)
 
 
 def loginuser(request):
