@@ -851,58 +851,46 @@ def license_xml_edit(request, page_id):
     else:
         return HttpResponseRedirect('/app/xml_upload')
 
+
+def get_context_dict(request, license_obj):
+    context_dict = {}
+    if request.user.is_authenticated:
+        user = request.user
+        try:
+            github_login = user.social_auth.get(provider="github")
+        except UserSocialAuth.DoesNotExist:
+            github_login = None
+        context_dict["github_login"] = github_login
+    context_dict["xml_text"] = license_obj.xml
+    context_dict["license_name"] = license_obj.fullname
+    return context_dict
+
+
 def edit_license_xml(request, license_id=None):
     """View for editing the XML file corresponsing to a license entry
-    returns editor.html """
-    context_dict = {}
-    ajaxdict = {}
+    returns editor.html"""
     if license_id:
         if not LicenseRequest.objects.filter(id=license_id).exists():
-            return render(request,
-                '404.html',context_dict,status=404
-                )
-        if request.user.is_authenticated:
-            user = request.user
-            try:
-                github_login = user.social_auth.get(provider='github')
-            except UserSocialAuth.DoesNotExist:
-                github_login = None
-            context_dict["github_login"] = github_login
+            return render(request, "404.html", {}, status=404)
         license_obj = LicenseRequest.objects.get(id=license_id)
-        context_dict["xml_text"] = license_obj.xml
-        context_dict["license_name"] = license_obj.fullname
-        return render(request,
-            'app/editor.html',context_dict,status=200
-            )
+        context_dict = get_context_dict(request, license_obj)
+        return render(request, "app/editor.html", context_dict, status=200)
     else:
-        return HttpResponseRedirect('/app/license_requests')
+        return HttpResponseRedirect("/app/license_requests")
 
 
 def edit_license_namespace_xml(request, license_id=None):
     """View for editing the XML file corresponsing to a license namespace entry
-    returns editor.html """
-    context_dict = {}
-    ajaxdict = {}
+    returns editor.html"""
     if license_id:
         if not LicenseNamespace.objects.filter(id=license_id).exists():
-            return render(request,
-                '404.html',context_dict,status=404
-                )
-        if request.user.is_authenticated:
-            user = request.user
-            try:
-                github_login = user.social_auth.get(provider='github')
-            except UserSocialAuth.DoesNotExist:
-                github_login = None
-            context_dict["github_login"] = github_login
+            return render(request, "404.html", {}, status=404)
         license_obj = LicenseNamespace.objects.get(id=license_id)
-        context_dict["xml_text"] = license_obj.xml
-        context_dict["license_name"] = license_obj.fullname
-        return render(request,
-            'app/ns_editor.html',context_dict,status=200
-            )
+        context_dict = get_context_dict(request, license_obj)
+        return render(request, "app/ns_editor.html", context_dict, status=200)
     else:
-        return HttpResponseRedirect('/app/license_namespace_requests')
+        return HttpResponseRedirect("/app/license_namespace_requests")
+
 
 def archiveRequests(request, license_id=None):
     """ View for archive license requests
@@ -1271,12 +1259,12 @@ def handle_pull_request(request, is_ns):
 
 def pull_request(request):
     """ View that handles pull request """
-    handle_pull_request(request, is_ns=False)
+    return handle_pull_request(request, is_ns=False)
 
 
 def namespace_pull_request(request):
     """ View that handles pull request for a license namespace """
-    handle_pull_request(request, is_ns=True)
+    return handle_pull_request(request, is_ns=True)
 
 
 def loginuser(request):
