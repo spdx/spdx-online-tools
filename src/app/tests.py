@@ -16,6 +16,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.options import Options
+from selenium.common.exceptions import NoSuchElementException
 from webdriver_manager.firefox import GeckoDriverManager
 import time
 
@@ -1115,11 +1116,11 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
         license_name = driver.find_element_by_css_selector('td').text
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, False)
-        if driver.find_element_by_id('archive_button' + str(license_obj.id)):
+        try:
             driver.find_element_by_id('archive_button' + str(license_obj.id)).click()
             driver.find_element_by_id('confirm_archive').click()
             self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, True)
-        else:
+        except NoSuchElementException:
             pass
 
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
