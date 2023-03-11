@@ -1146,10 +1146,11 @@ class SubmitNewLicenseViewsTestCase(TestCase):
     def initialise(self):
         self.fullname = "BSD Zero Clause License"
         self.shortIdentifier = "0BSD"
+        self.exampleUrl = "testUrl"
         self.sourceUrl = "http://landley.net/toybox/license.html"
         self.urls = [self.sourceUrl]
         self.osiApproved = "no"
-        self.comments = ""
+        self.comments = "Test Comment"
         self.notes = ""
         self.licenseHeader = ""
         self.text ='<text> <copyrightText> <p>Copyright (C) 2006 by Rob Landley &lt;rob@landley.net&gt;</p> </copyrightText> <p>Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.</p> <p>THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</p> </text>'
@@ -1160,7 +1161,7 @@ class SubmitNewLicenseViewsTestCase(TestCase):
         self.data_no_author = {"fullname": self.fullname, "shortIdentifier": self.shortIdentifier,
                     "sourceUrl": self.sourceUrl,'osiApproved': self.osiApproved, 'notes': self.notes,
                     "licenseHeader": self.licenseHeader, "text": self.text, "userEmail": self.userEmail,
-                    "urlType": "tests"}
+                    "urlType": "tests", "exampleUrl":self.exampleUrl,"comments":self.comments}
         self.data = self.data_no_author.update({"licenseAuthorName": self.licenseAuthorName})
 
     def test_submit_new_license(self):
