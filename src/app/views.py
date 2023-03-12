@@ -852,7 +852,7 @@ def license_xml_edit(request, page_id):
         return HttpResponseRedirect('/app/xml_upload')
 
 
-def get_context_dict(request, license_obj):
+def get_context_dict_for_license_xml(request, license_obj):
     context_dict = {}
     if request.user.is_authenticated:
         user = request.user
@@ -873,7 +873,7 @@ def edit_license_xml(request, license_id=None):
         if not LicenseRequest.objects.filter(id=license_id).exists():
             return render(request, "404.html", {}, status=404)
         license_obj = LicenseRequest.objects.get(id=license_id)
-        context_dict = get_context_dict(request, license_obj)
+        context_dict = get_context_dict_for_license_xml(request, license_obj)
         return render(request, "app/editor.html", context_dict, status=200)
     else:
         return HttpResponseRedirect("/app/license_requests")
@@ -886,7 +886,7 @@ def edit_license_namespace_xml(request, license_id=None):
         if not LicenseNamespace.objects.filter(id=license_id).exists():
             return render(request, "404.html", {}, status=404)
         license_obj = LicenseNamespace.objects.get(id=license_id)
-        context_dict = get_context_dict(request, license_obj)
+        context_dict = get_context_dict_for_license_xml(request, license_obj)
         return render(request, "app/ns_editor.html", context_dict, status=200)
     else:
         return HttpResponseRedirect("/app/license_namespace_requests")
