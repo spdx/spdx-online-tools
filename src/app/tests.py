@@ -1307,6 +1307,7 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
 
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_promote_license_namespace_feature(self):
+        """Github access token,id and username should be added in .env to execute the test properly"""
         """Check if the license namespace is shifted to archive namespace when archive button is pressed"""
         driver = self.selenium
         driver.get(self.live_server_url+'/app/license_namespace_requests/')
