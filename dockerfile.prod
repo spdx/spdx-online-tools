@@ -59,3 +59,26 @@ RUN mv ./supervisor_api.conf /etc/supervisor/conf.d
 
 # Start the supervisor
 CMD /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
+
+# Install necessary packages
+RUN apt-get update && \
+    apt-get install -y cron && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
+WORKDIR /spdx
+
+# Copy the Python script to the container
+COPY scripts/cleanup.py .
+
+# Add the crontab file
+ADD crontab /etc/cron.d/cleanup-cron
+
+# Give execution rights on the cron job
+RUN chmod 0644 /etc/cron.d/cleanup-cron
+
+# Apply cron job
+RUN crontab /etc/cron.d/cleanup-cron
+
+# Run the command on container startup
+CMD ["cron", "-f"]
