@@ -876,7 +876,7 @@ def edit_license_xml(request, license_id=None):
         context_dict = get_context_dict_for_license_xml(request, license_obj)
         return render(request, "app/editor.html", context_dict, status=200)
     else:
-        return HttpResponseRedirect("/app/license_requests")
+        return HttpResponseRedirect('/app/license_requests')
 
 
 def edit_license_namespace_xml(request, license_id=None):
@@ -889,7 +889,7 @@ def edit_license_namespace_xml(request, license_id=None):
         context_dict = get_context_dict_for_license_xml(request, license_obj)
         return render(request, "app/ns_editor.html", context_dict, status=200)
     else:
-        return HttpResponseRedirect("/app/license_namespace_requests")
+        return HttpResponseRedirect('/app/license_namespace_requests')
 
 
 def archiveRequests(request, license_id=None):
