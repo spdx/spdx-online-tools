@@ -1557,8 +1557,7 @@ class TestCronJob(TestCase):
                 f.write('test')
             # set file creation time to 11 days ago
             creation_time = datetime.datetime.now() - datetime.timedelta(days=11)
-            if i<=5:
-                os.utime(file_path, (creation_time.timestamp(), creation_time.timestamp()))
+            os.utime(file_path, (creation_time.timestamp(), creation_time.timestamp()))
 
         # run the cron job to delete old files
         # (you may need to modify this depending on how you're running the cron job)
