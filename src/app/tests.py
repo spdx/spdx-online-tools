@@ -28,11 +28,8 @@ from django.contrib.auth import authenticate
 from social_django.models import UserSocialAuth
 from django.conf import settings
 import os
-import sys
-# assuming the Django project directory is at the same level as the scripts directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'scripts')))
 
-import cleanup
+from app.scripts.cleanup import cleanMedia
 
 def getExamplePath(filename):
     return os.path.join(settings.EXAMPLES_DIR, filename)
@@ -1554,20 +1551,24 @@ class TestCronJob(TestCase):
     def test_delete_old_files(self):
         """Check if the files older than 10 days are getting deleted or not"""
         # create a test directory with some files
-        test_dir = os.path.join(os.getcwd() + '/app/media', 'AnonymousUser')
+        test_dir = os.path.join(settings.MEDIA_ROOT, 'AnonymousUser')
         os.makedirs(test_dir, exist_ok=True)
         for i in range(1, 11):
             file_path = os.path.join(test_dir, f'test_file_{i}.txt')
             with open(file_path, 'w') as f:
                 f.write('test')
             # set file creation time to 11 days ago
-            creation_time = datetime.datetime.now() - datetime.timedelta(days=11)
-            os.utime(file_path, (creation_time.timestamp(), creation_time.timestamp()))
+            if i<=5: 
+                creation_time = datetime.datetime.now() - datetime.timedelta(days=11)
+                os.utime(file_path, (creation_time.timestamp(), creation_time.timestamp()))
         
-        cleanup.cleanMedia()
+        cleanMedia()
 
         # check that only files older than 10 days were deleted
         for i in range(1, 11):
             file_path = os.path.join(test_dir, f'test_file_{i}.txt')
-            self.assertFalse(os.path.exists(file_path), f'{file_path} should have been deleted')
+            if i <= 5:
+                self.assertFalse(os.path.exists(file_path), f'{file_path} should have been deleted')
+            else:
+                self.assertTrue(os.path.exists(file_path), f'{file_path} should not have been deleted')
             

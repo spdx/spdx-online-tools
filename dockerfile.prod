@@ -68,9 +68,6 @@ RUN apt-get update && \
 # Set the working directory
 WORKDIR /spdx
 
-# Copy the Python script to the container
-COPY scripts/cleanup.py .
-
 # Add the crontab file
 ADD crontab /etc/cron.d/cleanup-cron
 

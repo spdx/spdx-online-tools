@@ -1,2 +1,2 @@
 # Run the cleanup script every day at 3:30 pm
-30 15 * * * python /spdx/cleanup.py
+30 15 * * * python /spdx/app/scripts/cleanup.py
