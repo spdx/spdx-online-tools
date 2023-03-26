@@ -1,7 +1,7 @@
 import os
 import time
 
-MEDIA_DIR = './src/app/media/AnonymousUser'
+MEDIA_DIR = '../src/app/media/AnonymousUser'
 DAYS_THRESHOLD = 10
 
 now = time.time()
