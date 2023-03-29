@@ -8,7 +8,8 @@
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
     {% if licenseInformation %}
-<div class="panel-heading"> <p class="lead">{{licenseInformation.fullname}}
+<div class="panel-heading"><a href="https://github.com/spdx/licnse-list-xml/issues/{{licenseInformation.issueId}}" target=”_blank”>
+    <p class="lead">{{licenseInformation.fullname}}</a> 
         {% if licenseInformation.archive %}
             <span class="label label-success">Archived</span>
         {% endif %}
@@ -51,6 +52,13 @@
         <p class="fieldName">Text</p>
         <p>{{licenseInformation.text|safe}}</p>
     </div>
+    <div class="licenseField col-sm-12">
+        <p class="fieldName">Github Issue</p>
+        <a href="https://github.com/spdx/licnse-list-xml/issues/{{licenseInformation.issueId}}" target=”_blank”>
+        <p>Issue #{{licenseInformation.issueId|safe}}</p>
+        </a>
+    </div>
+    
     <div class="licenseField col-sm-12">
         <p class="fieldName">Submission Date</p>
         <p>{{licenseInformation.submissionDatetime}}</p>

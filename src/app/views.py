@@ -162,8 +162,9 @@ def submitNewLicense(request):
                         licenseId = licenseRequest.id
                         serverUrl = request.build_absolute_uri('/')
                         licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                        statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
-
+                        statusCode, issueId = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
+                        licenseRequest.issueId = issueId
+                        licenseRequest.save()
                     # If the license text matches with either rejected or yet not approved license then return 409 Conflict
                     else:
                         statusCode = 409
@@ -346,6 +347,7 @@ def licenseInformation(request, licenseId):
   
     licenseInformation['licenseAuthorName'] = licenseRequest.licenseAuthorName
     licenseInformation['archive'] = licenseRequest.archive
+    licenseInformation['issueId'] = licenseRequest.issueId
     xmlString = licenseRequest.xml
     data = utils.parseXmlString(xmlString)
     licenseInformation['osiApproved'] = data['osiApproved']
@@ -1002,6 +1004,7 @@ def licenseRequests(request, license_id=None):
     """ View for license requests which are not archived
     returns license_requests.html template
     """
+    print(license_id)
     context_dict = {}
     if request.user.is_authenticated:
         user = request.user
