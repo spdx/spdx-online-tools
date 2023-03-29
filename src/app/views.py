@@ -1004,7 +1004,6 @@ def licenseRequests(request, license_id=None):
     """ View for license requests which are not archived
     returns license_requests.html template
     """
-    print(license_id)
     context_dict = {}
     if request.user.is_authenticated:
         user = request.user
