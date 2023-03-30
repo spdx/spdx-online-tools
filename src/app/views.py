@@ -87,6 +87,7 @@ def submitNewLicense(request):
     """
     context_dict = {}
     ajaxdict = {}
+    githubIssueId = ""
     if request.method=="POST":
         if not request.user.is_authenticated:
             if (request.is_ajax()):
@@ -162,7 +163,7 @@ def submitNewLicense(request):
                         licenseId = licenseRequest.id
                         serverUrl = request.build_absolute_uri('/')
                         licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                        statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
+                        statusCode, githubIssueId = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
 
                     # If the license text matches with either rejected or yet not approved license then return 409 Conflict
                     else:
@@ -172,6 +173,7 @@ def submitNewLicense(request):
                         data['issueUrl'] = issueUrl
                     
                     data['statusCode'] = str(statusCode)
+                    data["issueId"] = str(githubIssueId)
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
                 """ User not authenticated with GitHub """
