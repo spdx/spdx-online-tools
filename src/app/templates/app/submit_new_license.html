@@ -352,9 +352,11 @@ function scrollUpAndHighlight(element) {
               data: form,
               success: function (data) {
                 var githubCode = data.statusCode;
+                var githubIssueId = data.issueId;
+                var link = "https://github.com/spdx/licnse-list-xml/issues/" + githubIssueId;
                 if(githubCode == '201'){
-                  var successMessage = "The license request has been successfully submitted.";
-                  $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
+                  var successMessage = "The license request has been successfully submitted. Issue Id is #" + githubIssueId;
+                  $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href=' + link + ' class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
                       setTimeout(function() {
                         $("#messages").html("");
                       }, 7000);
