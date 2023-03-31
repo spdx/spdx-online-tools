@@ -164,6 +164,8 @@ def submitNewLicense(request):
                         serverUrl = request.build_absolute_uri('/')
                         licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
                         statusCode, githubIssueId = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
+                        licenseRequest.issueId = githubIssueId
+                        licenseRequest.save()
 
                     # If the license text matches with either rejected or yet not approved license then return 409 Conflict
                     else:
@@ -173,7 +175,6 @@ def submitNewLicense(request):
                         data['issueUrl'] = issueUrl
                     
                     data['statusCode'] = str(statusCode)
-                    data["issueId"] = str(githubIssueId)
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
                 """ User not authenticated with GitHub """
