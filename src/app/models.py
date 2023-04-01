@@ -36,12 +36,12 @@ class License(models.Model):
     notes = models.CharField(max_length=255, default="")
     xml = models.TextField()
     archive = models.BooleanField(default=False)
-    issueId = models.TextField(default='')
 
     class Meta:
         abstract = True
 
 class LicenseRequest(License):
+    issueId = models.TextField(default='')
 
     def __unicode__(self):
         return "%s" % (self.fullname)
