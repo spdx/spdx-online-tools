@@ -22,7 +22,7 @@ import time
 
 from app.models import UserID
 from app.models import LicenseRequest, LicenseNamespace
-import app.utils as utils
+import app.utils
 from app.generateXml import generateLicenseXml
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
