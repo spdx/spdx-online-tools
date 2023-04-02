@@ -181,14 +181,9 @@ div p {
     </div><!--/.nav-collapse -->
   </nav>
 
-    <div class="container">
-
-      <div class="starter-template">
-        {% block body1 %}{% endblock %}
-      </div>
-
-    </div><!-- /.container -->
-		{% block body2 %}{% endblock %}
+		{% block body2 %}
+    {% block body1 %}{% endblock %}
+    {% endblock %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
