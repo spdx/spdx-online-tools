@@ -661,7 +661,6 @@ def license_diff(request):
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict = {}
         if request.method == 'POST':
-            print("inside this")
             result = core.license_diff_helper(request)
             return JsonResponse(result)
         else:
