@@ -13,6 +13,7 @@
 
 INDENT = 2
 LINE_LENGTH = 80
+IS_EXCEPTION = False
 
 # which tags are inline and which appear on their own lines
 TAGS_inline = [
@@ -113,6 +114,7 @@ def process(fname):
 
 
 def pretty(node, level):
+    global IS_EXCEPTION
     ser = ''
     tag = node.tag
     if tag.startswith(NAMESPACE):
@@ -122,6 +124,8 @@ def pretty(node, level):
     # print("\t", level, tag, 'text=', text, 'tail=', tail, node.attrib)
     start_tag = "<" + tag
     if node.attrib and tag in ATTRS_SEQ:
+        if tag == 'exception':
+            IS_EXCEPTION = True
         for a in ATTRS_SEQ[tag]:
             if a in node.attrib:
                 start_tag += ' {}="{}"'.format(a, node.attrib[a])
@@ -148,7 +152,9 @@ def pretty(node, level):
         text = text.replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
         ser += text
     for child in node:
-        ser += pretty(child, child_level)
+        res = pretty(child, child_level)
+        if not(IS_EXCEPTION and 'standardLicenseHeader' in res):
+            ser += res
     ser += after
     if tail:
         ser += tail
