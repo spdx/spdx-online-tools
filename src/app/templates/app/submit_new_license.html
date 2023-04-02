@@ -123,7 +123,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Text of license
+      <label class="control-label col-sm-3">Text of license
       </label>
         <div class="col-sm-6">
           {{ form.text }}
@@ -131,6 +131,8 @@ Once you have submitted a license, please follow the <a href="https://github.com
         </div>
           <!-- <a href="/app/diff" target="_blank">Check License Diff</a> -->
       </div>
+      <!-- License diff result will be displayed in this div -->
+      <div id="license-diff-result"></div>
 
     </div>
 
@@ -612,6 +614,30 @@ async function generate_text_diff(base, newtxt){
       makeIssue(LicenseData.data);
     });
   }
+</script>
+<script type="text/javascript">
+  // Add an event listener to the "Check License Text" button
+  document.getElementById('check-license-btn').addEventListener('click', function() {
+    // Get the license text from the textarea
+    // const licenseText = document.getElementById('license-text').value;
+    const licenseText = "Test-Apache 2.0";
+    
+    // Make an AJAX call to your Django view to match the license text with existing licenses
+    // Replace the URL with the URL of your Django view
+    $.ajax({
+      url: '/app/diff/',
+      type: 'POST',
+      data: {licensetext: licenseText},
+      success: function(result) {
+        // Display the license diff result in the "license-diff-result" div
+        document.getElementById('license-diff-result').innerHTML = result;
+      },
+      error: function() {
+        // Display an error message if the AJAX call fails
+        document.getElementById('license-diff-result').innerHTML = 'Failed to check license text. Please try again later.';
+      }
+    });
+  });
 </script>
 <script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>

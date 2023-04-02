@@ -22,6 +22,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from src.version import spdx_online_tools_version
 from src.version import java_tools_version
 from src.version import ntia_conformance_checker_version
@@ -652,7 +653,7 @@ def check_license(request):
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
 
-
+@csrf_exempt
 def license_diff(request):
     """ View for diff section tool
     returns license_diff.html template
@@ -660,6 +661,7 @@ def license_diff(request):
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict = {}
         if request.method == 'POST':
+            print("inside this")
             result = core.license_diff_helper(request)
             return JsonResponse(result)
         else:
