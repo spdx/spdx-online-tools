@@ -123,7 +123,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3">Text of license
+      <label class="control-label col-sm-3" for="{{form.text.id_for_label}}">Text of license
       </label>
         <div class="col-sm-6">
           {{ form.text }}
@@ -619,8 +619,8 @@ async function generate_text_diff(base, newtxt){
   // Add an event listener to the "Check License Text" button
   document.getElementById('check-license-btn').addEventListener('click', function() {
     // Get the license text from the textarea
-    // const licenseText = document.getElementById('license-text').value;
-    const licenseText = "Test-Apache 2.0";
+    const licenseText = document.getElementById('{{ form.text.id_for_label }}').value;;
+    // const licenseText = "Test-Apache 2.0";
     
     // Make an AJAX call to your Django view to match the license text with existing licenses
     // Replace the URL with the URL of your Django view
