@@ -22,7 +22,6 @@ import time
 
 from app.models import UserID
 from app.models import LicenseRequest, LicenseNamespace
-import app.utils
 from app.generateXml import generateLicenseXml
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -32,6 +31,7 @@ import os
 
 def getExamplePath(filename):
     return os.path.join(settings.EXAMPLES_DIR, filename)
+
 
 class TestUtil(TestCase):
     def gitHubLogin(self):
@@ -58,7 +58,7 @@ class TestUtil(TestCase):
         login = self.client.login(username=TEST_LOGIN_INFO["login"],
                                   password=TEST_LOGIN_INFO["password"])
         return login
-    
+
 class IndexViewsTestCase(TestCase):
 
     def test_index(self):
