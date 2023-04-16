@@ -991,7 +991,7 @@ def promoteNamespaceRequests(request, license_id=None):
                 urlType = request.POST["urlType"]
             statusCode, githubIssueId = utils.createIssue(
                 licenseAuthorName, licenseName, licenseIdentifier,
-                licenseComments,licenseSourceUrls, licenseHeader, licenseOsi,
+                licenseComments, licenseSourceUrls, licenseHeader, licenseOsi,
                 licenseExamples, licenseRequestUrl, token, urlType)
             return_tuple = (statusCode, licenseRequest)
             statusCode = return_tuple[0]
