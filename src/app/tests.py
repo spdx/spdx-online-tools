@@ -33,6 +33,32 @@ import os
 def getExamplePath(filename):
     return os.path.join(settings.EXAMPLES_DIR, filename)
 
+class TestUtil(TestCase):
+    def gitHubLogin(self):
+        TEST_LOGIN_INFO = {
+        "provider": "github",
+        "uid": str(getGithubUserId()),
+        "access_token": getAccessToken(),
+        "login": getGithubUserName(),
+        "id": getGithubUserId(),
+        "password": 'pass'
+        }
+        # login first
+        self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
+                                        is_active=True,
+                                        is_superuser=True)
+        self.user.set_password(TEST_LOGIN_INFO["password"])
+        self.user.save()
+        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
+        uid=TEST_LOGIN_INFO["uid"],
+        extra_data=TEST_LOGIN_INFO,
+        user=self.user)
+        self.user = authenticate(username=TEST_LOGIN_INFO["login"],
+                                 password=TEST_LOGIN_INFO["password"])
+        login = self.client.login(username=TEST_LOGIN_INFO["login"],
+                                  password=TEST_LOGIN_INFO["password"])
+        return login
+    
 class IndexViewsTestCase(TestCase):
 
     def test_index(self):
@@ -1108,28 +1134,7 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_archive_license_requests_feature(self):
         """Check if the license is shifted to archive requests when archive button is pressed"""
-        TEST_LOGIN_INFO = {
-        "provider": "github",
-        "uid": str(getGithubUserId()),
-        "access_token": getAccessToken(),
-        "login": getGithubUserName(),
-        "id": getGithubUserId(),
-        "password": 'pass'
-        }
-        # login first
-        self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
-                                        is_active=True,
-                                        is_superuser=True)
-        self.user.set_password(TEST_LOGIN_INFO["password"])
-        self.user.save()
-        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
-        uid=TEST_LOGIN_INFO["uid"],
-        extra_data=TEST_LOGIN_INFO,
-        user=self.user)
-        self.user = authenticate(username=TEST_LOGIN_INFO["login"],
-                                 password=TEST_LOGIN_INFO["password"])
-        login = self.client.login(username=TEST_LOGIN_INFO["login"],
-                                  password=TEST_LOGIN_INFO["password"])
+        login = TestUtil.gitHubLogin(self)
         self.assertTrue(login)
         cookie = self.client.cookies['sessionid']
         driver = self.selenium
@@ -1154,28 +1159,7 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_unarchive_license_requests_feature(self):
         """Check if license is shifted back to license requests when unarchive button is pressed"""
-        TEST_LOGIN_INFO = {
-        "provider": "github",
-        "uid": str(getGithubUserId()),
-        "access_token": getAccessToken(),
-        "login": getGithubUserName(),
-        "id": getGithubUserId(),
-        "password": 'pass'
-        }
-        # login first
-        self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
-                                        is_active=True,
-                                        is_superuser=True)
-        self.user.set_password(TEST_LOGIN_INFO["password"])
-        self.user.save()
-        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
-        uid=TEST_LOGIN_INFO["uid"],
-        extra_data=TEST_LOGIN_INFO,
-        user=self.user)
-        self.user = authenticate(username=TEST_LOGIN_INFO["login"],
-                                 password=TEST_LOGIN_INFO["password"])
-        login = self.client.login(username=TEST_LOGIN_INFO["login"],
-                                  password=TEST_LOGIN_INFO["password"])
+        login = TestUtil.gitHubLogin(self)
         self.assertTrue(login)
         cookie = self.client.cookies['sessionid']
         driver = self.selenium
