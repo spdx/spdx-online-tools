@@ -162,7 +162,8 @@ def submitNewLicense(request):
                         licenseId = licenseRequest.id
                         serverUrl = request.build_absolute_uri('/')
                         licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                        statusCode, issueId = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
+                        statusCode, issueId = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, 
+                        licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
                         licenseRequest.issueId = issueId
                         licenseRequest.save()
                     # If the license text matches with either rejected or yet not approved license then return 409 Conflict
@@ -988,7 +989,8 @@ def promoteNamespaceRequests(request, license_id=None):
             if 'urlType' in request.POST:
                 # This is present only when executing submit license via tests
                 urlType = request.POST["urlType"]
-            statusCode,issueId = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
+            statusCode, issueId = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, 
+            licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
             return_tuple = (statusCode, licenseRequest)
             statusCode = return_tuple[0]
             if statusCode == 201:
@@ -1163,7 +1165,9 @@ def issue(request):
                     licenseRequestId = licenseRequest.id
                     serverUrl = request.build_absolute_uri('/')
                     licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
-                    statusCode,issueId = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId, diffUrl, msg)
+                    statusCode, issueId = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, 
+                    licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, 
+                    token, urlType, matchId, diffUrl, msg)
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
                 except UserSocialAuth.DoesNotExist:
