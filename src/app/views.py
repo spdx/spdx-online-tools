@@ -1165,9 +1165,9 @@ def issue(request):
                     licenseRequestId = licenseRequest.id
                     serverUrl = request.build_absolute_uri('/')
                     licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
-                    statusCode, issueId = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, 
-                    licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, 
-                    token, urlType, matchId, diffUrl, msg)
+                    statusCode, issueId = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments,
+                    licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId, 
+                    diffUrl, msg)
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
                 except UserSocialAuth.DoesNotExist:
