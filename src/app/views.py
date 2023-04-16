@@ -992,7 +992,7 @@ def promoteNamespaceRequests(request, license_id=None):
             statusCode, githubIssueId = utils.createIssue(
                 licenseAuthorName, licenseName, licenseIdentifier,
                 licenseComments,licenseSourceUrls, licenseHeader, licenseOsi,
-                licenseExamples,licenseRequestUrl, token, urlType)
+                licenseExamples, licenseRequestUrl, token, urlType)
             return_tuple = (statusCode, licenseRequest)
             statusCode = return_tuple[0]
             if statusCode == 201:
@@ -1170,7 +1170,7 @@ def issue(request):
                     statusCode, githubIssueId = utils.createIssue(
                         licenseAuthorName, licenseName, licenseIdentifier,
                         licenseComments, licenseSourceUrls, licenseHeader,
-                        licenseOsi,licenseExamples, licenseRequestUrl,
+                        licenseOsi, licenseExamples, licenseRequestUrl,
                         token, urlType, matchId, diffUrl, msg)
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
