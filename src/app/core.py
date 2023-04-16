@@ -6,7 +6,6 @@ from django.http.response import JsonResponse
 import jpype
 import os
 import sys
-import unicodedata
 
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.files.storage import FileSystemStorage
@@ -317,7 +316,7 @@ def license_validate_helper(request):
             fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
                 base_url=urljoin(settings.MEDIA_URL, folder+'/')
                 )
-            filename = fs.save(unicodedata.normalize('NFKD', myfile.name).encode('ASCII', 'ignore').decode('ASCII'), myfile)
+            filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             uploaded_file_url = fs.url(filename).replace("%20", " ")
             formatstr = request.POST["format"]
             serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
