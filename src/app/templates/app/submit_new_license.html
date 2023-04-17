@@ -617,7 +617,8 @@ async function generate_text_diff(base, newtxt){
   // Add an event listener to the "Check License Text" button
   document.getElementById('check-license-btn').addEventListener('click', function() {
     // Get the license text from the textarea
-    const licenseText = document.getElementById('{{ form.text.id_for_label }}').value;;
+    const licenseText = document.getElementById('{{ form.text.id_for_label }}').value;
+    console.log(licenseText)
     // const licenseText = "Test-Apache 2.0";
     
     // Make an AJAX call to your Django view to match the license text with existing licenses
