@@ -619,6 +619,8 @@ async function generate_text_diff(base, newtxt){
     // Get the license text from the textarea
     const licenseText = document.getElementById('{{ form.text.id_for_label }}').value;
     console.log(licenseText)
+    var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+    console.log(csrftoken)
     // const licenseText = "Test-Apache 2.0";
     
     // Make an AJAX call to your Django view to match the license text with existing licenses
@@ -627,6 +629,9 @@ async function generate_text_diff(base, newtxt){
       url: '/app/diff/',
       type: 'POST',
       data: {licensetext: licenseText},
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
       success: function (data) {
         console.log("SUCCESS : ", data);
         var matchType = data.matchType;
