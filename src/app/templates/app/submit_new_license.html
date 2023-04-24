@@ -1,15 +1,18 @@
-{% extends 'app/submit_new_license_base.html' %}
+{% extends 'app/base.html' %}
 {% load static %}
 
 {% block head_block %}
     <link href="{% static 'css/editor.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/diffview.css' %}" rel="stylesheet" type="text/css">
+    <style>
+      .container {
+        display: none;
+      }
+    </style>
 {% endblock %}
 
-{% block body1 %}
-    {% include "app/modal.html" %}
-{% endblock %}
 {% block body2 %}
+{% include "app/modal.html" %}
 <form style="display:none" id="form">
   {% csrf_token %}
 </form>
