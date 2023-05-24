@@ -38,6 +38,7 @@ class License(models.Model):
     notes = models.CharField(max_length=255, default="")
     xml = models.TextField()
     archive = models.BooleanField(default=False)
+    content = RichTextField(blank=True)
 
     class Meta:
         abstract = True
