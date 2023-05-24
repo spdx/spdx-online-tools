@@ -17,6 +17,8 @@ from datetime import datetime
 from django import forms
 from django.contrib.auth.models import User
 
+from ckeditor.fields import RichTextField
+
 class UserID(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     organisation = models.CharField("Organisation",max_length=64, null=False, blank=False)

@@ -19,6 +19,8 @@ from django.contrib.admin import widgets
 from app.models import UserID, LicenseNamespace, OrganisationName
 from app.widgets import RelatedFieldWidgetCanAdd
 
+from ckeditor.widgets import CKEditorWidget
+
 OSI_CHOICES = (
     (0, "-"),
     ("Approved", "Approved"),
@@ -83,7 +85,7 @@ class LicenseRequestForm(forms.Form):
     exampleUrl = forms.CharField(label='Example Projects / URL', required=True)
     comments = forms.CharField(label='Comments', required=True, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
     licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)
-    text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
+    text = forms.CharField(label='Text', widget=CKEditorWidget())
 
 
 class LicenseNamespaceRequestForm(forms.ModelForm):
