@@ -19,8 +19,6 @@ from django.contrib.admin import widgets
 from app.models import UserID, LicenseNamespace, OrganisationName
 from app.widgets import RelatedFieldWidgetCanAdd
 
-from ckeditor.widgets import CKEditorWidget
-
 OSI_CHOICES = (
     (0, "-"),
     ("Approved", "Approved"),
