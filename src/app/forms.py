@@ -85,7 +85,7 @@ class LicenseRequestForm(forms.Form):
     exampleUrl = forms.CharField(label='Example Projects / URL', required=True)
     comments = forms.CharField(label='Comments', required=True, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
     licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)
-    text = forms.CharField(label='Text', widget=CKEditorWidget())
+    text = forms.CharField(label='Text', widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
 
 
 class LicenseNamespaceRequestForm(forms.ModelForm):
