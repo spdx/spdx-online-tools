@@ -62,6 +62,12 @@ ATTRS_SEQ = {
             'name',
             'listVersionAdded',
         ],
+        'exception': [
+            'isOsiApproved',
+            'licenseId',
+            'name',
+            'listVersionAdded',
+        ],
         'alt': [
             'name',
             'match',
