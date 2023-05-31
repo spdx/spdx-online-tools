@@ -28,6 +28,11 @@ OSI_CHOICES = (
     ("Unknown", "Don't know")
 )
 
+YES_NO_CHOICES = (
+    (True, 'Yes'),
+    (False, 'No'),
+)
+
 class UserRegisterForm(forms.ModelForm):
 
     password = forms.CharField(widget=forms.PasswordInput())
@@ -80,7 +85,7 @@ class LicenseRequestForm(forms.Form):
     shortIdentifier = forms.CharField(label='Short identifier', max_length=25)
     sourceUrl = forms.CharField(label='Source / URL', required=False)
     osiApproved = forms.CharField(label="OSI Status", widget=forms.Select(choices=OSI_CHOICES))
-    isException = forms.BooleanField(label='Is Exception', required=False)
+    isException = forms.CharField(label="Is Exception", widget=forms.Select(choices=YES_NO_CHOICES))
     exampleUrl = forms.CharField(label='Example Projects / URL', required=True)
     comments = forms.CharField(label='Comments', required=True, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
     licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)

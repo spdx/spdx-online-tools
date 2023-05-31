@@ -109,6 +109,10 @@ def submitNewLicense(request):
                     licenseIdentifier = form.cleaned_data['shortIdentifier']
                     licenseOsi = form.cleaned_data['osiApproved']
                     isException = form.cleaned_data['isException']
+                    if isException == "False":
+                        isException = False
+                    else:
+                        isException = True
                     licenseSourceUrls = request.POST.getlist('sourceUrl')
                     licenseExamples = request.POST.getlist('exampleUrl')
                     licenseHeader = form.cleaned_data['licenseHeader']
