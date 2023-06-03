@@ -1,0 +1,21 @@
+{
+  "tagname-lowercase": true, // Enforce lowercase tag names
+  "attr-lowercase": true, // Enforce lowercase attribute names
+  "attr-value-double-quotes": true, // Require double quotes for attribute values
+  "attr-value-not-empty": true, // Disallow empty attribute values
+  "doctype-first": true, // Require the doctype declaration to be the first line
+  "tag-pair": true, // Require opening and closing tags to be paired
+  "tag-self-close": true, // Allow self-closing tags
+  "spec-char-escape": true, // Require escaping special characters
+  "id-unique": true, // Require unique IDs
+  "src-not-empty": true, // Disallow empty src attribute values
+  "alt-require": true, // Require alt attributes for images
+  "space-tab-mixed-disabled": "space", // Disallow mixed spaces and tabs, enforce spaces
+  "id-class-value": "dash", // Enforce dashes for ID and class names
+  "doctype-html5": true, // Enforce HTML5 doctype
+  "attr-no-duplication": true, // Disallow duplicate attributes
+  "title-require": true, // Require title tag in head section
+  "head-req-title": true, // Require title tag to be non-empty
+  "tag-req-attr": true, // Require attributes for specific tags
+  "attr-unsafe-chars": true // Disallow unsafe characters in attribute values
+}

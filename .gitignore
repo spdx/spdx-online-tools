@@ -132,3 +132,5 @@ data/certbot/
 
 container_logs
 
+# node modules
+node_modules/
