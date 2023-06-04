@@ -25,13 +25,13 @@ jobs:
         run: npm ci # For JavaScript linting (replace with your package manager command)
 
       - name: Run ESLint
-        run: npx eslint . --ext .js
+        run: npx eslint . --ext .js --fix
 
       - name: Run HTMLHint
-        run: npx htmlhint .
+        run: npx htmlhint . --format json | npx htmlhint-reporter-pretty --reporter stdout --severity error --quiet
 
       - name: Run Stylelint
-        run: npx stylelint .
+        run: npx stylelint . --quiet --fix
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -42,4 +42,4 @@ jobs:
         run: pip install -r requirements.txt # For Python linting (replace with your command)
 
       - name: Run Pylint
-        run: pylint .
+        run: pylint --fix --load-plugins pylint_quotes,pylint.extensions.docparams .

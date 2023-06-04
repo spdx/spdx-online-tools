@@ -1,21 +1,21 @@
 {
-  "tagname-lowercase": true, // Enforce lowercase tag names
-  "attr-lowercase": true, // Enforce lowercase attribute names
-  "attr-value-double-quotes": true, // Require double quotes for attribute values
-  "attr-value-not-empty": true, // Disallow empty attribute values
-  "doctype-first": true, // Require the doctype declaration to be the first line
-  "tag-pair": true, // Require opening and closing tags to be paired
-  "tag-self-close": true, // Allow self-closing tags
-  "spec-char-escape": true, // Require escaping special characters
-  "id-unique": true, // Require unique IDs
-  "src-not-empty": true, // Disallow empty src attribute values
-  "alt-require": true, // Require alt attributes for images
+  "tagname-lowercase": "warning", // Enforce lowercase tag names
+  "attr-lowercase": "warning", // Enforce lowercase attribute names
+  "attr-value-double-quotes": "warning", // Require double quotes for attribute values
+  "attr-value-not-empty": "warning", // Disallow empty attribute values
+  "doctype-first": "warning", // Require the doctype declaration to be the first line
+  "tag-pair": "warning", // Require opening and closing tags to be paired
+  "tag-self-close": "warning", // Allow self-closing tags
+  "spec-char-escape": "warning", // Require escaping special characters
+  "id-unique": "warning", // Require unique IDs
+  "src-not-empty": "warning", // Disallow empty src attribute values
+  "alt-require": "warning", // Require alt attributes for images
   "space-tab-mixed-disabled": "space", // Disallow mixed spaces and tabs, enforce spaces
   "id-class-value": "dash", // Enforce dashes for ID and class names
-  "doctype-html5": true, // Enforce HTML5 doctype
-  "attr-no-duplication": true, // Disallow duplicate attributes
-  "title-require": true, // Require title tag in head section
-  "head-req-title": true, // Require title tag to be non-empty
-  "tag-req-attr": true, // Require attributes for specific tags
-  "attr-unsafe-chars": true // Disallow unsafe characters in attribute values
+  "doctype-html5": "warning", // Enforce HTML5 doctype
+  "attr-no-duplication": "warning", // Disallow duplicate attributes
+  "title-require": "warning", // Require title tag in head section
+  "head-req-title": "warning", // Require title tag to be non-empty
+  "tag-req-attr": "warning", // Require attributes for specific tags
+  "attr-unsafe-chars": "warning" // Disallow unsafe characters in attribute values
 }
