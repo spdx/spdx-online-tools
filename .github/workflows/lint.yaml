@@ -35,13 +35,13 @@ jobs:
         run: npm ci # For JavaScript linting (replace with your package manager command)
 
       - name: Run ESLint
-        run: npx eslint ${{ github.event.before }}..${{ github.sha }} --ext .js --fix
+        run: npx eslint `${{ github.event.before }}..${{ github.sha }}` --ext .js --fix
 
       - name: Run HTMLHint
-        run: npx htmlhint ${{ github.event.before }}..${{ github.sha }} --format json | npx htmlhint-reporter-pretty --reporter stdout --severity error --quiet
+        run: npx htmlhint `${{ github.event.before }}..${{ github.sha }}` --format json | npx htmlhint-reporter-pretty --reporter stdout --severity error --quiet
 
       - name: Run Stylelint
-        run: npx stylelint ${{ github.event.before }}..${{ github.sha }} --quiet --fix
+        run: npx stylelint `${{ github.event.before }}..${{ github.sha }}` --quiet --fix
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -52,4 +52,4 @@ jobs:
         run: pip install -r requirements.txt # For Python linting (replace with your command)
 
       - name: Run Pylint
-        run: pylint ${{ github.event.before }}..${{ github.sha }} . --fix --load-plugins pylint_quotes,pylint.extensions.docparams .
+        run: pylint `${{ github.event.before }}..${{ github.sha }}` . --fix --load-plugins pylint_quotes,pylint.extensions.docparams .
