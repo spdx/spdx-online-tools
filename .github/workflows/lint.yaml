@@ -59,7 +59,6 @@ jobs:
         run: pip install -r requirements.txt # For Python linting (replace with your command)
 
       - name: Run Pylint
-        - name: Run Pylint
         run: |
           for file in ${{ steps.get_modified_files.outputs.files }}; do
             pylint --disable=all --enable=warning --rcfile=.pylintrc "$file" || true
