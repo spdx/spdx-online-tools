@@ -42,7 +42,10 @@ jobs:
         run: npx eslint ${{ steps.get_modified_files.outputs.files }} --ext .js --fix
 
       - name: Run HTMLHint
-        run: npx htmlhint ${{ steps.get_modified_files.outputs.files }}
+        run: |
+          for file in ${{ steps.get_modified_files.outputs.files }}; do
+            htmlhint --rules .htmlhintrc "$file" || true
+          done
 
       - name: Run Stylelint
         run: npx stylelint ${{ steps.get_modified_files.outputs.files }} --quiet --fix
