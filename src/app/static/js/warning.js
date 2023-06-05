@@ -1,5 +1,5 @@
 let MAX_FILE_SIZE = 5242880; // 5 MB in bytes
-let MAX_FILE_SIZE_STR = "8MB";
+let MAX_FILE_SIZE_STR = "5MB";
 function checkFileSize(file, warningElementJQ) {
   if (file && file.size > MAX_FILE_SIZE) {
     $(warningElementJQ)
