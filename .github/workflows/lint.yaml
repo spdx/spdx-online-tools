@@ -42,7 +42,7 @@ jobs:
         run: npx eslint ${{ steps.get_modified_files.outputs.files }} --ext .js --fix
 
       - name: Run HTMLHint
-        run: npx htmlhint ${{ steps.get_modified_files.outputs.files }} --format json | npx htmlhint-reporter-pretty --reporter stdout --severity error --quiet
+        run: npx htmlhint ${{ steps.get_modified_files.outputs.files }}
 
       - name: Run Stylelint
         run: npx stylelint ${{ steps.get_modified_files.outputs.files }} --quiet --fix
