@@ -360,6 +360,8 @@ def licenseInformation(request, licenseId):
     licenseInformation['notes'] = data['notes']
     licenseInformation['standardLicenseHeader'] = data['standardLicenseHeader']
     licenseInformation['text'] = data['text']
+    licenseInformation['issueId'] = licenseRequest.issueId
+    licenseInformation['issueUrl'] = "https://github.com/spdx/licnse-list-xml/issues/" + str(licenseRequest.issueId)
     context_dict ={'licenseInformation': licenseInformation}
     if request.method == 'POST':
         tempFilename = 'output.xml'
