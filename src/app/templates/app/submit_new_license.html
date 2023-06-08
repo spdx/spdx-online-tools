@@ -173,6 +173,10 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
 {% block script_block %}
 <script type="text/javascript">
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+});
+
 $(document).ready(function () {
     var is_touch_device = "ontouchstart" in document.documentElement;
 
