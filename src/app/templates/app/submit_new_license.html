@@ -353,13 +353,14 @@ function scrollUpAndHighlight(element) {
               success: function (data) {
                 var githubCode = data.statusCode;
                 var githubIssueId = data.issueId;
+                var githubUrl = "https://github.com/spdx/licnse-list-xml/issues/";
                 if(githubCode == '201'){
                   var successMessage = "The license request has been successfully submitted.";
                   $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
                   setTimeout(function() {
                     $("#messages").html("");
                   }, 7000);
-                  window.open("https://github.com/spdx/licnse-list-xml/issues/" + githubIssueId, "_blank");
+                  window.open(githubUrl + githubIssueId, "_blank");
                 }
                 else if(githubCode == '409'){
                   var matchType = data.matchType;
