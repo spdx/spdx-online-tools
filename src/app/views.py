@@ -1202,7 +1202,7 @@ def handle_pull_request(request, is_ns):
                     token = github_login.extra_data["access_token"]
                     username = github_login.extra_data["login"]
                     hidden_license_id = request.POST.get('hidden_license_id')
-                    license_obj = LicenseRequest.objects.get(id=license_id)
+                    license_obj = LicenseRequest.objects.get(id=hidden_license_id)
                     response = utils.makePullRequest(
                         username=username,
                         token=token,
