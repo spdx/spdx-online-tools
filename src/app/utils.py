@@ -68,6 +68,23 @@ def checkPermission(user):
     else:
         logger.error("Permission denied while accessing the github api.")
         return False
+    
+def utilForPullRequestFileCheckIfExists(file_url, headers, body, username, commit_url):
+    """ Check if file already exists """
+    response = requests.get(file_url, headers=headers)
+    if response.status_code == 200:
+        """ Creating Commit by updating the file """
+        data = json.loads(response.text)
+        file_sha = data["sha"]
+        body["sha"] = file_sha
+    response = requests.put(commit_url, headers=headers, data=json.dumps(body))
+    if not (response.status_code==201 or response.status_code==200):
+        logger.error("[Pull Request] Error occured while making commit, for {0} user. {1}".format(username, response.text))
+        return {
+            "type":"error",
+            "message":"Some error occured while making commit. Please try again later or contact the SPDX Team."
+            }
+    return response
 
 def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, plainText, is_ns):
 
@@ -193,27 +210,9 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     }
     """ Check if file already exists """
     file_url = "{0}/contents/src/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], fileName)
-    response = requests.get(file_url, headers=headers)
+    response = utilForPullRequestFileCheckIfExists(file_url, headers, body, username, commit_url)
     text_file_url = "{0}/contents/test/simpleTestForGenerator/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], textFileName)
-    text_response = requests.get(text_file_url, headers=headers)
-    if response.status_code == 200:
-        """ Creating Commit by updating the file """
-        data = json.loads(response.text)
-        file_sha = data["sha"]
-        body["sha"] = file_sha
-    if text_response.status_code == 200:
-        """ Creating Commit by updating the file """
-        data = json.loads(text_response.text)
-        file_sha = data["sha"]
-        text_file_body["sha"] = file_sha
-    response = requests.put(commit_url, headers=headers, data=json.dumps(body))
-    text_response = requests.put(text_commit_url, headers=headers, data=json.dumps(text_file_body))
-    if not (response.status_code==201 or response.status_code==200 or text_response.status_code==201 or text_response.status_code==200):
-        logger.error("[Pull Request] Error occured while making commit, for {0} user. {1}".format(username, response.text))
-        return {
-            "type":"error",
-            "message":"Some error occured while making commit. Please try again later or contact the SPDX Team."
-            }
+    text_response = utilForPullRequestFileCheckIfExists(text_file_url, headers, text_file_body, username, text_commit_url)
 
     """ Making Pull Request """
     pr_url = "{0}/pulls".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL])

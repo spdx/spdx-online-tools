@@ -1201,20 +1201,20 @@ def handle_pull_request(request, is_ns):
                     github_login = user.social_auth.get(provider="github")
                     token = github_login.extra_data["access_token"]
                     username = github_login.extra_data["login"]
-                    license_id = request.POST.get('hidden_field')
+                    hidden_license_id = request.POST.get('hidden_license_id')
                     license_obj = LicenseRequest.objects.get(id=license_id)
                     response = utils.makePullRequest(
-                        username,
-                        token,
-                        request.POST["branchName"],
-                        request.POST["updateUpstream"],
-                        request.POST["fileName"],
-                        request.POST["commitMessage"],
-                        request.POST["prTitle"],
-                        request.POST["prBody"],
-                        request.POST["xmlText"],
-                        license_obj.text,
-                        is_ns
+                        username=username,
+                        token=token,
+                        branchName=request.POST["branchName"],
+                        updateUpstream=request.POST["updateUpstream"],
+                        fileName=request.POST["fileName"],
+                        commitMessage=request.POST["commitMessage"],
+                        prTitle=request.POST["prTitle"],
+                        prBody=request.POST["prBody"],
+                        xmlText=request.POST["xmlText"],
+                        plainText=license_obj.text,
+                        is_ns=is_ns
                     )
                     if response["type"] == "success":
                         """PR made successfully"""
