@@ -44,15 +44,15 @@ class TooltipTextInput(forms.TextInput):
         context['widget']['attrs']['title'] = self.tooltip
         return context
     
-class TooltipSelect(forms.Select):
-    def __init__(self, attrs=None, choices=(), tooltip=''):
-        super().__init__(attrs, choices)
-        self.tooltip = tooltip
+class CustomSelectWidget(forms.Select):
+    def __init__(self, *args, **kwargs):
+        self.tooltip = kwargs.pop('tooltip', '')  # Get the tooltip text from widget attributes
+        super().__init__(*args, **kwargs)
 
-    def render_options(self, choices, selected_choices):
-        option_html = super().render_options(choices, selected_choices)
-        option_html = option_html.replace('<option', f'<option data-toggle="tooltip" title="{self.tooltip}"')
-        return option_html
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context['widget'].update({'attrs': {'title': self.tooltip}})  # Add the title attribute to the widget
+        return context
 
 class UserRegisterForm(forms.ModelForm):
 
@@ -105,8 +105,14 @@ class LicenseRequestForm(forms.Form):
     fullname = forms.CharField(label="Fullname", max_length=70, widget=TooltipTextInput(tooltip='Tooltip text goes here'))
     shortIdentifier = forms.CharField(label='Short identifier', max_length=25, widget=TooltipTextInput(tooltip='Tooltip text goes here'))
     sourceUrl = forms.CharField(label='Source / URL', required=False, widget=TooltipTextInput(tooltip='Tooltip text goes here'))
-    osiApproved = forms.CharField(label="OSI Status", widget=TooltipSelect(choices=OSI_CHOICES, tooltip='Tooltip text goes here'))
-    isException = forms.CharField(label="Is Exception", widget=forms.Select(choices=YES_NO_CHOICES))
+    osiApproved = forms.ChoiceField(
+        choices=OSI_CHOICES,
+        widget=CustomSelectWidget(tooltip='This is a tooltip')
+    )
+    isException = forms.ChoiceField(
+        choices=YES_NO_CHOICES,
+        widget=CustomSelectWidget(tooltip='Yes No tooltip')
+    )
     exampleUrl = forms.CharField(label='Example Projects / URL', required=True, widget=TooltipTextInput(tooltip='Tooltip text goes here'))
     comments = forms.CharField(label='Comments', required=True, widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
     licenseHeader = forms.CharField(label='Standard License Header', widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}), required=False)
