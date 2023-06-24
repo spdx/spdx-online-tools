@@ -352,7 +352,24 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     headers = {'Authorization': 'token ' + token}
     url = "{0}/issues".format(TYPE_TO_URL_LICENSE[urlType])
     r = requests.post(url, data=json.dumps(payload), headers=headers)
-    return r.status_code
+    status_code = r.status_code
+    response_json = {}
+    issue_id = ""
+
+    if status_code in [200, 201]:
+        try:
+            response_json = r.json()
+        except ValueError:
+            # Handle JSON parsing error
+            return None, None
+            
+
+    if status_code in [200, 201] and "number" in response_json:
+        issue_id = response_json["number"]
+    else:
+        issue_id = None
+
+    return status_code, issue_id
 
 
 def postToGithub(message, encodedContent, filename):

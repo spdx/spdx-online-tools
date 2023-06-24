@@ -87,6 +87,7 @@ def submitNewLicense(request):
     """
     context_dict = {}
     ajaxdict = {}
+    githubIssueId = ""
     if request.method=="POST":
         if not request.user.is_authenticated:
             if (request.is_ajax()):
@@ -162,7 +163,11 @@ def submitNewLicense(request):
                         licenseId = licenseRequest.id
                         serverUrl = request.build_absolute_uri('/')
                         licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                        statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
+                        statusCode, githubIssueId = utils.createIssue(
+                            licenseAuthorName, licenseName, licenseIdentifier,
+                            licenseComments, licenseSourceUrls, licenseHeader,
+                            licenseOsi, licenseExamples, licenseRequestUrl,
+                            token, urlType)
 
                     # If the license text matches with either rejected or yet not approved license then return 409 Conflict
                     else:
@@ -172,6 +177,7 @@ def submitNewLicense(request):
                         data['issueUrl'] = issueUrl
                     
                     data['statusCode'] = str(statusCode)
+                    data['issueId'] = str(githubIssueId)
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
                 """ User not authenticated with GitHub """
@@ -986,7 +992,10 @@ def promoteNamespaceRequests(request, license_id=None):
             if 'urlType' in request.POST:
                 # This is present only when executing submit license via tests
                 urlType = request.POST["urlType"]
-            statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
+            statusCode, githubIssueId = utils.createIssue(
+                licenseAuthorName, licenseName, licenseIdentifier,
+                licenseComments, licenseSourceUrls, licenseHeader, licenseOsi,
+                licenseExamples, licenseRequestUrl, token, urlType)
             return_tuple = (statusCode, licenseRequest)
             statusCode = return_tuple[0]
             if statusCode == 201:
@@ -1161,7 +1170,11 @@ def issue(request):
                     licenseRequestId = licenseRequest.id
                     serverUrl = request.build_absolute_uri('/')
                     licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
-                    statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId, diffUrl, msg)
+                    statusCode, githubIssueId = utils.createIssue(
+                        licenseAuthorName, licenseName, licenseIdentifier,
+                        licenseComments, licenseSourceUrls, licenseHeader,
+                        licenseOsi, licenseExamples, licenseRequestUrl, token,
+                        urlType, matchId, diffUrl, msg)
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
                 except UserSocialAuth.DoesNotExist:
