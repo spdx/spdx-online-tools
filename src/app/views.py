@@ -179,6 +179,7 @@ def submitNewLicense(request):
                         data['issueUrl'] = issueUrl
                     
                     data['statusCode'] = str(statusCode)
+                    data['issueId'] = str(githubIssueId)
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
                 """ User not authenticated with GitHub """
