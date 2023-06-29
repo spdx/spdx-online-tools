@@ -369,7 +369,7 @@ def postToGithub(message, encodedContent, filename):
 
 
 def removeSpecialCharacters(filename):
-    return unicodedata.normalize('NFKD', filename).encode('ASCII', 'ignore').decode('ASCII')
+    return re.sub(r'[#%&{}<>*?/$!\'":@+`|=]', "-", filename)
 
 
 def parseXmlString(xmlString):
