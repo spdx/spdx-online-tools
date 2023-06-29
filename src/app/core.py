@@ -316,7 +316,7 @@ def license_validate_helper(request):
             fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
                 base_url=urljoin(settings.MEDIA_URL, folder+'/')
                 )
-            filename = fs.save(myfile.name, myfile)
+            filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             uploaded_file_url = fs.url(filename).replace("%20", " ")
             formatstr = request.POST["format"]
             serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")

@@ -17,6 +17,7 @@ import json
 import logging
 import re
 import socket
+import unicodedata
 import xml.etree.cElementTree as ET
 
 import redis
@@ -365,6 +366,10 @@ def postToGithub(message, encodedContent, filename):
     url = "https://api.github.com/repos/{0}/contents/{1}".format(repo, filename)
     r = requests.put(url, data=json.dumps(payload), headers=headers)
     return r.status_code, r.json()
+
+
+def removeSpecialCharacters(filename):
+    return unicodedata.normalize('NFKD', filename).encode('ASCII', 'ignore').decode('ASCII')
 
 
 def parseXmlString(xmlString):
