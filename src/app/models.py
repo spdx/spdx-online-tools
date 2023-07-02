@@ -41,7 +41,6 @@ class License(models.Model):
         abstract = True
 
 class LicenseRequest(License):
-    issueId = models.CharField(max_length=255, default="")
 
     def __unicode__(self):
         return "%s" % (self.fullname)
