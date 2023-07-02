@@ -519,8 +519,8 @@ def check_spdx_license(licenseText):
     # if redis is empty build the spdx license list in the redis database
     if r.keys('*') == []:
         build_spdx_licenses()
-    spdxLicenseIds = list(map(lambda x: x.decode('utf-8'), list(r.keys())))
-    spdxLicenseTexts = list(map(lambda x: x.decode('utf-8'), r.mget(spdxLicenseIds)))
+    spdxLicenseIds = list(r.keys())
+    spdxLicenseTexts = r.mget(spdxLicenseIds)
     licenseData = dict(list(zip(spdxLicenseIds, spdxLicenseTexts)))
     matches = get_close_matches(licenseText, licenseData)
     if not matches:
