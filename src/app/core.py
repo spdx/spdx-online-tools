@@ -66,7 +66,7 @@ def license_compare_helper(request):
                 base_url=urljoin(settings.MEDIA_URL, folder+'/')
                 )
             for myfile in request.FILES.getlist("files"):
-                filename = fs.save(myfile.name, myfile)
+                filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
                 uploaded_file_url = fs.url(filename).replace("%20", " ")
                 callfunc.append(settings.APP_DIR+uploaded_file_url)
                 nameoffile, fileext = os.path.splitext(filename)
@@ -206,7 +206,7 @@ def ntia_check_helper(request):
             fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + folder,
                                    base_url=urljoin(settings.MEDIA_URL, folder + '/')
                                    )
-            filename = fs.save(myfile.name, myfile)
+            filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             uploaded_file_url = fs.url(filename).replace("%20", " ")
             """ Call the python SBOM Checker """
             schecker = SbomChecker(str(settings.APP_DIR + uploaded_file_url))
@@ -316,7 +316,7 @@ def license_validate_helper(request):
             fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
                 base_url=urljoin(settings.MEDIA_URL, folder+'/')
                 )
-            filename = fs.save(myfile.name, myfile)
+            filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             uploaded_file_url = fs.url(filename).replace("%20", " ")
             formatstr = request.POST["format"]
             serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
@@ -488,7 +488,7 @@ def license_convert_helper(request):
             folder = str(request.user) + "/" + str(int(time()))
             myfile = request.FILES['file']
             fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
-            filename = fs.save(myfile.name, myfile)
+            filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             uploaded_file_url = fs.url(filename).replace("%20", " ")
             option1 = request.POST["from_format"]
             option2 = request.POST["to_format"]

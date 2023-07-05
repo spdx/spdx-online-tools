@@ -168,8 +168,6 @@ def submitNewLicense(request):
                             licenseComments, licenseSourceUrls, licenseHeader,
                             licenseOsi, licenseExamples, licenseRequestUrl,
                             token, urlType)
-                        licenseRequest.issueId = githubIssueId
-                        licenseRequest.save()
 
                     # If the license text matches with either rejected or yet not approved license then return 409 Conflict
                     else:
@@ -361,8 +359,6 @@ def licenseInformation(request, licenseId):
     licenseInformation['notes'] = data['notes']
     licenseInformation['standardLicenseHeader'] = data['standardLicenseHeader']
     licenseInformation['text'] = data['text']
-    licenseInformation['issueId'] = licenseRequest.issueId
-    licenseInformation['issueUrl'] = "https://github.com/spdx/licnse-list-xml/issues/" + str(licenseRequest.issueId)
     context_dict ={'licenseInformation': licenseInformation}
     if request.method == 'POST':
         tempFilename = 'output.xml'
@@ -1177,8 +1173,8 @@ def issue(request):
                     statusCode, githubIssueId = utils.createIssue(
                         licenseAuthorName, licenseName, licenseIdentifier,
                         licenseComments, licenseSourceUrls, licenseHeader,
-                        licenseOsi, licenseExamples, licenseRequestUrl,
-                        token, urlType, matchId, diffUrl, msg)
+                        licenseOsi, licenseExamples, licenseRequestUrl, token,
+                        urlType, matchId, diffUrl, msg)
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
                 except UserSocialAuth.DoesNotExist:

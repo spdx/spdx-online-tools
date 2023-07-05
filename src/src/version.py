@@ -26,7 +26,7 @@ def get_tools_version(jar_name):
     return 'Unknown'
 
 
-spdx_online_tools_version = '1.1.1'
+spdx_online_tools_version = '1.2.1'
 
 """
 Visit https://github.com/spdx/tools-java/releases to know about the tools releases.

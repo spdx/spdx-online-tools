@@ -32,7 +32,7 @@ from json import dumps, loads
 from api.oauth import generate_github_access_token,get_user_from_token
 from api.views import generateLicenseXml
 
-from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,CheckLicenseFileUpload,SubmitLicenseModel
+from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,SubmitLicenseModel
 from django.conf import settings
 import os
 
@@ -290,7 +290,6 @@ class CheckLicenseFileUploadTests(APITestCase):
             u.delete()
         except ObjectDoesNotExist:
             pass
-        CheckLicenseFileUpload.objects.all().delete()
 
     def test_checklicense_api(self):
         """Access get without login"""
