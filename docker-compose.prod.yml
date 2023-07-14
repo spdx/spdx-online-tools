@@ -31,7 +31,7 @@ services:
     build:
       context: ./
       dockerfile: dockerfile.prod
-    image: 410487266669.dkr.ecr.us-west-2.amazonaws.com/spdx/online-tools:1.1.1
+    image: 410487266669.dkr.ecr.us-west-2.amazonaws.com/spdx/online-tools:1.2.1
     expose:
       - 8000
     volumes:
