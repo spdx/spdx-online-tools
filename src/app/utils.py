@@ -17,7 +17,6 @@ import json
 import logging
 import re
 import socket
-import unicodedata
 import xml.etree.cElementTree as ET
 
 import redis
@@ -69,8 +68,25 @@ def checkPermission(user):
     else:
         logger.error("Permission denied while accessing the github api.")
         return False
+    
+def utilForPullRequestFileCheckIfExists(file_url, headers, body, username, commit_url):
+    """ Check if file already exists """
+    response = requests.get(file_url, headers=headers)
+    if response.status_code == 200:
+        """ Creating Commit by updating the file """
+        data = json.loads(response.text)
+        file_sha = data["sha"]
+        body["sha"] = file_sha
+    response = requests.put(commit_url, headers=headers, data=json.dumps(body))
+    if not (response.status_code==201 or response.status_code==200):
+        logger.error("[Pull Request] Error occured while making commit, for {0} user. {1}".format(username, response.text))
+        return {
+            "type":"error",
+            "message":"Some error occured while making commit. Please try again later or contact the SPDX Team."
+            }
+    return response
 
-def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, is_ns):
+def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, plainText, is_ns):
 
     if not xmlText:
         logger.error("Error occurred while getting xml text. The xml text is empty")
@@ -172,31 +188,31 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     """ Creating Commit """
     if fileName[-4:] == ".xml":
         fileName = fileName[:-4]
+    textFileName = fileName + ".txt"
     fileName += ".xml"
     commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)
+    text_commit_url = "{0}repos/{1}/{2}/contents/test/simpleTestForGenerator/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, textFileName)
     xmlText = xmlText.encode('utf-8') if isinstance(xmlText, str) else xmlText
     fileContent = base64.b64encode(xmlText).decode()
+    plainText = plainText.encode('utf-8') if isinstance(plainText, str) else plainText
+    textFileContent = base64.b64encode(plainText).decode()
     body = {
         "path":"src/"+fileName,
         "message":commitMessage,
         "content":fileContent,
         "branch":branchName,
     }
+    text_file_body = {
+        "path":"src/"+ textFileName,
+        "message":commitMessage,
+        "content":textFileContent,
+        "branch":branchName,
+    }
     """ Check if file already exists """
     file_url = "{0}/contents/src/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], fileName)
-    response = requests.get(file_url, headers=headers)
-    if response.status_code == 200:
-        """ Creating Commit by updating the file """
-        data = json.loads(response.text)
-        file_sha = data["sha"]
-        body["sha"] = file_sha
-    response = requests.put(commit_url, headers=headers, data=json.dumps(body))
-    if not (response.status_code==201 or response.status_code==200):
-        logger.error("[Pull Request] Error occured while making commit, for {0} user. {1}".format(username, response.text))
-        return {
-            "type":"error",
-            "message":"Some error occured while making commit. Please try again later or contact the SPDX Team."
-            }
+    response = utilForPullRequestFileCheckIfExists(file_url, headers, body, username, commit_url)
+    text_file_url = "{0}/contents/test/simpleTestForGenerator/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], textFileName)
+    text_response = utilForPullRequestFileCheckIfExists(text_file_url, headers, text_file_body, username, text_commit_url)
 
     """ Making Pull Request """
     pr_url = "{0}/pulls".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL])
@@ -353,24 +369,7 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     headers = {'Authorization': 'token ' + token}
     url = "{0}/issues".format(TYPE_TO_URL_LICENSE[urlType])
     r = requests.post(url, data=json.dumps(payload), headers=headers)
-    status_code = r.status_code
-    response_json = {}
-    issue_id = ""
-
-    if status_code in [200, 201]:
-        try:
-            response_json = r.json()
-        except ValueError:
-            # Handle JSON parsing error
-            return None, None
-            
-
-    if status_code in [200, 201] and "number" in response_json:
-        issue_id = response_json["number"]
-    else:
-        issue_id = None
-
-    return status_code, issue_id
+    return r.status_code
 
 
 def postToGithub(message, encodedContent, filename):
@@ -383,10 +382,6 @@ def postToGithub(message, encodedContent, filename):
     url = "https://api.github.com/repos/{0}/contents/{1}".format(repo, filename)
     r = requests.put(url, data=json.dumps(payload), headers=headers)
     return r.status_code, r.json()
-
-
-def removeSpecialCharacters(filename):
-    return re.sub(r'[#%&{}<>*?/$!\'":@+`|=]', "-", filename)
 
 
 def parseXmlString(xmlString):
@@ -594,3 +589,4 @@ def formatToContentType(to_format):
         return "application/xml"
     else :
         return ".invalid"
+    
