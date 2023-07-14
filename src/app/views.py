@@ -109,6 +109,11 @@ def submitNewLicense(request):
                     licenseName = form.cleaned_data['fullname']
                     licenseIdentifier = form.cleaned_data['shortIdentifier']
                     licenseOsi = form.cleaned_data['osiApproved']
+                    isException = form.cleaned_data['isException']
+                    if isException == "False":
+                        isException = False
+                    else:
+                        isException = True
                     licenseSourceUrls = request.POST.getlist('sourceUrl')
                     licenseExamples = request.POST.getlist('exampleUrl')
                     licenseHeader = form.cleaned_data['licenseHeader']
@@ -155,10 +160,10 @@ def submitNewLicense(request):
                     # Check if the license text doesn't matches with the rejected as well as not yet approved licenses
                     if not matches:
                         xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
-                            listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+                            listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText, isException)
                         now = datetime.datetime.now()
                         licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                            submissionDatetime=now, notes=licenseNotes, xml=xml)
+                            submissionDatetime=now, notes=licenseNotes, xml=xml, text=licenseText, isException=isException)
                         licenseRequest.save()
                         licenseId = licenseRequest.id
                         serverUrl = request.build_absolute_uri('/')
@@ -858,7 +863,7 @@ def license_xml_edit(request, page_id):
         return HttpResponseRedirect('/app/xml_upload')
 
 
-def get_context_dict_for_license_xml(request, license_obj):
+def get_context_dict_for_license_xml(request, license_obj, license_id):
     context_dict = {}
     if request.user.is_authenticated:
         user = request.user
@@ -869,6 +874,7 @@ def get_context_dict_for_license_xml(request, license_obj):
         context_dict["github_login"] = github_login
     context_dict["xml_text"] = license_obj.xml
     context_dict["license_name"] = license_obj.fullname
+    context_dict["license_id"] = license_id
     return context_dict
 
 
@@ -879,7 +885,7 @@ def edit_license_xml(request, license_id=None):
         if not LicenseRequest.objects.filter(id=license_id).exists():
             return render(request, "404.html", {}, status=404)
         license_obj = LicenseRequest.objects.get(id=license_id)
-        context_dict = get_context_dict_for_license_xml(request, license_obj)
+        context_dict = get_context_dict_for_license_xml(request, license_obj, license_id)
         return render(request, "app/editor.html", context_dict, status=200)
     else:
         return HttpResponseRedirect('/app/license_requests')
@@ -892,7 +898,7 @@ def edit_license_namespace_xml(request, license_id=None):
         if not LicenseNamespace.objects.filter(id=license_id).exists():
             return render(request, "404.html", {}, status=404)
         license_obj = LicenseNamespace.objects.get(id=license_id)
-        context_dict = get_context_dict_for_license_xml(request, license_obj)
+        context_dict = get_context_dict_for_license_xml(request, license_obj, license_id)
         return render(request, "app/ns_editor.html", context_dict, status=200)
     else:
         return HttpResponseRedirect('/app/license_namespace_requests')
@@ -983,7 +989,7 @@ def promoteNamespaceRequests(request, license_id=None):
                 listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
             now = datetime.datetime.now()
             licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml)
+                submissionDatetime=now, userEmail=userEmail, notes=licenseNotes, xml=xml, text=licenseText)
             licenseRequest.save()
             licenseId = licenseRequest.id
             serverUrl = request.build_absolute_uri('/')
@@ -1213,6 +1219,8 @@ def handle_pull_request(request, is_ns):
                     github_login = user.social_auth.get(provider="github")
                     token = github_login.extra_data["access_token"]
                     username = github_login.extra_data["login"]
+                    license_id = request.POST.get('hidden_field')
+                    license_obj = LicenseRequest.objects.get(id=license_id)
                     response = utils.makePullRequest(
                         username,
                         token,
@@ -1223,6 +1231,8 @@ def handle_pull_request(request, is_ns):
                         request.POST["prTitle"],
                         request.POST["prBody"],
                         request.POST["xmlText"],
+                        license_obj.text,
+                        license_obj.isException,
                         is_ns,
                     )
                     if response["type"] == "success":

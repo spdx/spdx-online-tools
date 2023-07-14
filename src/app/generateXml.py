@@ -131,7 +131,7 @@ def getTextElement(points):
     return elements[0]
 
 
-def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
+def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText, isException=False):
     """ Generate a spdx license xml
     returns the license xml as a string
     """
@@ -140,7 +140,10 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAd
         licenseOsi = "true"
     else:
         licenseOsi = "false"
-    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, listVersionAdded=listVersionAdded, name=licenseName)
+    if isException:
+        license = ET.SubElement(root, "exception", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, listVersionAdded=listVersionAdded, name=licenseName)
+    else:
+        license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, listVersionAdded=listVersionAdded, name=licenseName)
     crossRefs = ET.SubElement(license, "crossRefs")
     for sourceUrl in licenseSourceUrls:
         ET.SubElement(crossRefs, "crossRef").text = sourceUrl
