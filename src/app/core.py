@@ -521,7 +521,7 @@ def license_convert_helper(request):
             else :
                 if (request.is_ajax()):
                     ajaxdict["type"] = "warning"
-                    warnings = str(retval)
+                    warnings = str(warnings)
                     ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ":<br />\n" + warnings.replace('\n', '<br />\n')
                     ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                     response = dumps(ajaxdict)
