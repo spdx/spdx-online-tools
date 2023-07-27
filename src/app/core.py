@@ -222,7 +222,7 @@ def ntia_check_helper(request):
                 if (request.is_ajax()):
                     ajaxdict["type"] = "warning"
                     warnings = str(retval)
-                    ajaxdict["data"] = "The following warning(s) were raised:\n" + warnings.replace('\n', '<br />')
+                    ajaxdict["data"] = "The following warning(s) were raised:<br />\n" + warnings.replace('\n', '<br />\n')
                     response = dumps(ajaxdict)
                     result['response'] = response
                     result['status'] = 400
@@ -329,7 +329,7 @@ def license_validate_helper(request):
                 if (request.is_ajax()):
                     ajaxdict["type"] = "warning"
                     warnings = str(retval)
-                    ajaxdict["data"] = "The following warning(s) were raised:\n" + warnings.replace('\n', '<br />')
+                    ajaxdict["data"] = "The following warning(s) were raised:<br />\n" + warnings.replace('\n', '<br />\n')
                     response = dumps(ajaxdict)
                     result['response'] = response
                     result['status'] = 400
@@ -522,7 +522,7 @@ def license_convert_helper(request):
                 if (request.is_ajax()):
                     ajaxdict["type"] = "warning"
                     warnings = str(retval)
-                    ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ": " + warnings.replace('\n', '<br />')
+                    ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ":<br />\n" + warnings.replace('\n', '<br />\n')
                     ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                     response = dumps(ajaxdict)
                     result['response'] = response
