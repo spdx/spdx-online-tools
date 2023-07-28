@@ -62,6 +62,11 @@ ATTRS_SEQ = {
             'name',
             'listVersionAdded',
         ],
+        'exception': [
+            'licenseId',
+            'name',
+            'listVersionAdded',
+        ],
         'alt': [
             'name',
             'match',
