@@ -652,7 +652,6 @@ def check_license(request):
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
 
-
 def license_diff(request):
     """ View for diff section tool
     returns license_diff.html template
