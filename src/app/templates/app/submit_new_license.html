@@ -132,10 +132,11 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Text of license
+      <label class="control-label col-sm-3" for="{{form.text.id_for_label}}">Text of license
       </label>
         <div class="col-sm-6">
           {{ form.text }}
+          <button type="button" id="check-license-btn">Check License Text</button>
         </div>
           <!-- <a href="/app/diff" target="_blank">Check License Diff</a> -->
       </div>
@@ -172,6 +173,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 {% endblock %}
 
 {% block script_block %}
+<script src="{% static 'js/utils.js' %}"></script>
 <script type="text/javascript">
 $(function () {
     $('[data-toggle="tooltip"]').tooltip();
@@ -627,6 +629,23 @@ async function generate_text_diff(base, newtxt){
       makeIssue(LicenseData.data);
     });
   }
+</script>
+<script type="text/javascript">
+  // Add an event listener to the "Check License Text" button
+  document.getElementById('check-license-btn').addEventListener('click', function() {
+    // Get the license text from the request
+    const licenseText = document.getElementById('{{ form.text.id_for_label }}').value;
+    var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+    var request =  {
+      url: '/app/diff/',
+      type: 'POST',
+      data: {licensetext: licenseText},
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    }
+    doRequest(request);
+  });
 </script>
 <script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
