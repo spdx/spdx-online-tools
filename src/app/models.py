@@ -36,6 +36,7 @@ class License(models.Model):
     notes = models.CharField(max_length=255, default="")
     xml = models.TextField()
     text = models.TextField(default="")
+    isException = models.BooleanField(default=True)
     archive = models.BooleanField(default=False)
 
     class Meta:

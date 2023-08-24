@@ -86,7 +86,7 @@ def utilForPullRequestFileCheckIfExists(file_url, headers, body, username, commi
             }
     return response
 
-def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, plainText, is_ns):
+def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, plainText, isException, is_ns):
 
     if not xmlText:
         logger.error("Error occurred while getting xml text. The xml text is empty")
@@ -188,9 +188,16 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     """ Creating Commit """
     if fileName[-4:] == ".xml":
         fileName = fileName[:-4]
-    textFileName = fileName + ".txt"
-    fileName += ".xml"
-    commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)
+    if isException:
+        textFileName = fileName + "-exception.txt"
+        fileName += "-exception.xml"
+    else:
+        textFileName = fileName + ".txt"
+        fileName += ".xml"
+    if isException:
+        commit_url = "{0}repos/{1}/{2}/contents/src/exceptions/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)
+    else:
+        commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)        
     text_commit_url = "{0}repos/{1}/{2}/contents/test/simpleTestForGenerator/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, textFileName)
     xmlText = xmlText.encode('utf-8') if isinstance(xmlText, str) else xmlText
     fileContent = base64.b64encode(xmlText).decode()
@@ -209,7 +216,10 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         "branch":branchName,
     }
     """ Check if file already exists """
-    file_url = "{0}/contents/src/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], fileName)
+    if isException:
+        file_url = "{0}/contents/src/exceptions/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], fileName)
+    else:
+        file_url = "{0}/contents/src/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], fileName)      
     response = utilForPullRequestFileCheckIfExists(file_url, headers, body, username, commit_url)
     text_file_url = "{0}/contents/test/simpleTestForGenerator/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], textFileName)
     text_response = utilForPullRequestFileCheckIfExists(text_file_url, headers, text_file_body, username, text_commit_url)
@@ -369,7 +379,24 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     headers = {'Authorization': 'token ' + token}
     url = "{0}/issues".format(TYPE_TO_URL_LICENSE[urlType])
     r = requests.post(url, data=json.dumps(payload), headers=headers)
-    return r.status_code
+    status_code = r.status_code
+    response_json = {}
+    issue_id = ""
+
+    if status_code in [200, 201]:
+        try:
+            response_json = r.json()
+        except ValueError:
+            # Handle JSON parsing error
+            return None, None
+            
+
+    if status_code in [200, 201] and "number" in response_json:
+        issue_id = response_json["number"]
+    else:
+        issue_id = None
+
+    return status_code, issue_id
 
 
 def postToGithub(message, encodedContent, filename):

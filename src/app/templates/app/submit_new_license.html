@@ -123,6 +123,15 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
+      <label class="control-label col-sm-3" >Is Exception</label>
+        <div class="col-sm-4">
+          {{ form.isException }}
+        </div>
+      </div>
+    </div>
+
+    <div class = "form-group">
+      <div class="col-sm-12">
       <label class="control-label col-sm-3" for="{{form.text.id_for_label}}">Text of license
       </label>
         <div class="col-sm-6">
@@ -166,6 +175,10 @@ Once you have submitted a license, please follow the <a href="https://github.com
 {% block script_block %}
 <script src="{% static 'js/utils.js' %}"></script>
 <script type="text/javascript">
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+});
+
 $(document).ready(function () {
     var is_touch_device = "ontouchstart" in document.documentElement;
 
@@ -359,10 +372,10 @@ function scrollUpAndHighlight(element) {
                 if(githubCode == '201'){
                   var successMessage = "The license request has been successfully submitted.";
                   $("#messages").html('<div class="alert alert-success alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Success! </strong>'+ successMessage +'</div>');
-                  setTimeout(function() {
-                    $("#messages").html("");
-                  }, 7000);
-                  window.open(githubUrl + githubIssueId, "_blank");
+                      setTimeout(function() {
+                        $("#messages").html("");
+                      }, 7000);
+                      window.open(githubUrl + githubIssueId, "_blank");
                 }
                 else if(githubCode == '409'){
                   var matchType = data.matchType;

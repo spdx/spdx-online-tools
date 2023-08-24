@@ -87,6 +87,7 @@ def submitNewLicense(request):
     """
     context_dict = {}
     ajaxdict = {}
+    githubIssueId = ""
     if request.method=="POST":
         if not request.user.is_authenticated:
             if (request.is_ajax()):
@@ -108,6 +109,11 @@ def submitNewLicense(request):
                     licenseName = form.cleaned_data['fullname']
                     licenseIdentifier = form.cleaned_data['shortIdentifier']
                     licenseOsi = form.cleaned_data['osiApproved']
+                    isException = form.cleaned_data['isException']
+                    if isException == "False":
+                        isException = False
+                    else:
+                        isException = True
                     licenseSourceUrls = request.POST.getlist('sourceUrl')
                     licenseExamples = request.POST.getlist('exampleUrl')
                     licenseHeader = form.cleaned_data['licenseHeader']
@@ -154,15 +160,19 @@ def submitNewLicense(request):
                     # Check if the license text doesn't matches with the rejected as well as not yet approved licenses
                     if not matches:
                         xml = generateLicenseXml(licenseOsi, licenseIdentifier, licenseName,
-                            listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
+                            listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText, isException)
                         now = datetime.datetime.now()
                         licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                            submissionDatetime=now, notes=licenseNotes, xml=xml, text=licenseText)
+                            submissionDatetime=now, notes=licenseNotes, xml=xml, text=licenseText, isException=isException)
                         licenseRequest.save()
                         licenseId = licenseRequest.id
                         serverUrl = request.build_absolute_uri('/')
                         licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                        statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
+                        statusCode, githubIssueId = utils.createIssue(
+                            licenseAuthorName, licenseName, licenseIdentifier,
+                            licenseComments, licenseSourceUrls, licenseHeader,
+                            licenseOsi, licenseExamples, licenseRequestUrl,
+                            token, urlType)
 
                     # If the license text matches with either rejected or yet not approved license then return 409 Conflict
                     else:
@@ -172,6 +182,7 @@ def submitNewLicense(request):
                         data['issueUrl'] = issueUrl
                     
                     data['statusCode'] = str(statusCode)
+                    data['issueId'] = str(githubIssueId)
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
                 """ User not authenticated with GitHub """
@@ -986,7 +997,10 @@ def promoteNamespaceRequests(request, license_id=None):
             if 'urlType' in request.POST:
                 # This is present only when executing submit license via tests
                 urlType = request.POST["urlType"]
-            statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType)
+            statusCode, githubIssueId = utils.createIssue(
+                licenseAuthorName, licenseName, licenseIdentifier,
+                licenseComments, licenseSourceUrls, licenseHeader, licenseOsi,
+                licenseExamples, licenseRequestUrl, token, urlType)
             return_tuple = (statusCode, licenseRequest)
             statusCode = return_tuple[0]
             if statusCode == 201:
@@ -1156,12 +1170,16 @@ def issue(request):
                         listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText)
                     now = datetime.datetime.now()
                     licenseRequest = LicenseRequest(licenseAuthorName=licenseAuthorName, fullname=licenseName, shortIdentifier=licenseIdentifier,
-                        submissionDatetime=now, notes=licenseNotes, xml=xml, text=licenseText)
+                        submissionDatetime=now, notes=licenseNotes, xml=xml)
                     licenseRequest.save()
                     licenseRequestId = licenseRequest.id
                     serverUrl = request.build_absolute_uri('/')
                     licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
-                    statusCode = utils.createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId, diffUrl, msg)
+                    statusCode, githubIssueId = utils.createIssue(
+                        licenseAuthorName, licenseName, licenseIdentifier,
+                        licenseComments, licenseSourceUrls, licenseHeader,
+                        licenseOsi, licenseExamples, licenseRequestUrl, token,
+                        urlType, matchId, diffUrl, msg)
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
                 except UserSocialAuth.DoesNotExist:
@@ -1200,20 +1218,22 @@ def handle_pull_request(request, is_ns):
                     github_login = user.social_auth.get(provider="github")
                     token = github_login.extra_data["access_token"]
                     username = github_login.extra_data["login"]
-                    hidden_license_id = request.POST.get('hidden_license_id')
-                    license_obj = LicenseRequest.objects.get(id=hidden_license_id)
+                    license_id = request.POST.get('hidden_license_id')
+                    print(request)
+                    license_obj = LicenseRequest.objects.get(id=license_id)
                     response = utils.makePullRequest(
-                        username=username,
-                        token=token,
-                        branchName=request.POST["branchName"],
-                        updateUpstream=request.POST["updateUpstream"],
-                        fileName=request.POST["fileName"],
-                        commitMessage=request.POST["commitMessage"],
-                        prTitle=request.POST["prTitle"],
-                        prBody=request.POST["prBody"],
-                        xmlText=request.POST["xmlText"],
-                        plainText=license_obj.text,
-                        is_ns=is_ns
+                        username,
+                        token,
+                        request.POST["branchName"],
+                        request.POST["updateUpstream"],
+                        request.POST["fileName"],
+                        request.POST["commitMessage"],
+                        request.POST["prTitle"],
+                        request.POST["prBody"],
+                        request.POST["xmlText"],
+                        license_obj.text,
+                        license_obj.isException,
+                        is_ns,
                     )
                     if response["type"] == "success":
                         """PR made successfully"""
