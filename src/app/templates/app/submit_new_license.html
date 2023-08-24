@@ -617,10 +617,10 @@ async function generate_text_diff(base, newtxt){
 <script type="text/javascript">
   // Add an event listener to the "Check License Text" button
   document.getElementById('check-license-btn').addEventListener('click', function() {
-    // Get the license text from the textarea
+    // Get the license text from the request
     const licenseText = document.getElementById('{{ form.text.id_for_label }}').value;
     var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
-    var dict1 = {
+    var request =  {
       url: '/app/diff/',
       type: 'POST',
       data: {licensetext: licenseText},
@@ -628,7 +628,7 @@ async function generate_text_diff(base, newtxt){
         'X-CSRFToken': csrftoken
       }
     }
-    doRequest(dict1);
+    doRequest(request);
     // const licenseText = "Test-Apache 2.0";
     
     // Make an AJAX call to your Django view to match the license text with existing licenses
