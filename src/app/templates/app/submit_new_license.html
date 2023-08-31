@@ -70,7 +70,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Briefly explain how this license <br />meets the
+      <label class="control-label col-sm-3" >Briefly explain how this license or exception<br />meets the
         <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-inclusion-principles.md">
           license inclusion principles
         </a>
@@ -83,7 +83,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Full name or title of license 
+      <label class="control-label col-sm-3" >Full name or title of license or exception
       </label>
         <div class="col-sm-4">
           {{ form.fullname }}
@@ -123,7 +123,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Is Exception</label>
+      <label class="control-label col-sm-3" >Is this a license exception?</label>
         <div class="col-sm-4">
           {{ form.isException }}
         </div>
@@ -132,7 +132,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" for="{{form.text.id_for_label}}">Text of license
+      <label class="control-label col-sm-3" for="{{form.text.id_for_label}}">Text of license or exception <br />(See <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS">Fields, section G</a> for formatting guidelines)
       </label>
         <div class="col-sm-6">
           {{ form.text }}
