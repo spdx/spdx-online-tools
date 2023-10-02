@@ -411,6 +411,9 @@ def postToGithub(message, encodedContent, filename):
     return r.status_code, r.json()
 
 
+def removeSpecialCharacters(filename):
+    return re.sub(r'[#%&{}<>*?/$!\'":@+`|=]', "-", filename)
+
 def parseXmlString(xmlString):
     """ View for generating a spdx license xml
     returns a dictionary with the xmlString license fields values
