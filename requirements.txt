@@ -9,7 +9,7 @@ webdriver-manager==3.4.2
 social-auth-core==4.1.0
 social-auth-app-django==4.0.0
 python-dotenv==0.17.1
-gevent==21.12.0
+gevent==23.9.1
 gunicorn==20.1.0
 #for testing
 selenium==3.14.1
