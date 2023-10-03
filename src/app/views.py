@@ -110,10 +110,10 @@ def submitNewLicense(request):
                     licenseIdentifier = form.cleaned_data['shortIdentifier']
                     licenseOsi = form.cleaned_data['osiApproved']
                     isException = form.cleaned_data['isException']
-                    if isException == "False":
-                        isException = False
-                    else:
+                    if isException.lower() == "true":
                         isException = True
+                    else:
+                        isException = False
                     licenseSourceUrls = request.POST.getlist('sourceUrl')
                     licenseExamples = request.POST.getlist('exampleUrl')
                     licenseHeader = form.cleaned_data['licenseHeader']
@@ -1222,18 +1222,18 @@ def handle_pull_request(request, is_ns):
                     print(request)
                     license_obj = LicenseRequest.objects.get(id=license_id)
                     response = utils.makePullRequest(
-                        username,
-                        token,
-                        request.POST["branchName"],
-                        request.POST["updateUpstream"],
-                        request.POST["fileName"],
-                        request.POST["commitMessage"],
-                        request.POST["prTitle"],
-                        request.POST["prBody"],
-                        request.POST["xmlText"],
-                        license_obj.text,
-                        license_obj.isException,
-                        is_ns,
+                        username=username,
+                        token=token,
+                        branchName=request.POST["branchName"],
+                        updateUpstream=request.POST["updateUpstream"],
+                        fileName=request.POST["fileName"],
+                        commitMessage=request.POST["commitMessage"],
+                        prTitle=request.POST["prTitle"],
+                        prBody=request.POST["prBody"],
+                        xmlText=request.POST["xmlText"],
+                        plainText=license_obj.text,
+                        isException=license_obj.isException,
+                        is_ns=is_ns,
                     )
                     if response["type"] == "success":
                         """PR made successfully"""

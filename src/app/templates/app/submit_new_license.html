@@ -635,6 +635,9 @@ async function generate_text_diff(base, newtxt){
   document.getElementById('check-license-btn').addEventListener('click', function() {
     // Get the license text from the request
     const licenseText = document.getElementById('{{ form.text.id_for_label }}').value;
+    if (licenseText === "") {
+      return;
+    }
     var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
     var request =  {
       url: '/app/diff/',
@@ -644,7 +647,7 @@ async function generate_text_diff(base, newtxt){
         'X-CSRFToken': csrftoken
       }
     }
-    doRequest(request);
+    findLicenseMatch(request);
   });
 </script>
 <script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>

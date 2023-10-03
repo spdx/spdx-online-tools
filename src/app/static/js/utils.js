@@ -1,6 +1,6 @@
-function doRequest(dict1) {
+function findLicenseMatch(request) {
   $.ajax({
-    ...dict1,
+    ...request,
     success: function (data) {
       console.log("SUCCESS : ", data);
       var matchType = data.matchType;
