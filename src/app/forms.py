@@ -29,8 +29,8 @@ OSI_CHOICES = (
 )
 
 YES_NO_CHOICES = (
-    (True, 'Yes'),
     (False, 'No'),
+    (True, 'Yes'),
 )
 
 class TooltipTextInput(forms.TextInput):
