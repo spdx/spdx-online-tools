@@ -1,4 +1,4 @@
-Django==3.2.20
+Django==3.2.23
 jpype1==1.3.0
 numpy==1.22.0
 djangorestframework==3.12.2
