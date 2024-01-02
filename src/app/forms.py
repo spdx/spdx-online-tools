@@ -103,7 +103,7 @@ class LicenseRequestForm(forms.Form):
 
     licenseAuthorName = forms.CharField(label="License Author name", max_length=100, required=False, widget=TooltipTextInput(tooltip='License Author name goes here'))
     fullname = forms.CharField(label="Fullname", max_length=70, widget=TooltipTextInput(tooltip='Full Identifier of the license text goes here'))
-    shortIdentifier = forms.CharField(label='Short identifier', max_length=25, widget=TooltipTextInput(tooltip='A short identifier of the license'))
+    shortIdentifier = forms.CharField(label='Short identifier', max_length=50, widget=TooltipTextInput(tooltip='A short identifier of the license'))
     sourceUrl = forms.CharField(label='Source / URL', required=False, widget=TooltipTextInput(tooltip='Source URL for the license text'))
     osiApproved = forms.ChoiceField(
         choices=OSI_CHOICES,
