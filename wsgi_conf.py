@@ -13,4 +13,3 @@ worker_class = 'gevent'
 workers = max_workers()
 threads = 2
 timeout = 240
-
