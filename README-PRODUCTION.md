@@ -4,6 +4,43 @@ The deployment environment is Docker running on an AWS EC2 server serving the Dj
 
 Docker images are stored in Amazon ECR
 
+# Runtime Environment Description
+
+This runtime environment is configured to host a Django web application using Gunicorn and Supervisor within a Docker container. Below are the key components and their functionalities:
+
+### Components:
+
+#### Docker
+
+- The application is containerized using Docker, facilitating consistent deployment across different environments.
+
+#### Supervisor
+
+- Supervisor is used to manage processes within the Docker container.
+- `supervisor_api.conf` is the Supervisor configuration file responsible for defining and supervising the application's processes.
+
+#### Gunicorn
+
+- Gunicorn, a WSGI HTTP server for Python, is employed to serve the Django web application.
+- It is invoked by Supervisor to handle incoming HTTP requests.
+
+#### Django
+
+- The Django web framework powers the application.
+- The WSGI script is used to interface between Django and Gunicorn for handling HTTP requests and responses.
+- Detailed information about Django deployment via WSGI can be found in the [Django documentation](https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/).
+
+### Startup Process:
+
+- Upon container initialization, Supervisor orchestrates the startup sequence.
+- The last line in the Dockerfile triggers the execution of Supervisor to manage the defined processes.
+- Supervisor, as configured in `supervisor_api.conf`, launches Gunicorn, which in turn runs the WSGI script to initialize and serve the Django application.
+
+### Additional Notes:
+
+- Customization of Supervisor or Gunicorn configurations can be done by modifying the respective configuration files (`supervisor_api.conf` for Supervisor and Gunicorn configuration files).
+- Adjustments to Django settings or additional dependencies should be appropriately managed within the Django application.
+
 # Updating the image
 
 Following are the steps for updating the images:
