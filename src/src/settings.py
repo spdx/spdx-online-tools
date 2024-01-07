@@ -19,6 +19,7 @@ APP_DIR = os.path.join(BASE_DIR,'app')
 API_DIR = os.path.join(BASE_DIR,'api')
 TEMPLATE_DIR = os.path.join(APP_DIR, 'templates')
 STATIC_PATH = os.path.join(APP_DIR,'static')
+STATIC_ROOT = STATIC_PATH
 EXAMPLES_DIR = os.path.join(BASE_DIR,'examples')
 
 LICENSE_PROD_REPO_NAME = "license-list-XML"
@@ -187,9 +188,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-	STATIC_PATH,
-]
+"""
+Remove STATIC_ROOT from STATICFILES_DIRS: Ensure that STATICFILES_DIRS does not include the same directory as STATIC_ROOT. 
+You should only list directories that are not already covered by STATIC_ROOT.
+"""
+
+# STATICFILES_DIRS = [
+# 	STATIC_PATH,
+# ]
 
 # Media files (Downloadable files)
 

@@ -10,7 +10,7 @@ COPY requirements.txt .
 # install psycopg2 dependencies
 RUN apt-get update \
     && apt-get -y install libpq-dev gcc python-dev musl-dev
-	
+
 # install psycopg2
 RUN pip install psycopg2-binary==2.9.3
 
@@ -58,4 +58,5 @@ EXPOSE 8000
 RUN mv ./supervisor_api.conf /etc/supervisor/conf.d
 
 # Start the supervisor
-CMD /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
+CMD python src/manage.py collectstatic && \ 
+    /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
