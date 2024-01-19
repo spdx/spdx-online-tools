@@ -29,6 +29,6 @@ EXPOSE 8000
 
 # Run migrations and start the development server on port 8000
 CMD python src/manage.py migrate && \ 
-    python src/manage.py collectstatic && \ 
+    python src/manage.py collectstatic --noinput && \ 
     python src/populate.py && \
     python src/manage.py runserver 0.0.0.0:8000

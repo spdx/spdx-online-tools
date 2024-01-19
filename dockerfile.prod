@@ -58,5 +58,5 @@ EXPOSE 8000
 RUN mv ./supervisor_api.conf /etc/supervisor/conf.d
 
 # Start the supervisor
-CMD python src/manage.py collectstatic && \ 
+CMD python src/manage.py collectstatic --noinput && \ 
     /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
