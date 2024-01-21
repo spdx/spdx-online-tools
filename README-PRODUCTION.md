@@ -53,21 +53,13 @@ Following are the steps for updating the images:
 - Build the image by running `docker-compose -f docker-compose.prod.yml build`
 - Test the image for vulnerability by running `docker scan [image]` where `[image]` is the image name from the docker-compose.prod.yml file
   - Update any dependencies as needed based on the vulnerability report
-- Push the image to AWS ECR - This is not necessary if the image is rebuilt on the deployment architecture
-  - Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the `region` and `account ID`
-  - Push the images by running `docker-compose -f docker-compose.prod.yml push`
 - Deploy the images on EC2
-  - Clone this repo on the EC2 instance - a convenient way to copy of the docker-compose files
-  - Login to ECR using the AWS CLI by running `sudo docker login -u AWS -p $(aws ecr get-login-password --region <region>) <accountid>.dkr.ecr.<region>.amazonaws.com` replacing the `region` and `account ID`
-  - If the image was built as the same architecture as the production architecture, pull the online-tools image by running `docker pull <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/spdx/online-tools:<version>` replacing the <aws-account-id>, <aws-region>, and <version>
-  - If the architecture of the deployment architecture is different from the development architecture (e.g. an ARM architecture as is currently configured), the image needs to be built on the deployment machine:
+  - Clone or update this repo on the EC2 instance - a convenient way to copy of the docker-compose files
+  - Build the image on the deployment machine:
     - execute `docker-compose -f docker-compose.prod.yml build`
+  - Login to ECR using the AWS CLI by running aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com replacing the region and account ID
+  - Push the images by running docker-compose -f docker-compose.prod.yml push
   - Launch the containers with the command `docker-compose -f docker-compose.prod.yml up -d`
-  - If needed upgrade the database:
-    - Stop the current Python service with the command `docker exec spdx_prod supervisorctl stop spdx`
-  - Make migrations by running the command `docker exec spdx_prod python src/manage.py makemigrations`
-  - Upgrade the database with the command `docker exec spdx_prod python src/manage.py migrate`
-  - Start the spdx_prod service with the command `docker exec spdx_prod supervisorctl start spdx`
 
 # Clean Intialial Install
 
@@ -101,16 +93,17 @@ Following are the steps for a clean initial installaction of the application:
   - replace `<aws-region>` with the AWS region
   - replace `<version>` with the specific version of the spdx-online-tools-build to be deployed
 - Build the image by running `docker-compose -f docker-compose.prod.yml build`
-- Push the image to AWS ECR
-  - Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the `region` and `account ID`
-  - Push the images by running `docker-compose -f docker-compose.prod.yml push`
+- Test the image for vulnerability by running `docker scan [image]` where `[image]` is the image name from the docker-compose.prod.yml file
+  - Update any dependencies as needed based on the vulnerability report
 - Setup the SSL Certificates
   - Edit the file scripts/init-letsencrypt.sh replacing the email address and setting staging to 1 if testing, 0 if in production
   - Execut the scriptrun `chmod +x init-letsencrypt.sh` and `sudo ./init-letsencrypt.sh`.
 - Deploy the images on EC2
-  - Clone this repo on the EC2 instance - a convenient way to copy of the docker-compose files
-  - Login to ECR using the AWS CLI by running `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com` replacing the `region` and `account ID`
-  - Pull the online-tools image by running `docker pull <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/spdx/online-tools:<version>` replacing the <aws-account-id>, <aws-region>, and <version>
+  - Clone or update this repo on the EC2 instance - a convenient way to copy of the docker-compose files
+  - Build the image on the deployment machine:
+    - execute `docker-compose -f docker-compose.prod.yml build`
+  - Login to ECR using the AWS CLI by running aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com replacing the region and account ID
+  - Push the images by running docker-compose -f docker-compose.prod.yml push
   - Create the spdx-prod.env file
 
 ```
@@ -129,15 +122,6 @@ SQL_PORT=5432
 ```
 
 - Launch the containers with the command `docker-compose -f docker-compose.prod.yml up -d`
-- Initialize the database
-  - Find the container ID for the spdx-online-tools by executing `docker ps`
-  - Open a shell in the spdx-online-tools container by executing `docker exec -it [spdx-online-tools-container-id] /bin/shell`
-  - Initialize the database using DJango by running `python manage.py migrate`
-  - Populate the license list database by running `python src/populate.py`
-- Restart the spdx
-  - run supervisorctl `supervisorctl`
-  - restart spdx `restart spdx`
-  - exit supervisorctl `exit`
 
 # Credits
 
