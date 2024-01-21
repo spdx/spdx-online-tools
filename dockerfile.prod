@@ -1,5 +1,5 @@
-# Using python3.10.6 as the base image
-FROM python:3.10.6 as base
+# Using python3.10.13 as the base image
+FROM python:3.10.13 as base
 
 # Create the folder spdx and cd to it
 WORKDIR /spdx
@@ -9,7 +9,7 @@ COPY requirements.txt .
 
 # install psycopg2 dependencies
 RUN apt-get update \
-    && apt-get -y install libpq-dev gcc python-dev musl-dev
+    && apt-get -y install libpq-dev gcc python-dev-is-python3 musl-dev
 
 # install psycopg2
 RUN pip install psycopg2-binary==2.9.3
@@ -58,5 +58,7 @@ EXPOSE 8000
 RUN mv ./supervisor_api.conf /etc/supervisor/conf.d
 
 # Start the supervisor
-CMD python src/manage.py collectstatic --noinput && \ 
+CMD python src/manage.py migrate && \ 
+    python src/manage.py collectstatic --noinput && \ 
+    python src/populate.py && \
     /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
