@@ -56,7 +56,7 @@ class ValidateFileUploadTests(APITestCase):
         u.is_staff = True
         u.save()
         self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
-        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"))
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
         self.invalid_tv_file = open(getExamplePath("SPDXTagExample-v2.0_invalid.spdx"))
         self.invalid_rdf_file = open(getExamplePath("SPDXRdfExample-v2.0_invalid.rdf"))
 
@@ -226,8 +226,8 @@ class CompareFileUploadTests(APITestCase):
         u = User.objects.create_user(**self.credentials)
         u.is_staff = True
         u.save()
-        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"))
-        self.rdf_file2 = open(getExamplePath("SPDXRdfExample.rdf"))
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
+        self.rdf_file2 = open(getExamplePath("SPDXRdfExample-v2.3.spdx.rdf"))
         self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
 
     def tearDown(self):
