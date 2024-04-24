@@ -7,7 +7,7 @@ requests==2.31.0
 lxml==4.9.1
 webdriver-manager==3.4.2
 social-auth-core==4.1.0
-social-auth-app-django==4.0.0
+social-auth-app-django==5.4.1
 python-dotenv==0.17.1
 gevent==23.9.1
 gunicorn==22.0.0
