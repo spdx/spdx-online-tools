@@ -87,21 +87,22 @@ def license_compare_helper(request):
                         else :
                             filelist.append(myfile.name)
                             errorlist.append("No errors found")
-                    except jpype.JavaException as ex :
+                    except jpype.JException as ex:
                         """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
                         erroroccurred = True
                         filelist.append(myfile.name)
-                        errorlist.append(jpype.JavaException.message(ex))
-                    except :
+                        errorlist.append(jpype.JException.message(ex))
+                    except Exception as ex:
                         """ Other Exceptions"""
                         erroroccurred = True
                         filelist.append(myfile.name)
                         errorlist.append(format_exc())
-                except :
+                except Exception as ex:
                     """Invalid file extension"""
                     erroroccurred = True
                     filelist.append(myfile.name)
                     errorlist.append("Invalid file extension for "+filename+".  Must be .xls, .xlsx, .xml, .json, .yaml, .spdx, .rdfxml")
+                    errorlist.append(format_exc())
             if (erroroccurred==False):
                 """ If no errors in any of the file,call the java function with parameters as list"""
                 try :
@@ -284,7 +285,7 @@ def ntia_check_helper(request):
         result['context'] = context_dict
         result['status'] = 404
         return result
-    except:
+    except Exception as ex:
         """ Other error raised """
         if (request.is_ajax()):
             ajaxdict = dict()
@@ -391,7 +392,7 @@ def license_validate_helper(request):
         result['context'] = context_dict
         result['status'] = 404
         return result
-    except :
+    except Exception as ex:
         """ Other error raised """
         if (request.is_ajax()):
             ajaxdict=dict()
@@ -458,7 +459,7 @@ def license_check_helper(request):
         result['context'] = context_dict
         result['status'] = 404
         return result
-    except :
+    except Exception as ex:
         """ Other exception raised """
         if request.is_ajax():
             ajaxdict = dict()
@@ -570,7 +571,7 @@ def license_convert_helper(request):
         result['context'] = context_dict
         result['status'] = 404
         return result
-    except :
+    except Exception as ex:
         """ Other error raised """
         if (request.is_ajax()):
             ajaxdict["type"] = "error"
@@ -625,7 +626,7 @@ def license_diff_helper(request):
         data['context'] = data
         data['status'] = 404
         return data
-    except :
+    except Exception as ex:
         """ Other exception raised """
         if (request.is_ajax()):
             ajaxdict = dict()
