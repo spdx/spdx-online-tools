@@ -1,0 +1,12 @@
+{% extends 'app/base.html' %} {% load static %} {% block dots %}
+<iframe
+  src="http://151.145.81.233"
+  style="width: 100%; min-height: -webkit-fill-available; position: fixed"
+></iframe>
+{% endblock %} {% block script_block %}
+<script type="text/javascript">
+  $(document).ready(function () {
+    $('#dots').addClass('linkactive')
+  })
+</script>
+{% endblock %}

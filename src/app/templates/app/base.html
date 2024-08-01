@@ -138,6 +138,7 @@ div p {
             <!-- <li><a href="/app/diff/" id="licensediffpage">License Diff</a></li> -->
             <li><a href="/app/xml_upload" id="license-xml-editor">License XML Editor</a></li>
             <li><a href="/app/ntia_checker/" id="checkerpage">NTIA Conformance Checker</a></li>
+            <li><a href="/app/dots" id="dots">Visual Editor</a></li>
             <li>
               <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="licenserequest">License requests
                 <span class="caret"></span>
@@ -181,13 +182,15 @@ div p {
     </div><!--/.nav-collapse -->
   </nav>
 
-    <div class="container body1">
+  {% block dots %}
+  <div class="container body1">
 
       <div class="starter-template">
         {% block body1 %}{% endblock %}
       </div>
 
     </div><!-- /.container -->
+    {% endblock %}
 		{% block body2 %}{% endblock %}
 
     <!-- Bootstrap core JavaScript
