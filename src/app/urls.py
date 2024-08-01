@@ -39,6 +39,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('checkusername/', views.checkusername, name='check-username'),
     path('xml_upload/',views.xml_upload, name='xml-upload'),
+    path('dots/',views.dots, name='dots'),
     re_path(r'^edit/(?P<page_id>[0-9a-z]+)/$', views.license_xml_edit, name='editor'),
     re_path(r'^edit_license_xml/(?P<license_id>[0-9]+)/$', views.edit_license_xml, name='license_xml_editor'),
     path('edit_license_xml/', views.edit_license_xml, name='license_xml_editor_none'),

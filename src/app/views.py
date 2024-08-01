@@ -835,6 +835,16 @@ def xml_upload(request):
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
 
+def dots(request):
+    """ View for dots tool
+    returns dots.html
+    """
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
+        return render(request, 'app/dots.html', {})
+    else:
+        return HttpResponseRedirect(settings.LOGIN_URL)
+
+
 def autocompleteModel(request):
     if 'term' in request.GET:
         result = LicenseNames.objects.filter(name__icontains=request.GET['term']).values_list('name',flat=True)
