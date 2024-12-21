@@ -20,13 +20,13 @@ def get_tools_version(jar_name):
     """
     jar_path = join(dirname(abspath(__file__)), '..', jar_name)
     output = run(['java', '-jar', jar_path, 'Version'], stdout=PIPE).stdout.decode('utf-8')
-    match = search('SPDX Tool Version: ([0-9]+(\.[0-9]+)+);', output)
+    match = search('SPDX Tool Version: ([^;]+);', output)
     if match:
         return match.group(1)
     return 'Unknown'
 
 
-spdx_online_tools_version = '1.2.3'
+spdx_online_tools_version = '1.3.0'
 
 """
 Visit https://github.com/spdx/tools-java/releases to know about the tools releases.
