@@ -611,7 +611,7 @@ def formatToContentType(to_format):
         return "application/vnd.ms-excel"
     elif (to_format=="XLSX"):
         return "application/vnd.ms-excel"
-    elif (to_format=="JSON"):
+    elif (to_format=="JSON" or to_format=="JSONLD"):
         return "application/json"
     elif (to_format=="YAML"):
         return "text/yaml"

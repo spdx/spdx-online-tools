@@ -29,9 +29,9 @@ def initialise_jpype():
     if not jpype.isJVMStarted():
         classpath = settings.JAR_ABSOLUTE_PATH
         jpype.startJVM(jpype.getDefaultJVMPath(), "-ea", "-Djava.class.path=%s"%classpath)
-            
     # Attach a thread to JVM and start processing
     jpype.attachThreadToJVM()
+    jpype.JPackage("org.spdx.library").SpdxModelFactory.init()
 
 
 def license_compare_helper(request):
