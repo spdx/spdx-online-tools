@@ -35,6 +35,7 @@ from api.views import generateLicenseXml
 from api.models import ValidateFileUpload,ConvertFileUpload,CompareFileUpload,SubmitLicenseModel
 from django.conf import settings
 import os
+import json
 
 def getExamplePath(filename):
     return os.path.join(settings.EXAMPLES_DIR, filename)
@@ -55,7 +56,7 @@ class ValidateFileUploadTests(APITestCase):
         u.is_staff = True
         u.save()
         self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
-        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"))
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
         self.invalid_tv_file = open(getExamplePath("SPDXTagExample-v2.0_invalid.spdx"))
         self.invalid_rdf_file = open(getExamplePath("SPDXRdfExample-v2.0_invalid.rdf"))
 
@@ -225,8 +226,8 @@ class CompareFileUploadTests(APITestCase):
         u = User.objects.create_user(**self.credentials)
         u.is_staff = True
         u.save()
-        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.0.rdf"))
-        self.rdf_file2 = open(getExamplePath("SPDXRdfExample.rdf"))
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
+        self.rdf_file2 = open(getExamplePath("SPDXRdfExample-v2.3.spdx.rdf"))
         self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
 
     def tearDown(self):
@@ -281,6 +282,7 @@ class CheckLicenseFileUploadTests(APITestCase):
         u = User.objects.create_user(**self.credentials)
         u.is_staff = True
         u.save()
+        self.license = "AFL-1.1"
         self.license_file = open(getExamplePath("AFL-1.1.txt"))
         self.other_file = open(getExamplePath("Other.txt"))
         
@@ -302,13 +304,17 @@ class CheckLicenseFileUploadTests(APITestCase):
         """ Valid License File"""
         resp3 = self.client.post(reverse("check_license-api"),{"file":self.license_file},format="multipart")
         self.assertEqual(resp3.status_code,200)
-        self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
-        self.assertEqual(resp3.data["result"],"The following license ID(s) match: AFL-1.1")
+        result3 = json.loads(resp3.content)
+        self.assertEqual(result3['matched_license'], self.license)
+        self.assertEqual(result3['match_type'], 'Perfect match')
+        self.assertEqual(result3["all_matches"],{self.license: 1.0})
         """ Other File"""
         resp4 = self.client.post(reverse("check_license-api"),{"file":self.other_file},format="multipart")
-        self.assertEqual(resp4.data['owner'],User.objects.get_by_natural_key(self.username).id)
-        self.assertEqual(resp4.status_code,404)
-        self.assertEqual(resp4.data["result"],"There are no matching SPDX listed licenses")
+        self.assertEqual(resp4.status_code, 404)
+        result4 = json.loads(resp4.content)
+        self.assertEqual(result4['matched_license'], None)
+        self.assertEqual(result4['match_type'], 'No match')
+        self.assertEqual(result4['all_matches'], {})
         
     def test_checklicense_without_argument(self):
         self.client.login(username=self.username,password=self.password)
