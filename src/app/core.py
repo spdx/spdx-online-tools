@@ -207,9 +207,10 @@ def ntia_check_helper(request):
             filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             uploaded_file_url = fs.url(filename).replace("%20", " ")
             """ Get other request parameters """
-            compliance = request.POST.get("compliance", "ntia")  # Default: "ntia"
+            # compliance = request.POST.get("compliance", "ntia")  # Default: "ntia"
             """ Call the Python SBOM Checker """
-            schecker = SbomChecker(str(settings.APP_DIR + uploaded_file_url), compliance=compliance)
+            schecker = SbomChecker(str(settings.APP_DIR + uploaded_file_url))
+            # schecker = SbomChecker(str(settings.APP_DIR + uploaded_file_url), compliance=compliance)  # Post-3.0.2
             oldStdout = sys.stdout
             tempstdout = StringIO()
             sys.stdout = tempstdout
