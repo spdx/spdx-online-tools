@@ -1,8 +1,5 @@
 """This file contains the core logic used in the SPDX Online Tools' APP and API"""
 
-import json
-
-from django.http.response import JsonResponse
 import jpype
 import os
 import sys
@@ -11,7 +8,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 
-from json import dumps, loads
+from json import dumps
 from time import time
 from traceback import format_exc
 from urllib.parse import urljoin
@@ -56,7 +53,7 @@ def license_compare_helper(request):
             erroroccurred = False
             warningoccurred = False
             if (len(request.FILES.getlist("files")) < 2):
-                context_dict["error"] = "Please select atleast 2 files"
+                context_dict["error"] = "Please select at least 2 files"
                 result['status'] = 404
                 result['context'] = context_dict
                 return result
@@ -178,7 +175,7 @@ def license_compare_helper(request):
         """ If no files uploaded"""
         if (request.is_ajax()):
             filelist.append("Files not selected.")
-            errorlist.append("Please select atleast 2 files.")
+            errorlist.append("Please select at least 2 files.")
             ajaxdict["files"] = filelist
             ajaxdict["type"] = "error"
             ajaxdict["errors"] = errorlist
@@ -186,7 +183,7 @@ def license_compare_helper(request):
             result['status'] = 404
             result['response'] = response
             return result
-        context_dict["error"] = "Select atleast two files"
+        context_dict["error"] = "Select at least two files"
         context_dict["type"] = "error"
         result['status'] = 404
         result['context'] = context_dict
@@ -194,7 +191,7 @@ def license_compare_helper(request):
 
 def ntia_check_helper(request):
     """
-       A helper function to check the ntia elements in a given file in various formats.
+       A helper function to check the NTIA elements in a given file in various formats.
     """
     ajaxdict = dict()
     context_dict = {}
@@ -209,8 +206,11 @@ def ntia_check_helper(request):
                                    )
             filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             uploaded_file_url = fs.url(filename).replace("%20", " ")
-            """ Call the python SBOM Checker """
+            """ Get other request parameters """
+            # compliance = request.POST.get("compliance", "ntia")  # Default: "ntia"
+            """ Call the Python SBOM Checker """
             schecker = SbomChecker(str(settings.APP_DIR + uploaded_file_url))
+            # schecker = SbomChecker(str(settings.APP_DIR + uploaded_file_url), compliance=compliance)  # Post-3.0.2
             oldStdout = sys.stdout
             tempstdout = StringIO()
             sys.stdout = tempstdout
