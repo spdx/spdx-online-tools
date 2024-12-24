@@ -148,7 +148,9 @@ def pretty(node, level):
         text = text.replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
         ser += text
     for child in node:
-        ser += pretty(child, child_level)
+        res = pretty(child, child_level)
+        if not('exception' in ser and 'standardLicenseHeader' in res):
+            ser += res
     ser += after
     if tail:
         ser += tail
