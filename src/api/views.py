@@ -14,6 +14,7 @@
 from django.http import JsonResponse
 from rest_framework.parsers import FileUploadParser,FormParser, MultiPartParser
 from rest_framework.response import Response
+from rest_framework.generics import GenericAPIView
 from rest_framework.viewsets import ModelViewSet
 from api.models import ValidateFileUpload, ConvertFileUpload, CompareFileUpload, SubmitLicenseModel
 from api.serializers import ValidateSerializer,ConvertSerializer,CompareSerializer,CheckLicenseSerializer,SubmitLicenseSerializer,ValidateSerializerReturn,ConvertSerializerReturn,CompareSerializerReturn,SubmitLicenseSerializerReturn
