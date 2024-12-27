@@ -8,36 +8,38 @@
 {% block body1 %}
 <div id="messages" class="messages">
 </div>
-<p class ="lead"> {{ error }}</p>
+<p class ="lead">{{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading"> <p class="lead">Tag-Value, RDF, JSON, Spreadsheet, XML SPDX Document</p> </div>
 <div class="panel-body">
-	<form id="checkform" enctype="multipart/form-data" class="form-horizontal" method="post">
-	  {% csrf_token %}
-	  <div class = "form-group">
-			&nbsp; File Type &nbsp;
-				<select name="format" id="format">
-					  <option value="0" data-value="0" selected="">-</option>
-					  <option value="XLSX">XLSX Spreadsheet</option>
-					  <option value="XLS">XLS Spreadsheet</option>
-					  <option value="RDFXML">RDF/XML</option>
-					  <option value="TAG">Tag/Value</option>
-					  <option value="JSON">JSON</option>
-					  <option value="YAML">YAML</option>
-					  <option value="XML">XML</option>
-                </select>
-		</div>
-		<div id="drop-area" class="container">
-		  <h4>Upload file using the button or by dragging and dropping onto the dashed region </h4>
-		  <input type="file" id="file" onchange="handleFiles(this.files)">
-		  <label class="button" for="file">Select file</label>
-		  <p class="file-name">No file selected</p>
-		</div>
-    </form>
+  <form id="checkform" enctype="multipart/form-data" class="form-horizontal" method="post">
+    {% csrf_token %}
+    <div class = "form-group">
+      &nbsp; File Type &nbsp;
+      <select name="format" id="format">
+        <option value="0" data-value="0" selected="">-</option>
+        <option value="RDFXML">RDF/XML</option>
+        <option value="TAG">Tag/Value</option>
+        <option value="JSON">JSON</option>
+        <option value="XML">XML</option>
+      </select>
+    </div>
+    <div class = "form-group">
+      &nbsp; Compliance &nbsp;
+      <select name="compliance" id="compliance">
+        <option value="ntia" selected="">NTIA Minimum Elements</option>
+      </select>
+    </div>
+    <div id="drop-area" class="container">
+      <h4>Upload file using the button or by dragging and dropping onto the dashed region </h4>
+      <input type="file" id="file" onchange="handleFiles(this.files)">
+      <label class="button" for="file">Select file</label>
+      <p class="file-name">No file selected</p>
+    </div>
+  </form>
 <hr>
-    <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check NTIA's Required Elements</button>
+  <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check Required Elements</button>
   {% include "app/modal.html" %}
-
 </div>
 
 {% endblock %}
@@ -45,7 +47,7 @@
 {% block script_block %}
 
 <script type="text/javascript">
-  /* Javascript to handel drag and drop */
+  /* JavaScript to handle drag and drop */
   let dropArea = document.getElementById('drop-area');
   var selected_file = "";
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -85,7 +87,7 @@
     ([...files]).forEach(checkFile)
   }
 
-  function checkFile(file){
+  function checkFile(file) {
     if(file){
       $(".file-name").html("<b>Selected File: </b>"+file.name);
       $("#checkbutton").prop('disabled', false);
