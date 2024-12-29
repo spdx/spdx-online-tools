@@ -16,8 +16,8 @@
 <form id="convertform" enctype="multipart/form-data" class = "form-horizontal" method = "post" >
 		{% csrf_token %}
 		<div class = "form-group">
-		&nbsp; From &nbsp;
-			 <select name="from_format" id="from_format">
+      From &nbsp;
+			<select name="from_format" id="from_format">
 			 	  <option value="0" selected="">-</option>
 				  <option value="TAG">V2 Tag/Value</option>
 				  <option value="RDFXML">V2 RDF/XML</option>
@@ -40,13 +40,13 @@
 				  <option value="JSON" data-value="JSON" data-ext=".json">V2 JSON</option>
 				  <option value="XML" data-value="XML" data-ext=".xml">V2 XML</option>
 				  <option value="YAML" data-value="YAML" data-ext=".yaml">V2 YAML</option>
-            </select>
+      </select>
     </div>
     <div id="drop-area" class="container">
       <h4 id="doclabel">Upload SPDX Document using the button or by dragging and dropping onto the dashed region</h4>
       <input type="file" id="file" onchange="handleFiles(this.files)">
       <label class="button" for="file">Select file</label>
-      <p class="file-name">No file selected</p>
+      <div class="file-name">No file selected</div>
     </div>
     <!--
     <div class = "form-group">
