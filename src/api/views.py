@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from django.http import JsonResponse
-from rest_framework.parsers import FileUploadParser,FormParser, MultiPartParser
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from api.models import ValidateFileUpload, ConvertFileUpload, CompareFileUpload, SubmitLicenseModel
@@ -22,20 +22,15 @@ from app.models import LicenseRequest
 from rest_framework import status
 from rest_framework.decorators import api_view,renderer_classes,permission_classes
 from rest_framework.permissions import AllowAny
-from rest_framework.renderers import BrowsableAPIRenderer,JSONRenderer
+from rest_framework.renderers import JSONRenderer
 
-from django.core.files.storage import FileSystemStorage
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.utils.datastructures import MultiValueDict
 
-import codecs
 import jpype
-import re
 import datetime
-import xml.etree.cElementTree as ET
 import app.core as core
 import api.utils as utils
 import app.utils as app_utils
@@ -43,12 +38,7 @@ import app.utils as app_utils
 from app.generateXml import generateLicenseXml
 from app.utils import createIssue
 
-from traceback import format_exc
-from os.path import abspath, join, sep, splitext
-from time import time
-from urllib.parse import urljoin
-from requests import post
-from json import dumps, loads
+from os.path import join
 
 NORMAL = "normal"
 TESTS = "tests"

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from django.urls import path, re_path
-from django.conf.urls import url,handler400, handler403, handler404, handler500
+from django.conf.urls import handler400, handler403, handler404, handler500
 from django.views.decorators.csrf import csrf_exempt
 
 from app import views
