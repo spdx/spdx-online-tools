@@ -64,7 +64,7 @@
   <div id="messages" class="messages"></div>
 <div class="panel-heading">
 Please review the <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-inclusion-principles.md">SPDX License List inclusion principles</a> before submitting a new license.
-Once you have submitted a license, please follow the <a href="https://github.com/spdx/license-list-XML/issues">issue in Github</a> and be prepared to help create the required XML and test text files if the license is accepted for submission.
+Once you have submitted a license, please follow the <a href="https://github.com/spdx/license-list-XML/issues">issue in GitHub</a> and be prepared to help create the required XML and test text files if the license is accepted for submission.
 </div>
 <form id="newlicense" enctype="multipart/form-data" class = "form-horizontal" method = "post" action='/submit_new_license/'>
 		{% csrf_token %}
@@ -133,15 +133,14 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" for="{{form.text.id_for_label}}">Text of license or exception <br />(See <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS">Fields, section G</a> for formatting guidelines)
-      </label>
+        <label class="control-label col-sm-3" for="{{form.text.id_for_label}}">Text of license or exception <br />(See <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS">Fields, section G</a> for formatting guidelines)
+        </label>
         <div class="col-sm-6">
           {{ form.text }}
           <button type="button" id="check-license-btn">Check License Text</button>
         </div>
-          <!-- <a href="/app/diff" target="_blank">Check License Diff</a> -->
+        <!-- <a href="/app/diff" target="_blank">Check License Diff</a> -->
       </div>
-
     </div>
 
     <div class = "form-group">
@@ -194,7 +193,7 @@ $(document).ready(function () {
 		$("#modal-header").removeClass("red-modal green-modal");
 		$("#modal-header").addClass("yellow-modal");
 		$(".modal-footer").html('<button class="btn btn-success" id="github_auth_begin"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
-		$("#modal-body").html('To submit a license, you must log in using Github.  You will now be redirected to the Github login.  Please allow the requested permissions.  If you do not have a Github account, you can <a href="https://github.com/">sign up</a> for free or you can email your new license request to <a href="mailto:spdx-legal@lists.spdx.org">spdx-legal@lists.spdx.org</a>.');
+		$("#modal-body").html('To submit a license, you must log in using GitHub.  You will now be redirected to the GitHub login.  Please allow the requested permissions.  If you do not have a GitHub account, you can <a href="https://github.com/">sign up</a> for free or you can email your new license request to <a href="mailto:spdx-legal@lists.spdx.org">spdx-legal@lists.spdx.org</a>.');
         $("#myModal").modal({
            backdrop: 'static',
            keyboard: true,
@@ -635,7 +634,7 @@ async function generate_text_diff(base, newtxt){
   // Add an event listener to the "Check License Text" button
   document.getElementById('check-license-btn').addEventListener('click', function() {
     // Get the license text from the request
-    const licenseText = document.getElementById('{{ form.text.id_for_label }}').value;
+    const licenseText = document.getElementById('{{ form.text.id }}').value;
     if (licenseText === "") {
       return;
     }
