@@ -3,16 +3,23 @@
 {% block body1 %}
 <div id="messages" class="messages">
 </div>
-<p class ="lead"> {{ error }}</p>
+<p class="lead">{{ error }}</p>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead"> Check License</p> </div>
-<div class="panel-body" style= "overflow:scroll;">
-<form id="checklicenseform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
-		{% csrf_token %}
-		<textarea id="licensetext" name="licensetext" rows="18" style="width: 100%"></textarea>
-		<button id="checklicensebutton" class=" btn btn-md btn-info" type="submit">Check License</button>
-</form>
-{% include "app/modal.html" %} 
+  <div class="panel-heading">
+    <p class="lead">Check License</p>
+  </div>
+  <div class="panel-body" style="overflow:scroll;">
+    <form id="checklicenseform" enctype="multipart/form-data" class="form-horizontal" method="post">
+      {% csrf_token %}
+      <p>Enter full license text in the text area below to check it against 
+      <a href="https://spdx.org/licenses/">SPDX License List</a> and
+      <a href="https://spdx.org/licenses/exceptions-index.html">License Exceptions</a>.</p>
+      <p>The result of the compare would be one of "Exact match", "Close match" or "No match".</p>
+      <textarea id="licensetext" name="licensetext" rows="18" style="width: 100%"></textarea>
+      <button id="checklicensebutton" class=" btn btn-md btn-info" type="submit">Check License</button>
+    </form>
+    {% include "app/modal.html" %}
+  </div>
 </div>
 {% endblock %}
 {% block script_block %}
