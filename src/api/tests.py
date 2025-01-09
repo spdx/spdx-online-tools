@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-from django.test import TestCase
 from unittest import skipIf
 from src.secret import getAuthCode,getGithubKey,getGithubSecret
 from django.core.exceptions import ObjectDoesNotExist,PermissionDenied
@@ -21,14 +20,12 @@ from django.conf import settings
 from django.urls import reverse
 from django.utils.timezone import now, timedelta
 
-from rest_framework.test import APITestCase,APIClient
+from rest_framework.test import APITestCase
 from oauth2_provider.models import AccessToken,Application
 from oauth2_provider.settings import oauth2_settings
 from oauthlib.common import generate_token
-from rest_framework.authtoken.models import Token
 
 from requests import get
-from json import dumps, loads
 from api.oauth import generate_github_access_token,get_user_from_token
 from api.views import generateLicenseXml
 
