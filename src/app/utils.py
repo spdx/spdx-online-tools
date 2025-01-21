@@ -16,7 +16,6 @@ import base64
 import json
 import logging
 import re
-import socket
 import xml.etree.cElementTree as ET
 
 import redis
@@ -26,10 +25,8 @@ from spdx_license_matcher.build_licenses import build_spdx_licenses
 from spdx_license_matcher.computation import (checkTextStandardLicense,
                                               get_close_matches,
                                               getListedLicense)
-from spdx_license_matcher.difference import get_similarity_percent
-from spdx_license_matcher.utils import get_spdx_license_text
 
-from app.models import User, UserID, LicenseRequest, LicenseNamespace
+from app.models import User, UserID, LicenseRequest
 
 from src.secret import getRedisHost
 
