@@ -14,6 +14,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 from webdriver_manager.firefox import GeckoDriverManager
 import time
 import datetime
@@ -648,7 +649,8 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(executable_path=GeckoDriverManager().install(), firefox_options=options)
+        service = Service(GeckoDriverManager().install())
+        self.selenium = webdriver.Firefox(service=service, options=options)
         self.initialXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license></SPDXLicenseCollection>'
         self.invalidXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license>'
         super(LicenseXMLEditorTestCase, self).setUp()
@@ -1080,7 +1082,8 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(executable_path=GeckoDriverManager().install(), firefox_options=options)
+        service = Service(GeckoDriverManager().install())
+        self.selenium = webdriver.Firefox(service=service, options=options)
         super(ArchiveLicenseRequestsViewsTestCase, self).setUp()
 
     def tearDown(self):
@@ -1273,7 +1276,8 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(executable_path=GeckoDriverManager().install(), firefox_options=options)
+        service = Service(GeckoDriverManager().install())
+        self.selenium = webdriver.Firefox(service=service, options=options)
         #login
         TEST_LOGIN_INFO = {
         "provider": "github",
@@ -1349,7 +1353,8 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(executable_path=GeckoDriverManager().install(), firefox_options=options)
+        service = Service(GeckoDriverManager().install())
+        self.selenium = webdriver.Firefox(service=service, options=options)
         super(ArchiveLicenseNamespaceViewsTestCase, self).setUp()
 
     def tearDown(self):

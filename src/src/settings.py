@@ -234,7 +234,7 @@ JAR_ABSOLUTE_PATH = os.path.join(BASE_DIR, "tool.jar")
 # URL Path Variables
 
 LOGIN_REDIRECT_URL = "/app/"
-REGISTER_REDIRECT_UTL = "/app/login/"
+REGISTER_REDIRECT_URL = "/app/login/"
 LOGIN_URL = "/app/login/"
 HOME_URL="/app/"
 
@@ -248,8 +248,11 @@ DRFSO2_URL_NAMESPACE = 'github_social'
 # Online tool usage without login
 ANONYMOUS_LOGIN_ENABLED = True
 
-# Password reset link expiration limit (in days)
-PASSWORD_RESET_TIMEOUT_DAYS = 3
+# This is deprecated in Django 4.2.x
+# PASSWORD_RESET_TIMEOUT_DAYS = 3
+
+# Password reset link expiration limit (in seconds)
+PASSWORD_RESET_TIMEOUT = 259200  # 3 days in seconds
 
 # this will output emails in the console.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
