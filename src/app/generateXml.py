@@ -1,6 +1,7 @@
 import math
 import re
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
 from itertools import chain, tee
 
 entityMap = {
@@ -23,7 +24,7 @@ def previous_and_current(some_iterable):
 
 def escapeXmlData(string):
     for initial,final in list(entityMap.items()):
-        string.replace(initial, final)
+        string = string.replace(initial, final) # assign changed string back
     return string
 
 
@@ -45,8 +46,9 @@ def wrapBullets(string, item):
     numberBullet = re.search(numberBullets, string)
     symbolBullet = re.search(symbolBullets, string)
     bullet = letterBullet or numberBullet or symbolBullet    
-    ET.SubElement(item, "bullet").text = bullet.group(2)
-    string = string.replace(bullet.group(2), '').strip()
+    if bullet: # Bullet must exist
+        ET.SubElement(item, "bullet").text = bullet.group(2)
+        string = string.replace(bullet.group(2), '').strip()
     return string
 
 
@@ -61,7 +63,7 @@ def groupLines(lines):
             if not matches:
                 depth = 0
             else:
-                depth = int(math.floor(len(matches)/4))
+                depth = len(matches) // 4 # no need to use math.floor()
             tagType = 'item'
             lis.append({'data':line, 'depth':depth, 'tagType':tagType})
         else:
@@ -154,4 +156,16 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAd
     textElement = getTextElement(points)
     license.append(textElement)
     xmlString = ET.tostring(root, method='xml', encoding='unicode')
+
+    # Format the XML string with indentation for better readability
+    xmlString = minidom.parseString(xmlString).toprettyxml(indent="  ")
+
+    # Remove extra blank lines added by `toprettyxml()`, ensuring clean output
+    clean_lines = []
+    for line in xmlString.splitlines():
+        if line.strip():  # Only keep non-empty lines
+            clean_lines.append(line)
+
+    xmlString = "\n".join(clean_lines)
+
     return xmlString
