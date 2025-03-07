@@ -234,7 +234,7 @@ JAR_ABSOLUTE_PATH = os.path.join(BASE_DIR, "tool.jar")
 # URL Path Variables
 
 LOGIN_REDIRECT_URL = "/app/"
-REGISTER_REDIRECT_UTL = "/app/login/"
+REGISTER_REDIRECT_URL = "/app/login/"
 LOGIN_URL = "/app/login/"
 HOME_URL="/app/"
 
