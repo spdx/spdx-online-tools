@@ -1,20 +1,20 @@
-Django==3.2.25
-jpype1==1.3.0
-numpy==1.22.4
-djangorestframework==3.12.2
+Django>=4.2,<4.3
+jpype1==1.4.0
+numpy>=1.25.0
+djangorestframework>=3.14.0
 bs4==0.0.1
 requests==2.32.3
-lxml==4.9.4
-webdriver-manager==3.4.2
-social-auth-core==4.1.0
-social-auth-app-django==4.0.0
-python-dotenv==0.17.1
+lxml>=5.3.0
+webdriver-manager>=3.8.6
+social-auth-core>=4.3,<5.0
+social-auth-app-django>=5.0,<6.0
+python-dotenv>=1.0.0
 gevent==23.9.1
-gunicorn==22.0.0
+gunicorn==23.0.0
 #for testing
-selenium==3.14.1
-django-oauth-toolkit==1.5.0
-django-rest-framework-social-oauth2==1.1.0
+selenium>=4.10.0
+django-oauth-toolkit>=2.0.0
+django-rest-framework-social-oauth2>=1.1.0
 spdx-tools==0.8.3
-ntia-conformance-checker==3.0.2
+ntia-conformance-checker==3.1.0
 -e git+https://github.com/spdx/spdx-license-matcher.git@v2.7#egg=spdx-license-matcher
