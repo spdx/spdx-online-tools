@@ -30,6 +30,8 @@ import os
 
 from app.scripts.cleanup import cleanMedia
 
+service = Service(GeckoDriverManager().install())
+
 def getExamplePath(filename):
     return os.path.join(settings.EXAMPLES_DIR, filename)
 
@@ -649,7 +651,6 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        service = Service(GeckoDriverManager().install())
         self.selenium = webdriver.Firefox(service=service, options=options)
         self.initialXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license></SPDXLicenseCollection>'
         self.invalidXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license>'
@@ -665,42 +666,42 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element_by_id("new-button").click()
+        driver.find_element(By.ID, "new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element_by_id("tabTreeEditor").click()
+        driver.find_element(By.ID, "tabTreeEditor").click()
         """ Adding attribute """
-        driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
-        driver.find_element_by_class_name("newAttributeName").send_keys("firstAttribute")
-        driver.find_element_by_class_name("newAttributeValue").send_keys("firstValue")
-        driver.find_element_by_class_name("addNewAttribute").click()
+        driver.find_element(By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
+        driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("firstAttribute")
+        driver.find_element(By.CLASS_NAME, "newAttributeValue").send_keys("firstValue")
+        driver.find_element(By.CLASS_NAME, "addNewAttribute").click()
         """ Adding Invalid attribute """
-        driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
-        driver.find_element_by_class_name("newAttributeName").send_keys("secondAttribute")
-        driver.find_element_by_class_name("addNewAttribute").click()
-        modal_text = driver.find_element_by_id("modal-body").text
+        driver.find_element(By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
+        driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("secondAttribute")
+        driver.find_element(By.CLASS_NAME, "addNewAttribute").click()
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Please enter valid attribute name and value")
-        driver.find_element_by_css_selector("div.modal-footer button.btn").click()
+        driver.find_element(By.CSS_SELECTOR, "div.modal-footer button.btn").click()
         time.sleep(0.5)
-        driver.find_element_by_class_name("newAttributeValue").send_keys("secondValue")
-        driver.find_element_by_class_name("cancel").click()
+        driver.find_element(By.CLASS_NAME, "newAttributeValue").send_keys("secondValue")
+        driver.find_element(By.CLASS_NAME, "cancel").click()
         """ Editing attribute """
-        driver.find_elements_by_css_selector("span.attributeValue")[1].click()
-        driver.find_element_by_css_selector("input.textbox").clear()
-        driver.find_element_by_css_selector("input.textbox").send_keys("Edited Value")
-        driver.find_element_by_css_selector("img.editAttribute").click()
-        editedValue = driver.find_elements_by_css_selector("span.attributeValue")[1].text
+        driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].click()
+        driver.find_element(By.CSS_SELECTOR, "input.textbox").clear()
+        driver.find_element(By.CSS_SELECTOR, "input.textbox").send_keys("Edited Value")
+        driver.find_element(By.CSS_SELECTOR, "img.editAttribute").click()
+        editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text
         self.assertEqual(editedValue, "Edited Value")
         """ Delete attribute """
-        driver.find_elements_by_css_selector("span.attributeValue")[1].click()
-        driver.find_element_by_css_selector("img.removeAttribute").click()
-        modal_text = driver.find_element_by_id("modal-body").text
+        driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].click()
+        driver.find_element(By.CSS_SELECTOR, "img.removeAttribute").click()
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this attribute? This action cannot be undone.")
-        driver.find_element_by_id("modalOk").click()
+        driver.find_element(By.ID, "modalOk").click()
         time.sleep(0.5)
-        driver.find_element_by_id("tabTextEditor").click()
-        codemirror = driver.find_elements_by_css_selector("pre.CodeMirror-line")
+        driver.find_element(By.ID, "tabTextEditor").click()
+        codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
         time.sleep(0.2)
         finalXML = ""
         for i in codemirror:
@@ -713,11 +714,11 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element_by_id("new-button").click()
+        driver.find_element(By.ID, "new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element_by_id("tabSplitView").click()
+        driver.find_element(By.ID, "tabSplitView").click()
         """ Adding attribute """
         driver.execute_script("document.getElementsByClassName('addAttribute')[1].click()")
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'firstAttribute'")
@@ -738,7 +739,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.querySelector('input.textbox').value = ''")
         driver.execute_script("document.querySelector('input.textbox').value = 'Edited Value'")
         driver.execute_script("document.querySelector('img.editAttribute').click()")
-        editedValue = driver.find_elements_by_css_selector("span.attributeValue")[1].text
+        editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text
         self.assertEqual(editedValue, "Edited Value")
         """ Delete attribute """
         driver.execute_script("document.querySelectorAll('span.attributeValue')[1].click()")
@@ -758,31 +759,31 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element_by_id("new-button").click()
+        driver.find_element(By.ID, "new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element_by_id("tabTreeEditor").click()
+        driver.find_element(By.ID, "tabTreeEditor").click()
         """ Adding node """
-        driver.find_element_by_css_selector("li.addChild.last").click()
-        driver.find_element_by_css_selector("input.textbox").send_keys("newNode")
-        driver.find_element_by_class_name("buttonAddChild").click()
+        driver.find_element(By.CSS_SELECTOR, "li.addChild.last").click()
+        driver.find_element(By.CSS_SELECTOR, "input.textbox").send_keys("newNode")
+        driver.find_element(By.CLASS_NAME, "buttonAddChild").click()
         """ Adding invalid node """
-        driver.find_element_by_css_selector("li.addChild.last").click()
-        driver.find_element_by_class_name("buttonAddChild").click()
-        modal_text = driver.find_element_by_id("modal-body").text
+        driver.find_element(By.CSS_SELECTOR, "li.addChild.last").click()
+        driver.find_element(By.CLASS_NAME, "buttonAddChild").click()
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "The tag name cannot be empty. Please enter a valid tag name.")
-        driver.find_element_by_css_selector("div.modal-footer button.btn").click()
+        driver.find_element(By.CSS_SELECTOR, "div.modal-footer button.btn").click()
         time.sleep(0.5)
-        driver.find_element_by_class_name("cancelAddChild").click()
+        driver.find_element(By.CLASS_NAME, "cancelAddChild").click()
         """ Delete attribute """
-        driver.find_elements_by_css_selector("img.deleteNode")[2].click()
-        modal_text = driver.find_element_by_id("modal-body").text
+        driver.find_elements(By.CSS_SELECTOR, "img.deleteNode")[2].click()
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this tag? This cannot be undone.")
-        driver.find_element_by_id("modalOk").click()
+        driver.find_element(By.ID, "modalOk").click()
         time.sleep(0.5)
-        driver.find_element_by_id("tabTextEditor").click()
-        codemirror = driver.find_elements_by_css_selector("pre.CodeMirror-line")
+        driver.find_element(By.ID, "tabTextEditor").click()
+        codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
         finalXML = ""
         for i in codemirror:
             finalXML += i.text.strip()
@@ -794,11 +795,11 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element_by_id("new-button").click()
+        driver.find_element(By.ID, "new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element_by_id("tabSplitView").click()
+        driver.find_element(By.ID, "tabSplitView").click()
         """ Adding node """
         driver.execute_script("document.querySelectorAll('li.addChild.last')[1].click()")
         driver.execute_script("document.querySelector('input.textbox').value = 'newNode'")
@@ -828,32 +829,32 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element_by_id("new-button").click()
+        driver.find_element(By.ID, "new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element_by_id("tabTreeEditor").click()
+        driver.find_element(By.ID, "tabTreeEditor").click()
         """ Adding text """
-        driver.find_element_by_css_selector("li.emptyText").click()
-        driver.find_element_by_css_selector("div.treeContainer textarea").send_keys("This is some sample text.")
-        driver.find_element_by_class_name("editNodeText").click()
-        nodeText = driver.find_element_by_css_selector("li.nodeText").text
+        driver.find_element(By.CSS_SELECTOR, "li.emptyText").click()
+        driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").send_keys("This is some sample text.")
+        driver.find_element(By.CLASS_NAME, "editNodeText").click()
+        nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "This is some sample text.")
         """ Editing text """
-        driver.find_element_by_css_selector("li.nodeText").click()
-        driver.find_element_by_css_selector("div.treeContainer textarea").clear()
-        driver.find_element_by_css_selector("div.treeContainer textarea").send_keys("Edited text.")
-        driver.find_element_by_class_name("editNodeText").click()
-        nodeText = driver.find_element_by_css_selector("li.nodeText").text
+        driver.find_element(By.CSS_SELECTOR, "li.nodeText").click()
+        driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").clear()
+        driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").send_keys("Edited text.")
+        driver.find_element(By.CLASS_NAME, "editNodeText").click()
+        nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "Edited text.")
         """ Delete text """
-        driver.find_element_by_css_selector("li.nodeText").click()
-        driver.find_element_by_css_selector("div.treeContainer textarea").clear()
-        driver.find_element_by_class_name("editNodeText").click()
-        nodeText = driver.find_element_by_css_selector("li.emptyText").text
+        driver.find_element(By.CSS_SELECTOR, "li.nodeText").click()
+        driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").clear()
+        driver.find_element(By.CLASS_NAME, "editNodeText").click()
+        nodeText = driver.find_element(By.CSS_SELECTOR, "li.emptyText").text
         self.assertEqual(nodeText, "(No text value. Click to edit.)")
-        driver.find_element_by_id("tabTextEditor").click()
-        codemirror = driver.find_elements_by_css_selector("pre.CodeMirror-line")
+        driver.find_element(By.ID, "tabTextEditor").click()
+        codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
         finalXML = ""
         for i in codemirror:
             finalXML += i.text.strip()
@@ -865,11 +866,11 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element_by_id("new-button").click()
+        driver.find_element(By.ID, "new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element_by_id("tabSplitView").click()
+        driver.find_element(By.ID, "tabSplitView").click()
         """ Adding text """
         driver.execute_script("document.querySelectorAll('li.emptyText')[1].click()")
         driver.execute_script("document.querySelectorAll('li.emptyText')[1].click()")
@@ -900,15 +901,15 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element_by_id("xmltext").send_keys(self.invalidXML)
-        driver.find_element_by_id("xmlTextButton").click()
+        driver.find_element(By.ID, "xmltext").send_keys(self.invalidXML)
+        driver.find_element(By.ID, "xmlTextButton").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element_by_id("tabTreeEditor").click()
+        driver.find_element(By.ID, "tabTreeEditor").click()
         """ Checking for error message """
-        error_title = driver.find_element_by_css_selector("h2.xmlParsingErrorMessage").text
-        error_message = driver.find_element_by_css_selector("span.xmlParsingErrorMessage").text
+        error_title = driver.find_element(By.CSS_SELECTOR, "h2.xmlParsingErrorMessage").text
+        error_message = driver.find_element(By.CSS_SELECTOR, "span.xmlParsingErrorMessage").text
         self.assertEqual(error_title, "Invalid XML.")
         assert "XML Parsing Error" in error_message
 
@@ -917,15 +918,15 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element_by_id("xmltext").send_keys(self.invalidXML)
-        driver.find_element_by_id("xmlTextButton").click()
+        driver.find_element(By.ID, "xmltext").send_keys(self.invalidXML)
+        driver.find_element(By.ID, "xmlTextButton").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element_by_id("tabSplitView").click()
+        driver.find_element(By.ID, "tabSplitView").click()
         """ Checking for error message """
-        error_title = driver.find_element_by_css_selector("h2.xmlParsingErrorMessage").text
-        error_message = driver.find_element_by_css_selector("span.xmlParsingErrorMessage").text
+        error_title = driver.find_element(By.CSS_SELECTOR, "h2.xmlParsingErrorMessage").text
+        error_message = driver.find_element(By.CSS_SELECTOR, "span.xmlParsingErrorMessage").text
         self.assertEqual(error_title, "Invalid XML.")
         assert "XML Parsing Error" in error_message
 
@@ -1082,7 +1083,6 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        service = Service(GeckoDriverManager().install())
         self.selenium = webdriver.Firefox(service=service, options=options)
         super(ArchiveLicenseRequestsViewsTestCase, self).setUp()
 
@@ -1112,16 +1112,16 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
         """Check if the license is shifted to archive requests when archive button is pressed"""
         driver = self.selenium
         driver.get(self.live_server_url+'/app/license_requests/')
-        table_contents = driver.find_element_by_css_selector('tbody').text
+        table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text
         self.assertEqual(table_contents, "No data available in table")
         license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
         driver.refresh()
-        license_name = driver.find_element_by_css_selector('td').text
+        license_name = driver.find_element(By.CSS_SELECTOR, 'td').text
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, False)
-        if driver.find_element_by_id('archive_button' + str(license_obj.id)):
-            driver.find_element_by_id('archive_button' + str(license_obj.id)).click()
-            driver.find_element_by_id('confirm_archive').click()
+        if driver.find_element(By.ID, 'archive_button' + str(license_obj.id)):
+            driver.find_element(By.ID, 'archive_button' + str(license_obj.id)).click()
+            driver.find_element(By.ID, 'confirm_archive').click()
             self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, True)
         else:
             pass
@@ -1131,16 +1131,16 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
         """Check if license is shifted back to license requests when unarchive button is pressed"""
         driver = self.selenium
         driver.get(self.live_server_url+'/app/archive_requests/')
-        table_contents = driver.find_element_by_css_selector('tbody').text
+        table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text
         self.assertEqual(table_contents, "No data available in table")
         archive_license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD", archive="True")
         driver.refresh()
-        license_name = driver.find_element_by_css_selector('td').text
+        license_name = driver.find_element(By.CSS_SELECTOR, 'td').text
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseRequest.objects.get(id=archive_license_obj.id).archive, True)
-        if driver.find_element_by_id('unarchive_button' + str(archive_license_obj.id)):
-            driver.find_element_by_id('unarchive_button' + str(archive_license_obj.id)).click()
-            driver.find_element_by_id('confirm_unarchive').click()
+        if driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)):
+            driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)).click()
+            driver.find_element(By.ID, 'confirm_unarchive').click()
             self.assertEqual(LicenseRequest.objects.get(id=archive_license_obj.id).archive, False)
         else:
             pass
@@ -1276,7 +1276,6 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        service = Service(GeckoDriverManager().install())
         self.selenium = webdriver.Firefox(service=service, options=options)
         #login
         TEST_LOGIN_INFO = {
@@ -1316,7 +1315,7 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
         """Check if the license namespace is shifted to archive namespace when archive button is pressed"""
         driver = self.selenium
         driver.get(self.live_server_url+'/app/license_namespace_requests/')
-        table_contents = driver.find_element_by_css_selector('tbody').text
+        table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text
         self.assertEqual(table_contents, "No data available in table")
         xml = generateLicenseXml('', "0BSD", "BSD Zero Clause License-00",
             '', ["http://wwww.spdx.org"], '', '', '')
@@ -1335,7 +1334,7 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
                                                       github_repo_url="http://wwww.spdx.org",
                                                       xml=xml)
         driver.refresh()
-        license_name = driver.find_element_by_css_selector('td').text
+        license_name = driver.find_element(By.CSS_SELECTOR, 'td').text
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseNamespace.objects.get(id=license_obj.id).promoted, False)
 
@@ -1353,7 +1352,6 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        service = Service(GeckoDriverManager().install())
         self.selenium = webdriver.Firefox(service=service, options=options)
         super(ArchiveLicenseNamespaceViewsTestCase, self).setUp()
 
@@ -1382,7 +1380,7 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
         """Check if the license namespace is shifted to archive namespace when archive button is pressed"""
         driver = self.selenium
         driver.get(self.live_server_url+'/app/license_namespace_requests/')
-        table_contents = driver.find_element_by_css_selector('tbody').text
+        table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text
         self.assertEqual(table_contents, "No data available in table")
         xml = generateLicenseXml('', "0BSD", "BSD Zero Clause License-00",
             '', "http://wwww.spdx.org", '', '', '')
@@ -1400,18 +1398,18 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
                                                       github_repo_url="http://wwww.spdx.org",
                                                       xml=xml)
         driver.refresh()
-        license_name = driver.find_element_by_css_selector('td').text
+        license_name = driver.find_element(By.CSS_SELECTOR, 'td').text
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseNamespace.objects.get(id=license_obj.id).archive, False)
-        driver.find_element_by_id('archive_button' + str(license_obj.id)).click()
-        driver.find_element_by_id('confirm_archive').click()
+        driver.find_element(By.ID, 'archive_button' + str(license_obj.id)).click()
+        driver.find_element(By.ID, 'confirm_archive').click()
         self.assertEqual(LicenseNamespace.objects.get(id=license_obj.id).archive, True)
 
     def test_unarchive_license_namespace_feature(self):
         """Check if license namespace is shifted back to license namespace when unarchive button is pressed"""
         driver = self.selenium
         driver.get(self.live_server_url+'/app/archive_namespace_requests/')
-        table_contents = driver.find_element_by_css_selector('tbody').text
+        table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text
         self.assertEqual(table_contents, "No data available in table")
         archive_license_obj = LicenseNamespace.objects.create(fullname="BSD Zero Clause License-00",
                                                               licenseAuthorName="John Doe",
@@ -1426,11 +1424,11 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
                                                               license_list_url="http://wwww.spdx.org",
                                                               github_repo_url="http://wwww.spdx.org")
         driver.refresh()
-        license_name = driver.find_element_by_css_selector('td').text
+        license_name = driver.find_element(By.CSS_SELECTOR, 'td').text
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, True)
-        driver.find_element_by_id('unarchive_button' + str(archive_license_obj.id)).click()
-        driver.find_element_by_id('confirm_unarchive').click()
+        driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)).click()
+        driver.find_element(By.ID, 'confirm_unarchive').click()
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, False)
 
 
