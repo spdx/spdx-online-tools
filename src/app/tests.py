@@ -138,7 +138,7 @@ class RegisterViewsTestCase(TestCase):
         resp = self.client.post(reverse("register"),self.data,follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertNotEqual(resp.redirect_chain,[])
-        self.assertIn(settings.REGISTER_REDIRECT_UTL, (i[0] for i in resp.redirect_chain))
+        self.assertIn(settings.REGISTER_REDIRECT_URL, (i[0] for i in resp.redirect_chain))
 
         loginresp = self.client.post(reverse("login"),{'username':self.username,'password':self.password},follow=True,secure=True)
         self.assertEqual(loginresp.status_code,200)
@@ -664,7 +664,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element(By.LINK_TEXT, 'New License XML').click()
         driver.find_element_by_id("new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
@@ -712,7 +712,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element(By.LINK_TEXT, 'New License XML').click()
         driver.find_element_by_id("new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
@@ -757,7 +757,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element(By.LINK_TEXT, 'New License XML').click()
         driver.find_element_by_id("new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
@@ -793,7 +793,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element(By.LINK_TEXT, 'New License XML').click()
         driver.find_element_by_id("new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
@@ -827,7 +827,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element(By.LINK_TEXT, 'New License XML').click()
         driver.find_element_by_id("new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
@@ -864,7 +864,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element_by_link_text('New License XML').click()
+        driver.find_element(By.LINK_TEXT, 'New License XML').click()
         driver.find_element_by_id("new-button").click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
