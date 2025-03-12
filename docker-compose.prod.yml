@@ -25,6 +25,7 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    restart: always
       
   spdx:
     container_name: spdx_prod
@@ -46,6 +47,7 @@ services:
       - SPDXParser.OnlyUseLocalLicenses=true
     depends_on:
       - redis
+    restart: always
 
   redis:
     image: redis:5.0-alpine
@@ -60,3 +62,4 @@ volumes:
   data-volume:
   static_volume:
   media_volume:
+
