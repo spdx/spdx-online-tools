@@ -239,11 +239,14 @@ def save_profile(backend, user, response, *args, **kwargs):
             profile = UserID()
             username = response.get('login')
             user = User.objects.filter(username=username)[0]
-            profile.user_id=user.id
-            profile.organisation='none'
+            if not user:
+                logger.error("User with username '%s' not found.", username)
+                return
+            profile.user_id = user.id
+            profile.organisation = 'none'
             profile.save()
-        except:
-            pass
+        except Exception as e:
+            logger.error("Error saving profile: %s", e, exc_info=True)
 
 def check_license_name(name):
     """ Check if a license name exists """
