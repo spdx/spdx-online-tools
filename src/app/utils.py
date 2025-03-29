@@ -430,7 +430,7 @@ def parseXmlString(xmlString):
         data['osiApproved'] = '-'
     data['crossRefs'] = []
     try:
-        if(len(('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')) > 0):
+        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')) > 0):
             crossRefs = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')[0]
             for crossRef in crossRefs:
                 data['crossRefs'].append(crossRef.text)
