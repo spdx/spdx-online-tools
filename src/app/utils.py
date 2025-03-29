@@ -520,8 +520,13 @@ def get_license_data(issues):
 
 def get_issue_url_by_id(licenseId, issues):
     """ Get the github issue url of the license by license ID and the issues instance.
+    Returns None if no matching issue is found.
     """
-    return [issue.get('html_url') for issue in issues if issue.get('pull_request') is None if licenseId in issue.get('title')][0]
+    matching_urls = [issue.get('html_url') for issue in issues if issue.get('pull_request') is None if licenseId in issue.get('title', '')]
+    if matching_urls:
+        return matching_urls[0]
+    else:
+        return None
 
 
 def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
