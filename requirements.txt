@@ -10,7 +10,7 @@ social-auth-core==4.1.0
 social-auth-app-django==4.0.0
 python-dotenv==0.17.1
 gevent==23.9.1
-gunicorn==22.0.0
+gunicorn==23.0.0
 #for testing
 selenium==3.14.1
 django-oauth-toolkit==1.5.0
