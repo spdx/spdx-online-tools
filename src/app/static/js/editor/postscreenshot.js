@@ -54,12 +54,15 @@ async function postToGithub(data) {
             $("#modal-header").removeClass("green-modal");
             try {
             var obj = JSON.parse(e.responseText);
-            if (obj.type=="error"){
+            // The server sets: data["type"] = "error"
+            if (obj.data && obj.data.type=="error"){
                 $("#modal-header").removeClass("yellow-modal");
                 $("#modal-header").addClass("red-modal");
                 $("#modal-title").html("Error!");
             }
-            $("#modal-body").text(obj.data);
+
+            // Show the server's error message in the modal
+            $("#modal-body").text(obj.message);
             $(".modal-footer").html('<button id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>');
             $("#ok").on("click",function(){
                 $("#myModal").modal("hide");
@@ -67,6 +70,7 @@ async function postToGithub(data) {
             })
             }
             catch (e){
+                // If we cannot parse e.responseText or something else fails
                 $("#modal-header").removeClass("yellow-modal");
                 $("#modal-header").addClass("red-modal");
                 $("#modal-title").html("Error!");
