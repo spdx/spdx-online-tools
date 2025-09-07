@@ -1,16 +1,16 @@
 Django==3.2.25
 jpype1==1.3.0
-numpy==1.22.0
+numpy==1.22.4
 djangorestframework==3.12.2
 bs4==0.0.1
-requests==2.32.0
-lxml==4.9.1
+requests==2.32.4
+lxml==4.9.4
 webdriver-manager==3.4.2
 social-auth-core==4.1.0
 social-auth-app-django==4.0.0
 python-dotenv==0.17.1
 gevent==23.9.1
-gunicorn==22.0.0
+gunicorn==23.0.0
 #for testing
 selenium==3.14.1
 django-oauth-toolkit==1.5.0
