@@ -1,5 +1,5 @@
 # Use the official python 3 base image
-FROM python:3.10.18 as python-container
+FROM python:3.10.18 AS python-container
 
 # Copy the requirements.txt file into the container
 COPY requirements.txt .
