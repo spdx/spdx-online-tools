@@ -2,7 +2,7 @@ services:
 
   nginx:
     container_name: nginx_prod
-    image: nginx:1.15-alpine
+    image: nginx:1.29-alpine
     restart: always
     ports:
       - 80:80
