@@ -1,9 +1,9 @@
 Django==3.2.25
 jpype1==1.3.0
 numpy==1.22.4
-djangorestframework==3.12.2
+djangorestframework==3.12.4
 bs4==0.0.1
-requests==2.32.4
+requests==2.32.5
 lxml==4.9.4
 webdriver-manager==3.4.2
 social-auth-core==4.1.0
@@ -16,5 +16,6 @@ selenium==3.14.1
 django-oauth-toolkit==1.5.0
 django-rest-framework-social-oauth2==1.1.0
 spdx-tools==0.8.3
-ntia-conformance-checker==3.0.2
+ntia-conformance-checker==4.0.0
+spdx-python-model==0.0.3
 -e git+https://github.com/spdx/spdx-license-matcher.git@v2.7#egg=spdx-license-matcher

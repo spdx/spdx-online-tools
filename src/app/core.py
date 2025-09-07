@@ -1,27 +1,29 @@
+# SPDX-FileCopyrightText: 2022-2025 SPDX contributors
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+
 """This file contains the core logic used in the SPDX Online Tools' APP and API"""
 
-import jpype
 import os
 import sys
-
-from django.utils.datastructures import MultiValueDictKeyError
-from django.core.files.storage import FileSystemStorage
-from django.conf import settings
-
+from io import StringIO
 from json import dumps
 from time import time
 from traceback import format_exc
 from urllib.parse import urljoin
 
-import app.utils as utils
+import jpype
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.utils.datastructures import MultiValueDictKeyError
 from ntia_conformance_checker import SbomChecker
-from io import StringIO
 
+import app.utils as utils
 
 
 def initialise_jpype():
     """Start JVM if not already started, attach a Thread and start processing the request"""
-    
+
     # Check is the JVM is already running or not. If not, start JVM.
     if not jpype.isJVMStarted():
         classpath = settings.JAR_ABSOLUTE_PATH
@@ -44,7 +46,7 @@ def license_compare_helper(request):
     errorlist = list()
     result = {}
     context_dict = {}
-    
+
     try:
         if request.FILES["files"]:
             rfilename = request.POST["rfilename"]+".xlsx"
@@ -207,10 +209,17 @@ def ntia_check_helper(request):
             filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             uploaded_file_url = fs.url(filename).replace("%20", " ")
             """ Get other request parameters """
-            # compliance = request.POST.get("compliance", "ntia")  # Default: "ntia"
+            sbom_spec = "spdx2"
+            format = request.POST.get("format", "")
+            if format.startswith("SPDX3"):
+                sbom_spec = "spdx3"
+            compliance = request.POST.get("compliance", "ntia")  # Default: "ntia"
             """ Call the Python SBOM Checker """
-            schecker = SbomChecker(str(settings.APP_DIR + uploaded_file_url))
-            # schecker = SbomChecker(str(settings.APP_DIR + uploaded_file_url), compliance=compliance)  # Post-3.0.2
+            schecker = SbomChecker(
+                str(settings.APP_DIR + uploaded_file_url),
+                compliance=compliance,
+                sbom_spec=sbom_spec,
+            )
             oldStdout = sys.stdout
             tempstdout = StringIO()
             sys.stdout = tempstdout
