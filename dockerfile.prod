@@ -1,5 +1,5 @@
-# Using python3.10.13 as the base image
-FROM python:3.10.13 as base
+# Use the official python 3 base image
+FROM python:3.10.18 as base
 
 # Create the folder spdx and cd to it
 WORKDIR /spdx
@@ -12,7 +12,7 @@ RUN apt-get update \
     && apt-get -y install libpq-dev gcc python-dev-is-python3 musl-dev
 
 # install psycopg2
-RUN pip install psycopg2-binary==2.9.9
+RUN pip install psycopg2-binary==2.9.10
 
 # Install the python dependencies
 RUN pip install -r requirements.txt
