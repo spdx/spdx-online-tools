@@ -17,7 +17,7 @@
   <form id="checkform" enctype="multipart/form-data" class="form-horizontal" method="post">
     {% csrf_token %}
     <div class = "form-group">
-      File Type &nbsp;
+      File Format &nbsp;
       <select name="format" id="format">
         <option value="0" data-value="0" selected="">-</option>
         <option value="JSON">V2 JSON</option>
@@ -42,7 +42,7 @@
     </div>
   </form>
 <hr>
-  <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check Required Elements</button>
+  <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check Minimum Elements</button>
   {% include "app/modal.html" %}
 </div>
 
@@ -148,7 +148,7 @@ function checkform() {
                           keyboard: true,
                           show: true
                   });
-                  $("#checkbutton").text("Check NTIA's Required Elements");
+                  $("#checkbutton").text("Check Minimum Elements");
                   $("#checkbutton").prop('disabled', false);
               },
               error: function (e) {
@@ -179,7 +179,7 @@ function checkform() {
                           keyboard: true,
                           show: true
                   });
-                  $("#checkbutton").text("Check NTIA's Required Elements");
+                  $("#checkbutton").text("Check Minimum Elements");
                   $("#checkbutton").prop('disabled', false);
               }
           });
