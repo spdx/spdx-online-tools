@@ -5,20 +5,26 @@
 <a href="https://spdx.dev/" id="spdxhome" target="_blank"><img src={% static "images/logo_spdx.png" %} alt="SPDX Logo"/></a>
 </div>
 <div class ="col-md-6 col-sm-6">
-<img src={% static "images/GSoCLogo.jpg" %} alt="GSoC Logo" height="100%" width="100%" />
+<img src={% static "images/GSoC-Horizontal.png" %} alt="GSoC Logo" height="100%" width="100%" />
 </div>
-<br>
-<p class="lead" style="color:#0097c4;"><strong>What is SPDX?</strong></p>
-<h3>The Software Package Data Exchange (SPDX) specification is a standard format for communicating the components, licenses and copyrights associated with a software package.</h3>
-<hr>
-<p class="lead" style="color:#0097c4;"><strong>What is this about ?</strong></p>
-<h3>Providing an all-in-one portal to upload and parse SPDX documents for validation, comparison and conversion and search SPDX license list.</h3>
-<hr>
-<p class="lead text-right" style="color:#0097c4;">
-<strong>
-Project by-<br> Rohit Lodha, GSoC 2017 <br> Tushar Mittal, GSoC 2018 <br> Galo Castillo, GSoC 2018 <br> Umang Taneja, GSoC 2019 <br> Tanjong Agbor Smith, GSoC 2019 <br> Joshua Lin, GSoC 2022
-</strong>
-</p>
+
+<h3 class="lead" style="color:#0097c4;">What is SPDX?</h3>
+<p>The System Package Data Exchange (SPDX) (formerly "Software Package Data Exchange") specification is a standard format for communicating the components, licenses and copyrights associated with a software package.</p>
+
+<h3 class="lead" style="color:#0097c4;">What is this about ?</h3>
+<p>Providing an all-in-one portal to upload and parse SPDX documents for validation, conformance check, comparison and conversion and search SPDX license list.</p>
+
+<h3 class="lead" style="color:#0097c4;">Contributors</h3>
+<ul>
+<li>Rohit Lodha, GSoC 2017</li>
+<li>Tushar Mittal, GSoC 2018</li>
+<li>Galo Castillo, GSoC 2018</li>
+<li>Umang Taneja, GSoC 2019</li>
+<li>Tanjong Agbor Smith, GSoC 2019</li>
+<li>Joshua Lin, GSoC 2022</li>
+<li>Arthit Suriyawongkul, GSoC 2025</li>
+<li>and SPDX contributors</li>
+</ul>
 {% endblock %}
 
 {% block script_block %}
@@ -27,17 +33,14 @@ $(document).ready(function () {
     $("#aboutpage").addClass('linkactive');
   });
 </script>
-<footer style="margin-left: 21%;
-margin-top: 20px;
-font-size: 1.1em;">
-<b>Spdx online tools version :  
-<span style="color:#0097c4;">  {{ spdx_online_tools_version }}</span>
+<footer style="margin-left: 21%; margin-top: 20px; font-size: 1.1em;">
+<strong>Spdx online tools version :</strong>
+<span style="color:#0097c4;">{{ spdx_online_tools_version }}</span>
 <br>
-Java Tools version : <span style="color:#0097c4;">  {{ java_tools_version }}</span>
+<strong></strong>Java Tools version :</strong>
+<span style="color:#0097c4;">{{ java_tools_version }}</span>
 <br>
-NTIA conformance checker version : <span style="color:#0097c4;">  {{ ntia_conformance_checker_version }}</span>
-</b>
+<strong>NTIA conformance checker version :</strong>
+<span style="color:#0097c4;">{{ ntia_conformance_checker_version }}</span>
 </footer>
-
 {% endblock %}
-
