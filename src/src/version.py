@@ -9,8 +9,11 @@ from subprocess import run, PIPE
 from re import search
 
 
-def get_tools_version(jar_name):
-    """Returns JAVA Tools version.
+def get_tools_version(jar_name: str) -> str:
+    """Returns Java Tools version.
+
+    Visit https://github.com/spdx/tools-java/releases to know about the tools
+    releases.
 
     Arguments:
         jarName {string} -- Name of the JAVA Tools jar file
@@ -28,8 +31,6 @@ def get_tools_version(jar_name):
 
 spdx_online_tools_version = '1.3.2'
 
-"""
-Visit https://github.com/spdx/tools-java/releases to know about the tools releases.
-"""
 java_tools_version = get_tools_version('tool.jar')
 ntia_conformance_checker_version = version('ntia-conformance-checker')
+python_tools_version = version('spdx-tools')

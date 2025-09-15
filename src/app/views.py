@@ -22,9 +22,12 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from src.version import spdx_online_tools_version
-from src.version import java_tools_version
-from src.version import ntia_conformance_checker_version
+from src.version import (
+    java_tools_version,
+    ntia_conformance_checker_version,
+    python_tools_version,
+    spdx_online_tools_version,
+)
 
 import codecs
 import jpype
@@ -75,6 +78,7 @@ def about(request):
     context_dict={
                 'spdx_online_tools_version':spdx_online_tools_version,
                 'java_tools_version':java_tools_version,
+                'python_tools_version':python_tools_version,
                 'ntia_conformance_checker_version':ntia_conformance_checker_version,
                 }
     return render(request,
@@ -681,7 +685,6 @@ def license_diff(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 
-
 def xml_upload(request):
     """ View for uploading XML file
     returns xml_upload.html
@@ -1076,7 +1079,6 @@ def licenseNamespaceRequests(request, license_id=None):
     return render(request,
         'app/license_namespace_requests.html',context_dict
         )
-
 
 
 def update_session_variables(request):

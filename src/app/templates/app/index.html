@@ -1,8 +1,19 @@
 {% extends 'app/base.html' %}
 {% load static %}
 {% block body1 %}
-<a href="https://spdx.dev/" id="spdxhome" target="_blank"><img src={% static "images/logo_spdx.png" %} alt="SPDX Logo"/></a>
-<hr>
-<p class="lead" style="color:#0097c4;"><strong>An all-in-one portal to upload and parse SPDX documents for validation, comparison and conversion and search SPDX license list.</strong></p>
+<div class="container">
+    <div class="row text-center">
+        <div class="col-sm-12">
+            <a href="https://spdx.dev/" id="spdxhome" target="_blank" title="SPDX"><img src={% static "images/spdx.png" %} alt="SPDX Logo" class="img-responsive center-block" /></a>
+        </div>
+    </div>
+    <div class="row text-center">
+        <div class="col-sm-12">
+            <p class="lead" style="color:#0097c4;"><strong>An all-in-one portal to upload and parse SPDX documents for
+                    validation, conformance check, comparison, conversion and SPDX license list search.</strong></p>
+            <p class="lead">Select the tool by clicking on the tool name on the menu bar.</p>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
