@@ -2,17 +2,22 @@
 
 # spdx-online-tools
 
-Source for the website providing online SPDX tools.
-The tool provides an easy all-in-one website to upload and parse SPDX documents for validation, comparison and conversion and search SPDX license list.
+Source for the website providing online access to SPDX tools.
+The tool provides an easy all-in-one website to upload and parse SPDX documents
+for validation, conformance check, comparison, conversion and SPDX License List search.
+
 [Here](https://github.com/spdx/spdx-online-tools/wiki/Online-SPDX-Tool,-Google-Summer-of-Code-2017) you can find more about the working of the tool.
 
 ## Features
 
-* Upload and parse SPDX Documents
-* Validate SPDX Documents
-* Compare Multiple SPDX RDF Files
+* Upload and parse SPDX documents
+* Validate SPDX documents
+* Compare multiple SPDX RDF files
 * Convert one SPDX format to another
-* Compare License text to the SPDX listed Licenses
+* Compare license text to the SPDX listed Licenses
+* Edit License XML
+* Check for minimum elements conformance (NTIA and others)
+* Visual SPDX 3 editor
 
 ## Requirements (Linux/Debian/Ubuntu)  
 
