@@ -216,7 +216,7 @@ def ntia_check_helper(request):
             compliance = request.POST.get("compliance", "ntia")  # Default: "ntia"
             """ Call the Python SBOM Checker """
             schecker = SbomChecker(
-                str(settings.APP_DIR + uploaded_file_url),
+                f"{settings.APP_DIR}{uploaded_file_url}",
                 compliance=compliance,
                 sbom_spec=sbom_spec,
             )
