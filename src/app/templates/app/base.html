@@ -200,10 +200,12 @@ div p {
     <script type="text/javascript">
       // Shift content down if the navbar gets taller,
       // so the navbar doesn't cover the content.
+      // This workaround will work for desktop-size screen which is our main target.
+      // Future design of template should better handle variable height of navbar.
       $(function() {
         function adjustContentPadding() {
-          var navHeight = $('.navbar-fixed-top').height();
-          var newPadding = navHeight + 10; // Add 10px for extra space
+          const navHeight = $('.navbar-fixed-top').height();
+          const newPadding = navHeight + 10; // Add 10px for extra space
           $('body').css('padding-top', newPadding + 'px');
           var $dotsIframe = $('#dots-iframe');
           if ($dotsIframe.length) {
