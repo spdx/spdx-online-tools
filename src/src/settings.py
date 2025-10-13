@@ -60,6 +60,10 @@ ALLOWED_HOSTS = ['*']
 
 if not DEBUG:
     ALLOWED_HOSTS = ['.tools.spdx.org', '52.32.53.255', '13.57.134.254']
+    # Force HTTPS redirects for OAuth in production
+    SECURE_SSL_REDIRECT = True
+    SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+    USE_X_FORWARDED_HOST = True
 
 
 # Application definition
