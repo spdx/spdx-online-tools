@@ -616,4 +616,6 @@ def formatToContentType(to_format):
         return "application/xml"
     else :
         return ".invalid"
-    
+
+def is_ajax(request):
+    request.headers.get('x-requested-with') == 'XMLHttpRequest'
