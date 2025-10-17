@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   spdx:
     container_name: spdx_dev
