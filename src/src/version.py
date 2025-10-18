@@ -33,3 +33,4 @@ Visit https://github.com/spdx/tools-java/releases to know about the tools releas
 """
 java_tools_version = get_tools_version('tool.jar')
 ntia_conformance_checker_version = version('ntia-conformance-checker')
+python_tools_version = version('spdx-tools')
