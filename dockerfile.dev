@@ -1,10 +1,10 @@
-# Use the official python 3 base image
-FROM python:3.10.19 AS python-container
+# Use the official Python 3 base image
+FROM python:3.10.19 AS base
 
 # Copy the requirements.txt file into the container
 COPY requirements.txt .
 
-# Install the python dependencies
+# Install the Python dependencies
 RUN pip install -r requirements.txt
 
 # Use JDK 17
@@ -12,11 +12,18 @@ ENV JAVA_HOME=/opt/java/openjdk
 COPY --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
-# Fetch the latest tagged licenses from Github for use in the Java license compares
+# Fetch the latest tagged licenses from GitHub for use in the Java license compares
 RUN apt-get update \
     && apt-get -y install git
-RUN mkdir /licenses && cd /licenses && git clone https://github.com/spdx/license-list-data.git --depth=1 && cd license-list-data && git fetch --tags && git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
-RUN mkdir /licenses/current && cp /licenses/license-list-data/website/*.jsonld /licenses/current && cp /licenses/license-list-data/website/licenses.json /licenses/current && cp /licenses/license-list-data/website/exceptions.json /licenses/current
+RUN mkdir /licenses \
+    && cd /licenses \
+    && git clone https://github.com/spdx/license-list-data.git --depth=1 \
+    && cd license-list-data && git fetch --tags \
+    && git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
+RUN mkdir /licenses/current \
+    && cp /licenses/license-list-data/website/*.jsonld /licenses/current \
+    && cp /licenses/license-list-data/website/licenses.json /licenses/current \
+    && cp /licenses/license-list-data/website/exceptions.json /licenses/current
 
 # Create the volume /spdxonlinetools which maps to the host
 VOLUME [ "/spdxonlinetools" ]
@@ -28,7 +35,4 @@ WORKDIR /spdxonlinetools
 EXPOSE 8000
 
 # Run migrations and start the development server on port 8000
-CMD python src/manage.py migrate && \ 
-    python src/manage.py collectstatic --noinput && \ 
-    python src/populate.py && \
-    python src/manage.py runserver 0.0.0.0:8000
+CMD ["sh", "-c", "python src/manage.py migrate && python src/manage.py collectstatic --noinput && python src/populate.py && python src/manage.py runserver 0.0.0.0:8000"]
