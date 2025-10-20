@@ -21,9 +21,11 @@ The SPDX License List is maintained by the SPDX Legal Team. Work and discussion 
 - **join the mailing list**: Please introduce yourself and let us know a bit about your interest in SPDX! The mailing list is our traditional form of communication. Join the mailing list, see archive, and manage your subscription at [lists.spdx.org](https://lists.spdx.org/g/Spdx-legal).
 - **join the bi-weekly calls**: Bi-weekly conference call info is sent prior to the calls via the mailing list. If you join the mailing list, you should get a recurring invite at the beginning of each calendar year. Meeting minutes for the calls are in the [SPDX meetings repo](https://github.com/spdx/meetings/tree/main/legal); historical meeting minutes can be found at http://wiki.spdx.org/
 
-## Working of the tool
+## Working of the tools
 
-It works exactly how the java tools works except it takes minimum input from the user and do the rest from those input. There are 4 tools in the online tool :
+It works exactly how the java tools works except it takes minimum input from the user and do the rest from those input.
+
+There are 4 tools in the online tools:
 
 1. _Validation_ - To verify and validate valid SPDX tag/value file and RDF file.
 1. _Conversion_ - To convert from one SPDX format to another.
@@ -51,7 +53,9 @@ The user can compares license text to the SPDX listed licenses . The user inputs
 
 ## Working of the REST API
 
-The API works the same way as the above tools. You can find about the file input fields for the different tools [[here|REST-API-Fields-Request-and-Response]].
+The API works the same way as the above tools.
+You can find about the file input fields for the different tools in the
+[wiki](https://github.com/spdx/spdx-online-tools/wiki/REST-API-Fields-Request-and-Response).
 
 ## Getting started
 
