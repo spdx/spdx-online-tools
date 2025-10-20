@@ -108,7 +108,7 @@ def license_compare_helper(request):
                     compareclass.onlineFunction(callfunc)
                 except Exception as ex:
                     """Error raised by onlineFunction"""
-                    if (request.is_ajax()):
+                    if utils.is_ajax(request):
                         ajaxdict["type"] = "warning2"
                         ajaxdict["files"] = filelist
                         ajaxdict["errors"] = errorlist
@@ -124,7 +124,7 @@ def license_compare_helper(request):
                     return result
                 if (warningoccurred==False):
                     """If no warning raised """
-                    if (request.is_ajax()):
+                    if utils.is_ajax(request):
                         ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ rfilename
                         response = dumps(ajaxdict)
                         result['response'] = response
@@ -136,7 +136,7 @@ def license_compare_helper(request):
                     result['context'] = context_dict
                     return result
                 else :
-                    if (request.is_ajax()):
+                    if utils.is_ajax(request):
                         ajaxdict["type"] = "warning"
                         ajaxdict["files"] = filelist
                         ajaxdict["errors"] = errorlist
@@ -153,7 +153,7 @@ def license_compare_helper(request):
                     result['context'] = context_dict
                     return result
             else :
-                if (request.is_ajax()):
+                if utils.is_ajax(request):
                     ajaxdict["files"] = filelist
                     ajaxdict["type"] = "error"
                     ajaxdict["errors"] = errorlist
@@ -175,7 +175,7 @@ def license_compare_helper(request):
 
     except MultiValueDictKeyError:
         """ If no files uploaded"""
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             filelist.append("Files not selected.")
             errorlist.append("Please select at least 2 files.")
             ajaxdict["files"] = filelist
@@ -229,7 +229,7 @@ def ntia_check_helper(request):
             retval = tempstdout.getvalue().replace(",",", ").replace("\n","<br/>")
             if not retval.startswith("No components with missing information."):
                 """ If any warnings are returned """
-                if (request.is_ajax()):
+                if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
                     warnings = str(retval)
                     ajaxdict["data"] = "The following warning(s) were raised:<br />\n" + warnings.replace('\n', '<br />\n')
@@ -241,7 +241,7 @@ def ntia_check_helper(request):
                 result['context'] = context_dict
                 result['status'] = 400
                 return result
-            if (request.is_ajax()):
+            if utils.is_ajax(request):
                 """ Valid SPDX Document """
                 ajaxdict["data"] = "This SPDX Document is valid:\n" + retval
                 response = dumps(ajaxdict)
@@ -254,7 +254,7 @@ def ntia_check_helper(request):
             return result
         else:
             """ If no file uploaded."""
-            if (request.is_ajax()):
+            if utils.is_ajax(request):
                 ajaxdict = dict()
                 ajaxdict["type"] = "error"
                 ajaxdict["data"] = "No file uploaded"
@@ -268,7 +268,7 @@ def ntia_check_helper(request):
             return result
     except jpype.JException as ex:
         """ Error raised by check_anything.check_minimum_elements without exiting the application"""
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = jpype.JException.message(ex)
@@ -282,7 +282,7 @@ def ntia_check_helper(request):
         return result
     except MultiValueDictKeyError:
         """ If no files selected"""
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = "No files selected."
@@ -296,7 +296,7 @@ def ntia_check_helper(request):
         return result
     except Exception as ex:
         """ Other error raised """
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = format_exc()
@@ -336,7 +336,7 @@ def license_validate_helper(request):
             retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url), fileformat)
             if (len(retval) > 0):
                 """ If any warnings are returned """
-                if (request.is_ajax()):
+                if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
                     warnings = str(retval)
                     ajaxdict["data"] = "The following warning(s) were raised:<br />\n" + warnings.replace('\n', '<br />\n')
@@ -348,7 +348,7 @@ def license_validate_helper(request):
                 result['context'] = context_dict
                 result['status'] = 400
                 return result
-            if (request.is_ajax()):
+            if utils.is_ajax(request):
                 """ Valid SPDX Document """
                 ajaxdict["data"] = "This SPDX Document is valid."
                 response = dumps(ajaxdict)
@@ -361,7 +361,7 @@ def license_validate_helper(request):
             return result
         else :
             """ If no file uploaded."""
-            if (request.is_ajax()):
+            if utils.is_ajax(request):
                 ajaxdict=dict()
                 ajaxdict["type"] = "error"
                 ajaxdict["data"] = "No file uploaded"
@@ -375,7 +375,7 @@ def license_validate_helper(request):
             return result
     except jpype.JException as ex :
         """ Error raised by verifyclass.verify without exiting the application"""
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = jpype.JException.message(ex)
@@ -389,7 +389,7 @@ def license_validate_helper(request):
         return result
     except MultiValueDictKeyError:
         """ If no files selected"""
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = "No files selected."
@@ -403,7 +403,7 @@ def license_validate_helper(request):
         return result
     except Exception as ex:
         """ Other error raised """
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = format_exc()
@@ -428,7 +428,7 @@ def license_check_helper(request):
     try:
         matchingId, matchingType, _ = utils.check_spdx_license(licensetext)
         if not matchingId:
-            if (request.is_ajax()):
+            if utils.is_ajax(request):
                 ajaxdict = dict()
                 ajaxdict["data"] = "There are no matching SPDX listed licenses"
                 response = dumps(ajaxdict)
@@ -444,7 +444,7 @@ def license_check_helper(request):
             if isinstance(matchingId, list):
                 matchingId = ",".join(matchingId)
             matching_str += matchingId
-            if request.is_ajax():
+            if utils.is_ajax(request):
                 ajaxdict = dict()
                 ajaxdict["data"] = matching_str
                 response = dumps(ajaxdict)
@@ -457,7 +457,7 @@ def license_check_helper(request):
             return result
     except jpype.JException as ex :
         """ Java exception raised without exiting the application """
-        if request.is_ajax():
+        if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["data"] = jpype.JException.message(ex)
             response = dumps(ajaxdict)
@@ -470,7 +470,7 @@ def license_check_helper(request):
         return result
     except Exception as ex:
         """ Other exception raised """
-        if request.is_ajax():
+        if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["data"] = format_exc()
             response = dumps(ajaxdict)
@@ -517,7 +517,7 @@ def license_convert_helper(request):
             warnings = verifyclass.verify(str(settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile), toFileFormat)
             if (len(warnings) == 0) :
                 """ If no warnings raised """
-                if (request.is_ajax()):
+                if utils.is_ajax(request):
                     ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
                     response = dumps(ajaxdict)
                     result['response'] = response
@@ -529,7 +529,7 @@ def license_convert_helper(request):
                 result['status'] = 200
                 return result
             else :
-                if (request.is_ajax()):
+                if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
                     warnings = str(warnings)
                     ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ":<br />\n" + warnings.replace('\n', '<br />\n')
@@ -554,7 +554,7 @@ def license_convert_helper(request):
             return result
     except jpype.JException as ex :
         """ Java exception raised without exiting the application"""
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             ajaxdict["type"] = "error"
             ajaxdict["data"] = jpype.JException.message(ex)
             response = dumps(ajaxdict)
@@ -568,7 +568,7 @@ def license_convert_helper(request):
         return result
     except MultiValueDictKeyError:
         """ If no files uploaded"""
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             ajaxdict["type"] = "error"
             ajaxdict["data"] = "No files selected."
             response = dumps(ajaxdict)
@@ -582,7 +582,7 @@ def license_convert_helper(request):
         return result
     except Exception as ex:
         """ Other error raised """
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             ajaxdict["type"] = "error"
             ajaxdict["data"] = format_exc()
             response = dumps(ajaxdict)
@@ -624,7 +624,7 @@ def license_diff_helper(request):
             return data
     except jpype.JException as ex :
         """ Java exception raised without exiting the application """
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["data"] = jpype.JException.message(ex)
             response = dumps(ajaxdict)
@@ -637,7 +637,7 @@ def license_diff_helper(request):
         return data
     except Exception as ex:
         """ Other exception raised """
-        if (request.is_ajax()):
+        if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["data"] = format_exc()
             response = dumps(ajaxdict)
