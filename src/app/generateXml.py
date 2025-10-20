@@ -1,4 +1,3 @@
-import math
 import re
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -20,12 +19,6 @@ def previous_and_current(some_iterable):
     prevs, items = tee(some_iterable, 2)
     prevs = chain([None], prevs)
     return list(zip(prevs, items))
-
-
-def escapeXmlData(string):
-    for initial,final in list(entityMap.items()):
-        string = string.replace(initial, final) # assign changed string back
-    return string
 
 
 def isBullet(string):
@@ -149,23 +142,10 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAd
         ET.SubElement(crossRefs, "crossRef").text = sourceUrl
     ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
     ET.SubElement(license, "notes").text = licenseNotes
-    licenseText = escapeXmlData(licenseText)
     licenseLines = licenseText.replace('\r','').split('\n\n')
     objList = groupLines(licenseLines)
     points = insertOls(objList)
     textElement = getTextElement(points)
     license.append(textElement)
     xmlString = ET.tostring(root, method='xml', encoding='unicode')
-
-    # Format the XML string with indentation for better readability
-    xmlString = minidom.parseString(xmlString).toprettyxml(indent="  ")
-
-    # Remove extra blank lines added by `toprettyxml()`, ensuring clean output
-    clean_lines = []
-    for line in xmlString.splitlines():
-        if line.strip():  # Only keep non-empty lines
-            clean_lines.append(line)
-
-    xmlString = "\n".join(clean_lines)
-
     return xmlString

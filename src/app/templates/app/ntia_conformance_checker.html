@@ -17,19 +17,21 @@
   <form id="checkform" enctype="multipart/form-data" class="form-horizontal" method="post">
     {% csrf_token %}
     <div class = "form-group">
-      File Type &nbsp;
+      File Format &nbsp;
       <select name="format" id="format">
         <option value="0" data-value="0" selected="">-</option>
         <option value="JSON">V2 JSON</option>
         <option value="RDFXML">V2 RDF/XML</option>
         <option value="TAG">V2 Tag/Value</option>
         <option value="XML">V2 XML Spreadsheet</option>
+        <option value="SPDX3_JSON">V3 JSON</option>
       </select>
     </div>
     <div class = "form-group">
       Compliance &nbsp;
       <select name="compliance" id="compliance">
         <option value="ntia" selected="">NTIA Minimum Elements</option>
+        <option value="fsct3-min">CISA 2024 FSCT minimum expected</option>
       </select>
     </div>
     <div id="drop-area" class="container">
@@ -40,7 +42,7 @@
     </div>
   </form>
 <hr>
-  <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check Required Elements</button>
+  <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check Minimum Elements</button>
   {% include "app/modal.html" %}
 </div>
 
@@ -146,7 +148,7 @@ function checkform() {
                           keyboard: true,
                           show: true
                   });
-                  $("#checkbutton").text("Check NTIA's Required Elements");
+                  $("#checkbutton").text("Check Minimum Elements");
                   $("#checkbutton").prop('disabled', false);
               },
               error: function (e) {
@@ -177,7 +179,7 @@ function checkform() {
                           keyboard: true,
                           show: true
                   });
-                  $("#checkbutton").text("Check NTIA's Required Elements");
+                  $("#checkbutton").text("Check Minimum Elements");
                   $("#checkbutton").prop('disabled', false);
               }
           });
