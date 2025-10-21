@@ -38,7 +38,6 @@ coverage.xml
 # VCS
 .git
 .github
-.gitignore
 
 # OS
 .DS_Store

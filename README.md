@@ -1,6 +1,6 @@
 [![GSoC Logo](./title_img/spdx-online-tool.jpg)](https://summerofcode.withgoogle.com/projects/#5747767629578240)
 
-# spdx-online-tools
+# SPDX Online Tools
 
 Source for the website providing online access to SPDX tools.
 The tool provides an easy all-in-one website to upload and parse SPDX documents
@@ -14,14 +14,14 @@ for validation, conformance check, comparison, conversion and SPDX License List 
 * Validate SPDX documents
 * Compare multiple SPDX RDF files
 * Convert one SPDX format to another
-* Compare license text to the SPDX listed Licenses
+* Compare license text to the SPDX listed licenses
 * Edit License XML
 * Check for minimum elements conformance (NTIA and others)
 * Visual SPDX 3 editor
 
-## Requirements (Linux/Debian/Ubuntu)  
+## Requirements (Linux/Debian/Ubuntu)
 
-Either the Sun/Oracle JDK/JRE Variant or OpenJDK. Python 3.7+.
+Any distribution of Java SE JDK/JRE. Python 3.10+.
 
 Debian/Ubuntu users will have to install g++ and python-dev first:  
 
@@ -29,11 +29,11 @@ Debian/Ubuntu users will have to install g++ and python-dev first:
 sudo apt-get install g++ python-dev
 ```
 
-## Requirements (Windows)  
+## Requirements (Windows)
 
 Windows users need a Python installation and C++ compiler:
 
-* Install Python 3.7 version, e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
+* Install Python 3.10 version, e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
 * Install a [Windows C++ Compiler](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
 ## Installation
@@ -66,7 +66,7 @@ Windows users need a Python installation and C++ compiler:
     python src/manage.py migrate
     ```
 
-5. (Optional) If you want use license-xml-editor with licenses/exceptions from [spdx license list](https://github.com/spdx/license-list-data/), download the license name database.
+5. (Optional) If you want use license-xml-editor with licenses/exceptions from [SPDX License List](https://github.com/spdx/license-list-data/), download the license name database.
 
     ```bash
     python src/populate.py
