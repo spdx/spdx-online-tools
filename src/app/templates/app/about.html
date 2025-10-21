@@ -16,7 +16,7 @@
 <hr>
 <p class="lead text-right" style="color:#0097c4;">
 <strong>
-Project by-<br> Rohit Lodha, GSoC 2017 <br> Tushar Mittal, GSoC 2018 <br> Galo Castillo, GSoC 2018 <br> Umang Taneja, GSoC 2019 <br> Tanjong Agbor Smith, GSoC 2019 <br> Joshua Lin, GSoC 2022
+Project by-<br> Rohit Lodha, GSoC 2017 <br> Tushar Mittal, GSoC 2018 <br> Galo Castillo, GSoC 2018 <br> Umang Taneja, GSoC 2019 <br> Tanjong Agbor Smith, GSoC 2019 <br> Joshua Lin, GSoC 2022 <br> Arthit Suriyawongkul, GSoC 2025 <br> Sujal Bhor, GSoC 2025
 </strong>
 </p>
 {% endblock %}
@@ -30,14 +30,20 @@ $(document).ready(function () {
 <footer style="margin-left: 21%;
 margin-top: 20px;
 font-size: 1.1em;">
-<b>Spdx online tools version :  
-<span style="color:#0097c4;">  {{ spdx_online_tools_version }}</span>
+SPDX Online Tools version:  
+<span style="color:#0097c4;">{{ spdx_online_tools_version }}</span>
 <br>
-Java Tools version : <span style="color:#0097c4;">  {{ java_tools_version }}</span>
+SPDX License List version:
+<span style="color:#0097c4;">{{ spdx_license_list_version }}</span>
 <br>
-NTIA conformance checker version : <span style="color:#0097c4;">  {{ ntia_conformance_checker_version }}</span>
-</b>
+SPDX Java Tools version:
+<span style="color:#0097c4;">{{ java_tools_version }}</span>
+<br>
+Python Tools version:
+<span style="color:#0097c4;">{{ python_tools_version }}</span>
+<br>
+NTIA Conformance Checker version:
+<span style="color:#0097c4;">{{ ntia_conformance_checker_version }}</span>
 </footer>
 
 {% endblock %}
-

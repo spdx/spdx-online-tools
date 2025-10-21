@@ -22,9 +22,13 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from src.version import spdx_online_tools_version
-from src.version import java_tools_version
-from src.version import ntia_conformance_checker_version
+from src.version import (
+    java_tools_version,
+    ntia_conformance_checker_version,
+    python_tools_version,
+    spdx_license_list_version,
+    spdx_online_tools_version,
+)
 
 import codecs
 import jpype
@@ -40,7 +44,6 @@ from urllib.parse import urljoin
 import datetime
 import uuid
 from wsgiref.util import FileWrapper
-import os
 import subprocess
 
 from social_django.models import UserSocialAuth
@@ -68,18 +71,20 @@ def index(request):
         'app/index.html',context_dict
         )
 
+
 def about(request):
-    """ View for about
+    """View for about
     returns about.html template
     """
-    context_dict={
-                'spdx_online_tools_version':spdx_online_tools_version,
-                'java_tools_version':java_tools_version,
-                'ntia_conformance_checker_version':ntia_conformance_checker_version,
-                }
-    return render(request,
-        'app/about.html',context_dict
-        )
+    context_dict = {
+        "java_tools_version": java_tools_version,
+        "ntia_conformance_checker_version": ntia_conformance_checker_version,
+        "python_tools_version": python_tools_version,
+        "spdx_license_list_version": spdx_license_list_version,
+        "spdx_online_tools_version": spdx_online_tools_version,
+    }
+    return render(request, "app/about.html", context_dict)
+
 
 def submitNewLicense(request):
     """ View for submit new licenses
@@ -454,12 +459,13 @@ def ntia_check(request):
             message = result.get('message', None)
 
             if response and status:
-                return HttpResponse(response, status=status)
+                return HttpResponse(
+                    response, status=status, content_type="application/json"
+                )
             elif context_dict and status:
                 return render(request, 'app/ntia_conformance_checker.html', context_dict, status=status)
             else:
                 return HttpResponse(message, status=status)
-
 
         else :
             """ GET,HEAD """
@@ -486,7 +492,7 @@ def validate(request):
             message = result.get('message', None)
 
             if response and status:
-                return HttpResponse(response, status=status)
+                return HttpResponse(response, status=status, content_type='application/json')
             elif context_dict and status:
                 return render(request, 'app/validate.html', context_dict, status=status)
             else:
@@ -596,11 +602,11 @@ def compare(request):
             response = result.get('response', None)
 
             if response and status:
-                return HttpResponse(response, status=status)
+                return HttpResponse(response, status=status, content_type='application/json')
             elif context_dict and status:
                 return render(request, 'app/compare.html', context_dict, status=status)
             elif response:
-                return HttpResponse(response)
+                return HttpResponse(response, content_type='application/json')
         else :
             """GET,HEAD"""
             return render(request,
@@ -625,11 +631,11 @@ def convert(request):
             response = result.get('response', None)
 
             if response and status:
-                return HttpResponse(response, status=status)
+                return HttpResponse(response, status=status, content_type='application/json')
             elif context_dict and status:
                 return render(request, 'app/convert.html', context_dict, status=status)
             elif response:
-                return HttpResponse(response)
+                return HttpResponse(response, content_type='application/json')
         else :
             return render(request,
                 'app/convert.html',context_dict
@@ -650,11 +656,11 @@ def check_license(request):
             response = result.get('response', None)
 
             if response and status:
-                return HttpResponse(response, status=status)
+                return HttpResponse(response, status=status, content_type='application/json')
             elif context_dict and status:
                 return render(request, 'app/check_license.html', context_dict, status=status)
             elif response:
-                return HttpResponse(response)
+                return HttpResponse(response, content_type='application/json')
         else:
             """GET,HEAD"""
             return render(request,
@@ -679,7 +685,6 @@ def license_diff(request):
                 )
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
-
 
 
 def xml_upload(request):
@@ -1076,7 +1081,6 @@ def licenseNamespaceRequests(request, license_id=None):
     return render(request,
         'app/license_namespace_requests.html',context_dict
         )
-
 
 
 def update_session_variables(request):

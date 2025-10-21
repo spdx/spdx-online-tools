@@ -1,3 +1,14 @@
+# Documentation
+CONTRIBUTING.md
+README*.md
+TODO
+title_img/
+
+# Dockerfiles
+Dockerfile*
+dockerfile.*
+docker-compose*.yml
+
 # Python
 __pycache__
 *.pyc
@@ -5,10 +16,14 @@ __pycache__
 *.pyd
 .Python
 env
+env/
+venv
+venv/
+.venv/
+*.env
 spdx-prod.env
 pip-log.txt
 pip-delete-this-directory.txt
-venv
 
 # Test and coverage
 .tox
@@ -23,6 +38,7 @@ coverage.xml
 # VCS
 .git
 .github
+.gitignore
 
 # OS
 .DS_Store

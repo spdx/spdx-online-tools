@@ -1,67 +1,90 @@
-# Use the official Python 3 base image
-FROM python:3.10.19 AS base
+## Production Dockerfile
 
-# Create the folder spdx and cd to it
-WORKDIR /spdx
+# Stage 1: JDK stage (provide JDK files to copy into final image)
+FROM eclipse-temurin:17 AS jdk
 
-# Copy the requirements.txt file into the container
-COPY requirements.txt .
+# Stage 2: Builder stage - install build deps and wheel the application
+FROM python:3.10-slim AS builder
 
-# Install psycopg2 dependencies
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies
 RUN apt-get update \
-    && apt-get -y install libpq-dev gcc python-dev-is-python3 musl-dev
+    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install psycopg2
-RUN pip install psycopg2-binary==2.9.10
+# Create Python virtualenv isolation
+ENV VENV_PATH=/opt/venv
+RUN python -m venv --copies ${VENV_PATH}
+ENV PATH="${VENV_PATH}/bin:$PATH"
 
-# Install the Python dependencies
-RUN pip install -r requirements.txt
+# Copy Python requirements and install
+COPY requirements.txt requirements-prod.txt ./
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir -r requirements-prod.txt \
+    && rm -rf /root/.cache/pip
 
-# -----------------------------
+# Get the SPDX License List latest release tag via GitHub API,
+# download the tarball, extract needed JSON and JSON-LDfiles
+RUN set -eux; \
+    api_url="https://api.github.com/repos/spdx/license-list-data/releases/latest"; \
+    tag=$(curl -sSL "$api_url" | python -c "import sys, json; print(json.load(sys.stdin)['tag_name'])"); \
+    tarball_url="https://github.com/spdx/license-list-data/archive/refs/tags/${tag}.tar.gz"; \
+    mkdir -p /licenses; cd /licenses; \
+    curl -sSL "$tarball_url" -o license-list-data.tar.gz; \
+    mkdir tmp && tar -xzf license-list-data.tar.gz -C tmp --strip-components=1; \
+    mkdir -p /licenses/current; cp tmp/website/*.jsonld /licenses/current || true; \
+    cp tmp/website/licenses.json /licenses/current || true; \
+    cp tmp/website/exceptions.json /licenses/current || true; \
+    rm -rf tmp license-list-data.tar.gz
 
-# Container for for SPDX Online Tools
-FROM base AS production
+# Remove build-only packages and clean apt caches to reduce image size
+RUN apt-get purge -y --auto-remove ca-certificates curl || true && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Setting current work directory to /spdx
+# Stage 3: Production runtime
+FROM python:3.10-slim AS production
+
+# Minimal runtime deps
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends supervisor \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory and copy runtime artifacts from builder
 WORKDIR /spdx
 
-# Copy everthing into the container
-COPY . .
+# Copy virtualenv from builder stage
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Install supervisor
-RUN apt-get update && \
-    apt-get -y install supervisor && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
+# Copy licenses from builder stage
+COPY --from=builder /licenses /licenses
 
-# Use JDK 17
+# Copy JDK from jdk stage
 ENV JAVA_HOME=/opt/java/openjdk
-COPY --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME
+COPY --from=jdk /opt/java/openjdk ${JAVA_HOME}
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
-# Fetch the latest tagged licenses from GitHub for use in the Java license compares
-RUN apt-get update \
-    && apt-get -y install git
-RUN mkdir /licenses && cd /licenses \
-    && git clone https://github.com/spdx/license-list-data.git --depth=1 \
-    && cd license-list-data && git fetch --tags \
-    && git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
-RUN mkdir /licenses/current \
-    && cp /licenses/license-list-data/website/*.jsonld /licenses/current \
-    && cp /licenses/license-list-data/website/licenses.json /licenses/current \
-    && cp /licenses/license-list-data/website/exceptions.json /licenses/current
+# Ensure java/jar are available on the default PATH
+# by symlinking into /usr/local/bin
+RUN ln -sf "$JAVA_HOME/bin/java" /usr/local/bin/java \
+    && ln -sf "$JAVA_HOME/bin/jar" /usr/local/bin/jar
 
-# Clean up apt lists
-RUN rm -rf /var/lib/apt/lists/*
+# Ensure the venv python/pip are available as the default python/pip
+# by creating wrapper invoking exec the venv binaries
+RUN printf '%s\n' '#!/bin/sh' 'exec /opt/venv/bin/python "$@"' > /usr/local/bin/python \
+    && printf '%s\n' '#!/bin/sh' 'exec /opt/venv/bin/pip "$@"' > /usr/local/bin/pip \
+    && chmod +x /usr/local/bin/python /usr/local/bin/pip
 
-# Move to spdx folder
-WORKDIR /spdx
-
-# Exposing ports where the server listens 
-EXPOSE 8000
+# Copy application source
+COPY . /spdx
 
 # Move the configuration for supervisor to access
-RUN mv ./supervisor_api.conf /etc/supervisor/conf.d
+RUN mv ./supervisor_api.conf /etc/supervisor/conf.d/
 
-# Start the supervisor
+# Expose port and run
+EXPOSE 8000
 CMD ["sh", "-c", "python src/manage.py migrate && python src/manage.py collectstatic --noinput && python src/populate.py && exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf"]

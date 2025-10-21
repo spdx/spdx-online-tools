@@ -82,11 +82,8 @@ NAMESPACE='{http://www.spdx.org/license}'
 VERSION = '1.0'
 
 import argparse
-import datetime
 import logging
 import re
-import shutil
-import sys
 import xml.etree.ElementTree as et
 
 NL = '\n'

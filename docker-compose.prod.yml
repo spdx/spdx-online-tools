@@ -14,6 +14,7 @@ services:
       - static_volume:/spdx/src/app/static
       - media_volume:/spdx/src/app/media
     depends_on:
+      - certbot
       - spdx
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
       
@@ -40,6 +41,7 @@ services:
     env_file: spdx-prod.env
     environment:
       - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONPATH=/spdx/src
       - SPDX_REDIS_HOST=redis
       - SPDXParser.LocalLicensesDir=/licenses/current
       - SPDXParser.OnlyUseLocalLicenses=true

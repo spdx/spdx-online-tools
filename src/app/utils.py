@@ -15,6 +15,7 @@
 import base64
 import json
 import logging
+import os
 import re
 import xml.etree.cElementTree as ET
 
@@ -65,7 +66,7 @@ def checkPermission(user):
     else:
         logger.error("Permission denied while accessing the github api.")
         return False
-    
+
 def utilForPullRequestFileCheckIfExists(file_url, headers, body, username, commit_url):
     """ Check if file already exists """
     response = requests.get(file_url, headers=headers)
@@ -344,7 +345,6 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
     return r.status_code
 
 
-
 def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId=None, diffUrl=None, msg=None):
     """ View for creating an GitHub issue
     when submitting a new license request
@@ -617,5 +617,17 @@ def formatToContentType(to_format):
     else :
         return ".invalid"
 
+
 def is_ajax(request):
-    request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    """Determine if the request is an AJAX request."""
+    try:
+        xrw = request.headers.get("x-requested-with", "")
+    except AttributeError:
+        # Some Django versions / WSGI servers may not populate request.headers
+        xrw = request.META.get("HTTP_X_REQUESTED_WITH", "")
+    accept = (
+        request.headers.get("accept", "")
+        if hasattr(request, "headers")
+        else request.META.get("HTTP_ACCEPT", "")
+    )
+    return (str(xrw).lower() == "xmlhttprequest") or ("application/json" in str(accept))

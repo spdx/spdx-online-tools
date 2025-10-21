@@ -193,7 +193,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 """
-Remove STATIC_ROOT from STATICFILES_DIRS: Ensure that STATICFILES_DIRS does not include the same directory as STATIC_ROOT. 
+Remove STATIC_ROOT from STATICFILES_DIRS:
+Ensure that STATICFILES_DIRS does not include the same directory as STATIC_ROOT. 
 You should only list directories that are not already covered by STATIC_ROOT.
 """
 
@@ -231,12 +232,12 @@ REST_FRAMEWORK = {
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Absolute Path for tool.jar
-# The online tool uses spdx-tools-2.1.6-SNAPSHOT-jar-with-dependencies.jar from the compiled target folder of java tools
-# renamed (for now) as tool.jar in the main src directory of spdx-online tool
-
+# The online tool uses the compiled (with dependencies) SPDX Java Tools
+# from https://github.com/spdx/tools-java/releases,
+# renamed as tool.jar in the main src/ directory of spdx-online-tools.
 JAR_ABSOLUTE_PATH = os.path.join(BASE_DIR, "tool.jar")
-# URL Path Variables
 
+# URL Path Variables
 LOGIN_REDIRECT_URL = "/app/"
 REGISTER_REDIRECT_URL = "/app/login/"
 LOGIN_URL = "/app/login/"
