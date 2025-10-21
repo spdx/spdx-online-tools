@@ -45,7 +45,7 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 RUN ln -sf "$JAVA_HOME/bin/java" /usr/local/bin/java \
     && ln -sf "$JAVA_HOME/bin/jar" /usr/local/bin/jar
 
-# Create the volume /spdx_dev which maps to the host
+# Create the volume /spdx which maps to the host
 VOLUME [ "/spdx" ]
 
 # Move to spdx folder

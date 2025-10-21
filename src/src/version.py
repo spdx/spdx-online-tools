@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Version file for displaying the respective version of
 the tools and online-tools repositories.
