@@ -7,10 +7,10 @@ function findLicenseMatch(request) {
       var matchIds = data.matchIds;
       if (matchType == "Close match") {
         $("#modal-header").addClass("yellow-modal");
-        var inputLicenseText = data.inputLicenseText.replace(/\r\n/g, "\n");
-        var originalLicenseText = data.originalLicenseText;
+        var inputLicenseText = String(data.inputLicenseText ?? "").replace(/\r\n/g, "\n");
+        var originalLicenseText = String(data.originalLicenseText ?? "");
         var matchingGuidelinesUrl =
-          "https://spdx.org/spdx-license-list/matching-guidelines";
+          "https://spdx.github.io/spdx-spec/v3.0/annexes/license-matching-guidelines-and-templates/";
         var message = `Close match found! The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX Matching guidelines. Press show differences to continue.`;
         $("#modal-header").removeClass("red-modal green-modal");
         $("#modal-header").addClass("yellow-modal");
@@ -27,7 +27,7 @@ function findLicenseMatch(request) {
           $("#myModal").modal("hide");
         });
         $(document)
-          .off()
+          .off("click", "button#showDiff")
           .on("click", "button#showDiff", function (event) {
             generate_text_diff(
               originalLicenseText.split("\n\n"),
