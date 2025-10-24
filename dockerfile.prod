@@ -1,7 +1,7 @@
 ## Production Dockerfile
 
 # Stage 1: JDK stage (provide JDK files to copy into final image)
-FROM eclipse-temurin:17 AS jdk
+FROM eclipse-temurin:17-jre AS jdk
 
 # Stage 2: Builder stage - install build deps and wheel the application
 FROM python:3.10-slim AS builder
@@ -41,8 +41,9 @@ RUN set -eux; \
     rm -rf tmp license-list-data.tar.gz
 
 # Remove build-only packages and clean apt caches to reduce image size
-RUN apt-get purge -y --auto-remove ca-certificates curl || true && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get purge -y --auto-remove ca-certificates curl || true \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Stage 3: Production runtime
 FROM python:3.10-slim AS production
@@ -50,6 +51,7 @@ FROM python:3.10-slim AS production
 # Minimal runtime deps
 RUN apt-get update \
     && apt-get install -y --no-install-recommends supervisor \
+        libfreetype6 libfontconfig1 libxrender1 libx11-6 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -67,6 +69,10 @@ COPY --from=builder /licenses /licenses
 ENV JAVA_HOME=/opt/java/openjdk
 COPY --from=jdk /opt/java/openjdk ${JAVA_HOME}
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+# Configure headless Java
+ENV JAVA_TOOL_OPTIONS="-Djava.awt.headless=true"
+ENV _JAVA_OPTIONS="-Djava.awt.headless=true"
 
 # Ensure java/jar are available on the default PATH
 # by symlinking into /usr/local/bin

@@ -27,7 +27,12 @@ def initialise_jpype():
     # Check is the JVM is already running or not. If not, start JVM.
     if not jpype.isJVMStarted():
         classpath = settings.JAR_ABSOLUTE_PATH
-        jpype.startJVM(jpype.getDefaultJVMPath(), "-ea", "-Djava.class.path=%s"%classpath)
+        jpype.startJVM(
+            jpype.getDefaultJVMPath(),
+            "-ea",
+            "-Djava.class.path=%s" % classpath,
+            "-Djava.awt.headless=true",
+        )
     # Attach a thread to JVM and start processing
     jpype.attachThreadToJVM()
     jpype.JPackage("org.spdx.library").SpdxModelFactory.init()
