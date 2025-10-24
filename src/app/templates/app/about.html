@@ -1,24 +1,80 @@
 {% extends 'app/base.html' %}
 {% load static %}
+{% block head_block %}
+<style>
+  @media (min-width: 768px) {
+    .logo-vcenter {
+      display: flex;
+      align-items: center;
+    }
+  }
+</style>
+{% endblock %}
 {% block body1 %}
-<div class ="col-md-6 col-sm-6">
-<a href="https://spdx.dev/" id="spdxhome" target="_blank"><img src={% static "images/logo_spdx.png" %} alt="SPDX Logo"/></a>
+<div class="container">
+  <div class="row text-center logo-vcenter">
+    <div class="col-sm-6">
+      <a href="https://spdx.dev/" id="spdxhome" target="_blank" title="SPDX"><img
+          src="{% static 'images/spdx.png' %}" alt="SPDX logo" class="img-responsive center-block" /></a>
+    </div>
+    <div class="col-sm-6">
+      <a href="https://summerofcode.withgoogle.com/" id="gsochome" target="_blank" title="Google Summer of Code"><img
+          src="{% static 'images/gsoc-h.png' %}" alt="Google Summer of Code logo"
+          class="img-responsive center-block" /></a>
+    </div>
+  </div>
 </div>
-<div class ="col-md-6 col-sm-6">
-<img src={% static "images/GSoCLogo.jpg" %} alt="GSoC Logo" height="100%" width="100%" />
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <h3 class="lead" style="color:#0097c4;">What is SPDX?</h3>
+    <p>The <a href="https://spdx.dev/">System Package Data Exchange (SPDX)</a> (formerly "Software Package Data Exchange") specification is a standard
+      format for communicating the components, licenses and copyrights associated with a software package.</p>
+
+    <h3 class="lead" style="color:#0097c4;">What is this about?</h3>
+    <p>Providing an all-in-one portal to upload and parse SPDX documents for
+      validation, conformance check, comparison, conversion and SPDX License List search.</p>
+
+    <h3 class="lead" style="color:#0097c4;">Contributors</h3>
+    <ul class="list-unstyled">
+      <li>Rohit Lodha, GSoC 2017</li>
+      <li>Tushar Mittal, GSoC 2018</li>
+      <li>Galo Castillo, GSoC 2018</li>
+      <li>Umang Taneja, GSoC 2019</li>
+      <li>Tanjong Agbor Smith, GSoC 2019</li>
+      <li>Joshua Lin, GSoC 2022</li>
+      <li>Arthit Suriyawongkul, GSoC 2025</li>
+      <li>Sujal Bhor, GSoC 2025</li>
+      <li>and <a href="https://github.com/spdx/">SPDX contributors</a></li>
+    </ul>
+
+    <h3 class="lead" style="color:#0097c4;">Version information</h3>
+    <p>SPDX Online Tools is built using several components.
+      The version information of these components is as follows:</p>
+    <ul class="list-unstyled">
+      <li>
+        <a href="https://github.com/spdx/spdx-online-tools/">SPDX Online Tools</a>:
+        <span style="color:#0097c4;">{{ spdx_online_tools_version }}</span>
+      </li>
+      <li>
+        <a href="https://github.com/spdx/license-list-XML">SPDX License List</a>:
+        <span style="color:#0097c4;">{{ spdx_license_list_version }}</span>
+      </li>
+      <li>
+        <a href="https://github.com/spdx/tools-java">SPDX Java Tools</a>:
+        <span style="color:#0097c4;">{{ java_tools_version }}</span>
+      </li>
+      <li>
+        <a href="https://github.com/spdx/tools-python">SPDX Python Tools</a>:
+        <span style="color:#0097c4;">{{ python_tools_version }}</span>
+      </li>
+      <li>
+        <a href="https://github.com/spdx/ntia-conformance-checker">NTIA Conformance Checker</a>:
+        <span style="color:#0097c4;">{{ ntia_conformance_checker_version }}</span>
+      </li>
+    </ul>
+  </div>
 </div>
-<br>
-<p class="lead" style="color:#0097c4;"><strong>What is SPDX?</strong></p>
-<h3>The Software Package Data Exchange (SPDX) specification is a standard format for communicating the components, licenses and copyrights associated with a software package.</h3>
-<hr>
-<p class="lead" style="color:#0097c4;"><strong>What is this about ?</strong></p>
-<h3>Providing an all-in-one portal to upload and parse SPDX documents for validation, comparison and conversion and search SPDX license list.</h3>
-<hr>
-<p class="lead text-right" style="color:#0097c4;">
-<strong>
-Project by-<br> Rohit Lodha, GSoC 2017 <br> Tushar Mittal, GSoC 2018 <br> Galo Castillo, GSoC 2018 <br> Umang Taneja, GSoC 2019 <br> Tanjong Agbor Smith, GSoC 2019 <br> Joshua Lin, GSoC 2022 <br> Arthit Suriyawongkul, GSoC 2025 <br> Sujal Bhor, GSoC 2025
-</strong>
-</p>
 {% endblock %}
 
 {% block script_block %}
@@ -27,23 +83,4 @@ $(document).ready(function () {
     $("#aboutpage").addClass('linkactive');
   });
 </script>
-<footer style="margin-left: 21%;
-margin-top: 20px;
-font-size: 1.1em;">
-SPDX Online Tools version:  
-<span style="color:#0097c4;">{{ spdx_online_tools_version }}</span>
-<br>
-SPDX License List version:
-<span style="color:#0097c4;">{{ spdx_license_list_version }}</span>
-<br>
-SPDX Java Tools version:
-<span style="color:#0097c4;">{{ java_tools_version }}</span>
-<br>
-Python Tools version:
-<span style="color:#0097c4;">{{ python_tools_version }}</span>
-<br>
-NTIA Conformance Checker version:
-<span style="color:#0097c4;">{{ ntia_conformance_checker_version }}</span>
-</footer>
-
 {% endblock %}
