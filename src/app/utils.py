@@ -1,16 +1,7 @@
-# coding=utf-8
-# SPDX-FileCopyrightText: 2018 Tushar Mittal
 # Copyright (c) 2018 Tushar Mittal
+# SPDX-FileCopyrightText: 2018 Tushar Mittal
+# SPDX-FileCopyrightText: 2025 SPDX Contributors
 # SPDX-License-Identifier: Apache-2.0
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 import base64
 import json
@@ -54,6 +45,7 @@ def licenseNamespaceUtils():
     "licenseListRepoUrl": "https://github.com/spdx/license-list-data",
     "internetConnectionUrl": "www.google.com",
     }
+
 def checkPermission(user):
     """ Getting user info for submitting github issue """
     github_login = user.social_auth.get(provider='github')
@@ -65,7 +57,7 @@ def checkPermission(user):
     else:
         logger.error("Permission denied while accessing the github api.")
         return False
-    
+
 def utilForPullRequestFileCheckIfExists(file_url, headers, body, username, commit_url):
     """ Check if file already exists """
     response = requests.get(file_url, headers=headers)
@@ -344,7 +336,6 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
     return r.status_code
 
 
-
 def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId=None, diffUrl=None, msg=None):
     """ View for creating an GitHub issue
     when submitting a new license request
@@ -617,5 +608,17 @@ def formatToContentType(to_format):
     else :
         return ".invalid"
 
+
 def is_ajax(request):
-    request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    """Determine if the request is an AJAX request."""
+    try:
+        xrw = request.headers.get("x-requested-with", "")
+    except AttributeError:
+        # Some Django versions / WSGI servers may not populate request.headers
+        xrw = request.META.get("HTTP_X_REQUESTED_WITH", "")
+    accept = (
+        request.headers.get("accept", "")
+        if hasattr(request, "headers")
+        else request.META.get("HTTP_ACCEPT", "")
+    )
+    return (str(xrw).lower() == "xmlhttprequest") or ("application/json" in str(accept))
