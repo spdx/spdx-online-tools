@@ -6,7 +6,7 @@
 <p class="lead">{{ error }}</p>
 <div class="panel panel-default">
   <div class="panel-heading">
-    <p class="lead">Check License</p>
+    <p class="lead">Check license text</p>
   </div>
   <div class="panel-body" style="overflow:scroll;">
     <form id="checklicenseform" enctype="multipart/form-data" class="form-horizontal" method="post">
@@ -16,7 +16,7 @@
       <a href="https://spdx.org/licenses/exceptions-index.html">License Exceptions</a>.</p>
       <p>The result of the compare would be one of "Exact match", "Close match" or "No match".</p>
       <textarea id="licensetext" name="licensetext" rows="18" style="width: 100%"></textarea>
-      <button id="checklicensebutton" class=" btn btn-md btn-info" type="submit">Check License</button>
+      <button id="checklicensebutton" class="btn btn-md btn-info" type="submit">Check license text</button>
     </form>
     {% include "app/modal.html" %}
   </div>
@@ -24,88 +24,87 @@
 {% endblock %}
 {% block script_block %}
 <script type="text/javascript">
-$(document).ready(function () {
+  $(document).ready(function () {
     $("#checklicensepage").addClass('linkactive');
-    });
+  });
 </script>
 <script type="text/javascript">
-function checkform() {
-  if ($('#licensetext').val() == "") {
-    $('#licensetext').focus();
-    return ("No text entered.");
+  function checkform() {
+    if ($('#licensetext').val() == "") {
+      $('#licensetext').focus();
+      return ("No text entered.");
+    }
+    else {
+      return "1";
+    }
   }
-  else {
-    return "1";
-  }
-}
 </script>
 <script type="text/javascript">
-  $('#checklicenseform').on('submit', function(event){
+  $('#checklicenseform').on('submit', function (event) {
     event.preventDefault();
     var check = checkform();
-    if (check=="1"){
+    if (check == "1") {
       $("#checklicensebutton").text("Checking...");
       $("#checklicensebutton").prop('disabled', true);
       $("#messages").html("");
       var form = new FormData($("#checklicenseform")[0]);
       $.ajax({
-              type: "POST",
-              enctype: 'multipart/form-data',
-              url: "/app/check_license/",
-              processData: false,
-              contentType: false,
-              cache: false,
-              dataType: 'json',
-              data: form,
-              success: function (data) {
-                  console.log("SUCCESS : ", data);
-				  $("#modal-header").removeClass("red-modal");
-				  if (data["data"].toLowerCase().indexOf("perfect match") > -1 || data["data"].toLowerCase().indexOf("exact match") > -1) {
-                     $("#modal-header").addClass("green-modal");
-				  } else {
-				     $("#modal-header").addClass("yellow-modal");
-				  }
-                  $("#modal-title").html("Success!");
-                  $("#modal-body").html("<h3>"+data.data+"</h3>");
-                  $("#myModal").modal({
-                          backdrop: 'static',
-                          keyboard: true, 
-                          show: true
-                  });
-                  $("#checklicensebutton").text("Check License");
-                  $("#checklicensebutton").prop('disabled', false);
-              },
-              error: function (e) {
-                  console.log("ERROR : ", e);
-                  $("#modal-header").removeClass("green-modal");
-                  try {
-                    var obj = JSON.parse(e.responseText);
-                    $("#modal-header").addClass("red-modal");
-                    $("#modal-title").html("Error!");
-                    $("#modal-body").text(obj.data);
-                  }
-                  catch (e){
-                    $("#modal-header").addClass("red-modal");
-                    $("#modal-title").html("Error!");
-                    $("#modal-body").text("The application could not be connected. Please try later.");
-                  }
-                  $("#myModal").modal({
-                          backdrop: 'static',
-                          keyboard: true, 
-                          show: true
-                  });
-                  $("#checklicensebutton").text("Check License");
-                  $("#checklicensebutton").prop('disabled', false);
-              }
+        type: "POST",
+        enctype: 'multipart/form-data',
+        url: "/app/check_license/",
+        processData: false,
+        contentType: false,
+        cache: false,
+        dataType: 'json',
+        data: form,
+        success: function (data) {
+          console.log("SUCCESS : ", data);
+          $("#modal-header").removeClass("red-modal");
+          if (data["data"].toLowerCase().indexOf("perfect match") > -1 || data["data"].toLowerCase().indexOf("exact match") > -1) {
+            $("#modal-header").addClass("green-modal");
+          } else {
+            $("#modal-header").addClass("yellow-modal");
+          }
+          $("#modal-title").html("Success!");
+          $("#modal-body").html("<h3>" + data.data + "</h3>");
+          $("#myModal").modal({
+            backdrop: 'static',
+            keyboard: true,
+            show: true
           });
+          $("#checklicensebutton").text("Check license text");
+          $("#checklicensebutton").prop('disabled', false);
+        },
+        error: function (e) {
+          console.log("ERROR : ", e);
+          $("#modal-header").removeClass("green-modal");
+          try {
+            var obj = JSON.parse(e.responseText);
+            $("#modal-header").addClass("red-modal");
+            $("#modal-title").html("Error!");
+            $("#modal-body").text(obj.data);
+          }
+          catch (e) {
+            $("#modal-header").addClass("red-modal");
+            $("#modal-title").html("Error!");
+            $("#modal-body").text("The application could not be connected. Please try later.");
+          }
+          $("#myModal").modal({
+            backdrop: 'static',
+            keyboard: true,
+            show: true
+          });
+          $("#checklicensebutton").text("Check license text");
+          $("#checklicensebutton").prop('disabled', false);
+        }
+      });
     }
-    else{
-      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
-      setTimeout(function() {
+    else {
+      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>' + check + '</div>');
+      setTimeout(function () {
         $("#messages").html("");
       }, 5000);
     }
-});
-
+  });
 </script>
 {% endblock %}

@@ -11,21 +11,21 @@
 <p class ="lead"> {{ medialink }}</p>
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead">Compare SPDX Spec Version 2 Documents</p> </div>
+<div class="panel-heading"> <p class="lead">Compare SPDX 2.X documents</p> </div>
 <div class="panel-body">
 <form id="compareform" enctype="multipart/form-data" class="form-horizontal" method="post">
 		{% csrf_token %}
 		<div id="drop-area" class="container">
-      <h4 id="doclabel">Upload SPDX Documents using the button or by dragging and dropping onto the dashed region</h4>
+      <h4 id="doclabel">Upload SPDX documents using the button or by dragging and dropping onto the dashed region</h4>
       <input type="file" id="file" onchange="handleFiles(this.files)" multiple>
 			<label class="button" for="file">Select files</label> &nbsp;
-			<label class="button reset">Reset Files</label>
+			<label class="button reset">Reset files</label>
       <div class="file-name">No file selected</div>
 		</div>
 		<br>
 		<div class = "form-group">
 			<div class="col-sm-12">
-			<label class="control-label col-sm-3" >Result File Name</label>
+			<label class="control-label col-sm-3" >Result file name</label>
 				<div class="col-sm-6"> 
 					<input type="text" id="rfilename" placeholder="" name = "rfilename">
 					<label class="control-label" id="convertdoclabel">.xlsx</label>

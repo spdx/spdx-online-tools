@@ -11,11 +11,12 @@ function findLicenseMatch(request) {
         var originalLicenseText = String(data.originalLicenseText ?? "");
         var matchingGuidelinesUrl =
           "https://spdx.github.io/spdx-spec/v3.0/annexes/license-matching-guidelines-and-templates/";
-        var message = `Close match found! The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX Matching guidelines. Press show differences to continue.`;
+        // Hide "Show differences" button for now
+        var message = `Close match found! The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX Matching guidelines. <!-- Press show differences to continue. -->`;
         $("#modal-header").removeClass("red-modal green-modal");
         $("#modal-header").addClass("yellow-modal");
         $(".modal-footer").html(
-          `<a href=${matchingGuidelinesUrl} target="_blank"><button class="btn btn-success btn-space" id="matchingguidelines"><span class="glyphicon glyphicon-link"></span> SPDX Matching Guidelines</button></a><button class="btn btn-success btn-space" id="showDiff"><span class="glyphicon glyphicon-link"></span> Show differences</button>`
+          `<a href=${matchingGuidelinesUrl} target="_blank"><button class="btn btn-success btn-space" id="matchingguidelines"><span class="glyphicon glyphicon-link"></span> SPDX Matching Guidelines</button></a><!-- <button class="btn btn-success btn-space" id="showDiff"><span class="glyphicon glyphicon-link"></span> Show differences</button> -->`
         );
         $("#modal-body").html(message);
         $("#myModal").modal({

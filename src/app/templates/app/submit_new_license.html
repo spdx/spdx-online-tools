@@ -59,7 +59,9 @@
 {% endif %}
 </div>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead">Submit a New License to the SPDX License List</p> </div>
+<div class="panel-heading">
+  <p class="lead">Submit a new license to the SPDX License List</p>
+</div>
 <div class="panel-body" style="overflow: scroll;">
   <div id="messages" class="messages"></div>
 <div class="panel-heading">
@@ -115,7 +117,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >OSI Status</label>
+      <label class="control-label col-sm-3" >OSI status</label>
         <div class="col-sm-4">
           {{ form.osiApproved }}
         </div>
@@ -137,9 +139,9 @@ Once you have submitted a license, please follow the <a href="https://github.com
       </label>
         <div class="col-sm-6">
           {{ form.text }}
-          <button type="button" id="check-license-btn">Check License Text</button>
+          <button type="button" id="check-license-btn">Check license text</button>
         </div>
-          <!-- <a href="/app/diff" target="_blank">Check License Diff</a> -->
+          <!-- <a href="/app/diff" target="_blank">Check license diff</a> -->
       </div>
 
     </div>
@@ -402,11 +404,11 @@ function scrollUpAndHighlight(element) {
                     var inputLicenseText = data.inputLicenseText.replace(/\r\n/g,'\n');
                     var originalLicenseText = data.originalLicenseText;
                     var matchingGuidelinesUrl = 'https://spdx.github.io/spdx-spec/v2.3/license-matching-guidelines-and-templates/'
-                    var message = `Close match found! The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX Matching guidelines. Press show differences to continue.`
+                    var message = `Close match found! The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX Matching guidelines. <!-- Press show differences to continue. -->`
                     LicenseData.data = data;
                     $("#modal-header").removeClass("red-modal green-modal");
 		                $("#modal-header").addClass("yellow-modal");
-		                $(".modal-footer").html(`<button class="btn btn-success btn-space" id="matchingguidelines"><span class="glyphicon glyphicon-link"></span> SPDX Matching Guidelines</button><button class="btn btn-success btn-space" id="showDiff"><span class="glyphicon glyphicon-link"></span> Show differences</button><button class="btn btn-primary btn-space" id="diffCancel"><span class="glyphicon glyphicon-cancel"></span> Cancel</button>`);
+		                $(".modal-footer").html(`<button class="btn btn-success btn-space" id="matchingguidelines"><span class="glyphicon glyphicon-link"></span> SPDX Matching Guidelines</button><!-- <button class="btn btn-success btn-space" id="showDiff"><span class="glyphicon glyphicon-link"></span> Show differences</button> --><button class="btn btn-primary btn-space" id="diffCancel"><span class="glyphicon glyphicon-cancel"></span> Cancel</button>`);
 		                $("#modal-body").html(message);
                     $("#myModal").modal({
                       backdrop: 'static',

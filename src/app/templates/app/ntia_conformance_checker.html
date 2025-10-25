@@ -11,20 +11,20 @@
 <p class ="lead">{{ error }}</p>
 <div class="panel panel-default">
 <div class="panel-heading">
-  <p class="lead">Check required elements</p>
+  <p class="lead">Check minimum elements</p>
 </div>
 <div class="panel-body">
   <form id="checkform" enctype="multipart/form-data" class="form-horizontal" method="post">
     {% csrf_token %}
     <div class = "form-group">
-      File Format &nbsp;
+      File format &nbsp;
       <select name="format" id="format">
         <option value="0" data-value="0" selected="">-</option>
         <option value="JSON">V2 JSON</option>
         <option value="RDFXML">V2 RDF/XML</option>
         <option value="TAG">V2 Tag/Value</option>
         <option value="XML">V2 XML Spreadsheet</option>
-        <option value="SPDX3_JSON">V3 JSON</option>
+        <option value="SPDX3_JSON">V3 JSON-LD</option>
       </select>
     </div>
     <div class = "form-group">
@@ -35,14 +35,14 @@
       </select>
     </div>
     <div id="drop-area" class="container">
-      <h4>Upload SPDX Document using the button or by dragging and dropping onto the dashed region</h4>
+      <h4>Upload SPDX document using the button or by dragging and dropping onto the dashed region</h4>
       <input type="file" id="file" onchange="handleFiles(this.files)">
       <label class="button" for="file">Select file</label>
       <div class="file-name">No file selected</div>
     </div>
   </form>
 <hr>
-  <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check Minimum Elements</button>
+  <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check minimum elements</button>
   {% include "app/modal.html" %}
 </div>
 
