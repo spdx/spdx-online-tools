@@ -8,8 +8,10 @@
     <meta name="description" content="An easy all-in-one portal to upload and parse SPDX documents for validation, conformance check, comparison, conversion and SPDX license list search.">
     <meta name="keywords" content="SPDX, SBOM, validation, conformance, license, licence, compare, convert, SPDX License List, open source, free software, online tools, software bill of materials, supply chain security, NTIA, CISA, compliance">
     <meta name="author" content="SPDX">
-    <link rel="icon" href={% static 'images/logo_spdx_title.png' %}>
     <title >SPDX Online Tools {% block title %}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'images/spdx-icon.png' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/starter-template.css' %}" rel="stylesheet" type="text/css">
     {% block head_block %}{% endblock %}
