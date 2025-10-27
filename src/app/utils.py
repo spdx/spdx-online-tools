@@ -1,16 +1,6 @@
-# coding=utf-8
 # SPDX-FileCopyrightText: 2018 Tushar Mittal
-# Copyright (c) 2018 Tushar Mittal
+# SPDX-FileCopyrightText: 2025 SPDX Contributors
 # SPDX-License-Identifier: Apache-2.0
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 import base64
 import json
@@ -323,7 +313,7 @@ def licenseInList(namespace, namespaceId, token):
 
 
 def licenseExists(namespace, namespaceId, token):
-    # Check if a license exists on the SPDX license list
+    # Check if a license exists on the SPDX License List
     # check internet connection
     if isConnected():
         licenseInListDict = licenseInList(namespace, namespaceId, token)
@@ -335,7 +325,7 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license namespace
     """
-    body = "**1.** License Namespace: {0}\n**2.** Short identifier: {1}\n **3.** License Author or steward: {2}\n**4.** Description: {3}\n **5.** Submitter name: {4}\n **6.** SPDX doc URL:  {5}\n **7.** Submitter email: {6}\n **8.** License list URL: {7}\n **9.** Github repo URL: {8}".format(licenseNamespace.namespace, licenseNamespace.shortIdentifier, licenseNamespace.licenseAuthorName, licenseNamespace.description, licenseNamespace.fullname, licenseNamespace.url, licenseNamespace.userEmail, licenseNamespace.license_list_url, licenseNamespace.github_repo_url)
+    body = "**1.** License namespace: {0}\n**2.** Short identifier: {1}\n **3.** License author or steward: {2}\n**4.** Description: {3}\n **5.** Submitter name: {4}\n **6.** SPDX doc URL:  {5}\n **7.** Submitter email: {6}\n **8.** License list URL: {7}\n **9.** GitHub repo URL: {8}".format(licenseNamespace.namespace, licenseNamespace.shortIdentifier, licenseNamespace.licenseAuthorName, licenseNamespace.description, licenseNamespace.fullname, licenseNamespace.url, licenseNamespace.userEmail, licenseNamespace.license_list_url, licenseNamespace.github_repo_url)
     title = "New license namespace request: {0} [SPDX-Online-Tools]".format(licenseNamespace.shortIdentifier)
     payload = {'title' : title, 'body': body, 'labels': ['new license namespace/exception request']}
     headers = {'Authorization': 'token ' + token}
@@ -363,9 +353,9 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
             licenseExampleUrls += ', '
             licenseExampleUrls += licenseExamples[i]
   
-    body = "**1.** License Name: {0}\n**2.** Short identifier: {1}\n**3.** License Author or steward: {2}\n**4.** Comments: {3}\n**5.** License Request Url: {4}\n**6.** URL(s): {5}\n**7.** OSI Status: {6}\n**8.** Example Projects: {7}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseRequestUrl, licenseUrls, licenseOsi, licenseExampleUrls)
+    body = "**1.** License name: {0}\n**2.** Short identifier: {1}\n**3.** License author or steward: {2}\n**4.** Comments: {3}\n**5.** License request Url: {4}\n**6.** URL(s): {5}\n**7.** OSI status: {6}\n**8.** Example projects: {7}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseRequestUrl, licenseUrls, licenseOsi, licenseExampleUrls)
     if diffUrl:
-        body = body + "\n**8.** License Text Diff: {0}".format(diffUrl)
+        body = body + "\n**8.** License text diff: {0}".format(diffUrl)
     if matchId:
         body = body + "\n\n**Note:**\nThe license closely matched with the following license ID(s): " + matchId
     if msg:
@@ -618,4 +608,15 @@ def formatToContentType(to_format):
         return ".invalid"
 
 def is_ajax(request):
-    request.headers.get('x-requested-with') == 'XMLHttpRequest'
+    """Determine if the request is an AJAX request."""
+    try:
+        xrw = request.headers.get("x-requested-with", "")
+    except AttributeError:
+        # Some Django versions / WSGI servers may not populate request.headers
+        xrw = request.META.get("HTTP_X_REQUESTED_WITH", "")
+    accept = (
+        request.headers.get("accept", "")
+        if hasattr(request, "headers")
+        else request.META.get("HTTP_ACCEPT", "")
+    )
+    return (str(xrw).lower() == "xmlhttprequest") or ("application/json" in str(accept))

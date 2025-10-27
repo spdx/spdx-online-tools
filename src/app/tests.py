@@ -193,7 +193,7 @@ class ValidateViewsTestCase(TestCase):
         self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
         resp = self.client.post(reverse("validate"),{'file' : self.tv_file, 'format' : 'TAG'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
-        self.assertEqual(resp.content,b"This SPDX Document is valid.")
+        self.assertEqual(resp.content,b"This SPDX document is valid.")
         self.client.logout()
 
     def test_upload_rdf(self):
@@ -202,7 +202,7 @@ class ValidateViewsTestCase(TestCase):
         self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
         resp = self.client.post(reverse("validate"),{'file' : self.rdf_file, 'format' : 'RDFXML'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
-        self.assertEqual(resp.content,b"This SPDX Document is valid.")
+        self.assertEqual(resp.content,b"This SPDX document is valid.")
         self.rdf_file.close()
         self.client.logout()
 
@@ -1311,8 +1311,8 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
 
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_promote_license_namespace_feature(self):
-        """Github access token,id and username should be added in .env to execute the test properly"""
-        """Check if the license namespace is shifted to archive namespace when archive button is pressed"""
+        # GitHub access token,id and username should be added in .env to execute the test properly
+        # Check if the license namespace is shifted to archive namespace when archive button is pressed
         driver = self.selenium
         driver.get(self.live_server_url+'/app/license_namespace_requests/')
         table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 SPDX Contributors
+// SPDX-License-Identifier: Apache-2.0
+
 function findLicenseMatch(request) {
   $.ajax({
     ...request,

@@ -77,22 +77,22 @@ class ValidateFileUploadTests(APITestCase):
         resp3 = self.client.post(reverse("validate-api"),{"file":self.tv_file, "format" : "TAG"},format="multipart")
         self.assertEqual(resp3.status_code,200)
         self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
-        self.assertEqual(resp3.data["result"],"This SPDX Document is valid.")
+        self.assertEqual(resp3.data["result"],"This SPDX document is valid.")
         """ Valid RDF File"""
         resp4 = self.client.post(reverse("validate-api"),{"file":self.rdf_file, "format" : "RDFXML"},format="multipart")
         self.assertEqual(resp4.status_code,200)
         self.assertEqual(resp4.data['owner'],User.objects.get_by_natural_key(self.username).id)
-        self.assertEqual(resp4.data["result"],"This SPDX Document is valid.")
+        self.assertEqual(resp4.data["result"],"This SPDX document is valid.")
         """ Invalid Tag Value File"""
         resp5 = self.client.post(reverse("validate-api"),{"file":self.invalid_tv_file, "format" : "TAG"},format="multipart")
         self.assertEqual(resp5.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp5.status_code,400)
-        self.assertNotEqual(resp5.data["result"],"This SPDX Document is valid.")
+        self.assertNotEqual(resp5.data["result"],"This SPDX document is valid.")
         """ Invalid RDF File"""
         resp6 = self.client.post(reverse("validate-api"),{"file":self.invalid_rdf_file, "format" : "RDFXML"},format="multipart")
         self.assertEqual(resp6.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp6.status_code,400)
-        self.assertNotEqual(resp6.data["result"],"This SPDX Document is valid.")
+        self.assertNotEqual(resp6.data["result"],"This SPDX document is valid.")
         self.client.logout()
         self.tearDown()
         
