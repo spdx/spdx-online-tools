@@ -1,4 +1,86 @@
-# Documentation
+# Keep the Docker build context small;
+# exclude files not needed to build the image.
+
+# ========================
+# 1. Python artifacts
+# ========================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+.mypy_cache/
+*.py[cod]
+*$py.class
+*.py.bak
+.ipynb_checkpoints
+
+# C extensions
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# pyenv
+.python-version
+
+# Distribution / packaging
+.Python
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+sdist/
+wheels/
+*.egg-info/
+*.egg
+.installed.cfg
+*.manifest
+*.spec
+
+# Installer & pip logs
+pip-log.txt
+pip-delete-this-directory.txt
+pip-selfcheck.json
+
+# ========================
+# 2. Test / coverage / reports
+# ========================
+.tox/
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# ========================
+# 3. Project-specific artifacts
+# ========================
+# Django logs / local settings / DB
+*.log
+local_settings.py
+*.sqlite3
+
+# Collected static and uploaded media (generated at runtime / mounts)
+static/
+media/
+
+# Older path (project-specific) — keep for compatibility
+src/app/media/
+
+# Downloaded license data and SSL certs used during build
+licenses/
+data/certbot/
+
+# container logs from local runs
+container_logs/
+
+# Project docs & meta (not needed in image)
 developer-certificate-of-origin
 docs/
 CONTRIBUTING.md
@@ -7,64 +89,44 @@ NOTICE
 README*.md
 TODO
 
-# Generated files
-data/certbot/
+# ========================
+# 4. Generated documentation
+# ========================
+docs/_build/
+/site/
 
-# Collected static files
-static/
+# ========================
+# 5. Editors
+# ========================
+.idea/
+*.iml
+.vscode/
+.project
+.pydevproject
+.ropeproject
+.spyderproject
+.spyproject
+org.eclipse.core.resources.prefs
 
-# Uploaded media files
-media/
+# ========================
+# 6. Misc / OS files
+# ========================
+.DS_Store
 
-# Dockerfiles
-Dockerfile*
-dockerfile.*
-docker-compose*.yml
-
-# Container files
-container_logs/
-
-# Python
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-*$py.class
-*.py.bak
-.Python
-dist/
-build/
-*.egg-info
-*.egg
-env
-env/
-venv
-venv/
-.venv/
+# ========================
+# 7. Secrets / env
+# ========================
 *.env
-.installed.cfg
 spdx-prod.env
-pip-log.txt
-pip-delete-this-directory.txt
-.python-version
 
-# Test and coverage
-.tox
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*,cover
-*.log
-
-# VCS
+# ========================
+# 8. VCS / tooling
+# ========================
 .git
 .github
 .gitignore
 
-# OS
-.DS_Store
-
-# editor
-.vscode
+# Dockerfiles and compose are part of repository and should be in context,
+# but skip editor/backup copies
+*docker-compose*.yml~
+Dockerfile*~
