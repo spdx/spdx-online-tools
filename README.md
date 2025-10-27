@@ -1,6 +1,6 @@
-[![GSoC Logo](./title_img/spdx-online-tool.jpg)](https://summerofcode.withgoogle.com/projects/#5747767629578240)
+[![GSoC Logo](./docs/spdx-online-tool.jpg)](https://summerofcode.withgoogle.com/projects/#5747767629578240)
 
-# spdx-online-tools
+# SPDX Online Tools
 
 Source for the website providing online access to SPDX tools.
 The tool provides an easy all-in-one website to upload and parse SPDX documents
@@ -17,7 +17,7 @@ for validation, conformance check, comparison, conversion and SPDX License List 
 * Compare license text to the SPDX listed Licenses
 * Edit License XML
 * Check for minimum elements conformance (NTIA and others)
-* Visual SPDX 3 editor
+* Edit SPDX 3 visually
 
 ## Requirements (Linux/Debian/Ubuntu)  
 
@@ -66,7 +66,7 @@ Windows users need a Python installation and C++ compiler:
     python src/manage.py migrate
     ```
 
-5. (Optional) If you want use license-xml-editor with licenses/exceptions from [spdx license list](https://github.com/spdx/license-list-data/), download the license name database.
+5. (Optional) If you want use license-xml-editor with licenses/exceptions from [SPDX License List](https://github.com/spdx/license-list-data/), download the license name database.
 
     ```bash
     python src/populate.py
@@ -98,7 +98,7 @@ Windows users need a Python installation and C++ compiler:
         * Download the redis server from [here](https://github.com/microsoftarchive/redis/releases) and install it.
     * Make sure redis server is running and keep it running until you are done using the license submittal or check license feature.
 
-        *The redis is used to store the license text of license present on the SPDX license list. For the very first time it may take a while to build the license on the redis server.*
+        *The redis is used to store the license text of license present on the SPDX License List. For the very first time it may take a while to build the license on the redis server.*
 
         *SPDX License Matcher matches the license text input by the user(via license submittal form) against the data present on the redis to find for duplicate and near matches.*
 
@@ -164,7 +164,7 @@ def getOauthToolKitAppSecret():
     return os.environ.get(key="OAUTH_APP_SECRET")
  
 # The methods getDiffRepoGitToken and getDiffRepoWithOwner are used to configure the repository used for storing license diffs created during the license submittal process
-# The DIFF_REPO_GIT_TOKEN is a personal access token created in Github with access to the repo DIFF_REPO_WITH_OWNER
+# The DIFF_REPO_GIT_TOKEN is a personal access token created in GitHub with access to the repo DIFF_REPO_WITH_OWNER
     
 def getDiffRepoGitToken():
     return os.environ.get(key="DIFF_REPO_GIT_TOKEN")

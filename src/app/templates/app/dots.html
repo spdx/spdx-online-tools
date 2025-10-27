@@ -3,12 +3,15 @@
 
 {% block body1 %}
 <iframe
+  id="dots-iframe"
+  title="SPDX 3 visual editor (dots) embedded view"
   src="https://condots.duckdns.org"
   style="width: 100%; height: calc(100vh - 50px); min-height: calc(100vh - 50px); margin-top: 50px; position: absolute; top: 0; left: 0;"
-  sandbox="allow-scripts allow-same-origin allow-downloads allow-popups allow-presentation"
-  allow="clipboard-write"
+  sandbox="allow-scripts allow-same-origin"
+  loading="lazy"
+  referrerpolicy="no-referrer"
 ></iframe>
-{% endblock %} 
+{% endblock %}
 
 {% block script_block %}
 <script type="text/javascript">

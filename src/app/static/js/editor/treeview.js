@@ -1,15 +1,6 @@
-/**
- * Copyright (c) 2018 Tushar Mittal
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *   http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
+// SPDX-FileCopyrightText: 2018 Tushar Mittal
+// SPDX-FileCopyrightText: 2025 SPDX Contributors
+// SPDX-License-Identifier: Apache-2.0
 
 /* Contains code for the tree editor */
 
@@ -40,7 +31,7 @@ $(document).ready(function(){
         if(!checkPendingChanges(treeEditorId)) return;
         /* add textbox for taking user input */
         var value = $(this).text();
-        $('<input type="text" placeholder="Attribute Value" class="textbox" value="'+value+'"><img src="/static/images/tick.png" class="editAttribute" title="Save Attribute Value" data-placement="top" data-toggle="tooltip"><img src="/static/images/removeNode.png" class="removeAttribute" title="Delete Attribute" data-placement="top" data-toggle="tooltip">').insertAfter($(this));
+        $('<input type="text" placeholder="Attribute Value" class="textbox" value="'+value+'"><img src="/static/img/editor/save.svg" class="editAttribute" title="Save Attribute Value" data-placement="top" data-toggle="tooltip"><img src="/static/img/editor/remove.svg" class="removeAttribute" title="Delete Attribute" data-placement="top" data-toggle="tooltip">').insertAfter($(this));
         $('[data-toggle="tooltip"]').tooltip();
         $(this).css("display","none");
         $(".editAttribute").on("click", function(){
@@ -227,7 +218,7 @@ $(document).ready(function(){
             }
             else{
                 /* adds new node */
-                $(this).parent().parent().append('<li><img src="/static/images/plus.png" class="expand"><img src="/static/images/minus.png" class="collapse"><span class="nodeName">'+value+'</span><img class="addAttribute" src="/static/images/addAttribute.png" title="Add New Attribute" data-placement="top" data-toggle="tooltip"><img class="deleteNode" src="/static/images/removeNode.png" title="Delete Node" data-placement="top" data-toggle="tooltip"><ul><li class="emptyText">(No text value. Click to edit.)</li><li class="addChild last">Add Child Node</li></ul></li>');
+                $(this).parent().parent().append('<li><img src="/static/img/editor/plus.png" class="expand"><img src="/static/img/editor/minus.png" class="collapse"><span class="nodeName">'+value+'</span><img class="addAttribute" src="/static/img/editor/add.svg" title="Add New Attribute" data-placement="top" data-toggle="tooltip"><img class="deleteNode" src="/static/img/editor/remove.svg" title="Delete Node" data-placement="top" data-toggle="tooltip"><ul><li class="emptyText">(No text value. Click to edit.)</li><li class="addChild last">Add Child Node</li></ul></li>');
                 $(this).parent().prev('li.addChild').css("display","block");
                 $(this).parent().remove();
                 $('[data-toggle="tooltip"]').tooltip();
@@ -279,7 +270,7 @@ function convertTextToTree(textEditor, treeEditor){
     traverse($('.'+treeEditor+' li'),tree.firstChild);
     $('[data-toggle="tooltip"]').tooltip();
     /* add expand collapse buttons to tree */
-    $('<img src="/static/images/plus.png" class="expand"><img src="/static/images/minus.png" class="collapse">').prependTo('.'+treeEditor+' li:has(li)');
+    $('<img src="/static/img/editor/plus.png" class="expand"><img src="/static/img/editor/minus.png" class="collapse">').prependTo('.'+treeEditor+' li:has(li)');
     return 1;
 }
 
@@ -300,7 +291,7 @@ function traverse(node,tree) {
             })
         }
         /* add 'new attribute' and 'delete node' buttons */
-        node.append('<img class="addAttribute" src="/static/images/addAttribute.png" title="Add New Attribute" data-placement="top" data-toggle="tooltip"><img class="deleteNode" src="/static/images/removeNode.png" title="Delete Node" data-placement="top" data-toggle="tooltip">')
+        node.append('<img class="addAttribute" src="/static/img/editor/add.svg" title="Add New Attribute" data-placement="top" data-toggle="tooltip"><img class="deleteNode" src="/static/img/editor/remove.svg" title="Delete Node" data-placement="top" data-toggle="tooltip">')
     }
     /* if node has children call traverse for every child */
     if (tree.childElementCount>0){

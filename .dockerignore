@@ -1,14 +1,52 @@
+# Documentation
+developer-certificate-of-origin
+docs/
+CONTRIBUTING.md
+LICENSE
+NOTICE
+README*.md
+TODO
+
+# Generated files
+data/certbot/
+
+# Collected static files
+static/
+
+# Uploaded media files
+media/
+
+# Dockerfiles
+Dockerfile*
+dockerfile.*
+docker-compose*.yml
+
+# Container files
+container_logs/
+
 # Python
 __pycache__
 *.pyc
 *.pyo
 *.pyd
+*$py.class
+*.py.bak
 .Python
+dist/
+build/
+*.egg-info
+*.egg
 env
+env/
+venv
+venv/
+.venv/
+*.env
+.installed.cfg
 spdx-prod.env
 pip-log.txt
 pip-delete-this-directory.txt
-venv
+.python-version
 
 # Test and coverage
 .tox
@@ -23,6 +61,7 @@ coverage.xml
 # VCS
 .git
 .github
+.gitignore
 
 # OS
 .DS_Store

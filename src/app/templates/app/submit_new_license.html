@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block head_block %}
-    <link href="{% static 'css/editor.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/editor.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/diffview.css' %}" rel="stylesheet" type="text/css">
     <style>
       .body1 {
@@ -20,34 +20,34 @@
 {% if github_login %}
 <p id="githubLogin" hidden>True</p>
 <div id="prFormContainer" hidden>
-  <img src={% static "images/ajax-loader.gif" %} alt="Loading GIF" class="ajax-loader">
+  <img src="{% static 'img/editor/ajax-loader.gif'" %} alt="Loading GIF" class="ajax-loader">
   <form id="githubPRForm" class="form-inline">
       {% csrf_token %}
       <div class="form-group">
-          <label for="branchName">Branch Name:</label>
+          <label for="branchName">Branch name:</label>
 
           <input type="text" class="form-control" id="branchName" name="branchName">
       </div><br>
       <div class="checkbox">
-          <label><input type="checkbox" id="updateUpstream"> Update your fork with upstream main before making PR? </label> 
+          <label><input type="checkbox" id="updateUpstream">Update your fork with upstream main before making PR? </label> 
       </div>
       <div class="form-group">
-          <label for="fileName">XML File Name:</label>
+          <label for="fileName">XML file name:</label>
           
           <input type="text" class="form-control" id="fileName" name="fileName" value={{license_name}}> .xml
       </div><br>
       <div class="form-group">
-          <label for="commitMessage">Commit Message:</label>
+          <label for="commitMessage">Commit message:</label>
          
           <input type="text" class="form-control" id="commitMessage" name="commitMessage">
       </div><br>
       <div class="form-group">
-          <label for="prTitle">Pull Request Title:</label>
+          <label for="prTitle">Pull request title:</label>
         
           <input type="text" class="form-control" id="prTitle" name="prTitle">
       </div><br>
       <div class="form-group">
-          <label for="prBody">Pull Request Body text:</label>
+          <label for="prBody">Pull request body text:</label>
           
           <textarea class="form-control" rows="5" id="prBody" name="prBody" style="resize:none; width:200px;"></textarea>
       </div><br>
@@ -59,19 +59,21 @@
 {% endif %}
 </div>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead">Submit a New License to the SPDX License List</p> </div>
+<div class="panel-heading">
+  <p class="lead">Submit a new license to the SPDX License List</p>
+</div>
 <div class="panel-body" style="overflow: scroll;">
   <div id="messages" class="messages"></div>
 <div class="panel-heading">
 Please review the <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-inclusion-principles.md">SPDX License List inclusion principles</a> before submitting a new license.
-Once you have submitted a license, please follow the <a href="https://github.com/spdx/license-list-XML/issues">issue in Github</a> and be prepared to help create the required XML and test text files if the license is accepted for submission.
+Once you have submitted a license, please follow the <a href="https://github.com/spdx/license-list-XML/issues">issue in GitHub</a> and be prepared to help create the required XML and test text files if the license is accepted for submission.
 </div>
 <form id="newlicense" enctype="multipart/form-data" class = "form-horizontal" method = "post" action='/submit_new_license/'>
 		{% csrf_token %}
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Briefly explain how this license or exception<br />meets the
+      <label class="control-label col-sm-3">Briefly explain how this license or exception<br />meets the
         <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-inclusion-principles.md">
           license inclusion principles
         </a>
@@ -84,7 +86,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Full name or title of license or exception
+      <label class="control-label col-sm-3">Full name or title of license or exception
       </label>
         <div class="col-sm-4">
           {{ form.fullname }}
@@ -94,7 +96,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Suggest short identifier <br />(See <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-fields.md">Fields, section B</a> for more details)
+      <label class="control-label col-sm-3">Suggest short identifier<br />(See <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-fields.md">Fields, section B</a> for more details)
       </label>
         <div class="col-sm-4">
           {{ form.shortIdentifier }}
@@ -104,7 +106,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >URL to license text
+      <label class="control-label col-sm-3">URL to license text
       </label>
         <div class="col-sm-4">
           {{ form.sourceUrl }}
@@ -115,7 +117,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >OSI Status</label>
+      <label class="control-label col-sm-3">OSI status</label>
         <div class="col-sm-4">
           {{ form.osiApproved }}
         </div>
@@ -124,7 +126,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" >Is this a license exception?</label>
+      <label class="control-label col-sm-3">Is this a license exception?</label>
         <div class="col-sm-4">
           {{ form.isException }}
         </div>
@@ -133,11 +135,11 @@ Once you have submitted a license, please follow the <a href="https://github.com
 
     <div class = "form-group">
       <div class="col-sm-12">
-      <label class="control-label col-sm-3" for="{{form.text.id_for_label}}">Text of license or exception <br />(See <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS">Fields, section G</a> for formatting guidelines)
+      <label class="control-label col-sm-3" for="{{form.text.id_for_label}}">Text of license or exception<br />(See <a href="https://github.com/spdx/license-list-XML/blob/main/DOCS/license-fields.md">Fields, section G</a> for formatting guidelines)
       </label>
         <div class="col-sm-6">
           {{ form.text }}
-          <button type="button" id="check-license-btn">Check License Text</button>
+          <button type="button" id="check-license-btn">Check license text</button>
         </div>
           <!-- <a href="/app/diff" target="_blank">Check License Diff</a> -->
       </div>
@@ -194,7 +196,7 @@ $(document).ready(function () {
 		$("#modal-header").removeClass("red-modal green-modal");
 		$("#modal-header").addClass("yellow-modal");
 		$(".modal-footer").html('<button class="btn btn-success" id="github_auth_begin"><span class="glyphicon glyphicon-ok"></span> Confirm</button>');
-		$("#modal-body").html('To submit a license, you must log in using Github.  You will now be redirected to the Github login.  Please allow the requested permissions.  If you do not have a Github account, you can <a href="https://github.com/">sign up</a> for free or you can email your new license request to <a href="mailto:spdx-legal@lists.spdx.org">spdx-legal@lists.spdx.org</a>.');
+		$("#modal-body").html('To submit a license, you must log in using GitHub.<ul><li>You will now be redirected to the GitHub login. Please review and allow the requested permissions.</li><li>If you do not have a GitHub account, you can <a href="https://github.com/">sign up</a> for free or you can email your new license request to <a href="mailto:spdx-legal@lists.spdx.org">spdx-legal@lists.spdx.org</a>.</li></ul>');
         $("#myModal").modal({
            backdrop: 'static',
            keyboard: true,
@@ -387,7 +389,7 @@ function scrollUpAndHighlight(element) {
                     var errorMessage = `Rejected! The request could not be completed as: ${matchingStr}. Please follow the below URL for more info.`
                     $("#modal-header").removeClass("yellow-modal green-modal");
 		                $("#modal-header").addClass("red-modal");
-		                $(".modal-footer").html(`<a href=${issueUrl}><button class="btn btn-success btn-space" id="issueUrl"><span class="glyphicon glyphicon-link"></span> View on GitHub</button></a><button class="btn btn-primary btn-space" id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>`);
+		                $(".modal-footer").html(`<a href=${issueUrl}><button class="btn btn-success btn-space" id="issueUrl"><span class="glyphicon glyphicon-link"></span> View on GitHub</button></a><button class="btn btn-primary btn-space" id="ok"><span class="glyphicon glyphicon-ok"></span> OK</button>`);
 		                $("#modal-body").html(errorMessage);
                     $("#myModal").modal({
                       backdrop: 'static',
@@ -402,7 +404,7 @@ function scrollUpAndHighlight(element) {
                     var inputLicenseText = data.inputLicenseText.replace(/\r\n/g,'\n');
                     var originalLicenseText = data.originalLicenseText;
                     var matchingGuidelinesUrl = 'https://spdx.github.io/spdx-spec/v2.3/license-matching-guidelines-and-templates/'
-                    var message = `Close match found! The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX Matching guidelines. Press show differences to continue.`
+                    var message = `Close match found! The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX matching guidelines. Press show differences to continue.`
                     LicenseData.data = data;
                     $("#modal-header").removeClass("red-modal green-modal");
 		                $("#modal-header").addClass("yellow-modal");
@@ -413,18 +415,18 @@ function scrollUpAndHighlight(element) {
                       keyboard: true,
                       show: true
                     });
-					$("#diffCancel").click(function(event){
+                    $("#diffCancel").click(function(event){
                       $("#myModal").modal("hide");
                     });
-					$("#matchingguidelines").click(function(event) {
-					  window.location = matchingGuidelinesUrl;
-					});
+                    $("#matchingguidelines").click(function(event) {
+                      window.location = matchingGuidelinesUrl;
+                    });
                     $(document).off().on('click','button#showDiff', function(event){
                       generate_text_diff(originalLicenseText.split('\n\n'), inputLicenseText.split('\n\n'));
                     });
                   }
                   else{
-                    var errorMessage = `${matchType} found! The following license ID(s) match: <strong>${matchIds}</strong>. The license is already present in the SPDX license list.`;
+                    var errorMessage = `${matchType} found! The following license ID(s) match: <strong>${matchIds}</strong>. The license is already present in the SPDX License List.`;
                     var spdxLicenseListUrl = 'https://spdx.org/licenses/';
                     $("#modal-header").removeClass("yellow-modal green-modal");
                     $("#modal-header").addClass("red-modal");
@@ -655,5 +657,5 @@ async function generate_text_diff(base, newtxt){
 <script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/treeview.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/html2canvas.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/editor/postscreenshot.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/postscreenshot.js' %}"></script>
 {% endblock %}

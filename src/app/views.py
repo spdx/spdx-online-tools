@@ -1,20 +1,11 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2017 Rohit Lodha
-# Copyright (c) 2017 Rohit Lodha
+# SPDX-FileCopyrightText: 2025 SPDX Contributors
 # SPDX-License-Identifier: Apache-2.0
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 from django.shortcuts import render
-from django.http import HttpResponse,HttpResponseRedirect
-from django.contrib.auth import authenticate,login ,logout,update_session_auth_hash
+from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
@@ -22,9 +13,13 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from src.version import spdx_online_tools_version
-from src.version import java_tools_version
-from src.version import ntia_conformance_checker_version
+from src.version import (
+    java_tools_version,
+    ntia_conformance_checker_version,
+    python_tools_version,
+    spdx_license_list_version,
+    spdx_online_tools_version,
+)
 
 import codecs
 import jpype
@@ -68,18 +63,20 @@ def index(request):
         'app/index.html',context_dict
         )
 
+
 def about(request):
-    """ View for about
+    """View for about
     returns about.html template
     """
-    context_dict={
-                'spdx_online_tools_version':spdx_online_tools_version,
-                'java_tools_version':java_tools_version,
-                'ntia_conformance_checker_version':ntia_conformance_checker_version,
-                }
-    return render(request,
-        'app/about.html',context_dict
-        )
+    context_dict = {
+        "java_tools_version": java_tools_version,
+        "ntia_conformance_checker_version": ntia_conformance_checker_version,
+        "python_tools_version": python_tools_version,
+        "spdx_license_list_version": spdx_license_list_version,
+        "spdx_online_tools_version": spdx_online_tools_version,
+    }
+    return render(request, "app/about.html", context_dict)
+
 
 def submitNewLicense(request):
     """ View for submit new licenses
@@ -269,7 +266,7 @@ def submitNewLicenseNamespace(request):
                         if (utils.is_ajax(request)):
                             ajaxdict["type"] = "license_exists"
                             ajaxdict["title"] = "License exists"
-                            ajaxdict["data"] = """License already exists on the SPDX license list.\n
+                            ajaxdict["data"] = """License already exists on the SPDX License List.\n
                                                   It has the reference: """ + licenseExists["referenceNumber"] + """,\n
                                                   name: """ + licenseExists["name"] + """\n
                                                   and ID: """ + licenseExists["licenseId"]
@@ -354,7 +351,7 @@ def licenseInformation(request, licenseId):
     licenseInformation['fullname'] = licenseRequest.fullname
     licenseInformation['shortIdentifier'] = licenseRequest.shortIdentifier
     licenseInformation['submissionDatetime'] = licenseRequest.submissionDatetime
-  
+
     licenseInformation['licenseAuthorName'] = licenseRequest.licenseAuthorName
     licenseInformation['archive'] = licenseRequest.archive
     xmlString = licenseRequest.xml
@@ -378,9 +375,7 @@ def licenseInformation(request, licenseId):
         os.remove(tempFilename)
         return response
 
-    return render(request,
-        'app/license_information.html',context_dict
-        )
+    return render(request, "app/license_information.html", context_dict)
 
 
 def licenseNamespaceInformation(request, licenseId):
@@ -445,9 +440,7 @@ def ntia_check(request):
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
-            core.initialise_jpype()
             result = core.ntia_check_helper(request)
-            jpype.detachThreadFromJVM()
             context_dict = result.get('context', None)
             status = result.get('status', None)
             response = result.get('response', None)
@@ -492,14 +485,14 @@ def validate(request):
             else:
                 return HttpResponse(message, status=status)
 
-
         else :
             """ GET,HEAD """
             return render(request,
-             'app/validate.html',context_dict
-             )
+                'app/validate.html',context_dict
+            )
     else :
         return HttpResponseRedirect(settings.LOGIN_URL)
+
 
 def validate_xml(request):
     """ View to validate xml text against SPDX License XML Schema,
@@ -679,7 +672,6 @@ def license_diff(request):
                 )
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
-
 
 
 def xml_upload(request):
@@ -1078,7 +1070,6 @@ def licenseNamespaceRequests(request, license_id=None):
         )
 
 
-
 def update_session_variables(request):
     """ View for updating the XML text in the session variable """
     if request.method == "POST" and utils.is_ajax(request):
@@ -1108,9 +1099,7 @@ def beautify(request):
                 with open('test.xml','wt', encoding='utf-8') as f:
                     f.write(xmlString)
                     f.close()
-                commandRun = subprocess.call(["python", "app/formatxml.py","test.xml","-i", "3"])
-                if commandRun != 0:
-                    commandRun = subprocess.call(["python", "src/app/formatxml.py","test.xml","-i", "3"])
+                commandRun = subprocess.call(["python", "src/app/formatxml.py","test.xml","-i", "3"])
                 if commandRun == 0:
                     data = codecs.open("test.xml", 'r', encoding='utf-8').read()
                     os.remove('test.xml')
@@ -1464,7 +1453,7 @@ def post_to_github(request):
                     data['fileurl'] = jsonResponse["content"]["html_url"]
                 else :
                     data['error_message'] = jsonResponse["message"]
-                    raise Exception("Post to Github returned {0} status code - message {1}".format(statusCode, jsonResponse["message"]))
+                    raise Exception("Post to GitHub returned {0} status code - message {1}".format(statusCode, jsonResponse["message"]))
                 return JsonResponse(data)
             except:
                 """  Errors raised """
