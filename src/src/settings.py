@@ -215,7 +215,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 print("MEDIA_ROOT:", MEDIA_ROOT)
 
-LICENSE_ROOT = os.path.join(PROJECT_ROOT, 'licenses')
+LICENSE_ROOT = '/licenses/current/'
 print("LICENSE_ROOT:", LICENSE_ROOT)
 
 # Rest API framework

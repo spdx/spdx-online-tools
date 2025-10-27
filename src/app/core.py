@@ -24,7 +24,7 @@ import app.utils as utils
 
 def initialise_jpype():
     """Start JVM if not already started, attach a Thread and start processing the request
-    
+
     The SPDX Online Tools must control the lifecycle of the JVM itself,
     since the CLASSPATH must be set to include the tool.jar file in a specifc
     location (JAR_ABSOLUTE_PATH in settings).
@@ -34,7 +34,9 @@ def initialise_jpype():
 
     # Check is the JVM is already running or not. If not, start JVM.
     if not jpype.isJVMStarted():
-        jpype.startJVM("-ea", classpath=[settings.JAR_ABSOLUTE_PATH])
+        jpype.startJVM(
+            "-ea", "-Djava.awt.headless=true", classpath=settings.JAR_ABSOLUTE_PATH
+        )
     # Attach a thread to JVM and start processing
     jpype.attachThreadToJVM()
     jpype.JPackage("org.spdx.library").SpdxModelFactory.init()
@@ -56,9 +58,12 @@ def license_compare_helper(request):
 
     try:
         if request.FILES["files"]:
-            rfilename = request.POST["rfilename"]+".xlsx"
-            folder = str(request.user)+"/"+ str(int(time()))
-            callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
+            rfilename = request.POST["rfilename"] + ".xlsx"
+            # create a stable folder name and separate filesystem path vs URL
+            folder = f"{request.user}/{int(time())}"
+            folder_path = os.path.join(settings.MEDIA_ROOT, folder)
+            folder_url = urljoin(settings.MEDIA_URL, folder + "/")
+            callfunc = [os.path.join(folder_path, rfilename)]
             erroroccurred = False
             warningoccurred = False
             if (len(request.FILES.getlist("files")) < 2):
@@ -67,10 +72,7 @@ def license_compare_helper(request):
                 result['context'] = context_dict
                 return result
             # Loop through the list of files
-            folder = str(request.user) + "/" + str(int(time()))
-            fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + folder,
-                base_url=urljoin(settings.MEDIA_URL, folder+'/')
-                )
+            fs = FileSystemStorage(location=folder_path, base_url=folder_url)
             for myfile in request.FILES.getlist("files"):
                 filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
                 local_path = fs.path(filename)
@@ -131,13 +133,13 @@ def license_compare_helper(request):
                 if warningoccurred is False:
                     # If no warning raised """
                     if utils.is_ajax(request):
-                        ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ rfilename
+                        ajaxdict["medialink"] = folder_url + rfilename
                         response = dumps(ajaxdict)
                         result['response'] = response
                         return result
                     context_dict["Content-Type"] = "application/vnd.ms-excel"
                     context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
-                    context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
+                    context_dict["medialink"] = folder_url + rfilename
                     result['status'] = 200
                     result['context'] = context_dict
                     return result
@@ -146,7 +148,7 @@ def license_compare_helper(request):
                         ajaxdict["type"] = "warning"
                         ajaxdict["files"] = filelist
                         ajaxdict["errors"] = errorlist
-                        ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
+                        ajaxdict["medialink"] = folder_url + rfilename
                         response = dumps(ajaxdict)
                         result['status'] = 406
                         result['response'] = response
@@ -154,7 +156,7 @@ def license_compare_helper(request):
                     context_dict["Content-Type"] = "application/vnd.ms-excel"
                     context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
                     context_dict["type"] = "warning"
-                    context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
+                    context_dict["medialink"] = folder_url + rfilename
                     result['status'] = 406
                     result['context'] = context_dict
                     return result
@@ -208,10 +210,10 @@ def ntia_check_helper(request):
         if request.FILES["file"]:
             # Saving file to the media directory
             myfile = request.FILES['file']
-            folder = str(request.user) + "/" + str(int(time()))
-            fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + folder,
-                                   base_url=urljoin(settings.MEDIA_URL, folder + '/')
-                                   )
+            folder = f"{request.user}/{int(time())}"
+            folder_path = os.path.join(settings.MEDIA_ROOT, folder)
+            folder_url = urljoin(settings.MEDIA_URL, folder + '/')
+            fs = FileSystemStorage(location=folder_path, base_url=folder_url)
             filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             local_path = fs.path(filename)
             # Get other request parameters
@@ -315,10 +317,10 @@ def license_validate_helper(request):
         if request.FILES["file"]:
             # Saving file to the media directory
             myfile = request.FILES['file']
-            folder = str(request.user) + "/" + str(int(time()))
-            fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
-                base_url=urljoin(settings.MEDIA_URL, folder+'/')
-                )
+            folder = f"{request.user}/{int(time())}"
+            folder_path = os.path.join(settings.MEDIA_ROOT, folder)
+            folder_url = urljoin(settings.MEDIA_URL, folder + '/')
+            fs = FileSystemStorage(location=folder_path, base_url=folder_url)
             filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             local_path = fs.path(filename)
             formatstr = request.POST["format"]
@@ -329,7 +331,7 @@ def license_validate_helper(request):
             retval = verifyclass.verify(str(local_path), fileformat)
 
             if (len(retval) > 0):
-                """ If any warnings are returned """
+                # If any warnings are returned
                 if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
                     warnings = str(retval)
@@ -343,7 +345,7 @@ def license_validate_helper(request):
                 result['status'] = 400
                 return result
             if utils.is_ajax(request):
-                """ Valid SPDX Document """
+                # Valid SPDX document
                 ajaxdict["data"] = "This SPDX document is valid."
                 response = dumps(ajaxdict)
                 result['response'] = response
@@ -354,7 +356,7 @@ def license_validate_helper(request):
             result['status'] = 200
             return result
         else :
-            """ If no file uploaded."""
+            # If no file uploaded
             if utils.is_ajax(request):
                 ajaxdict=dict()
                 ajaxdict["type"] = "error"
@@ -368,7 +370,7 @@ def license_validate_helper(request):
             result['status'] = 404
             return result
     except jpype.JException as ex :
-        """ Error raised by verifyclass.verify without exiting the application"""
+        # Error raised by verifyclass.verify without exiting the application
         if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["type"] = "error"
@@ -382,7 +384,7 @@ def license_validate_helper(request):
         result['status'] = 400
         return result
     except MultiValueDictKeyError:
-        """ If no files selected"""
+        # If no files selected
         if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["type"] = "error"
@@ -395,8 +397,8 @@ def license_validate_helper(request):
         result['context'] = context_dict
         result['status'] = 404
         return result
-    except Exception as ex:
-        """ Other error raised """
+    except Exception:
+        # Other error raised
         if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["type"] = "error"
@@ -462,7 +464,7 @@ def license_check_helper(request):
         result['context'] = context_dict
         result['status'] = 404
         return result
-    except Exception as ex:
+    except Exception:
         # Other exception raised
         if utils.is_ajax(request):
             ajaxdict = dict()
@@ -491,11 +493,12 @@ def license_convert_helper(request):
     try :
         if request.FILES["file"]:
             # Saving file to media directory
-            folder = str(request.user) + "/" + str(int(time()))
+            folder = f"{request.user}/{int(time())}"
+            folder_path = os.path.join(settings.MEDIA_ROOT, folder)
+            folder_url = urljoin(settings.MEDIA_URL, folder + '/')
             myfile = request.FILES['file']
-            fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
+            fs = FileSystemStorage(location=folder_path, base_url=folder_url)
             filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
-            uploaded_file_url = fs.url(filename).replace("%20", " ")
             local_path = fs.path(filename)
             option1 = request.POST["from_format"]
             option2 = request.POST["to_format"]
@@ -509,17 +512,18 @@ def license_convert_helper(request):
             toFileFormat = serFileTypeEnum.valueOf(option2)
 
             # Call the Java function with parameters as list
-            spdxConverter.convert(str(local_path), str(settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile), fromFileFormat, toFileFormat)
-            warnings = verifyclass.verify(str(settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile), toFileFormat)
+            out_path = os.path.join(folder_path, convertfile)
+            spdxConverter.convert(str(local_path), str(out_path), fromFileFormat, toFileFormat)
+            warnings = verifyclass.verify(str(out_path), toFileFormat)
             if (len(warnings) == 0) :
-                """ If no warnings raised """
+                # If no warnings raised
                 if utils.is_ajax(request):
-                    ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
+                    ajaxdict["medialink"] = folder_url + convertfile
                     response = dumps(ajaxdict)
                     result['response'] = response
                     return result
                 context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(convertfile)
-                context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
+                context_dict["medialink"] = folder_url + convertfile
                 context_dict["Content-Type"] = content_type
                 result['context'] = context_dict
                 result['status'] = 200
@@ -529,7 +533,7 @@ def license_convert_helper(request):
                     ajaxdict["type"] = "warning"
                     warnings = str(warnings)
                     ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ":<br />\n" + warnings.replace('\n', '<br />\n')
-                    ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
+                    ajaxdict["medialink"] = folder_url + convertfile
                     response = dumps(ajaxdict)
                     result['response'] = response
                     result['status'] = 406
@@ -538,7 +542,7 @@ def license_convert_helper(request):
                 context_dict["type"] = "warning"
                 context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(convertfile)
                 context_dict["Content-Type"] = content_type
-                context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
+                context_dict["medialink"] = folder_url + convertfile
                 result['context'] = context_dict
                 result['status'] = 406
                 return result
@@ -549,7 +553,7 @@ def license_convert_helper(request):
             result['status'] = 404
             return result
     except jpype.JException as ex :
-        """ Java exception raised without exiting the application"""
+        # Java exception raised without exiting the application
         if utils.is_ajax(request):
             ajaxdict["type"] = "error"
             ajaxdict["data"] = jpype.JException.message(ex)
@@ -563,7 +567,7 @@ def license_convert_helper(request):
         result['status'] = 400
         return result
     except MultiValueDictKeyError:
-        """ If no files uploaded"""
+        # If no files uploaded
         if utils.is_ajax(request):
             ajaxdict["type"] = "error"
             ajaxdict["data"] = "No files selected."
@@ -576,8 +580,8 @@ def license_convert_helper(request):
         result['context'] = context_dict
         result['status'] = 404
         return result
-    except Exception as ex:
-        """ Other error raised """
+    except Exception:
+        # Other error raised
         if utils.is_ajax(request):
             ajaxdict["type"] = "error"
             ajaxdict["data"] = format_exc()
@@ -619,7 +623,7 @@ def license_diff_helper(request):
             data['status'] = 201
             return data
     except jpype.JException as ex :
-        """ Java exception raised without exiting the application """
+        # Java exception raised without exiting the application
         if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["data"] = jpype.JException.message(ex)
@@ -631,8 +635,8 @@ def license_diff_helper(request):
         data['context'] = data
         data['status'] = 404
         return data
-    except Exception as ex:
-        """ Other exception raised """
+    except Exception:
+        # Other exception raised
         if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["data"] = format_exc()
