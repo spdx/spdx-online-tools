@@ -43,7 +43,7 @@ def get_spdx_license_list_version():
         string -- SPDX License List version
     """
     paths = [
-        join(LICENSE_ROOT, "current", "licenses.json"),
+        join(LICENSE_ROOT, "licenses.json"),
     ]
     for p in paths:
         try:
