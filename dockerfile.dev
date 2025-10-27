@@ -65,7 +65,7 @@ COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy licenses from builder stage
-COPY --from=builder /licenses /spdx/licenses
+COPY --from=builder /licenses /licenses
 
 # Copy JDK from jdk stage
 ENV JAVA_HOME=/opt/java/openjdk

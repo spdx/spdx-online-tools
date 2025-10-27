@@ -141,7 +141,7 @@ Once you have submitted a license, please follow the <a href="https://github.com
           {{ form.text }}
           <button type="button" id="check-license-btn">Check license text</button>
         </div>
-          <!-- <a href="/app/diff" target="_blank">Check License Diff</a> -->
+          <!-- <a href="/app/diff" target="_blank">Check license diff</a> -->
       </div>
 
     </div>
@@ -634,7 +634,7 @@ async function generate_text_diff(base, newtxt){
   }
 </script>
 <script type="text/javascript">
-  // Add an event listener to the "Check License Text" button
+  // Add an event listener to the "Check license text" button
   document.getElementById('check-license-btn').addEventListener('click', function() {
     // Get the license text from the request
     const licenseText = document.getElementById('{{ form.text.id_for_label }}').value;

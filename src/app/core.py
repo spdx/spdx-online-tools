@@ -17,12 +17,20 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.utils.datastructures import MultiValueDictKeyError
 from ntia_conformance_checker import SbomChecker
+from spdx_license_matcher.utils import get_spdx_license_text
 
 import app.utils as utils
 
 
 def initialise_jpype():
-    """Start JVM if not already started, attach a Thread and start processing the request"""
+    """Start JVM if not already started, attach a Thread and start processing the request
+    
+    The SPDX Online Tools must control the lifecycle of the JVM itself,
+    since the CLASSPATH must be set to include the tool.jar file in a specifc
+    location (JAR_ABSOLUTE_PATH in settings).
+    If we let libraries, like spdx_license_matcher, start the JVM, they may not
+    include the correct tool.jar in the CLASSPATH.
+    """
 
     # Check is the JVM is already running or not. If not, start JVM.
     if not jpype.isJVMStarted():
@@ -442,7 +450,7 @@ def license_check_helper(request):
             result['status'] = 200
             return result
     except jpype.JException as ex :
-        """ Java exception raised without exiting the application """
+        # Java exception raised without exiting the application
         if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["data"] = jpype.JException.message(ex)
@@ -455,7 +463,7 @@ def license_check_helper(request):
         result['status'] = 404
         return result
     except Exception as ex:
-        """ Other exception raised """
+        # Other exception raised
         if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["data"] = format_exc()
@@ -598,7 +606,7 @@ def license_diff_helper(request):
             if isinstance(matchingIds, list):
                 matchingIds = ", ".join(matchingIds)
             data['inputLicenseText'] = licensetext
-            originalLicenseText = utils.get_spdx_license_text(matchingIds)
+            originalLicenseText = get_spdx_license_text(matchingIds)
             data['originalLicenseText'] = originalLicenseText
             data['matchIds'] = matchingIds
             statusCode = 200

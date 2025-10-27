@@ -6,7 +6,7 @@
 <p class="lead">{{ error }}</p>
 <div class="panel panel-default">
   <div class="panel-heading">
-    <p class="lead">Check License</p>
+    <p class="lead">Check license</p>
   </div>
   <div class="panel-body" style="overflow:scroll;">
     <form id="checklicenseform" enctype="multipart/form-data" class="form-horizontal" method="post">
@@ -16,7 +16,7 @@
       <a href="https://spdx.org/licenses/exceptions-index.html">License Exceptions</a>.</p>
       <p>The result of the compare would be one of "Exact match", "Close match" or "No match".</p>
       <textarea id="licensetext" name="licensetext" rows="18" style="width: 100%"></textarea>
-      <button id="checklicensebutton" class=" btn btn-md btn-info" type="submit">Check License</button>
+      <button id="checklicensebutton" class=" btn btn-md btn-info" type="submit">Check license</button>
     </form>
     {% include "app/modal.html" %}
   </div>
@@ -72,7 +72,7 @@ function checkform() {
                           keyboard: true, 
                           show: true
                   });
-                  $("#checklicensebutton").text("Check License");
+                  $("#checklicensebutton").text("Check license");
                   $("#checklicensebutton").prop('disabled', false);
               },
               error: function (e) {
@@ -94,7 +94,7 @@ function checkform() {
                           keyboard: true, 
                           show: true
                   });
-                  $("#checklicensebutton").text("Check License");
+                  $("#checklicensebutton").text("Check license");
                   $("#checklicensebutton").prop('disabled', false);
               }
           });

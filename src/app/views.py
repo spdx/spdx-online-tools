@@ -637,7 +637,16 @@ def check_license(request):
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
         if request.method == 'POST':
+            # core.license_check_helper uses utils.check_spdx_license
+            # which uses spdx_license_matcher that requires JPype.
+            # If we do not initialise JPype here, spdx_license_matcher will
+            # start its own JVM with its own CLASSPATH which may cause issues.
+            core.initialise_jpype()
             result = core.license_check_helper(request)
+            try:
+                jpype.detachThreadFromJVM()
+            except Exception:
+                pass
             context_dict = result.get('context', None)
             status = result.get('status', None)
             response = result.get('response', None)
@@ -663,7 +672,17 @@ def license_diff(request):
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict = {}
         if request.method == 'POST':
+            # core.license_diff_helper uses utils.check_spdx_license
+            # and spdx_license_matcher.utils.get_spdx_license_text
+            # which uses spdx_license_matcher that requires JPype.
+            # If we do not initialise JPype here, spdx_license_matcher will
+            # start its own JVM with its own CLASSPATH which may cause issues.
+            core.initialise_jpype()
             result = core.license_diff_helper(request)
+            try:
+                jpype.detachThreadFromJVM()
+            except Exception:
+                pass
             return JsonResponse(result)
         else:
             """GET,HEAD"""
