@@ -11,7 +11,7 @@ from subprocess import run, PIPE
 from re import search
 import json
 
-from .settings import PROJECT_ROOT
+from .settings import LICENSE_ROOT
 
 
 def get_tools_version(jar_name):
@@ -43,7 +43,7 @@ def get_spdx_license_list_version():
         string -- SPDX License List version
     """
     paths = [
-        join(PROJECT_ROOT, "licenses", "current", "licenses.json"),
+        join(LICENSE_ROOT, "current", "licenses.json"),
     ]
     for p in paths:
         try:

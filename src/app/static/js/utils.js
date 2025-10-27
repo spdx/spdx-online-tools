@@ -79,7 +79,7 @@ function findLicenseMatch(request) {
         keyboard: true,
         show: true,
       });
-      $("#licensediffbutton").text("Check License");
+      $("#licensediffbutton").text("Check license");
       $("#licensediffbutton").prop("disabled", false);
     },
   });

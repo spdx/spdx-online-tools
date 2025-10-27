@@ -195,8 +195,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
 print("PROJECT_ROOT:", PROJECT_ROOT)
+
 STATIC_PATH = os.path.join(PROJECT_ROOT, 'static')
 STATIC_ROOT = STATIC_PATH
+print("STATIC_ROOT:", STATIC_ROOT)
 
 # Ensure that STATICFILES_DIRS does not include the same directory
 # as STATIC_ROOT. You should only list directories that are not
@@ -212,6 +214,9 @@ STATIC_ROOT = STATIC_PATH
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 print("MEDIA_ROOT:", MEDIA_ROOT)
+
+LICENSE_ROOT = os.path.join(PROJECT_ROOT, 'licenses')
+print("LICENSE_ROOT:", LICENSE_ROOT)
 
 # Rest API framework
 
