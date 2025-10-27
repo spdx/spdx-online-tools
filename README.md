@@ -19,22 +19,10 @@ for validation, conformance check, comparison, conversion and SPDX License List 
 * Check for minimum elements conformance (NTIA and others)
 * Edit SPDX 3 visually
 
-## Requirements (Linux/Debian/Ubuntu)  
+## Requirements
 
-Either the Sun/Oracle JDK/JRE Variant or OpenJDK. Python 3.7+.
-
-Debian/Ubuntu users will have to install g++ and python-dev first:  
-
-```bash
-sudo apt-get install g++ python-dev
-```
-
-## Requirements (Windows)  
-
-Windows users need a Python installation and C++ compiler:
-
-* Install Python 3.7 version, e.g., [Anaconda](https://www.anaconda.com/distribution/) is a good choice for users not yet familiar with the language
-* Install a [Windows C++ Compiler](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+* Python 3.10+
+* Java 17+
 
 ## Installation
 
