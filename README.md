@@ -6,7 +6,8 @@ Source for the website providing online access to SPDX tools.
 The tool provides an easy all-in-one website to upload and parse SPDX documents
 for validation, conformance check, comparison, conversion and SPDX License List search.
 
-[Here](https://github.com/spdx/spdx-online-tools/wiki/Online-SPDX-Tool,-Google-Summer-of-Code-2017) you can find more about the working of the tool.
+You can find more about the working of the tool in the
+[wiki](https://github.com/spdx/spdx-online-tools/wiki/Online-SPDX-Tool,-Google-Summer-of-Code-2017).
 
 ## Features
 
@@ -61,34 +62,35 @@ for validation, conformance check, comparison, conversion and SPDX License List 
     ```
 
 6. (Optional) If you want to use the license submittal feature or check license feature, follow the below step(s):
-    * Install redis server on your local machine.
+    * Install Redis server on your local machine.
 
         **For Linux users**
 
-        * Use the command `sudo apt-get install redis-server` to install the redis server.
+        * Use the command `sudo apt-get install redis-server` to install the Redis server.
 
         **For Mac users**
 
-        * Install the redis by running the command
+        * Install the Redis by running the command
 
             `brew install redis`.
-        * If you want to run redis whenever your computer starts then run
+        * If you want to run Redis whenever your computer starts then run
 
             `ln -sfv /usr/local/opt/redis/*.plist ~/Library/LaunchAgents`.
 
-        * To run the redis server use
+        * To run the Redis server use
 
             `launchctl load ~/Library/LaunchAgents/homebrew.mxcl.redis.plist`.
-        * To test if the redis is working run the command `redis-cli ping`. If it returns `Pong` then you are good to go.
+        * To test if the Redis is working run the command `redis-cli ping`. If it returns `Pong` then you are good to go.
 
         **For Windows users**
 
-        * Download the redis server from [here](https://github.com/microsoftarchive/redis/releases) and install it.
-    * Make sure redis server is running and keep it running until you are done using the license submittal or check license feature.
+        * Download the Redis server from [here](https://github.com/microsoftarchive/redis/releases) and install it.
 
-        *The redis is used to store the license text of license present on the SPDX License List. For the very first time it may take a while to build the license on the redis server.*
+    * Make sure Redis server is running and keep it running until you are done using the license submittal or check license feature.
 
-        *SPDX License Matcher matches the license text input by the user(via license submittal form) against the data present on the redis to find for duplicate and near matches.*
+        *The Redis is used to store the license text of license present on the SPDX License List. For the very first time it may take a while to build the license on the Redis server.*
+
+        *SPDX License Matcher matches the license text input by the user(via license submittal form) against the data present on the Redis to find for duplicate and near matches.*
 
 7. Start the application.
 
@@ -236,4 +238,9 @@ where:
 
 ## Dependencies
 
-The project uses [SPDX Java Tools](https://github.com/spdx/tools-java) for various tools of the website.
+* [SPDX Java Tools](https://github.com/spdx/tools-java)
+  for validation, comparison, and conversion functions
+* [SPDX License Matcher](https://github.com/spdx/spdx-license-matcher)
+  for license match function
+* [NTIA Conformance Checker](https://github.com/spdx/ntia-conformance-checker)
+  for conformance check function

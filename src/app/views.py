@@ -18,6 +18,7 @@ from src.version import (
     ntia_conformance_checker_version,
     python_tools_version,
     spdx_license_list_version,
+    spdx_license_matcher_version,
     spdx_online_tools_version,
 )
 
@@ -32,7 +33,6 @@ from traceback import format_exc
 from json import dumps
 from time import time
 from urllib.parse import urljoin
-from pathlib import Path
 import datetime
 import uuid
 from wsgiref.util import FileWrapper
@@ -66,7 +66,7 @@ def index(request):
 
 
 def about(request):
-    """View for about
+    """ View for about
     returns about.html template
     """
     context_dict = {
@@ -74,6 +74,7 @@ def about(request):
         "ntia_conformance_checker_version": ntia_conformance_checker_version,
         "python_tools_version": python_tools_version,
         "spdx_license_list_version": spdx_license_list_version,
+        "spdx_license_matcher_version": spdx_license_matcher_version,
         "spdx_online_tools_version": spdx_online_tools_version,
     }
     return render(request, "app/about.html", context_dict)
@@ -785,13 +786,13 @@ def xml_upload(request):
                             return render(request,
                                 'app/xml_upload.html',context_dict,status=400
                                 )
-                        folder_rel = f"{request.user}/{int(time())}"
-                        folder_path = Path(settings.MEDIA_ROOT) / folder_rel
-                        folder_url = urljoin(settings.MEDIA_URL, folder_rel + '/')
-                        fs = FileSystemStorage(location=str(folder_path), base_url=folder_url)
+                        folder = f"{request.user}/{int(time())}"
+                        folder_path = os.path.join(settings.MEDIA_ROOT, folder)
+                        folder_url = urljoin(settings.MEDIA_URL, folder + '/')
+                        fs = FileSystemStorage(location=folder_path, base_url=folder_url)
                         filename = fs.save(xml_file.name, xml_file)
                         page_id = request.POST['page_id']
-                        with open(str(Path(fs.location) / filename), 'rt', encoding='utf-8') as f:
+                        with open(os.path.join(fs.location, filename), 'rt', encoding='utf-8') as f:
                             request.session[page_id] = [f.read(), ""]
                         if (utils.is_ajax(request)):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
