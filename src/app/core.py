@@ -436,7 +436,7 @@ def license_check_helper(request):
             result['status'] = 404
             return result
         else:
-            matching_str = matchingType + " found! The following license ID(s) match: "
+            matching_str = matchingType + " found.<br />The following license ID(s) match: "
             if isinstance(matchingId, list):
                 matchingId = ",".join(matchingId)
             matching_str += matchingId

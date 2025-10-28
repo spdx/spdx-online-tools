@@ -2,12 +2,18 @@
 
 # SPDX Online Tools
 
-Source for the website providing online access to SPDX tools.
-The tool provides an easy all-in-one website to upload and parse SPDX documents
-for validation, conformance check, comparison, conversion and SPDX License List search.
+Source for the web server providing online access to various SPDX tools.
 
-You can find more about the working of the tool in the
-[wiki](https://github.com/spdx/spdx-online-tools/wiki/Online-SPDX-Tool,-Google-Summer-of-Code-2017).
+The server provides an easy all-in-one website to upload and parse
+SPDX documents for validation, conformance check, comparison, conversion
+and SPDX License List search.
+
+*The server provides access via both web UI and REST API.*
+
+You can find more about the working of the SPDX Online Tools
+in the [wiki][gsoc2017].
+
+[gsoc2017]: https://github.com/spdx/spdx-online-tools/wiki/Online-SPDX-Tool,-Google-Summer-of-Code-2017
 
 ## Features
 
@@ -84,7 +90,8 @@ You can find more about the working of the tool in the
 
         **For Windows users**
 
-        * Download the Redis server from [here](https://github.com/microsoftarchive/redis/releases) and install it.
+        * Download the Redis server from
+          <https://github.com/microsoftarchive/redis/releases> and install it.
 
     * Make sure Redis server is running and keep it running until you are done using the license submittal or check license feature.
 
@@ -110,11 +117,13 @@ python src/manage.py test
 
 ## Running with Docker
 
-You need to have [docker desktop](https://docs.docker.com/desktop/) installed on your machine for the container environment.
+You need to have [Docker Desktop](https://docs.docker.com/desktop/) installed
+on your machine for the container environment.
 
-Prior to starting the docker image, you will need to create a file to set the environment variables described below.
+Prior to starting the Docker image, you will need to create a file to set the
+environment variables described below.
 
-Create a file ".env" with the following content:
+Create a file `.env` with the following content:
 
 ```bash
 DIFF_REPO_GIT_TOKEN=XXXX
@@ -129,7 +138,8 @@ You can bring up the Docker image with the following docker-compose command:
 docker-compose -f docker-compose.dev.yml up --build
 ```
 
-For the production environment, see the [README-PRODUCTION.md](README-PRODUCTION.md) file.
+For the production environment,
+see the [README-PRODUCTION.md](README-PRODUCTION.md) file.
 
 ## GitHub Developer Sensitive Data
 
@@ -165,11 +175,11 @@ def getDiffRepoWithOwner():
 
 where:
 
-* ONLINE_TOOL_GITHUB_KEY is the Client ID for the GitHub OAuth Apps (To create your Oauth application see [this](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app))
+* ONLINE_TOOL_GITHUB_KEY is the Client ID for the GitHub OAuth Apps (To create your OAuth application see [this](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app))
 * ONLINE_TOOL_GITHUB_SECRET is the Client secret for the GitHub OAuth Apps
 * DJANGO_SECRET_KEY is the Django secret
-* OAUTH_APP_ID is the client ID of the Django OAuth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
-* OAUTH_APP_SECRET is the client secret of the Django OAuth toolkit app (To create your application see [this](#django-oauth-toolkit-app))
+* OAUTH_APP_ID is the client ID of the Django OAuth Toolkit app (To create a Django OAuth Toolkit app see instructions below)
+* OAUTH_APP_SECRET is the client secret of the Django OAuth Toolkit app
 * DIFF_REPO_GIT_TOKEN is the GitHub user's Personal Access Token which has write access to DIFF_REPO_WITH_OWNER (Follow [this](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) to create your GitHub Personal access token with full repo and user scope access)
 * DIFF_REPO_WITH_OWNER is the repo where images related to license submittable process are uploaded
 
@@ -177,7 +187,10 @@ where:
 
 ## How to Use API
 
-**[Here](https://github.com/spdx/spdx-online-tools/wiki/REST-API-Fields-Request-and-Response) is the exhaustive list of request and response fields of different api tools.**
+The exhaustive list of request and response fields of different API tools
+can be found in the [wiki][rest-api].
+
+[rest-api]: https://github.com/spdx/spdx-online-tools/wiki/REST-API-Fields-Request-and-Response
 
 1. Start the server.
 
@@ -211,7 +224,7 @@ where:
     curl -X POST -u <admin>:<password> -F "file=@<fileInput>" -H "Accept: application/json" http://localhost:8000/api/check_license/ | json_pp
     ```
 
-7. For the license submittal API, first create a Django OAuth toolkit application and follow the steps given below:
+7. For the license submittal API, first create a Django OAuth Toolkit application and follow the steps given below:
 
     **Django OAuth Toolkit App**
 
