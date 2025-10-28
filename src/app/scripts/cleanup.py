@@ -22,7 +22,7 @@ def cleanMedia():
 
     # log the time of the cron job
     logger.info('Cron job ran at %s', now)
-    
+
     for filename in os.listdir(MEDIA_DIR):
         filepath = os.path.join(MEDIA_DIR, filename)
         if os.path.isfile(filepath) and (now - os.stat(filepath).st_mtime) > (DAYS_THRESHOLD * 86400):
@@ -30,4 +30,3 @@ def cleanMedia():
             file_date = datetime.datetime.fromtimestamp(os.path.getmtime(filepath))
             logger.info('Deleting file %s with date %s', filename, file_date)
             os.remove(filepath)
-            
