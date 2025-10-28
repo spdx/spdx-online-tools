@@ -32,6 +32,7 @@ from traceback import format_exc
 from json import dumps
 from time import time
 from urllib.parse import urljoin
+from pathlib import Path
 import datetime
 import uuid
 from wsgiref.util import FileWrapper
@@ -96,7 +97,7 @@ def submitNewLicense(request):
         try:
             user = request.user
             try:
-                """ Getting user info for submitting github issue """
+                # Getting user info for submitting github issue
                 github_login = user.social_auth.get(provider='github')
                 token = github_login.extra_data["access_token"]
                 username = github_login.extra_data["login"]
@@ -182,15 +183,15 @@ def submitNewLicense(request):
                     data['issueId'] = str(githubIssueId)
                     return JsonResponse(data)
             except UserSocialAuth.DoesNotExist:
-                """ User not authenticated with GitHub """
+                # User not authenticated with GitHub
                 if (utils.is_ajax(request)):
                     ajaxdict["type"] = "auth_error"
                     ajaxdict["data"] = "Please login using GitHub to use this feature."
                     response = dumps(ajaxdict)
                     return HttpResponse(response,status=401)
                 return HttpResponse("Please login using GitHub to use this feature.",status=401)
-        except:
-            """ Other errors raised """
+        except Exception:
+            # Other errors raised
             logger.error(str(format_exc()))
             if (utils.is_ajax(request)):
                 ajaxdict["type"] = "error"
@@ -212,6 +213,7 @@ def submitNewLicense(request):
         context_dict["github_login"] = github_login
         form = LicenseRequestForm(auto_id='%s', email=email)
         context_dict['form'] = form
+
     return render(request,
         'app/submit_new_license.html', context_dict
         )
@@ -234,7 +236,7 @@ def submitNewLicenseNamespace(request):
         try:
             user = request.user
             try:
-                """ Getting user info for submitting GitHub issue """
+                # Getting user info for submitting GitHub issue
                 github_login = user.social_auth.get(provider='github')
                 token = github_login.extra_data["access_token"]
                 username = github_login.extra_data["login"]
@@ -303,8 +305,8 @@ def submitNewLicenseNamespace(request):
                     response = dumps(ajaxdict)
                     return HttpResponse(response,status=401)
                 return HttpResponse("Please login using GitHub to use this feature.",status=401)
-        except:
-            # Other errors raised """
+        except Exception:
+            # Other errors raised
             logger.error(str(format_exc()))
             if (utils.is_ajax(request)):
                 ajaxdict["type"] = "error"
@@ -326,6 +328,7 @@ def submitNewLicenseNamespace(request):
         context_dict["github_login"] = github_login
         form = LicenseNamespaceRequestForm(auto_id='%s', email=email)
         context_dict['form'] = form
+
     return render(request,
         'app/submit_new_license_namespace.html', context_dict
         )
@@ -495,12 +498,11 @@ def validate_xml(request):
     """ View to validate xml text against SPDX License XML Schema,
          used in the license xml editor """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
-        context_dict={}
         if request.method == 'POST':
             ajaxdict=dict()
             try :
                 if "xmlText" in request.POST:
-                    """ Saving file to the media directory """
+                    # Saving file to the media directory
                     xmlText = request.POST['xmlText']
                     xmlText = xmlText.encode('utf-8') if isinstance(xmlText, str) else xmlText
                     folder = f"{request.user}/{int(time())}"
@@ -510,8 +512,8 @@ def validate_xml(request):
                     uploaded_file_url = os.path.join(folder_path, 'xmlFile.xml')
                     with open(uploaded_file_url, 'wb') as f:
                         f.write(xmlText)
-                    """ Get schema text from GitHub,
-                    if it fails use the file in examples folder """
+                    # Get schema text from GitHub,
+                    # if it fails use the file in examples folder
                     try:
                         schema_url = 'https://raw.githubusercontent.com/spdx/license-list-XML/master/schema/ListedLicense.xsd'
                         schema_text = requests.get(schema_url, timeout=5).text
@@ -520,14 +522,14 @@ def validate_xml(request):
                         schema_url = settings.BASE_DIR + "/examples/xml-schema.xsd"
                         with open(schema_url) as f:
                             xmlschema_doc = etree.parse(f)
-                    """ Using the lxml etree functions """
+                    # Using the lxml etree functions
                     xmlschema = etree.XMLSchema(xmlschema_doc)
                     with open(uploaded_file_url) as f:
                         xml_input = etree.parse(f)
 
                     try:
                         xmlschema.assertValid(xml_input)
-                        """ If the xml is valid """
+                        # If the xml is valid
                         if (utils.is_ajax(request)):
                             ajaxdict["type"] = "valid"
                             ajaxdict["data"] = "This XML is valid against SPDX License Schema."
@@ -542,23 +544,23 @@ def validate_xml(request):
                             return HttpResponse(response,status=200)
                         return HttpResponse("This XML is not valid against SPDX License Schema.\n"+str(e),status=200)
                 else :
-                    """ If no xml text is given."""
+                    # If no xml text is given
                     if (utils.is_ajax(request)):
                         ajaxdict["type"] = "error"
                         ajaxdict["data"] = "No XML text given."
                         response = dumps(ajaxdict)
                         return HttpResponse(response,status=400)
                     return HttpResponse("No XML text given.", status=400)
-            except etree.XMLSyntaxError as e:
-                """ XML not valid """
+            except etree.XMLSyntaxError:
+                # XML not valid
                 if (utils.is_ajax(request)):
                     ajaxdict["type"] = "error"
                     ajaxdict["data"] = "XML Parsing Error.\n The XML is not valid. Please correct the XML text and try again."
                     response = dumps(ajaxdict)
                     return HttpResponse(response,status=400)
                 return HttpResponse("XML Parsing Error.\n The XML is not valid. Please correct the XML text and try again.", status=400)
-            except :
-                """ Other error raised """
+            except Exception:
+                # Other error raised
                 logger.error(str(format_exc()))
                 if (utils.is_ajax(request)):
                     ajaxdict["type"] = "error"
@@ -681,7 +683,6 @@ def license_diff(request):
                 pass
             return JsonResponse(result)
         else:
-            
             return render(request,
                 'app/license_diff.html', context_dict
                 )
@@ -699,7 +700,7 @@ def xml_upload(request):
         if request.method == 'POST':
             try:
                 if "xmlTextButton" in request.POST:
-                    """ If user provides XML text using textarea """
+                    # If user provides XML text using textarea
                     if len(request.POST["xmltext"])>0 :
                         page_id = request.POST['page_id']
                         request.session[page_id] = [request.POST["xmltext"], ""]
@@ -722,7 +723,7 @@ def xml_upload(request):
                             )
 
                 elif "licenseNameButton" in request.POST:
-                    """ If license name is provided by the user """
+                    # If license name is provided by the user
                     name = request.POST["licenseName"]
                     if len(name) <= 0:
                         if (utils.is_ajax(request)):
@@ -770,9 +771,9 @@ def xml_upload(request):
                             )
 
                 elif "uploadButton" in request.POST:
-                    """ If user uploads the XML file """
+                    # If user uploads the XML file
                     if "file" in request.FILES and len(request.FILES["file"])>0:
-                        """ Saving XML file to the media directory """
+                        # Saving XML file to the media directory
                         xml_file = request.FILES['file']
                         if not xml_file.name.endswith(".xml"):
                             if (utils.is_ajax(request)):
@@ -784,13 +785,13 @@ def xml_upload(request):
                             return render(request,
                                 'app/xml_upload.html',context_dict,status=400
                                 )
-                        folder = f"{request.user}/{int(time())}"
-                        folder_path = os.path.join(settings.MEDIA_ROOT, folder)
-                        folder_url = urljoin(settings.MEDIA_URL, folder + '/')
-                        fs = FileSystemStorage(location=folder_path, base_url=folder_url)
+                        folder_rel = f"{request.user}/{int(time())}"
+                        folder_path = Path(settings.MEDIA_ROOT) / folder_rel
+                        folder_url = urljoin(settings.MEDIA_URL, folder_rel + '/')
+                        fs = FileSystemStorage(location=str(folder_path), base_url=folder_url)
                         filename = fs.save(xml_file.name, xml_file)
                         page_id = request.POST['page_id']
-                        with open(os.path.join(fs.location, filename), 'rt', encoding='utf-8') as f:
+                        with open(str(Path(fs.location) / filename), 'rt', encoding='utf-8') as f:
                             request.session[page_id] = [f.read(), ""]
                         if (utils.is_ajax(request)):
                             ajaxdict["redirect_url"] = '/app/edit/'+page_id+'/'
@@ -800,7 +801,7 @@ def xml_upload(request):
                             'app/xml_upload.html',context_dict,status=200
                             )
                     else :
-                        """ If no file is uploaded """
+                        # If no file is uploaded
                         if (utils.is_ajax(request)):
                             ajaxdict["type"] = "error"
                             ajaxdict["data"] = "No file uploaded. Please upload a SPDX license XML file to edit."
@@ -812,7 +813,7 @@ def xml_upload(request):
                             )
 
                 elif "newButton" in request.POST:
-                    """ If the user starts with new XML """
+                    # If the user starts with new XML
                     xml_text = """<?xml version="1.0" encoding="UTF-8"?>\n<SPDXLicenseCollection xmlns="http://www.spdx.org/license">\n<license></license>\n</SPDXLicenseCollection>"""
                     page_id = request.POST['page_id']
                     request.session[page_id] = [xml_text, ""]
@@ -825,7 +826,7 @@ def xml_upload(request):
                     ajaxdict["data"] = "Bad Request."
                     response = dumps(ajaxdict)
                     return HttpResponse(response, status=400)
-            except:
+            except Exception:
                 logger.error(str(format_exc()))
                 if (utils.is_ajax(request)):
                     ajaxdict["type"] = "error"
@@ -837,7 +838,6 @@ def xml_upload(request):
                     'app/xml_upload.html',context_dict,status=500
                     )
         else :
-            """ GET,HEAD Request """
             return render(request, 'app/xml_upload.html', {})
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
@@ -967,8 +967,10 @@ def archiveNamespaceRequests(request, license_id=None):
         license_id = request.POST.get('license_id', False)
         if license_id:
             LicenseNamespace.objects.filter(pk=license_id).update(archive=archive)
+
     archiveRequests = LicenseNamespace.objects.filter(archive='True').order_by('-submissionDatetime')
     context_dict={'archiveRequests': archiveRequests}
+
     return render(request,
         'app/archive_namespace_requests.html',context_dict
         )
@@ -982,7 +984,7 @@ def promoteNamespaceRequests(request, license_id=None):
         promoted = request.POST.get('promoted', False)
         license_id = request.POST.get('license_id', False)
         if license_id:
-            """Create corresponding license request and issue"""
+            # Create corresponding license request and issue
             model_dict = model_to_dict(LicenseNamespace.objects.get(pk=license_id), exclude=['id'])
             licenseOsi = ""
             licenseHeader = ""
@@ -1016,7 +1018,7 @@ def promoteNamespaceRequests(request, license_id=None):
             if "urlType" in request.POST:
                 # This is present only when executing submit license via tests
                 urlType = request.POST["urlType"]
-            statusCode, githubIssueId = utils.createIssue(
+            statusCode, _ = utils.createIssue(
                 licenseAuthorName,
                 licenseName,
                 licenseIdentifier,
@@ -1110,21 +1112,19 @@ def update_session_variables(request):
         ajaxdict["type"] = "success"
         response = dumps(ajaxdict)
         return HttpResponse(response, status=200)
-    else:
-        ajaxdict={}
-        ajaxdict["type"] = "error"
-        response = dumps(ajaxdict)
-        return HttpResponse(response, status=400)
-    return HttpResponse("Bad Request", status=400)
+
+    ajaxdict={}
+    ajaxdict["type"] = "error"
+    response = dumps(ajaxdict)
+    return HttpResponse(response, status=400)
 
 
 def beautify(request):
     """ View that handles beautify xml requests """
     if request.method=="POST":
-        context_dict = {}
         ajaxdict = {}
         try:
-            """ Getting the license xml input by the user"""
+            # Getting the license xml input by the user
             xmlString = request.POST.get("xml", None)
             if xmlString:
                 with open('test.xml','wt', encoding='utf-8') as f:
@@ -1147,15 +1147,15 @@ def beautify(request):
                     response = dumps(ajaxdict)
                     return HttpResponse(response,status=500)
             else:
-                """ Error while getting xml """
+                # Error while getting xml
                 if (utils.is_ajax(request)):
                     ajaxdict["type"] = "xml_error"
                     ajaxdict["data"] = "Error getting the xml"
                     response = dumps(ajaxdict)
                     return HttpResponse(response,status=500)
                 return HttpResponse(response,status=500)
-        except:
-            """ Other errors raised """
+        except Exception:
+            # Other errors raised
             logger.error(str(format_exc()))
             if (utils.is_ajax(request)):
                 ajaxdict["type"] = "error"
@@ -1171,7 +1171,6 @@ def issue(request):
     """ View that handles create issue request """
     if request.user.is_authenticated:
         if request.method=="POST":
-            context_dict = {}
             ajaxdict = {}
             try:
                 if request.user.is_authenticated:
@@ -1205,7 +1204,7 @@ def issue(request):
                     licenseRequestId = licenseRequest.id
                     serverUrl = request.build_absolute_uri('/')
                     licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
-                    statusCode, githubIssueId = utils.createIssue(
+                    statusCode, _ = utils.createIssue(
                         licenseAuthorName, licenseName, licenseIdentifier,
                         licenseComments, licenseSourceUrls, licenseHeader,
                         licenseOsi, licenseExamples, licenseRequestUrl, token,
@@ -1213,15 +1212,15 @@ def issue(request):
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
                 except UserSocialAuth.DoesNotExist:
-                    """ User not authenticated with GitHub """
+                    # User not authenticated with GitHub
                     if (utils.is_ajax(request)):
                         ajaxdict["type"] = "auth_error"
                         ajaxdict["data"] = "Please login using GitHub to use this feature."
                         response = dumps(ajaxdict)
                         return HttpResponse(response,status=401)
                     return HttpResponse("Please login using GitHub to use this feature.",status=401)
-            except:
-                """ Other errors raised """
+            except Exception:
+                # Other errors raised
                 logger.error(str(format_exc()))
                 if (utils.is_ajax(request)):
                     ajaxdict["type"] = "error"
@@ -1244,7 +1243,7 @@ def handle_pull_request(request, is_ns):
                 if request.user.is_authenticated:
                     user = request.user
                 try:
-                    """Getting user info and calling the makePullRequest function"""
+                    # Getting user info and calling the makePullRequest function
                     github_login = user.social_auth.get(provider="github")
                     token = github_login.extra_data["access_token"]
                     username = github_login.extra_data["login"]
@@ -1266,7 +1265,7 @@ def handle_pull_request(request, is_ns):
                         is_ns=is_ns,
                     )
                     if response["type"] == "success":
-                        """PR made successfully"""
+                        # PR made successfully
                         if utils.is_ajax(request):
                             ajaxdict["type"] = "success"
                             ajaxdict["data"] = response["pr_url"]
@@ -1274,7 +1273,7 @@ def handle_pull_request(request, is_ns):
                             return HttpResponse(response, status=200)
                         return HttpResponse(response["pr_url"], status=200)
                     else:
-                        """Error while making PR"""
+                        # Error while making PR
                         if utils.is_ajax(request):
                             ajaxdict["type"] = "pr_error"
                             ajaxdict["data"] = response["message"]
@@ -1282,15 +1281,15 @@ def handle_pull_request(request, is_ns):
                             return HttpResponse(response, status=500)
                         return HttpResponse(response["message"], status=500)
                 except UserSocialAuth.DoesNotExist:
-                    """User not authenticated with GitHub"""
+                    # User not authenticated with GitHub
                     if utils.is_ajax(request):
                         ajaxdict["type"] = "auth_error"
                         ajaxdict["data"] = "Please login using GitHub to use this feature."
                         response = dumps(ajaxdict)
                         return HttpResponse(response, status=401)
                     return HttpResponse("Please login using GitHub to use this feature.",status=401)
-            except:
-                """Other errors raised"""
+            except Exception:
+                # Other errors raised
                 logger.error(str(format_exc()))
                 if utils.is_ajax(request):
                     ajaxdict["type"] = "error"
@@ -1483,15 +1482,26 @@ def post_to_github(request):
                 if (statusCode == 201) :
                     data['fileurl'] = jsonResponse["content"]["html_url"]
                 else :
-                    data['error_message'] = jsonResponse["message"]
-                    raise Exception("Post to GitHub returned {0} status code - message {1}".format(statusCode, jsonResponse["message"]))
+                    data["error_message"] = jsonResponse["message"]
+                    raise Exception(
+                        "Post to GitHub returned {0} status code - message {1}".format(
+                            statusCode, jsonResponse["message"]
+                        )
+                    )
                 return JsonResponse(data)
-            except:
-                """  Errors raised """
+            except Exception:
                 logger.error(str(format_exc()))
                 data["type"] = "error"
-                return HttpResponse(dumps({"message" : "Unexpected error while posting to github, please email the SPDX technical workgroup that the following error has occurred: " + format_exc(),
-                                           "data" : data}), status=500)
+                return HttpResponse(
+                    dumps(
+                        {
+                            "message": "Unexpected error while posting to github, please email the SPDX technical workgroup that the following error has occurred: "
+                            + format_exc(),
+                            "data": data,
+                        }
+                    ),
+                    status=500,
+                )
     else:
         return HttpResponse(dumps({"message": "User should be logged in to use this feature"}), status=400)
 
