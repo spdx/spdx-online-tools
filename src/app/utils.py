@@ -239,11 +239,14 @@ def save_profile(backend, user, response, *args, **kwargs):
             profile = UserID()
             username = response.get('login')
             user = User.objects.filter(username=username)[0]
-            profile.user_id=user.id
-            profile.organisation='none'
+            if not user:
+                logger.error("User with username '%s' not found.", username)
+                return
+            profile.user_id = user.id
+            profile.organisation = 'none'
             profile.save()
-        except:
-            pass
+        except Exception as e:
+            logger.error("Error saving profile: %s", e, exc_info=True)
 
 def check_license_name(name):
     """ Check if a license name exists """
@@ -406,52 +409,71 @@ def parseXmlString(xmlString):
     returns a dictionary with the xmlString license fields values
     """
     data = {}
-    tree = ET.ElementTree(ET.fromstring(xmlString))
+    try:
+        tree = ET.ElementTree(ET.fromstring(xmlString))
+    except Exception as e:
+        logger.error("Error parsing XML: %s", e, exc_info=True)
+        return data  # Return empty dict if XML parsing fails
+
     try:
         root = tree.getroot()
     except Exception as e:
-        return
+        logger.error("Error getting XML root: %s", e, exc_info=True)
+        return data
+
+    # Process osiApproved
     try:
-        if(len(root) > 0 and 'isOsiApproved' in root[0].attrib):
+        if len(root) > 0 and 'isOsiApproved' in root[0].attrib:
             data['osiApproved'] = root[0].attrib['isOsiApproved']
         else:
             data['osiApproved'] = '-'
     except Exception as e:
+        logger.error("Error processing osiApproved: %s", e, exc_info=True)
         data['osiApproved'] = '-'
+
+    # Process crossRefs
     data['crossRefs'] = []
     try:
-        if(len(('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')) > 0):
-            crossRefs = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')[0]
-            for crossRef in crossRefs:
-                data['crossRefs'].append(crossRef.text)
+        crossRefsElements = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')
+        if crossRefsElements:
+            crossRefsContainer = crossRefsElements[0]
+            for crossRef in crossRefsContainer:
+                if crossRef.text:
+                    data['crossRefs'].append(crossRef.text)
     except Exception as e:
+        logger.error("Error processing crossRefs: %s", e, exc_info=True)
         data['crossRefs'] = []
+
+    # Process notes
     try:
-        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')) > 0):
-            data['notes'] = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')[0].text
-        else:
-            data['notes'] = ''
+        notes = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')
+        data['notes'] = notes[0].text if notes and notes[0].text else ''
     except Exception as e:
+        logger.error("Error processing notes: %s", e, exc_info=True)
         data['notes'] = ''
+
+    # Process standardLicenseHeader
     try:
-        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')) > 0):
-            data['standardLicenseHeader'] = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')[0].text
-        else:
-            data['standardLicenseHeader'] = ''
+        header = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')
+        data['standardLicenseHeader'] = header[0].text if header and header[0].text else ''
     except Exception as e:
+        logger.error("Error processing standardLicenseHeader: %s", e, exc_info=True)
         data['standardLicenseHeader'] = ''
+
+    # Process license text
     try:
-        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')) > 0):
-            textElem = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')[0]
+        texts = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')
+        if texts:
+            textElem = texts[0]
             ET.register_namespace('', "http://www.spdx.org/license")
             textStr = ET.tostring(textElem, encoding='unicode').strip()
-            if(len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>'):
-                textStr = textStr[42:]
-                textStr = textStr[:-7].strip().replace('&lt;', '<').replace('&gt;', '>').strip()
+            if len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>':
+                textStr = textStr[42:-7].strip().replace('&lt;', '<').replace('&gt;', '>')
             data['text'] = textStr.strip()
         else:
             data['text'] = ''
     except Exception as e:
+        logger.error("Error processing text: %s", e, exc_info=True)
         data['text'] = ''
     return data
 
@@ -520,8 +542,13 @@ def get_license_data(issues):
 
 def get_issue_url_by_id(licenseId, issues):
     """ Get the github issue url of the license by license ID and the issues instance.
+    Returns None if no matching issue is found.
     """
-    return [issue.get('html_url') for issue in issues if issue.get('pull_request') is None if licenseId in issue.get('title')][0]
+    matching_urls = [issue.get('html_url') for issue in issues if issue.get('pull_request') is None if licenseId in issue.get('title', '')]
+    if matching_urls:
+        return matching_urls[0]
+    else:
+        return None
 
 
 def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
