@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block head_block %}
-    <link href="{% static 'css/editor.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/editor.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/diffview.css' %}" rel="stylesheet" type="text/css">
 {% endblock %}
 
@@ -19,7 +19,7 @@
 <form id="diffform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
 		{% csrf_token %}
 		<textarea id="licensetext" name="licensetext" rows="18" style="width: 100%"></textarea>
-		<button id="licensediffbutton" class=" btn btn-md btn-info" type="submit">Check License Diff</button>
+		<button id="licensediffbutton" class=" btn btn-md btn-info" type="submit">Check license diff</button>
 </form>
 {% include "app/modal.html" %} 
 </div>
@@ -67,7 +67,7 @@ function checkform() {
       findLicenseMatch(request);
     }
     else{
-      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error!</strong> '+check+'</div>');
       setTimeout(function() {
         $("#messages").html("");
       }, 5000);

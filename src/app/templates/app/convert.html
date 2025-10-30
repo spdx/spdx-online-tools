@@ -8,14 +8,16 @@
 {% block body1 %}
 <div id="messages" class="messages">
 </div>
-<p class ="lead"> {{ medialink }}</p>
-<p class ="lead"> {{ error }}</p>
+<p class ="lead">{{ medialink }}</p>
+<p class ="lead">{{ error }}</p>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead"> Convert to other SPDX format</p> </div>
+<div class="panel-heading">
+    <p class="lead">Convert to other SPDX format</p>
+</div>
 <div class="panel-body">
-<form id="convertform" enctype="multipart/form-data" class = "form-horizontal" method = "post" >
+<form id="convertform" enctype="multipart/form-data" class="form-horizontal" method="post">
 		{% csrf_token %}
-		<div class = "form-group">
+		<div class="form-group">
       From &nbsp;
 			<select name="from_format" id="from_format">
 			 	  <option value="0" selected="">-</option>
@@ -28,7 +30,7 @@
 				  <option value="XML">V2 XML</option>
 				  <option value="YAML">V2 YAML</option>
 			</select>
-			&nbsp; To &nbsp;
+			&nbsp; to &nbsp;
 			<select name="to_format" id="to_format">
 			 	  <option value="0" data-value="INGORE" data-ext="" selected="">-</option>
 				  <option value="JSONLD" data-value="JSONLD" data-ext=".jsonld.json">V3 JSON-LD</option>
@@ -43,7 +45,7 @@
       </select>
     </div>
     <div id="drop-area" class="container">
-      <h4 id="doclabel">Upload SPDX Document using the button or by dragging and dropping onto the dashed region</h4>
+      <h4 id="doclabel">Upload SPDX document using the button or by dragging and dropping onto the dashed region</h4>
       <input type="file" id="file" onchange="handleFiles(this.files)">
       <label class="button" for="file">Select file</label>
       <div class="file-name">No file selected</div>
@@ -51,7 +53,7 @@
     <!--
     <div class = "form-group">
 			<div class="col-sm-12">
-			<label class="control-label col-sm-3" id="doclabel" >SPDX Document</label>
+			<label class="control-label col-sm-3" id="doclabel">SPDX document</label>
 				<div class="col-sm-3"> 
 				  <input type="file" id="file" placeholder="" name = "file"  >
 				</div>
@@ -60,17 +62,17 @@
     -->
 		<div class = "form-group">
 			<div class="col-sm-12">
-			<label class="control-label col-sm-3" >Converted File Name</label>
+			<label class="control-label col-sm-3">Converted file name</label>
 				<div class="col-sm-3"> 
-				  <input type="text" id="cfilename" placeholder="" name = "cfilename"  >
-				  <label class="control-label" id="convertdoclabel" ></label>
+				  <input type="text" id="cfilename" name="cfilename">
+				  <label class="control-label" id="convertdoclabel"></label>
 				</div>
 			</div>	
 		</div>
     <hr>
 		<input type="hidden" id="cfileformat" name="cfileformat" value="">
         <p id ="warning-msg" hidden="true"></p>
-		<button class=" btn btn-md btn-info" id="convertbutton" type="submit" >Convert</button>
+		<button class="btn btn-md btn-info" id="convertbutton" type="submit">Convert</button>
 </form>
 </div>
 </div>
@@ -122,7 +124,7 @@
   
   function checkFile(file){
     if(file){
-      $(".file-name").html("<b>Selected File: </b>"+file.name);
+      $(".file-name").html("<b>Selected file:</b> "+file.name);
       $("#cfilename").val(file.name.split('.').slice(0,-1).join('.') || file.name);
       selected_file = file;
       checkFilesSize([file], "#warning-msg");
@@ -147,10 +149,10 @@ $(document).ready(function () {
     var options = $(this).data('options').filter('[data-value!=' + id + ']');
     $('#to_format').html(options);
     if (id!="0"){
-      $('#doclabel').text("Upload SPDX "+ id +" Document using the button or by dragging and dropping onto the dashed region");
+      $('#doclabel').text("Upload SPDX "+ id +" document using the button or by dragging and dropping onto the dashed region");
     }
     else{
-      $('#doclabel').text("Upload SPDX Document using the button or by dragging and dropping onto the dashed region");
+      $('#doclabel').text("Upload SPDX document using the button or by dragging and dropping onto the dashed region");
     }
 	if (id2 == id) {
 	    $('#to_format').val("0");
@@ -204,7 +206,7 @@ function checkform() {
   $('#convertform').on('submit', function(event){
     event.preventDefault();
     var check = checkform();
-    if (check=="1"){
+    if (check=="1") {
       $("#convertbutton").text("Converting...");
       $("#convertbutton").prop('disabled', true);
       $("#messages").html("");
@@ -249,14 +251,14 @@ function checkform() {
 	                    $("#modal-body").append("Ignoring the warnings, the following file was generated<br>");
 	                    $("#modal-body").append('<h3><a href="'+obj.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
 	                  }
-	                  else if (obj.type=="error"){
+	                  else if (obj.type=="error") {
 	                    $("#modal-header").removeClass("yellow-modal");
 	                    $("#modal-header").addClass("red-modal");
 	                    $("#modal-title").html("Error!");
 	                    $("#modal-body").text(obj.data);
 	                  }
               	  }
-              	  catch (e){
+              	  catch (e) {
               	  	$("#modal-header").removeClass("yellow-modal");
                     $("#modal-header").addClass("red-modal");
                     $("#modal-title").html("Error!");
@@ -274,7 +276,7 @@ function checkform() {
           });
     }
     else{
-      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error!</strong> '+check+'</div>');
       setTimeout(function() {
         $("#messages").html("");
       }, 5000);

@@ -1,34 +1,97 @@
-# Use the official python 3 base image
-FROM python:3.10.19 AS python-container
+# Development Dockerfile
 
-# Copy the requirements.txt file into the container
-COPY requirements.txt .
+# Stage 1: JDK stage (provide JDK files to copy into final image)
+FROM eclipse-temurin:17-jre AS jdk
 
-# Install the python dependencies
-RUN pip install -r requirements.txt
+# Stage 2: Builder stage - install build deps and wheel the application
+FROM python:3.10-slim AS builder
 
-# Use JDK 17
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create Python virtualenv isolation
+ENV VENV_PATH=/opt/venv
+RUN python -m venv --copies ${VENV_PATH}
+ENV PATH="${VENV_PATH}/bin:$PATH"
+
+# Copy Python requirements and install
+# Note: using requirements-dev.txt for development environment
+COPY requirements.txt ./
+COPY requirements-dev.txt ./
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir -r requirements-dev.txt \
+    && rm -rf /root/.cache/pip
+
+# Get the SPDX License List latest release tag via GitHub API,
+# download the tarball, extract needed JSON and JSON-LDfiles
+RUN set -eux; \
+    api_url="https://api.github.com/repos/spdx/license-list-data/releases/latest"; \
+    tag=$(curl -sSL "$api_url" | python -c "import sys, json; print(json.load(sys.stdin)['tag_name'])"); \
+    tarball_url="https://github.com/spdx/license-list-data/archive/refs/tags/${tag}.tar.gz"; \
+    mkdir -p /licenses; cd /licenses; \
+    curl -sSL "$tarball_url" -o license-list-data.tar.gz; \
+    mkdir tmp && tar -xzf license-list-data.tar.gz -C tmp --strip-components=1; \
+    mkdir -p /licenses/current; cp tmp/website/*.jsonld /licenses/current || true; \
+    cp tmp/website/licenses.json /licenses/current || true; \
+    cp tmp/website/exceptions.json /licenses/current || true; \
+    rm -rf tmp license-list-data.tar.gz
+
+# Remove build-only packages and clean apt caches to reduce image size
+RUN apt-get purge -y --auto-remove ca-certificates curl || true \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Stage 3: Final runtime
+FROM python:3.10-slim AS final
+
+# Minimal runtime dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    libfontconfig1 libfreetype6 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory and copy runtime artifacts from builder
+WORKDIR /spdx
+
+# Copy virtualenv from builder stage
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy licenses from builder stage
+COPY --from=builder /licenses /licenses
+
+# Copy JDK from jdk stage
 ENV JAVA_HOME=/opt/java/openjdk
-COPY --from=eclipse-temurin:17 $JAVA_HOME $JAVA_HOME
+COPY --from=jdk /opt/java/openjdk ${JAVA_HOME}
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
-# Fetch the latest tagged licenses from Github for use in the Java license compares
-RUN apt-get update \
-    && apt-get -y install git
-RUN mkdir /licenses && cd /licenses && git clone https://github.com/spdx/license-list-data.git --depth=1 && cd license-list-data && git fetch --tags && git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
-RUN mkdir /licenses/current && cp /licenses/license-list-data/website/*.jsonld /licenses/current && cp /licenses/license-list-data/website/licenses.json /licenses/current && cp /licenses/license-list-data/website/exceptions.json /licenses/current
+# Configure headless Java
+ENV JAVA_TOOL_OPTIONS="-Djava.awt.headless=true"
+ENV _JAVA_OPTIONS="-Djava.awt.headless=true"
 
-# Create the volume /spdxonlinetools which maps to the host
-VOLUME [ "/spdxonlinetools" ]
+# Ensure java/jar are available on the default PATH
+# by symlinking into /usr/local/bin
+RUN ln -sf "$JAVA_HOME/bin/java" /usr/local/bin/java \
+    && ln -sf "$JAVA_HOME/bin/jar" /usr/local/bin/jar
 
-# Move to spdxonlinetools folder
-WORKDIR /spdxonlinetools
+# Ensure the venv python/pip are available as the default python/pip
+# by creating wrapper invoking exec the venv binaries
+RUN printf '%s\n' '#!/bin/sh' 'exec /opt/venv/bin/python "$@"' > /usr/local/bin/python \
+    && printf '%s\n' '#!/bin/sh' 'exec /opt/venv/bin/pip "$@"' > /usr/local/bin/pip \
+    && chmod +x /usr/local/bin/python /usr/local/bin/pip
 
-# Expose the port 8000 to publish
+# Copy application source
+COPY . /spdx
+
+# Expose port
 EXPOSE 8000
 
-# Run migrations and start the development server on port 8000
-CMD python src/manage.py migrate && \ 
-    python src/manage.py collectstatic --noinput && \ 
-    python src/populate.py && \
-    python src/manage.py runserver 0.0.0.0:8000
+# Migrate DB, collect static files, populate initial data, and run server
+CMD ["sh", "-c", "python src/manage.py migrate && python src/manage.py collectstatic --noinput && python src/populate.py && python src/manage.py runserver 0.0.0.0:8000"]

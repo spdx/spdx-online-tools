@@ -11,16 +11,22 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-from src.secret import getGithubKey, getGithubSecret, getSecretKey, getOauthToolKitAppID, getOauthToolKitAppSecret, getDiffRepoGitToken, getDiffRepoWithOwner
+from src.secret import (
+    getGithubKey,
+    getGithubSecret,
+    getSecretKey,
+    getOauthToolKitAppID,
+    getOauthToolKitAppSecret,
+    getDiffRepoGitToken,
+    getDiffRepoWithOwner,
+)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-APP_DIR = os.path.join(BASE_DIR,'app')
-API_DIR = os.path.join(BASE_DIR,'api')
+APP_DIR = os.path.join(BASE_DIR, 'app')
+API_DIR = os.path.join(BASE_DIR, 'api')
 TEMPLATE_DIR = os.path.join(APP_DIR, 'templates')
-STATIC_PATH = os.path.join(APP_DIR,'static')
-STATIC_ROOT = STATIC_PATH
-EXAMPLES_DIR = os.path.join(BASE_DIR,'examples')
+EXAMPLES_DIR = os.path.join(BASE_DIR, 'examples')
 
 LICENSE_PROD_REPO_NAME = "license-list-XML"
 LICENSE_TEST_REPO_NAME = "TEST-LicenseList-XML"
@@ -174,37 +180,43 @@ SOCIAL_AUTH_GITHUB_SECRET = getGithubSecret()
 SOCIAL_AUTH_GITHUB_SCOPE = ['public_repo', 'user:email']
 
 # Internationalization
-# https://docs.djangoproject.com/en/1.11/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/
+# STATIC_ROOT is used by collectstatic
+# These paths should match with the paths in the Docker compose file
 
 STATIC_URL = '/static/'
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+print("PROJECT_ROOT:", PROJECT_ROOT)
 
-"""
-Remove STATIC_ROOT from STATICFILES_DIRS: Ensure that STATICFILES_DIRS does not include the same directory as STATIC_ROOT. 
-You should only list directories that are not already covered by STATIC_ROOT.
-"""
+STATIC_PATH = os.path.join(PROJECT_ROOT, 'static')
+STATIC_ROOT = STATIC_PATH
+print("STATIC_ROOT:", STATIC_ROOT)
+
+# Ensure that STATICFILES_DIRS does not include the same directory
+# as STATIC_ROOT. You should only list directories that are not
+# already covered by STATIC_ROOT.
 
 # STATICFILES_DIRS = [
 # 	STATIC_PATH,
 # ]
 
 # Media files (Downloadable files)
+# These paths should match with the paths in the Docker compose file
 
-MEDIA_ROOT = os.path.join(APP_DIR,'media')
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
+print("MEDIA_ROOT:", MEDIA_ROOT)
+
+LICENSE_ROOT = '/licenses/current/'
+print("LICENSE_ROOT:", LICENSE_ROOT)
 
 # Rest API framework
 
@@ -219,8 +231,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        #'oauth2_provider.ext.rest_framework.OAuth2Authentication',  # django-oauth-toolkit < 1.0.0
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         'rest_framework_social_oauth2.authentication.SocialAuthentication',
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
@@ -231,10 +242,13 @@ REST_FRAMEWORK = {
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Absolute Path for tool.jar
-# The online tool uses spdx-tools-2.1.6-SNAPSHOT-jar-with-dependencies.jar from the compiled target folder of java tools
-# renamed (for now) as tool.jar in the main src directory of spdx-online tool
+# The online tool uses the released SPDX Java Tools JAR from
+# https://github.com/spdx/tools-java/releases
+# Uses the "jar-with-dependencies" version.
+# Rename it to tool.jar and place it in the src/ directory of spdx-online-tools.
 
 JAR_ABSOLUTE_PATH = os.path.join(BASE_DIR, "tool.jar")
+print("JAR_ABSOLUTE_PATH:", JAR_ABSOLUTE_PATH)
 # URL Path Variables
 
 LOGIN_REDIRECT_URL = "/app/"
@@ -251,9 +265,6 @@ DRFSO2_URL_NAMESPACE = 'github_social'
 
 # Online tool usage without login
 ANONYMOUS_LOGIN_ENABLED = True
-
-# This is deprecated in Django 4.2.x
-# PASSWORD_RESET_TIMEOUT_DAYS = 3
 
 # Password reset link expiration limit (in seconds)
 PASSWORD_RESET_TIMEOUT = 259200  # 3 days in seconds

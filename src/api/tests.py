@@ -2,15 +2,6 @@
 # SPDX-FileCopyrightText: 2017 Rohit Lodha
 # Copyright (c) 2017 Rohit Lodha
 # SPDX-License-Identifier: Apache-2.0
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License
 
 from unittest import skipIf
 from src.secret import getAuthCode,getGithubKey,getGithubSecret
@@ -77,22 +68,22 @@ class ValidateFileUploadTests(APITestCase):
         resp3 = self.client.post(reverse("validate-api"),{"file":self.tv_file, "format" : "TAG"},format="multipart")
         self.assertEqual(resp3.status_code,200)
         self.assertEqual(resp3.data['owner'],User.objects.get_by_natural_key(self.username).id)
-        self.assertEqual(resp3.data["result"],"This SPDX Document is valid.")
+        self.assertEqual(resp3.data["result"],"This SPDX document is valid.")
         """ Valid RDF File"""
         resp4 = self.client.post(reverse("validate-api"),{"file":self.rdf_file, "format" : "RDFXML"},format="multipart")
         self.assertEqual(resp4.status_code,200)
         self.assertEqual(resp4.data['owner'],User.objects.get_by_natural_key(self.username).id)
-        self.assertEqual(resp4.data["result"],"This SPDX Document is valid.")
+        self.assertEqual(resp4.data["result"],"This SPDX document is valid.")
         """ Invalid Tag Value File"""
         resp5 = self.client.post(reverse("validate-api"),{"file":self.invalid_tv_file, "format" : "TAG"},format="multipart")
         self.assertEqual(resp5.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp5.status_code,400)
-        self.assertNotEqual(resp5.data["result"],"This SPDX Document is valid.")
+        self.assertNotEqual(resp5.data["result"],"This SPDX document is valid.")
         """ Invalid RDF File"""
         resp6 = self.client.post(reverse("validate-api"),{"file":self.invalid_rdf_file, "format" : "RDFXML"},format="multipart")
         self.assertEqual(resp6.data['owner'],User.objects.get_by_natural_key(self.username).id)
         self.assertEqual(resp6.status_code,400)
-        self.assertNotEqual(resp6.data["result"],"This SPDX Document is valid.")
+        self.assertNotEqual(resp6.data["result"],"This SPDX document is valid.")
         self.client.logout()
         self.tearDown()
         

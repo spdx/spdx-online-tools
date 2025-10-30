@@ -11,26 +11,28 @@
 <p class ="lead"> {{ medialink }}</p>
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead">Compare SPDX Spec Version 2 Documents</p> </div>
+<div class="panel-heading">
+	<p class="lead">Compare SPDX 2.X documents</p>
+</div>
 <div class="panel-body">
 <form id="compareform" enctype="multipart/form-data" class="form-horizontal" method="post">
 		{% csrf_token %}
 		<div id="drop-area" class="container">
-      <h4 id="doclabel">Upload SPDX Documents using the button or by dragging and dropping onto the dashed region</h4>
+      <h4 id="doclabel">Upload SPDX documents using the button or by dragging and dropping onto the dashed region</h4>
       <input type="file" id="file" onchange="handleFiles(this.files)" multiple>
 			<label class="button" for="file">Select files</label> &nbsp;
-			<label class="button reset">Reset Files</label>
+			<label class="button reset">Reset files</label>
       <div class="file-name">No file selected</div>
 		</div>
 		<br>
 		<div class = "form-group">
 			<div class="col-sm-12">
-			<label class="control-label col-sm-3" >Result File Name</label>
+			<label class="control-label col-sm-3">Result file name</label>
 				<div class="col-sm-6"> 
-					<input type="text" id="rfilename" placeholder="" name = "rfilename">
+					<input type="text" id="rfilename" name="rfilename">
 					<label class="control-label" id="convertdoclabel">.xlsx</label>
 				</div>
-			</div>	
+			</div>
 		</div>
 		<hr>
         <p id ="warning-msg" hidden="true"></p>
@@ -87,7 +89,7 @@
   function checkFile(file){
     if(file && selected_files.length<13){
       if ($(".file-name").text() == "No file selected"){
-				$(".file-name").html("<b>Selected Files: </b><ul>");
+				$(".file-name").html("<b>Selected files:</b><ul>");
 				$(".file-name").append("<li>" + file.name + "</li>");
 			}
 			else{
@@ -219,7 +221,7 @@ $(".reset").on("click", function(){
 	        });
 	}
 	else{
-		$("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+		$("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error!</strong> '+check+'</div>');
 	    setTimeout(function() {
 	        $("#messages").html("");
 	      }, 5000);
