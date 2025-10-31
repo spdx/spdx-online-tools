@@ -20,6 +20,7 @@ from src.version import (
     spdx_license_list_version,
     spdx_license_matcher_version,
     spdx_online_tools_version,
+    spdx_python_model_version,
 )
 
 import codecs
@@ -76,6 +77,7 @@ def about(request):
         "spdx_license_list_version": spdx_license_list_version,
         "spdx_license_matcher_version": spdx_license_matcher_version,
         "spdx_online_tools_version": spdx_online_tools_version,
+        "spdx_python_model_version": spdx_python_model_version,
     }
     return render(request, "app/about.html", context_dict)
 

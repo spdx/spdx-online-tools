@@ -12,6 +12,7 @@ from re import search
 import json
 
 from .settings import LICENSE_ROOT
+from ._version import __version__ as spdx_online_tools_version
 
 
 def get_tools_version(jar_name):
@@ -57,10 +58,10 @@ def get_spdx_license_list_version():
             continue
     return "Unknown"
 
-spdx_online_tools_version = "1.3.2" # Update this when releasing new version
 
 java_tools_version = get_tools_version("tool.jar")
 ntia_conformance_checker_version = version("ntia-conformance-checker")
 python_tools_version = version("spdx-tools")
 spdx_license_list_version = get_spdx_license_list_version()
 spdx_license_matcher_version = version("spdx-license-matcher")
+spdx_python_model_version = version("spdx-python-model")
