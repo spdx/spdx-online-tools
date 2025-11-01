@@ -199,6 +199,7 @@ def license_compare_helper(request):
         result['context'] = context_dict
         return result
 
+
 def ntia_check_helper(request):
     """
        A helper function to check the NTIA elements in a given file in various formats.
@@ -218,7 +219,7 @@ def ntia_check_helper(request):
             local_path = fs.path(filename)
             # Get other request parameters
             sbom_spec = "spdx2"
-            format_ = request.POST.get("format", "")
+            format_ = request.POST.get("format", "").strip()
             if format_.startswith("SPDX3"):
                 sbom_spec = "spdx3"
             compliance = request.POST.get("compliance", "ntia")  # Default: "ntia"
@@ -234,31 +235,41 @@ def ntia_check_helper(request):
             schecker.print_components_missing_info()
             schecker.print_table_output()
             sys.stdout = old_stdout
+            html = schecker.output_html()
             retval = temp_stdout.getvalue().replace(",",", ").replace("\n","<br/>")
             if not retval.startswith("No components with missing information."):
                 # If any warnings are returned
                 if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
-                    warnings = str(retval)
-                    ajaxdict["data"] = "The following warning(s) were raised:<br />\n" + warnings.replace('\n', '<br />\n')
+                    ajaxdict["data"] = (
+                        "<p><strong>The following warning(s) were raised:</strong><br />\n"
+                        + retval
+                        + "</p>\n"
+                        + html
+                    )
                     response = dumps(ajaxdict)
                     result['response'] = response
                     result['status'] = 400
                     return result
-                context_dict["error"] = retval
+                context_dict["error"] = retval + html
                 result['context'] = context_dict
                 result['status'] = 400
                 return result
             if utils.is_ajax(request):
                 # Valid SPDX document
-                ajaxdict["data"] = "This SPDX document is valid:\n" + retval
+                ajaxdict["data"] = (
+                    "<p><strong>This SPDX document is valid:</strong><br />\n"
+                    + retval
+                    + "</p>\n"
+                    + html
+                )
                 response = dumps(ajaxdict)
                 result['response'] = response
                 result['status'] = 200
                 return result
             message = "This SPDX document is valid."
-            result['message'] = message
-            result['status'] = 200
+            result["message"] = message + html
+            result["status"] = 200
             return result
         else:
             # If no file uploaded.
