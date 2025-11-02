@@ -258,7 +258,7 @@ def ntia_check_helper(request):
                     result['response'] = response
                     result['status'] = 400
                     return result
-                context_dict["error"] = retval + html
+                context_dict["error"] = retval
                 result['context'] = context_dict
                 result['status'] = 400
                 return result
