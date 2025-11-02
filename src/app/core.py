@@ -246,7 +246,8 @@ def ntia_check_helper(request):
                 if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
                     ajaxdict["data"] = (
-                        "<p class='conformance-summary'><strong>The following warning(s) were raised:</strong><br />\n"
+                        "<p class='conformance-summary-lead'>The following warning(s) were raised:</p>\n"
+                        + "<p class='conformance-summary'>"
                         + retval
                         + "</p>\n"
                         + "<div class='conformance-results'>\n"
@@ -264,7 +265,8 @@ def ntia_check_helper(request):
             if utils.is_ajax(request):
                 # Valid SPDX document
                 ajaxdict["data"] = (
-                    "<p class='conformance-summary'><strong>This SPDX document is valid:</strong><br />\n"
+                    "<p class='conformance-summary-lead'>This SPDX document is valid:</p>\n"
+                    + "<p class='conformance-summary'>"
                     + retval
                     + "</p>\n"
                     + "<div class='conformance-results'>\n"
