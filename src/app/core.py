@@ -233,7 +233,6 @@ def ntia_check_helper(request):
             temp_stdout = StringIO()
             sys.stdout = temp_stdout
             schecker.print_components_missing_info()
-            schecker.print_table_output()
             sys.stdout = old_stdout
             html = schecker.output_html()
             retval = temp_stdout.getvalue().replace(",",", ").replace("\n","<br/>")
