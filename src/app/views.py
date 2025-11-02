@@ -438,7 +438,7 @@ def licenseNamespaceInformation(request, licenseId):
 
 
 def ntia_check(request):
-    """ View for ntia checker tool
+    """ View for NTIA Conformance Checker tool
     returns ntia_conformance_checker.html template
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:

@@ -3,6 +3,120 @@
 
 {% block head_block %}
   <link href="{% static 'css/dragdrop.css' %}" rel="stylesheet" type="text/css">
+  <style>
+    .conformance-summary {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-size: 0.9em;
+    }
+
+    .conformance-results {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 220px;
+      box-sizing: border-box;
+    }
+
+    .conformance-results > * {
+      width: 100%;
+      max-width: 980px;
+      box-sizing: border-box;
+    }
+
+    .conformance-results h2 {
+      font-size: 0.9em;
+    }
+
+    .conformance-results h3 {
+      font-size: 0.9em;
+    }
+
+    .conformance-results > p {
+      font-size: 0.8em;
+      text-align: left;
+      padding-left: 5%;
+    }
+
+    .conformance-results ul {
+      padding-left: 10%;
+    }
+
+    .conformance-results li {
+      font-size: 0.8em;
+      text-align: left;
+    }
+
+    .conformance-results table {
+      width: auto;
+      max-width: 100%;
+      margin: 0 auto;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
+      border-radius: 6px;
+      overflow: hidden;
+      display: table;
+      font-size: 0.7em;
+      table-layout: auto;
+    }
+
+    .conformance-results th {
+      background: #dfdfdf;
+      color: #0f3b47;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(15, 59, 71, 0.08);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.8em;
+    }
+
+    .conformance-results td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(15, 59, 71, 0.04);
+      vertical-align: middle;
+      text-align: left;
+      font-size: 0.8em;
+    }
+
+    /* Alternating row backgrounds */
+    .conformance-results tbody tr:nth-child(odd) {
+      background-color: #f0f0f0;
+    }
+    .conformance-results tbody tr:nth-child(even) {
+      background-color: #ffffff;
+    }
+
+    .conformance-results tbody tr:hover {
+      background-color: #cfefff !important;
+    }
+
+    .conformance-results .status-pass {
+      color: #166534;
+      font-weight: 600;
+    }
+
+    .conformance-results .status-fail {
+      color: #942a1f;
+      font-weight: 600;
+    }
+
+    .conformance-results .status-warning {
+      color: #7a5800;
+      font-weight: 600;
+    }
+
+    .conformance-results caption {
+      caption-side: top;
+      text-align: left;
+      font-weight: 600;
+      color: #0f3b47;
+      padding: 8px 0;
+    }
+  </style>
 {% endblock %}
 
 {% block body1 %}
