@@ -4,21 +4,6 @@
 {% block head_block %}
   <link href="{% static 'css/dragdrop.css' %}" rel="stylesheet" type="text/css">
   <style>
-    .conformance-summary-lead {
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      font-size: 0.9em;
-      font-weight: 700;
-    }
-
-    .conformance-summary {
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      font-size: 0.8em;
-    }
-
     .conformance-results {
       display: flex;
       flex-direction: column;
@@ -123,6 +108,16 @@
       font-weight: 600;
       color: #0f3b47;
       padding: 8px 0;
+    }
+
+    .conformance-missing {
+      background: #fff8e2;
+      font-size: 0.9em;
+    }
+
+    .conformance-val {
+      background: #e8f4ff;
+      font-size: 0.9em;
     }
   </style>
 {% endblock %}

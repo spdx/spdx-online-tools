@@ -231,54 +231,38 @@ def ntia_check_helper(request):
                 compliance=compliance,
                 sbom_spec=sbom_spec,
             )
-            # Capture the printed output
-            old_stdout = sys.stdout
-            temp_stdout = StringIO()
-            sys.stdout = temp_stdout
-            schecker.print_components_missing_info()
-            sys.stdout = old_stdout
-
             html = schecker.output_html()
-            schecker_printout = re.sub(r"\n+", "\n", temp_stdout.getvalue().strip())
-            retval = schecker_printout.replace(",", ", ").replace("\n", "<br/>")
-            if not retval.startswith("No components with missing information."):
-                # If any warnings are returned
+
+            if "Conformant: False" in html:
                 if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
                     ajaxdict["data"] = (
-                        "<p class='conformance-summary-lead'>The following warning(s) were raised:</p>\n"
-                        + "<p class='conformance-summary'>"
-                        + retval
-                        + "</p>\n"
-                        + "<div class='conformance-results'>\n"
-                        + html
-                        + "</div>\n"
+                        "<div class='conformance-results'>\n" + html + "</div>\n"
                     )
                     response = dumps(ajaxdict)
-                    result['response'] = response
-                    result['status'] = 400
+                    result["response"] = response
+                    result["status"] = 400
                     return result
-                context_dict["error"] = retval
-                result['context'] = context_dict
-                result['status'] = 400
+
+                context_dict["error"] = (
+                    "This SPDX document does not meet conformance standards."
+                )
+                result["context"] = context_dict
+                result["status"] = 400
                 return result
+
+            # Conformat: True
             if utils.is_ajax(request):
-                # Valid SPDX document
+                ajaxdict["type"] = "success"
                 ajaxdict["data"] = (
-                    "<p class='conformance-summary-lead'>This SPDX document is valid:</p>\n"
-                    + "<p class='conformance-summary'>"
-                    + retval
-                    + "</p>\n"
-                    + "<div class='conformance-results'>\n"
-                    + html
-                    + "</div>\n"
+                    "<div class='conformance-results'>\n" + html + "</div>\n"
                 )
                 response = dumps(ajaxdict)
-                result['response'] = response
-                result['status'] = 200
+                result["response"] = response
+                result["status"] = 200
                 return result
-            message = "This SPDX document is valid."
-            result["message"] = message
+
+            result["message"] = "This SPDX document is valid."
             result["status"] = 200
             return result
         else:
