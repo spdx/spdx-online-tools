@@ -237,7 +237,7 @@ def ntia_check_helper(request):
                 if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
                     ajaxdict["data"] = (
-                        "<div class='conformance-results'>\n" + html + "</div>\n"
+                        "<div class='res-container'>\n" + html + "</div>\n"
                     )
                     response = dumps(ajaxdict)
                     result["response"] = response
@@ -255,7 +255,7 @@ def ntia_check_helper(request):
             if utils.is_ajax(request):
                 ajaxdict["type"] = "success"
                 ajaxdict["data"] = (
-                    "<div class='conformance-results'>\n" + html + "</div>\n"
+                    "<div class='res-container'>\n" + html + "</div>\n"
                 )
                 response = dumps(ajaxdict)
                 result["response"] = response

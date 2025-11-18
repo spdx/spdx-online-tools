@@ -4,7 +4,7 @@
 {% block head_block %}
   <link href="{% static 'css/dragdrop.css' %}" rel="stylesheet" type="text/css">
   <style>
-    .conformance-results {
+    .res-container {
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -13,36 +13,36 @@
       box-sizing: border-box;
     }
 
-    .conformance-results > * {
+    .res-container > * {
       width: 100%;
       max-width: 980px;
       box-sizing: border-box;
     }
 
-    .conformance-results h2 {
+    .res-container h2 {
       font-size: 0.9em;
     }
 
-    .conformance-results h3 {
+    .res-container h3 {
       font-size: 0.9em;
     }
 
-    .conformance-results > p {
+    .res-container > p {
       font-size: 0.8em;
       text-align: left;
       padding-left: 5%;
     }
 
-    .conformance-results ul {
+    .res-container ul {
       padding-left: 10%;
     }
 
-    .conformance-results li {
+    .res-container li {
       font-size: 0.8em;
       text-align: left;
     }
 
-    .conformance-results table {
+    .res-container table {
       width: auto;
       max-width: 100%;
       margin-bottom: 0.5em;
@@ -57,7 +57,7 @@
       table-layout: auto;
     }
 
-    .conformance-results th {
+    .res-container th {
       background: #dfdfdf;
       color: #0f3b47;
       font-weight: 600;
@@ -67,7 +67,7 @@
       font-size: 0.9em;
     }
 
-    .conformance-results td {
+    .res-container td {
       padding: 12px 16px;
       border-bottom: 1px solid rgba(15, 59, 71, 0.04);
       vertical-align: middle;
@@ -76,33 +76,33 @@
     }
 
     /* Alternating row backgrounds */
-    .conformance-results tbody tr:nth-child(odd) {
+    .res-container tbody tr:nth-child(odd) {
       background-color: #f0f0f0;
     }
-    .conformance-results tbody tr:nth-child(even) {
+    .res-container tbody tr:nth-child(even) {
       background-color: #ffffff;
     }
 
-    .conformance-results tbody tr:hover {
+    .res-container tbody tr:hover {
       background-color: #d0e9f6 !important;
     }
 
-    .conformance-results .status-pass {
+    .res-container .status-pass {
       color: #166534;
       font-weight: 600;
     }
 
-    .conformance-results .status-fail {
+    .res-container .status-fail {
       color: #942a1f;
       font-weight: 600;
     }
 
-    .conformance-results .status-warning {
+    .res-container .status-warning {
       color: #7a5800;
       font-weight: 600;
     }
 
-    .conformance-results caption {
+    .res-container caption {
       caption-side: top;
       text-align: left;
       font-weight: 600;
@@ -110,7 +110,14 @@
       padding: 8px 0;
     }
 
-    .conformance-missing {
+    .conformance-err {
+      background: #ffc39e;
+      font-size: 0.9em;
+    }
+
+    /* .conformance-res { } */
+
+    .conformance-mis {
       background: #fff8e2;
       font-size: 0.9em;
     }
