@@ -5,8 +5,6 @@
 """This file contains the core logic used in the SPDX Online Tools' APP and API"""
 
 import os
-import sys
-from io import StringIO
 from json import dumps
 from time import time
 from traceback import format_exc
