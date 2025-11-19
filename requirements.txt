@@ -6,7 +6,7 @@ gevent==25.9.1
 gunicorn==23.0.0
 jpype1==1.6.0
 lxml>=5.4.0,<6.0.0
-ntia-conformance-checker==4.1.1
+ntia-conformance-checker==4.1.2
 python-dotenv>=1.0.1
 redis==4.4.4 # spdx-license-matcher depends on this specific version
 requests==2.32.5
