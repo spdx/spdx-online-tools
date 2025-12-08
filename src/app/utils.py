@@ -563,8 +563,8 @@ def get_issue_url_by_id(licenseId, issues):
     matching_urls = [issue.get('html_url') for issue in issues if issue.get('pull_request') is None if licenseId in issue.get('title', '')]
     if matching_urls:
         return matching_urls[0]
-    else:
-        return None
+
+    return None
 
 
 def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
