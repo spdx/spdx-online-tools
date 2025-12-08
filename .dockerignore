@@ -1,31 +1,132 @@
-# Python
-__pycache__
-*.pyc
-*.pyo
-*.pyd
+# Keep the Docker build context small;
+# exclude files not needed to build the image.
+
+# ========================
+# 1. Python artifacts
+# ========================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+.mypy_cache/
+*.py[cod]
+*$py.class
+*.py.bak
+.ipynb_checkpoints
+
+# C extensions
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# pyenv
+.python-version
+
+# Distribution / packaging
 .Python
-env
-spdx-prod.env
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+sdist/
+wheels/
+*.egg-info/
+*.egg
+.installed.cfg
+*.manifest
+*.spec
+
+# Installer & pip logs
 pip-log.txt
 pip-delete-this-directory.txt
-venv
+pip-selfcheck.json
 
-# Test and coverage
-.tox
+# ========================
+# 2. Test / coverage / reports
+# ========================
+.tox/
+htmlcov/
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
-*,cover
+*.cover
+.hypothesis/
+
+# ========================
+# 3. Project-specific artifacts
+# ========================
+# Django logs / local settings / DB
 *.log
+local_settings.py
+*.sqlite3
 
-# VCS
-.git
-.github
+# Collected static and uploaded media (generated at runtime / mounts)
+static/
+media/
 
-# OS
+# Older path (project-specific) — keep for compatibility
+src/app/media/
+
+# Downloaded license data and SSL certs used during build
+licenses/
+data/certbot/
+
+# container logs from local runs
+container_logs/
+
+# Project docs & meta (not needed in image)
+developer-certificate-of-origin
+docs/
+CONTRIBUTING.md
+LICENSE
+NOTICE
+README*.md
+TODO
+
+# ========================
+# 4. Generated documentation
+# ========================
+docs/_build/
+/site/
+
+# ========================
+# 5. Editors
+# ========================
+.idea/
+*.iml
+.vscode/
+.project
+.pydevproject
+.ropeproject
+.spyderproject
+.spyproject
+org.eclipse.core.resources.prefs
+
+# ========================
+# 6. Misc / OS files
+# ========================
 .DS_Store
 
-# editor
-.vscode
+# ========================
+# 7. Secrets / env
+# ========================
+*.env
+spdx-prod.env
+
+# ========================
+# 8. VCS / tooling
+# ========================
+.git
+.github
+.gitignore
+
+# Dockerfiles and compose are part of repository and should be in context,
+# but skip editor/backup copies
+*docker-compose*.yml~
+Dockerfile*~

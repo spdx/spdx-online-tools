@@ -3,7 +3,7 @@
 {% block body1 %}
 {% if invalid %}
 <div id="messages" class="messages">
-<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>{{ invalid}}
+<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error!</strong> {{invalid}}
 </div>
 </div>
 {% endif %}
@@ -11,7 +11,7 @@
 </div>
 <div class="col-md-6">
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead">Sign In</p> </div>
+<div class="panel-heading"><p class="lead">Sign in</p></div>
 <div class="panel-body">
 <h4><a href="{% url 'social:begin' 'github' %}">Login with GitHub</a></h4>
 </div>

@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block head_block %}
-    <link href="{% static 'css/editor.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'css/editor/editor.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/codemirror.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/fullscreen.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/show-hint.css' %}" rel="stylesheet" type="text/css">
@@ -19,15 +19,15 @@
     <div class="container-fluid">
         <input type="hidden" id="xmlText" value="{{xml_text}}">
         <ul class="nav nav-tabs">
-            <li class="active"><a href="#text" id="tabTextEditor">Text Editor</a></li>
-            <li><a data-toggle="tab" href="#tree" id="tabTreeEditor">Tree Editor</a></li>
-            <li><a data-toggle="tab" href="#split" id="tabSplitView">Split View</a></li>
+            <li class="active"><a href="#text" id="tabTextEditor">Text editor</a></li>
+            <li><a data-toggle="tab" href="#tree" id="tabTreeEditor">Tree editor</a></li>
+            <li><a data-toggle="tab" href="#split" id="tabSplitView">Split view</a></li>
         </ul>
         <div class="tab-content">
             <div id="text" class="tab-pane fade in active">
                 <div class="text-editor-options">
                     <center>
-                    <button id="dec-fontsize" class="btn"> <b>-</b> </button> Font Size <button id="inc-fontsize" class="btn"> <b>+</b> </button>&nbsp;
+                    <button id="dec-fontsize" class="btn"> <b>-</b> </button> Font size <button id="inc-fontsize" class="btn"> <b>+</b> </button>&nbsp;
                     <button id="fullscreen" class="btn btn-default">Fullscreen</button>
                     <button class="btn btn-md btn-default" id="beautify">Beautify</button>
                     </center>
@@ -56,20 +56,20 @@
     <div class="document-options">
         <center>
             <button class="btn btn-success" id="download" data-toggle="tooltip" data-placement="left" title="Download the XML Document">Download</button>
-            <button class="btn btn-primary" id="generateDiff" data-toggle="tooltip" title="Generate a diff to see all the changes made" data-placement="top">Generate Diff</button>
+            <button class="btn btn-primary" id="generateDiff" data-toggle="tooltip" title="Generate a diff to see all the changes made" data-placement="top">Generate diff</button>
             <button class="btn btn-warning" id="validateXML" data-toggle="tooltip" title="Validate the XML against the SPDX License Schema" data-placement="top">Validate</button>
-            <button class="btn btn-info" id="makePullRequest" data-toggle="tooltip" title="Make a Pull Request in the SPDX XML License Repository to get your changes reviewed and merged" data-placement="right">Submit Changes</button>
+            <button class="btn btn-info" id="makePullRequest" data-toggle="tooltip" title="Make a Pull Request in the SPDX XML License Repository to get your changes reviewed and merged" data-placement="right">Submit changes</button>
         </center>
     </div>
     <form style="display:none" id="form">
         {% csrf_token %}
     </form>
     <p id="githubLoginLink" hidden> {% url 'social:begin' 'github' %}</p>
-    <p id="licenseName" hidden> {{license_name}} </p>
+    <p id="licenseName" hidden>{{license_name}}</p>
     {% if github_login %}
     <p id="githubLogin" hidden>True</p>
     <div id="prFormContainer" hidden>
-        <img src={% static "images/ajax-loader.gif" %} alt="Loading GIF" class="ajax-loader">
+        <img src="{% static 'img/editor/ajax-loader.gif'" %} alt="Loading GIF" class="ajax-loader">
         <form id="githubPRForm" class="form-inline">
             {% csrf_token %}
             <div class="form-group">
@@ -78,7 +78,7 @@
                 <input type="text" class="form-control" id="branchName" name="branchName">
             </div><br>
             <div class="checkbox">
-                <label><input type="checkbox" id="updateUpstream"> Update with upstream main </label> <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Select this if you want to update your forked repo with the upstream repo, before making the pull request" style="font-size:12px;"></span>
+                <label><input type="checkbox" id="updateUpstream">Update with upstream main</label> <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Select this if you want to update your forked repo with the upstream repo, before making the pull request" style="font-size:12px;"></span>
             </div>
             <div class="form-group">
                 <label for="fileName">File Name:</label>
@@ -100,6 +100,7 @@
                 <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request body, can be edited later." style="font-size:12px;"></span>
                 <textarea class="form-control" rows="5" id="prBody" name="prBody" style="resize:none; width:200px;"></textarea>
             </div><br>
+            <input type="hidden" name="hidden_license_id" value="{{license_id}}">
             </textarea>
         </form>
     </div>

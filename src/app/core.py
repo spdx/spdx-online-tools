@@ -1,37 +1,45 @@
+# SPDX-FileCopyrightText: 2022-2025 SPDX contributors
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+
 """This file contains the core logic used in the SPDX Online Tools' APP and API"""
 
-import json
-
-from django.http.response import JsonResponse
-import jpype
 import os
 import sys
-
-from django.utils.datastructures import MultiValueDictKeyError
-from django.core.files.storage import FileSystemStorage
-from django.conf import settings
-
-from json import dumps, loads
+from io import StringIO
+from json import dumps
 from time import time
 from traceback import format_exc
 from urllib.parse import urljoin
 
-import app.utils as utils
+import jpype
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.utils.datastructures import MultiValueDictKeyError
 from ntia_conformance_checker import SbomChecker
-from io import StringIO
+from spdx_license_matcher.utils import get_spdx_license_text
 
+import app.utils as utils
 
 
 def initialise_jpype():
-    """Start JVM if not already started, attach a Thread and start processing the request"""
-    
+    """Start JVM if not already started, attach a Thread and start processing the request
+
+    The SPDX Online Tools must control the lifecycle of the JVM itself,
+    since the CLASSPATH must be set to include the tool.jar file in a specifc
+    location (JAR_ABSOLUTE_PATH in settings).
+    If we let libraries, like spdx_license_matcher, start the JVM, they may not
+    include the correct tool.jar in the CLASSPATH.
+    """
+
     # Check is the JVM is already running or not. If not, start JVM.
     if not jpype.isJVMStarted():
-        classpath = settings.JAR_ABSOLUTE_PATH
-        jpype.startJVM(jpype.getDefaultJVMPath(), "-ea", "-Djava.class.path=%s"%classpath)
-            
+        jpype.startJVM(
+            "-ea", "-Djava.awt.headless=true", classpath=settings.JAR_ABSOLUTE_PATH
+        )
     # Attach a thread to JVM and start processing
     jpype.attachThreadToJVM()
+    jpype.JPackage("org.spdx.library").SpdxModelFactory.init()
 
 
 def license_compare_helper(request):
@@ -47,28 +55,28 @@ def license_compare_helper(request):
     errorlist = list()
     result = {}
     context_dict = {}
-    
+
     try:
         if request.FILES["files"]:
-            rfilename = request.POST["rfilename"]+".xlsx"
-            folder = str(request.user)+"/"+ str(int(time()))
-            callfunc = [settings.MEDIA_ROOT+"/"+folder + "/" +rfilename]
+            rfilename = request.POST["rfilename"] + ".xlsx"
+            # create a stable folder name and separate filesystem path vs URL
+            folder = f"{request.user}/{int(time())}"
+            folder_path = os.path.join(settings.MEDIA_ROOT, folder)
+            folder_url = urljoin(settings.MEDIA_URL, folder + "/")
+            callfunc = [os.path.join(folder_path, rfilename)]
             erroroccurred = False
             warningoccurred = False
             if (len(request.FILES.getlist("files")) < 2):
-                context_dict["error"] = "Please select atleast 2 files"
+                context_dict["error"] = "Please select at least 2 files"
                 result['status'] = 404
                 result['context'] = context_dict
                 return result
-            """Loop through the list of files"""
-            folder = str(request.user) + "/" + str(int(time()))
-            fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + folder,
-                base_url=urljoin(settings.MEDIA_URL, folder+'/')
-                )
+            # Loop through the list of files
+            fs = FileSystemStorage(location=folder_path, base_url=folder_url)
             for myfile in request.FILES.getlist("files"):
-                filename = fs.save(myfile.name, myfile)
-                uploaded_file_url = fs.url(filename).replace("%20", " ")
-                callfunc.append(settings.APP_DIR+uploaded_file_url)
+                filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
+                local_path = fs.path(filename)
+                callfunc.append(str(local_path))
                 nameoffile, fileext = os.path.splitext(filename)
                 if (nameoffile.endswith(".rdf") and fileext == ".xml") or fileext == ".rdf":
                     fileext = ".rdfxml"
@@ -77,38 +85,38 @@ def license_compare_helper(request):
                 try:
                     filetype = helperclass.strToFileType(fileext[1:])
                     try :
-                        """Call the java function to verify for valid SPDX Files."""
-                        retval = verifyclass.verify(settings.APP_DIR+uploaded_file_url, filetype)
+                        # Call the Java function to verify for valid SPDX files.
+                        retval = verifyclass.verify(str(local_path), filetype)
                         if (len(retval) > 0):
-                            """If warnings raised"""
+                            # If warnings raised
                             warningoccurred = True
                             filelist.append(myfile.name)
                             errorlist.append(str(retval))
                         else :
                             filelist.append(myfile.name)
                             errorlist.append("No errors found")
-                    except jpype.JavaException as ex :
-                        """ Error raised by verifyclass.verifyRDFFile without exiting the application"""
-                        erroroccurred = True
+                    except jpype.JException as ex:
+                        # Error raised by verifyclass.verifyRDFFile without exiting the application
                         filelist.append(myfile.name)
-                        errorlist.append(jpype.JavaException.message(ex))
-                    except :
-                        """ Other Exceptions"""
+                        errorlist.append(jpype.JException.message(ex))
+                    except Exception:
+                        # Other Exceptions
                         erroroccurred = True
                         filelist.append(myfile.name)
                         errorlist.append(format_exc())
-                except :
-                    """Invalid file extension"""
+                except Exception:
+                    # Invalid file extension
                     erroroccurred = True
                     filelist.append(myfile.name)
                     errorlist.append("Invalid file extension for "+filename+".  Must be .xls, .xlsx, .xml, .json, .yaml, .spdx, .rdfxml")
-            if (erroroccurred==False):
-                """ If no errors in any of the file,call the java function with parameters as list"""
+                    errorlist.append(format_exc())
+            if erroroccurred is False:
+                # If no errors in any of the file,call the java function with parameters as list
                 try :
                     compareclass.onlineFunction(callfunc)
-                except Exception as ex:
-                    """Error raised by onlineFunction"""
-                    if (request.is_ajax()):
+                except Exception:
+                    # Error raised by onlineFunction
+                    if utils.is_ajax(request):
                         ajaxdict["type"] = "warning2"
                         ajaxdict["files"] = filelist
                         ajaxdict["errors"] = errorlist
@@ -122,25 +130,25 @@ def license_compare_helper(request):
                     result['status'] = 400
                     result['context'] = context_dict
                     return result
-                if (warningoccurred==False):
-                    """If no warning raised """
-                    if (request.is_ajax()):
-                        ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ rfilename
+                if warningoccurred is False:
+                    # If no warning raised """
+                    if utils.is_ajax(request):
+                        ajaxdict["medialink"] = folder_url + rfilename
                         response = dumps(ajaxdict)
                         result['response'] = response
                         return result
                     context_dict["Content-Type"] = "application/vnd.ms-excel"
                     context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
-                    context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
+                    context_dict["medialink"] = folder_url + rfilename
                     result['status'] = 200
                     result['context'] = context_dict
                     return result
                 else :
-                    if (request.is_ajax()):
+                    if utils.is_ajax(request):
                         ajaxdict["type"] = "warning"
                         ajaxdict["files"] = filelist
                         ajaxdict["errors"] = errorlist
-                        ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
+                        ajaxdict["medialink"] = folder_url + rfilename
                         response = dumps(ajaxdict)
                         result['status'] = 406
                         result['response'] = response
@@ -148,12 +156,12 @@ def license_compare_helper(request):
                     context_dict["Content-Type"] = "application/vnd.ms-excel"
                     context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(rfilename)
                     context_dict["type"] = "warning"
-                    context_dict["medialink"] = settings.MEDIA_URL + folder + "/" + rfilename
+                    context_dict["medialink"] = folder_url + rfilename
                     result['status'] = 406
                     result['context'] = context_dict
                     return result
             else :
-                if (request.is_ajax()):
+                if utils.is_ajax(request):
                     ajaxdict["files"] = filelist
                     ajaxdict["type"] = "error"
                     ajaxdict["errors"] = errorlist
@@ -174,10 +182,10 @@ def license_compare_helper(request):
             return result
 
     except MultiValueDictKeyError:
-        """ If no files uploaded"""
-        if (request.is_ajax()):
+        # If no files uploaded
+        if utils.is_ajax(request):
             filelist.append("Files not selected.")
-            errorlist.append("Please select atleast 2 files.")
+            errorlist.append("Please select at least 2 files.")
             ajaxdict["files"] = filelist
             ajaxdict["type"] = "error"
             ajaxdict["errors"] = errorlist
@@ -185,7 +193,7 @@ def license_compare_helper(request):
             result['status'] = 404
             result['response'] = response
             return result
-        context_dict["error"] = "Select atleast two files"
+        context_dict["error"] = "Select at least two files"
         context_dict["type"] = "error"
         result['status'] = 404
         result['context'] = context_dict
@@ -193,35 +201,46 @@ def license_compare_helper(request):
 
 def ntia_check_helper(request):
     """
-       A helper function to check the ntia elements in a given file in various formats.
+       A helper function to check the NTIA elements in a given file in various formats.
     """
     ajaxdict = dict()
     context_dict = {}
     result = {}
     try:
         if request.FILES["file"]:
-            """ Saving file to the media directory """
+            # Saving file to the media directory
             myfile = request.FILES['file']
-            folder = str(request.user) + "/" + str(int(time()))
-            fs = FileSystemStorage(location=settings.MEDIA_ROOT + "/" + folder,
-                                   base_url=urljoin(settings.MEDIA_URL, folder + '/')
-                                   )
-            filename = fs.save(myfile.name, myfile)
-            uploaded_file_url = fs.url(filename).replace("%20", " ")
-            """ Call the python SBOM Checker """
-            schecker = SbomChecker(str(settings.APP_DIR + uploaded_file_url))
-            oldStdout = sys.stdout
-            tempstdout = StringIO()
-            sys.stdout = tempstdout
+            folder = f"{request.user}/{int(time())}"
+            folder_path = os.path.join(settings.MEDIA_ROOT, folder)
+            folder_url = urljoin(settings.MEDIA_URL, folder + '/')
+            fs = FileSystemStorage(location=folder_path, base_url=folder_url)
+            filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
+            local_path = fs.path(filename)
+            # Get other request parameters
+            sbom_spec = "spdx2"
+            format_ = request.POST.get("format", "")
+            if format_.startswith("SPDX3"):
+                sbom_spec = "spdx3"
+            compliance = request.POST.get("compliance", "ntia")  # Default: "ntia"
+            # Call the Python SBOM Checker
+            schecker = SbomChecker(
+                f"{str(local_path)}",
+                compliance=compliance,
+                sbom_spec=sbom_spec,
+            )
+            old_stdout = sys.stdout
+            temp_stdout = StringIO()
+            sys.stdout = temp_stdout
             schecker.print_components_missing_info()
             schecker.print_table_output()
-            sys.stdout = oldStdout
-            retval = tempstdout.getvalue().replace(",",", ").replace("\n","<br/>")
+            sys.stdout = old_stdout
+            retval = temp_stdout.getvalue().replace(",",", ").replace("\n","<br/>")
             if not retval.startswith("No components with missing information."):
-                """ If any warnings are returned """
-                if (request.is_ajax()):
+                # If any warnings are returned
+                if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
-                    ajaxdict["data"] = "The following warning(s) were raised:\n" + str(retval)
+                    warnings = str(retval)
+                    ajaxdict["data"] = "The following warning(s) were raised:<br />\n" + warnings.replace('\n', '<br />\n')
                     response = dumps(ajaxdict)
                     result['response'] = response
                     result['status'] = 400
@@ -230,20 +249,20 @@ def ntia_check_helper(request):
                 result['context'] = context_dict
                 result['status'] = 400
                 return result
-            if (request.is_ajax()):
-                """ Valid SPDX Document """
-                ajaxdict["data"] = "This SPDX Document is valid:\n" + retval
+            if utils.is_ajax(request):
+                # Valid SPDX document
+                ajaxdict["data"] = "This SPDX document is valid:\n" + retval
                 response = dumps(ajaxdict)
                 result['response'] = response
                 result['status'] = 200
                 return result
-            message = "This SPDX Document is valid."
+            message = "This SPDX document is valid."
             result['message'] = message
             result['status'] = 200
             return result
         else:
-            """ If no file uploaded."""
-            if (request.is_ajax()):
+            # If no file uploaded.
+            if utils.is_ajax(request):
                 ajaxdict = dict()
                 ajaxdict["type"] = "error"
                 ajaxdict["data"] = "No file uploaded"
@@ -255,23 +274,9 @@ def ntia_check_helper(request):
             result['context'] = context_dict
             result['status'] = 404
             return result
-    except jpype.JException as ex:
-        """ Error raised by check_anything.check_minimum_elements without exiting the application"""
-        if (request.is_ajax()):
-            ajaxdict = dict()
-            ajaxdict["type"] = "error"
-            ajaxdict["data"] = jpype.JException.message(ex)
-            response = dumps(ajaxdict)
-            result['response'] = response
-            result['status'] = 400
-            return result
-        context_dict["error"] = jpype.JException.message(ex)
-        result['context'] = context_dict
-        result['status'] = 400
-        return result
     except MultiValueDictKeyError:
-        """ If no files selected"""
-        if (request.is_ajax()):
+        # If no files selected
+        if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = "No files selected."
@@ -283,9 +288,9 @@ def ntia_check_helper(request):
         result['context'] = context_dict
         result['status'] = 404
         return result
-    except:
-        """ Other error raised """
-        if (request.is_ajax()):
+    except Exception:
+        # Other error raised
+        if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = format_exc()
@@ -310,24 +315,27 @@ def license_validate_helper(request):
     result = {}
     try :
         if request.FILES["file"]:
-            """ Saving file to the media directory """
+            # Saving file to the media directory
             myfile = request.FILES['file']
-            folder = str(request.user) + "/" + str(int(time()))
-            fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,
-                base_url=urljoin(settings.MEDIA_URL, folder+'/')
-                )
-            filename = fs.save(myfile.name, myfile)
-            uploaded_file_url = fs.url(filename).replace("%20", " ")
+            folder = f"{request.user}/{int(time())}"
+            folder_path = os.path.join(settings.MEDIA_ROOT, folder)
+            folder_url = urljoin(settings.MEDIA_URL, folder + '/')
+            fs = FileSystemStorage(location=folder_path, base_url=folder_url)
+            filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
+            local_path = fs.path(filename)
             formatstr = request.POST["format"]
             serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
             fileformat = serFileTypeEnum.valueOf(formatstr)
-            """ Call the java function with parameters """
-            retval = verifyclass.verify(str(settings.APP_DIR+uploaded_file_url), fileformat)
+
+            # Call the Java function with parameters
+            retval = verifyclass.verify(str(local_path), fileformat)
+
             if (len(retval) > 0):
-                """ If any warnings are returned """
-                if (request.is_ajax()):
+                # If any warnings are returned
+                if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
-                    ajaxdict["data"] = "The following warning(s) were raised: " + str(retval)
+                    warnings = str(retval)
+                    ajaxdict["data"] = "The following warning(s) were raised:<br />\n" + warnings.replace('\n', '<br />\n')
                     response = dumps(ajaxdict)
                     result['response'] = response
                     result['status'] = 400
@@ -336,20 +344,20 @@ def license_validate_helper(request):
                 result['context'] = context_dict
                 result['status'] = 400
                 return result
-            if (request.is_ajax()):
-                """ Valid SPDX Document """
-                ajaxdict["data"] = "This SPDX Document is valid."
+            if utils.is_ajax(request):
+                # Valid SPDX document
+                ajaxdict["data"] = "This SPDX document is valid."
                 response = dumps(ajaxdict)
                 result['response'] = response
                 result['status'] = 200
                 return result
-            message = "This SPDX Document is valid."
+            message = "This SPDX document is valid."
             result['message'] = message
             result['status'] = 200
             return result
         else :
-            """ If no file uploaded."""
-            if (request.is_ajax()):
+            # If no file uploaded
+            if utils.is_ajax(request):
                 ajaxdict=dict()
                 ajaxdict["type"] = "error"
                 ajaxdict["data"] = "No file uploaded"
@@ -362,8 +370,8 @@ def license_validate_helper(request):
             result['status'] = 404
             return result
     except jpype.JException as ex :
-        """ Error raised by verifyclass.verify without exiting the application"""
-        if (request.is_ajax()):
+        # Error raised by verifyclass.verify without exiting the application
+        if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = jpype.JException.message(ex)
@@ -376,8 +384,8 @@ def license_validate_helper(request):
         result['status'] = 400
         return result
     except MultiValueDictKeyError:
-        """ If no files selected"""
-        if (request.is_ajax()):
+        # If no files selected
+        if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = "No files selected."
@@ -389,9 +397,9 @@ def license_validate_helper(request):
         result['context'] = context_dict
         result['status'] = 404
         return result
-    except :
-        """ Other error raised """
-        if (request.is_ajax()):
+    except Exception:
+        # Other error raised
+        if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = format_exc()
@@ -416,7 +424,7 @@ def license_check_helper(request):
     try:
         matchingId, matchingType, _ = utils.check_spdx_license(licensetext)
         if not matchingId:
-            if (request.is_ajax()):
+            if utils.is_ajax(request):
                 ajaxdict = dict()
                 ajaxdict["data"] = "There are no matching SPDX listed licenses"
                 response = dumps(ajaxdict)
@@ -428,11 +436,11 @@ def license_check_helper(request):
             result['status'] = 404
             return result
         else:
-            matching_str = matchingType + " found! The following license ID(s) match: "
+            matching_str = matchingType + " found.<br />The following license ID(s) match: "
             if isinstance(matchingId, list):
                 matchingId = ",".join(matchingId)
             matching_str += matchingId
-            if request.is_ajax():
+            if utils.is_ajax(request):
                 ajaxdict = dict()
                 ajaxdict["data"] = matching_str
                 response = dumps(ajaxdict)
@@ -444,8 +452,8 @@ def license_check_helper(request):
             result['status'] = 200
             return result
     except jpype.JException as ex :
-        """ Java exception raised without exiting the application """
-        if request.is_ajax():
+        # Java exception raised without exiting the application
+        if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["data"] = jpype.JException.message(ex)
             response = dumps(ajaxdict)
@@ -456,9 +464,9 @@ def license_check_helper(request):
         result['context'] = context_dict
         result['status'] = 404
         return result
-    except :
-        """ Other exception raised """
-        if request.is_ajax():
+    except Exception:
+        # Other exception raised
+        if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["data"] = format_exc()
             response = dumps(ajaxdict)
@@ -484,12 +492,14 @@ def license_convert_helper(request):
 
     try :
         if request.FILES["file"]:
-            """ Saving file to media directory """
-            folder = str(request.user) + "/" + str(int(time()))
+            # Saving file to media directory
+            folder = f"{request.user}/{int(time())}"
+            folder_path = os.path.join(settings.MEDIA_ROOT, folder)
+            folder_url = urljoin(settings.MEDIA_URL, folder + '/')
             myfile = request.FILES['file']
-            fs = FileSystemStorage(location=settings.MEDIA_ROOT +"/"+ folder,base_url=urljoin(settings.MEDIA_URL, folder+'/'))
-            filename = fs.save(myfile.name, myfile)
-            uploaded_file_url = fs.url(filename).replace("%20", " ")
+            fs = FileSystemStorage(location=folder_path, base_url=folder_url)
+            filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
+            local_path = fs.path(filename)
             option1 = request.POST["from_format"]
             option2 = request.POST["to_format"]
             content_type = utils.formatToContentType(option2)
@@ -500,27 +510,30 @@ def license_convert_helper(request):
             convertfile =  request.POST["cfilename"] + cfileformat
             fromFileFormat = serFileTypeEnum.valueOf(option1);\
             toFileFormat = serFileTypeEnum.valueOf(option2)
-            """ Call the java function with parameters as list """
-            spdxConverter.convert(str(settings.APP_DIR+uploaded_file_url),str(settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile), fromFileFormat, toFileFormat)
-            warnings = verifyclass.verify(str(settings.MEDIA_ROOT+"/"+folder+"/"+"/"+convertfile), toFileFormat)
+
+            # Call the Java function with parameters as list
+            out_path = os.path.join(folder_path, convertfile)
+            spdxConverter.convert(str(local_path), str(out_path), fromFileFormat, toFileFormat)
+            warnings = verifyclass.verify(str(out_path), toFileFormat)
             if (len(warnings) == 0) :
-                """ If no warnings raised """
-                if (request.is_ajax()):
-                    ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
+                # If no warnings raised
+                if utils.is_ajax(request):
+                    ajaxdict["medialink"] = folder_url + convertfile
                     response = dumps(ajaxdict)
                     result['response'] = response
                     return result
                 context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(convertfile)
-                context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
+                context_dict["medialink"] = folder_url + convertfile
                 context_dict["Content-Type"] = content_type
                 result['context'] = context_dict
                 result['status'] = 200
                 return result
             else :
-                if (request.is_ajax()):
+                if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
-                    ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ": " + str(warnings)
-                    ajaxdict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
+                    warnings = str(warnings)
+                    ajaxdict["data"] = "The following warning(s) were raised by "+ myfile.name + ":<br />\n" + warnings.replace('\n', '<br />\n')
+                    ajaxdict["medialink"] = folder_url + convertfile
                     response = dumps(ajaxdict)
                     result['response'] = response
                     result['status'] = 406
@@ -529,7 +542,7 @@ def license_convert_helper(request):
                 context_dict["type"] = "warning"
                 context_dict['Content-Disposition'] = 'attachment; filename="{}"'.format(convertfile)
                 context_dict["Content-Type"] = content_type
-                context_dict["medialink"] = settings.MEDIA_URL + folder + "/"+ convertfile
+                context_dict["medialink"] = folder_url + convertfile
                 result['context'] = context_dict
                 result['status'] = 406
                 return result
@@ -540,8 +553,8 @@ def license_convert_helper(request):
             result['status'] = 404
             return result
     except jpype.JException as ex :
-        """ Java exception raised without exiting the application"""
-        if (request.is_ajax()):
+        # Java exception raised without exiting the application
+        if utils.is_ajax(request):
             ajaxdict["type"] = "error"
             ajaxdict["data"] = jpype.JException.message(ex)
             response = dumps(ajaxdict)
@@ -554,8 +567,8 @@ def license_convert_helper(request):
         result['status'] = 400
         return result
     except MultiValueDictKeyError:
-        """ If no files uploaded"""
-        if (request.is_ajax()):
+        # If no files uploaded
+        if utils.is_ajax(request):
             ajaxdict["type"] = "error"
             ajaxdict["data"] = "No files selected."
             response = dumps(ajaxdict)
@@ -567,9 +580,9 @@ def license_convert_helper(request):
         result['context'] = context_dict
         result['status'] = 404
         return result
-    except :
-        """ Other error raised """
-        if (request.is_ajax()):
+    except Exception:
+        # Other error raised
+        if utils.is_ajax(request):
             ajaxdict["type"] = "error"
             ajaxdict["data"] = format_exc()
             response = dumps(ajaxdict)
@@ -597,7 +610,7 @@ def license_diff_helper(request):
             if isinstance(matchingIds, list):
                 matchingIds = ", ".join(matchingIds)
             data['inputLicenseText'] = licensetext
-            originalLicenseText = utils.get_spdx_license_text(matchingIds)
+            originalLicenseText = get_spdx_license_text(matchingIds)
             data['originalLicenseText'] = originalLicenseText
             data['matchIds'] = matchingIds
             statusCode = 200
@@ -610,8 +623,8 @@ def license_diff_helper(request):
             data['status'] = 201
             return data
     except jpype.JException as ex :
-        """ Java exception raised without exiting the application """
-        if (request.is_ajax()):
+        # Java exception raised without exiting the application
+        if utils.is_ajax(request):
             ajaxdict=dict()
             ajaxdict["data"] = jpype.JException.message(ex)
             response = dumps(ajaxdict)
@@ -622,9 +635,9 @@ def license_diff_helper(request):
         data['context'] = data
         data['status'] = 404
         return data
-    except :
-        """ Other exception raised """
-        if (request.is_ajax()):
+    except Exception:
+        # Other exception raised
+        if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["data"] = format_exc()
             response = dumps(ajaxdict)

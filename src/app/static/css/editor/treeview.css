@@ -27,7 +27,7 @@ ul.treeView .expand, ul.splitTreeView .expand{
 }
 ul.treeView, ul.treeView ul, ul.splitTreeView, ul.splitTreeView ul{
     list-style-type: none;
-    background: #fff url(/static/images/vline.png) repeat-y;
+    background: #fff url(/static/img/editor/vline.png) repeat-y;
     margin: 0 10px;
     padding: 0;
 }
@@ -38,10 +38,10 @@ ul.treeView li, ul.splitTreeView li {
     margin: 0;
     padding: 0 12px;
     line-height: 20px;
-    background: url(/static/images/node.png) no-repeat;
+    background: url(/static/img/editor/node.png) no-repeat;
 }
 ul.treeView li.last, ul.splitTreeView li.last {
-    background: #fff url(/static/images/lastnode.png) no-repeat;
+    background: #fff url(/static/img/editor/lastnode.png) no-repeat;
 }
 .nodeName{
     color:rgb(23, 170, 23);
