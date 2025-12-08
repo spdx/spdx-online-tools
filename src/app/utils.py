@@ -447,7 +447,10 @@ def parseXmlString(xmlString):
     # Process notes
     try:
         notes = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')
-        data['notes'] = notes[0].text if notes and notes[0].text else ''
+        if notes and notes[0].text and notes[0].text.strip():
+            data['notes'] = notes[0].text.strip()
+        else:
+            data['notes'] = ''
     except Exception as e:
         logger.error("Error processing notes: %s", e, exc_info=True)
         data['notes'] = ''
