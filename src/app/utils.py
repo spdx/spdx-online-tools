@@ -468,7 +468,10 @@ def parseXmlString(xmlString):
     # Process standardLicenseHeader
     try:
         header = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')
-        data['standardLicenseHeader'] = header[0].text if header and header[0].text else ''
+        if header and header[0].text and header[0].text.strip():
+            data['standardLicenseHeader'] = header[0].text.strip()
+        else:
+            data['standardLicenseHeader'] = ''
     except Exception as e:
         logger.error("Error processing standardLicenseHeader: %s", e, exc_info=True)
         data['standardLicenseHeader'] = ''
