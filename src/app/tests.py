@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2017 Rohit Lodha
-# Copyright (c) 2017 Rohit Lodha
 # SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2017 Rohit Lodha
 
 from django.test import TestCase
 from unittest import skipIf
+from unittest.mock import patch
 from src.secret import getAccessToken, getGithubUserId, getGithubUserName
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -36,6 +37,33 @@ service = Service(GeckoDriverManager().install())
 
 def getExamplePath(filename):
     return os.path.join(settings.EXAMPLES_DIR, filename)
+
+
+class TestUtil(TestCase):
+    def gitHubLogin(self):
+        TEST_LOGIN_INFO = {
+        "provider": "github",
+        "uid": str(getGithubUserId()),
+        "access_token": getAccessToken(),
+        "login": getGithubUserName(),
+        "id": getGithubUserId(),
+        "password": 'pass'
+        }
+        # login first
+        self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
+                                        is_active=True,
+                                        is_superuser=True)
+        self.user.set_password(TEST_LOGIN_INFO["password"])
+        self.user.save()
+        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
+        uid=TEST_LOGIN_INFO["uid"],
+        extra_data=TEST_LOGIN_INFO,
+        user=self.user)
+        self.user = authenticate(username=TEST_LOGIN_INFO["login"],
+                                 password=TEST_LOGIN_INFO["password"])
+        login = self.client.login(username=TEST_LOGIN_INFO["login"],
+                                  password=TEST_LOGIN_INFO["password"])
+        return login
 
 class IndexViewsTestCase(TestCase):
 
@@ -1112,40 +1140,53 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_archive_license_requests_feature(self):
         """Check if the license is shifted to archive requests when archive button is pressed"""
+        login = TestUtil.gitHubLogin(self)
+        self.assertTrue(login)
+        cookie = self.client.cookies['sessionid']
         driver = self.selenium
-        driver.get(self.live_server_url+'/app/license_requests/')
-        table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text
-        self.assertEqual(table_contents, "No data available in table")
-        license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
-        driver.refresh()
-        license_name = driver.find_element(By.CSS_SELECTOR, 'td').text
-        self.assertEqual(license_name, "BSD Zero Clause License-00")
-        self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, False)
-        if driver.find_element(By.ID, 'archive_button' + str(license_obj.id)):
-            driver.find_element(By.ID, 'archive_button' + str(license_obj.id)).click()
-            driver.find_element(By.ID, 'confirm_archive').click()
-            self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, True)
-        else:
-            pass
+        with patch('app.utils.checkPermission') as mock_checkPermission:
+            mock_checkPermission.return_value = True
+            driver.get(self.live_server_url+'/app/license_requests/')
+            driver.add_cookie({'name': 'sessionid', 'value': cookie.value, 'secure': False, 'path': '/'})
+            table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text
+            self.assertEqual(table_contents, "No data available in table")
+            license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
+            driver.refresh()
+            license_name = driver.find_element(By.CSS_SELECTOR, 'td').text
+            self.assertEqual(license_name, "BSD Zero Clause License-00")
+            self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, False)
+            if driver.find_element(By.ID, 'archive_button' + str(license_obj.id)):
+                driver.find_element(By.ID, 'archive_button' + str(license_obj.id)).click()
+                driver.find_element(By.ID, 'confirm_archive').click()
+                self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, True)
+            else:
+                pass
 
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_unarchive_license_requests_feature(self):
         """Check if license is shifted back to license requests when unarchive button is pressed"""
+        login = TestUtil.gitHubLogin(self)
+        self.assertTrue(login)
+        cookie = self.client.cookies['sessionid']
         driver = self.selenium
-        driver.get(self.live_server_url+'/app/archive_requests/')
-        table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text
-        self.assertEqual(table_contents, "No data available in table")
-        archive_license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD", archive="True")
-        driver.refresh()
-        license_name = driver.find_element(By.CSS_SELECTOR, 'td').text
-        self.assertEqual(license_name, "BSD Zero Clause License-00")
-        self.assertEqual(LicenseRequest.objects.get(id=archive_license_obj.id).archive, True)
-        if driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)):
-            driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)).click()
-            driver.find_element(By.ID, 'confirm_unarchive').click()
-            self.assertEqual(LicenseRequest.objects.get(id=archive_license_obj.id).archive, False)
-        else:
-            pass
+        with patch('app.utils.checkPermission') as mock_checkPermission:
+            mock_checkPermission.return_value = True
+            driver.get(self.live_server_url+'/app/archive_requests/')
+            driver.add_cookie({'name': 'sessionid', 'value': cookie.value, 'secure': False, 'path': '/'})
+            table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text
+            self.assertEqual(table_contents, "No data available in table")
+            archive_license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD", archive="True")
+            driver.refresh()
+            license_name = driver.find_element(By.CSS_SELECTOR, 'td').text
+            self.assertEqual(license_name, "BSD Zero Clause License-00")
+            self.assertEqual(LicenseRequest.objects.get(id=archive_license_obj.id).archive, True)
+            if driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)):
+                driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)).click()
+                driver.find_element(By.ID, 'confirm_unarchive').click()
+                self.assertEqual(LicenseRequest.objects.get(id=archive_license_obj.id).archive, False)
+            else:
+                pass
+
 
 class SubmitNewLicenseViewsTestCase(TestCase):
 
