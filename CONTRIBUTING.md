@@ -11,9 +11,7 @@ and its supporting documentation:
 - [Working of the tools](https://github.com/spdx/spdx-online-tools/wiki/Working-of-the-tools)
 - [REST API fields request and response](https://github.com/spdx/spdx-online-tools/wiki/REST-API-Fields-Request-and-Response)
 - [SPDX License List Matching Guidelines](https://spdx.org/spdx-license-list/matching-guidelines) provides guidelines to be used for the purposes of matching licenses and license exceptions against those included on the SPDX License List.
-- [SPDX Specification](https://spdx.org/specifications): It is helpful to be familiar with certain sections of the SPDX Specification that use or deal with the SPDX License List. In particular: sub-sections related to license information and license expression.
-
-- [SPDX Specification](https://spdx.org/specifications): It is helpful to be familiar with certain sections of the SPDX Specification that use or deal with the SPDX License List. In particular: sub-sections related to license information in Section 3, 4, and 6; Appendices II, IV, and V.
+- [SPDX specifications](https://spdx.org/specifications): It is helpful to be familiar with certain sections of the SPDX specification that use or deal with the SPDX License List. In particular: sub-sections related to license information and license expression.
 
 ## Join the mailing list and our bi-weekly calls
 
