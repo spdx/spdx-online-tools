@@ -1,22 +1,11 @@
-# coding=utf-8
 # SPDX-FileCopyrightText: 2018 Tushar Mittal
-# Copyright (c) 2018 Tushar Mittal
+# SPDX-FileCopyrightText: 2025 SPDX Contributors
 # SPDX-License-Identifier: Apache-2.0
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 import base64
 import json
 import logging
 import re
-import socket
 import xml.etree.cElementTree as ET
 
 import redis
@@ -26,10 +15,8 @@ from spdx_license_matcher.build_licenses import build_spdx_licenses
 from spdx_license_matcher.computation import (checkTextStandardLicense,
                                               get_close_matches,
                                               getListedLicense)
-from spdx_license_matcher.difference import get_similarity_percent
-from spdx_license_matcher.utils import get_spdx_license_text
 
-from app.models import User, UserID, LicenseRequest, LicenseNamespace
+from app.models import User, UserID, LicenseRequest
 
 from src.secret import getRedisHost
 
@@ -68,8 +55,25 @@ def checkPermission(user):
     else:
         logger.error("Permission denied while accessing the github api.")
         return False
+    
+def utilForPullRequestFileCheckIfExists(file_url, headers, body, username, commit_url):
+    """ Check if file already exists """
+    response = requests.get(file_url, headers=headers)
+    if response.status_code == 200:
+        """ Creating Commit by updating the file """
+        data = json.loads(response.text)
+        file_sha = data["sha"]
+        body["sha"] = file_sha
+    response = requests.put(commit_url, headers=headers, data=json.dumps(body))
+    if not (response.status_code==201 or response.status_code==200):
+        logger.error("[Pull Request] Error occured while making commit, for {0} user. {1}".format(username, response.text))
+        return {
+            "type":"error",
+            "message":"Some error occured while making commit. Please try again later or contact the SPDX Team."
+            }
+    return response
 
-def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, is_ns):
+def makePullRequest(username, token, branchName, updateUpstream, fileName, commitMessage, prTitle, prBody, xmlText, plainText, isException, is_ns):
 
     if not xmlText:
         logger.error("Error occurred while getting xml text. The xml text is empty")
@@ -171,31 +175,41 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     """ Creating Commit """
     if fileName[-4:] == ".xml":
         fileName = fileName[:-4]
-    fileName += ".xml"
-    commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)
+    if isException:
+        textFileName = fileName + "-exception.txt"
+        fileName += "-exception.xml"
+    else:
+        textFileName = fileName + ".txt"
+        fileName += ".xml"
+    if isException:
+        commit_url = "{0}repos/{1}/{2}/contents/src/exceptions/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)
+    else:
+        commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)        
+    text_commit_url = "{0}repos/{1}/{2}/contents/test/simpleTestForGenerator/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, textFileName)
     xmlText = xmlText.encode('utf-8') if isinstance(xmlText, str) else xmlText
     fileContent = base64.b64encode(xmlText).decode()
+    plainText = plainText.encode('utf-8') if isinstance(plainText, str) else plainText
+    textFileContent = base64.b64encode(plainText).decode()
     body = {
         "path":"src/"+fileName,
         "message":commitMessage,
         "content":fileContent,
         "branch":branchName,
     }
+    text_file_body = {
+        "path":"src/"+ textFileName,
+        "message":commitMessage,
+        "content":textFileContent,
+        "branch":branchName,
+    }
     """ Check if file already exists """
-    file_url = "{0}/contents/src/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], fileName)
-    response = requests.get(file_url, headers=headers)
-    if response.status_code == 200:
-        """ Creating Commit by updating the file """
-        data = json.loads(response.text)
-        file_sha = data["sha"]
-        body["sha"] = file_sha
-    response = requests.put(commit_url, headers=headers, data=json.dumps(body))
-    if not (response.status_code==201 or response.status_code==200):
-        logger.error("[Pull Request] Error occured while making commit, for {0} user. {1}".format(username, response.text))
-        return {
-            "type":"error",
-            "message":"Some error occured while making commit. Please try again later or contact the SPDX Team."
-            }
+    if isException:
+        file_url = "{0}/contents/src/exceptions/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], fileName)
+    else:
+        file_url = "{0}/contents/src/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], fileName)      
+    response = utilForPullRequestFileCheckIfExists(file_url, headers, body, username, commit_url)
+    text_file_url = "{0}/contents/test/simpleTestForGenerator/{1}".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL], textFileName)
+    text_response = utilForPullRequestFileCheckIfExists(text_file_url, headers, text_file_body, username, text_commit_url)
 
     """ Making Pull Request """
     pr_url = "{0}/pulls".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL])
@@ -225,11 +239,14 @@ def save_profile(backend, user, response, *args, **kwargs):
             profile = UserID()
             username = response.get('login')
             user = User.objects.filter(username=username)[0]
-            profile.user_id=user.id
-            profile.organisation='none'
+            if not user:
+                logger.error("User with username '%s' not found.", username)
+                return
+            profile.user_id = user.id
+            profile.organisation = 'none'
             profile.save()
-        except:
-            pass
+        except Exception as e:
+            logger.error("Error saving profile: %s", e, exc_info=True)
 
 def check_license_name(name):
     """ Check if a license name exists """
@@ -299,7 +316,7 @@ def licenseInList(namespace, namespaceId, token):
 
 
 def licenseExists(namespace, namespaceId, token):
-    # Check if a license exists on the SPDX license list
+    # Check if a license exists on the SPDX License List
     # check internet connection
     if isConnected():
         licenseInListDict = licenseInList(namespace, namespaceId, token)
@@ -311,7 +328,7 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
     """ View for creating an GitbHub issue
     when submitting a new license namespace
     """
-    body = "**1.** License Namespace: {0}\n**2.** Short identifier: {1}\n **3.** License Author or steward: {2}\n**4.** Description: {3}\n **5.** Submitter name: {4}\n **6.** SPDX doc URL:  {5}\n **7.** Submitter email: {6}\n **8.** License list URL: {7}\n **9.** Github repo URL: {8}".format(licenseNamespace.namespace, licenseNamespace.shortIdentifier, licenseNamespace.licenseAuthorName, licenseNamespace.description, licenseNamespace.fullname, licenseNamespace.url, licenseNamespace.userEmail, licenseNamespace.license_list_url, licenseNamespace.github_repo_url)
+    body = "**1.** License namespace: {0}\n**2.** Short identifier: {1}\n **3.** License author or steward: {2}\n**4.** Description: {3}\n **5.** Submitter name: {4}\n **6.** SPDX doc URL:  {5}\n **7.** Submitter email: {6}\n **8.** License list URL: {7}\n **9.** GitHub repo URL: {8}".format(licenseNamespace.namespace, licenseNamespace.shortIdentifier, licenseNamespace.licenseAuthorName, licenseNamespace.description, licenseNamespace.fullname, licenseNamespace.url, licenseNamespace.userEmail, licenseNamespace.license_list_url, licenseNamespace.github_repo_url)
     title = "New license namespace request: {0} [SPDX-Online-Tools]".format(licenseNamespace.shortIdentifier)
     payload = {'title' : title, 'body': body, 'labels': ['new license namespace/exception request']}
     headers = {'Authorization': 'token ' + token}
@@ -339,9 +356,9 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
             licenseExampleUrls += ', '
             licenseExampleUrls += licenseExamples[i]
   
-    body = "**1.** License Name: {0}\n**2.** Short identifier: {1}\n**3.** License Author or steward: {2}\n**4.** Comments: {3}\n**5.** License Request Url: {4}\n**6.** URL(s): {5}\n**7.** OSI Status: {6}\n**8.** Example Projects: {7}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseRequestUrl, licenseUrls, licenseOsi, licenseExampleUrls)
+    body = "**1.** License name: {0}\n**2.** Short identifier: {1}\n**3.** License author or steward: {2}\n**4.** Comments: {3}\n**5.** License request Url: {4}\n**6.** URL(s): {5}\n**7.** OSI status: {6}\n**8.** Example projects: {7}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseRequestUrl, licenseUrls, licenseOsi, licenseExampleUrls)
     if diffUrl:
-        body = body + "\n**8.** License Text Diff: {0}".format(diffUrl)
+        body = body + "\n**8.** License text diff: {0}".format(diffUrl)
     if matchId:
         body = body + "\n\n**Note:**\nThe license closely matched with the following license ID(s): " + matchId
     if msg:
@@ -352,7 +369,24 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
     headers = {'Authorization': 'token ' + token}
     url = "{0}/issues".format(TYPE_TO_URL_LICENSE[urlType])
     r = requests.post(url, data=json.dumps(payload), headers=headers)
-    return r.status_code
+    status_code = r.status_code
+    response_json = {}
+    issue_id = ""
+
+    if status_code in [200, 201]:
+        try:
+            response_json = r.json()
+        except ValueError:
+            # Handle JSON parsing error
+            return None, None
+            
+
+    if status_code in [200, 201] and "number" in response_json:
+        issue_id = response_json["number"]
+    else:
+        issue_id = None
+
+    return status_code, issue_id
 
 
 def postToGithub(message, encodedContent, filename):
@@ -367,57 +401,85 @@ def postToGithub(message, encodedContent, filename):
     return r.status_code, r.json()
 
 
+def removeSpecialCharacters(filename):
+    return re.sub(r'[#%&{}<>*?/$!\'":@+`|=]', "-", filename)
+
 def parseXmlString(xmlString):
     """ View for generating a spdx license xml
     returns a dictionary with the xmlString license fields values
     """
     data = {}
-    tree = ET.ElementTree(ET.fromstring(xmlString))
+    try:
+        tree = ET.ElementTree(ET.fromstring(xmlString))
+    except Exception as e:
+        logger.error("Error parsing XML: %s", e, exc_info=True)
+        return data  # Return empty dict if XML parsing fails
+
     try:
         root = tree.getroot()
     except Exception as e:
-        return
+        logger.error("Error getting XML root: %s", e, exc_info=True)
+        return data
+
+    # Process osiApproved
     try:
-        if(len(root) > 0 and 'isOsiApproved' in root[0].attrib):
+        if len(root) > 0 and 'isOsiApproved' in root[0].attrib:
             data['osiApproved'] = root[0].attrib['isOsiApproved']
         else:
             data['osiApproved'] = '-'
     except Exception as e:
+        logger.error("Error processing osiApproved: %s", e, exc_info=True)
         data['osiApproved'] = '-'
+
+    # Process crossRefs
     data['crossRefs'] = []
     try:
-        if(len(('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')) > 0):
-            crossRefs = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')[0]
-            for crossRef in crossRefs:
-                data['crossRefs'].append(crossRef.text)
+        crossRefsElements = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}crossRefs')
+        if crossRefsElements:
+            crossRefsContainer = crossRefsElements[0]
+            for crossRef in crossRefsContainer:
+                if crossRef.text:
+                    data['crossRefs'].append(crossRef.text)
     except Exception as e:
+        logger.error("Error processing crossRefs: %s", e, exc_info=True)
         data['crossRefs'] = []
+
+    # Process notes
     try:
-        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')) > 0):
-            data['notes'] = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')[0].text
+        notes = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}notes')
+        if notes and notes[0].text and notes[0].text.strip():
+            data['notes'] = notes[0].text.strip()
         else:
             data['notes'] = ''
     except Exception as e:
+        logger.error("Error processing notes: %s", e, exc_info=True)
         data['notes'] = ''
+
+    # Process standardLicenseHeader
     try:
-        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')) > 0):
-            data['standardLicenseHeader'] = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')[0].text
+        header = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}standardLicenseHeader')
+        if header and header[0].text and header[0].text.strip():
+            data['standardLicenseHeader'] = header[0].text.strip()
         else:
             data['standardLicenseHeader'] = ''
     except Exception as e:
+        logger.error("Error processing standardLicenseHeader: %s", e, exc_info=True)
         data['standardLicenseHeader'] = ''
+
+    # Process license text
     try:
-        if(len(tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')) > 0):
-            textElem = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')[0]
+        texts = tree.findall('{http://www.spdx.org/license}license/{http://www.spdx.org/license}text')
+        if texts:
+            textElem = texts[0]
             ET.register_namespace('', "http://www.spdx.org/license")
             textStr = ET.tostring(textElem, encoding='unicode').strip()
-            if(len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>'):
-                textStr = textStr[42:]
-                textStr = textStr[:-7].strip().replace('&lt;', '<').replace('&gt;', '>').strip()
+            if len(textStr) >= 49 and textStr[:42] == '<text xmlns="http://www.spdx.org/license">' and textStr[-7:] == '</text>':
+                textStr = textStr[42:-7].strip().replace('&lt;', '<').replace('&gt;', '>')
             data['text'] = textStr.strip()
         else:
             data['text'] = ''
     except Exception as e:
+        logger.error("Error processing text: %s", e, exc_info=True)
         data['text'] = ''
     return data
 
@@ -486,8 +548,13 @@ def get_license_data(issues):
 
 def get_issue_url_by_id(licenseId, issues):
     """ Get the github issue url of the license by license ID and the issues instance.
+    Returns None if no matching issue is found.
     """
-    return [issue.get('html_url') for issue in issues if issue.get('pull_request') is None if licenseId in issue.get('title')][0]
+    matching_urls = [issue.get('html_url') for issue in issues if issue.get('pull_request') is None if licenseId in issue.get('title', '')]
+    if matching_urls:
+        return matching_urls[0]
+
+    return None
 
 
 def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
@@ -507,15 +574,15 @@ def check_new_licenses_and_rejected_licenses(inputLicenseText, urlType):
 
 
 def check_spdx_license(licenseText):
-    """Check the license text against the spdx license list.
+    """Check the license text against the SPDX License List.
     """
     r = redis.StrictRedis(host=getRedisHost(), port=6379, db=0)
     
-    # if redis is empty build the spdx license list in the redis database
+    # if redis is empty build the SPDX License List in the redis database
     if r.keys('*') == []:
         build_spdx_licenses()
-    spdxLicenseIds = list(map(lambda x: x.decode('utf-8'), list(r.keys())))
-    spdxLicenseTexts = list(map(lambda x: x.decode('utf-8'), r.mget(spdxLicenseIds)))
+    spdxLicenseIds = list(r.keys())
+    spdxLicenseTexts = r.mget(spdxLicenseIds)
     licenseData = dict(list(zip(spdxLicenseIds, spdxLicenseTexts)))
     matches = get_close_matches(licenseText, licenseData)
     if not matches:
@@ -564,7 +631,7 @@ def formatToContentType(to_format):
         return "application/vnd.ms-excel"
     elif (to_format=="XLSX"):
         return "application/vnd.ms-excel"
-    elif (to_format=="JSON"):
+    elif (to_format=="JSON" or to_format=="JSONLD"):
         return "application/json"
     elif (to_format=="YAML"):
         return "text/yaml"
@@ -572,3 +639,17 @@ def formatToContentType(to_format):
         return "application/xml"
     else :
         return ".invalid"
+
+def is_ajax(request):
+    """Determine if the request is an AJAX request."""
+    try:
+        xrw = request.headers.get("x-requested-with", "")
+    except AttributeError:
+        # Some Django versions / WSGI servers may not populate request.headers
+        xrw = request.META.get("HTTP_X_REQUESTED_WITH", "")
+    accept = (
+        request.headers.get("accept", "")
+        if hasattr(request, "headers")
+        else request.META.get("HTTP_ACCEPT", "")
+    )
+    return (str(xrw).lower() == "xmlhttprequest") or ("application/json" in str(accept))

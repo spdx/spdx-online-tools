@@ -1,8 +1,6 @@
-import math
-import os
 import re
-import subprocess
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
 from itertools import chain, tee
 
 entityMap = {
@@ -23,12 +21,6 @@ def previous_and_current(some_iterable):
     return list(zip(prevs, items))
 
 
-def escapeXmlData(string):
-    for initial,final in list(entityMap.items()):
-        string.replace(initial, final)
-    return string
-
-
 def isBullet(string):
     """ To check if the line has bullet or not.
     """
@@ -47,8 +39,9 @@ def wrapBullets(string, item):
     numberBullet = re.search(numberBullets, string)
     symbolBullet = re.search(symbolBullets, string)
     bullet = letterBullet or numberBullet or symbolBullet    
-    ET.SubElement(item, "bullet").text = bullet.group(2)
-    string = string.replace(bullet.group(2), '').strip()
+    if bullet: # Bullet must exist
+        ET.SubElement(item, "bullet").text = bullet.group(2)
+        string = string.replace(bullet.group(2), '').strip()
     return string
 
 
@@ -63,7 +56,7 @@ def groupLines(lines):
             if not matches:
                 depth = 0
             else:
-                depth = int(math.floor(len(matches)/4))
+                depth = len(matches) // 4 # no need to use math.floor()
             tagType = 'item'
             lis.append({'data':line, 'depth':depth, 'tagType':tagType})
         else:
@@ -131,7 +124,7 @@ def getTextElement(points):
     return elements[0]
 
 
-def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText):
+def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText, isException=False):
     """ Generate a spdx license xml
     returns the license xml as a string
     """
@@ -140,13 +133,15 @@ def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAd
         licenseOsi = "true"
     else:
         licenseOsi = "false"
-    license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, listVersionAdded=listVersionAdded, name=licenseName)
+    if isException:
+        license = ET.SubElement(root, "exception", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, listVersionAdded=listVersionAdded, name=licenseName)
+    else:
+        license = ET.SubElement(root, "license", isOsiApproved=licenseOsi, licenseId=licenseIdentifier, listVersionAdded=listVersionAdded, name=licenseName)
     crossRefs = ET.SubElement(license, "crossRefs")
     for sourceUrl in licenseSourceUrls:
         ET.SubElement(crossRefs, "crossRef").text = sourceUrl
     ET.SubElement(license, "standardLicenseHeader").text = licenseHeader
     ET.SubElement(license, "notes").text = licenseNotes
-    licenseText = escapeXmlData(licenseText)
     licenseLines = licenseText.replace('\r','').split('\n\n')
     objList = groupLines(licenseLines)
     points = insertOls(objList)

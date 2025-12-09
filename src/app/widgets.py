@@ -2,7 +2,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.forms import widgets
 from django.conf import settings
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 class RelatedFieldWidgetCanAdd(widgets.Select):
 
@@ -23,5 +23,5 @@ class RelatedFieldWidgetCanAdd(widgets.Select):
         output = [super(RelatedFieldWidgetCanAdd, self).render(name, value, *args, **kwargs)]
         output.append('<a href="%s" class="add-another" id="add_id_%s" onclick="return showAddAnotherPopup(this);"> ' % \
         (self.related_url, name))
-        output.append('<img src="%simages/addAttribute.png" width="12" height="12"/> %s</a>' % (settings.STATIC_URL, _('Add Another')))
+        output.append('<img src="%simg/editor/add.svg" width="12" height="12"/> %s</a>' % (settings.STATIC_URL, _('Add Another')))
         return mark_safe(''.join(output))
