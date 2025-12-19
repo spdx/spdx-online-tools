@@ -349,7 +349,7 @@ function scrollUpAndHighlight(element) {
 </script>
 
 <script type="text/javascript">
-  var LicenseData = {};
+  var LicenseData = { data: {} };
 
   $('#newlicense').on('submit', function(event){
     event.preventDefault();
@@ -406,6 +406,9 @@ function scrollUpAndHighlight(element) {
                     var matchingGuidelinesUrl = 'https://spdx.github.io/spdx-spec/v2.3/license-matching-guidelines-and-templates/'
                     var message = `Close match found.<br />The license closely matches with the license ID(s): <strong>${matchIds}</strong> based on the SPDX matching guidelines. Press show differences to continue.`
                     LicenseData.data = data;
+                    if (!LicenseData.data.matchIds) {
+                      LicenseData.data.matchIds = [];
+                    }
                     $("#modal-header").removeClass("red-modal green-modal");
 		                $("#modal-header").addClass("yellow-modal");
 		                $(".modal-footer").html(`<button class="btn btn-success btn-space" id="matchingguidelines"><span class="glyphicon glyphicon-link"></span> SPDX Matching Guidelines</button><button class="btn btn-success btn-space" id="showDiff"><span class="glyphicon glyphicon-link"></span> Show differences</button><button class="btn btn-primary btn-space" id="diffCancel"><span class="glyphicon glyphicon-cancel"></span> Cancel</button>`);
@@ -519,8 +522,11 @@ function getCookie(name) {
 }
 
 function makeIssue(data){
+    if (!data) {
+      data = {};
+    }
     data['csrfmiddlewaretoken'] = getCookie('csrftoken');
-	var msg = data["msg"];
+    var msg = data["msg"];
     $.ajax({
         type: "POST",
         enctype: 'multipart/form-data',
@@ -627,7 +633,7 @@ async function generate_text_diff(base, newtxt){
       $("#myModal").modal("hide");
       $(".modal-title").text("");
       $(".modal-footer").html("");
-      matchingId = LicenseData.data.matchIds;
+      var matchingId = LicenseData.data.matchIds || "";
       LicenseData.data["msg"] = `Update ${matchingId} to allow matching to the included text`;
       makeIssue(LicenseData.data);
     });
