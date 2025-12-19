@@ -5,8 +5,6 @@
 """This file contains the core logic used in the SPDX Online Tools' APP and API"""
 
 import os
-import sys
-from io import StringIO
 from json import dumps
 from time import time
 from traceback import format_exc
@@ -175,7 +173,7 @@ def license_compare_helper(request):
                 result['context'] = context_dict
                 return result
         else :
-            context_dict["error"]= "File Not Uploaded"
+            context_dict["error"] = "File Not Uploaded"
             context_dict["type"] = "error"
             result['status'] = 404
             result['context'] = context_dict
@@ -199,9 +197,10 @@ def license_compare_helper(request):
         result['context'] = context_dict
         return result
 
+
 def ntia_check_helper(request):
     """
-       A helper function to check the NTIA elements in a given file in various formats.
+    A helper function to check the NTIA minimum elements in a given file.
     """
     ajaxdict = dict()
     context_dict = {}
@@ -209,56 +208,59 @@ def ntia_check_helper(request):
     try:
         if request.FILES["file"]:
             # Saving file to the media directory
-            myfile = request.FILES['file']
+            myfile = request.FILES["file"]
             folder = f"{request.user}/{int(time())}"
             folder_path = os.path.join(settings.MEDIA_ROOT, folder)
-            folder_url = urljoin(settings.MEDIA_URL, folder + '/')
+            folder_url = urljoin(settings.MEDIA_URL, folder + "/")
             fs = FileSystemStorage(location=folder_path, base_url=folder_url)
             filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             local_path = fs.path(filename)
             # Get other request parameters
             sbom_spec = "spdx2"
-            format_ = request.POST.get("format", "")
+            format_ = request.POST.get("format", "").strip()
             if format_.startswith("SPDX3"):
                 sbom_spec = "spdx3"
             compliance = request.POST.get("compliance", "ntia")  # Default: "ntia"
+
             # Call the Python SBOM Checker
             schecker = SbomChecker(
                 f"{str(local_path)}",
                 compliance=compliance,
                 sbom_spec=sbom_spec,
             )
-            old_stdout = sys.stdout
-            temp_stdout = StringIO()
-            sys.stdout = temp_stdout
-            schecker.print_components_missing_info()
-            schecker.print_table_output()
-            sys.stdout = old_stdout
-            retval = temp_stdout.getvalue().replace(",",", ").replace("\n","<br/>")
-            if not retval.startswith("No components with missing information."):
-                # If any warnings are returned
+            html = schecker.output_html()
+
+            if "Conformant: False" in html:
                 if utils.is_ajax(request):
                     ajaxdict["type"] = "warning"
-                    warnings = str(retval)
-                    ajaxdict["data"] = "The following warning(s) were raised:<br />\n" + warnings.replace('\n', '<br />\n')
+                    ajaxdict["data"] = (
+                        "<div class='res-container'>\n" + html + "</div>\n"
+                    )
                     response = dumps(ajaxdict)
-                    result['response'] = response
-                    result['status'] = 400
+                    result["response"] = response
+                    result["status"] = 400
                     return result
-                context_dict["error"] = retval
-                result['context'] = context_dict
-                result['status'] = 400
+
+                context_dict["error"] = (
+                    "This SPDX document does not meet conformance standards."
+                )
+                result["context"] = context_dict
+                result["status"] = 400
                 return result
+
+            # Conformat: True
             if utils.is_ajax(request):
-                # Valid SPDX document
-                ajaxdict["data"] = "This SPDX document is valid:\n" + retval
+                ajaxdict["type"] = "success"
+                ajaxdict["data"] = (
+                    "<div class='res-container'>\n" + html + "</div>\n"
+                )
                 response = dumps(ajaxdict)
-                result['response'] = response
-                result['status'] = 200
+                result["response"] = response
+                result["status"] = 200
                 return result
-            message = "This SPDX document is valid."
-            result['message'] = message
-            result['status'] = 200
+
+            result["message"] = "This SPDX document is valid."
+            result["status"] = 200
             return result
         else:
             # If no file uploaded.
@@ -293,7 +295,12 @@ def ntia_check_helper(request):
         if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["type"] = "error"
-            ajaxdict["data"] = format_exc()
+            ajaxdict["data"] = (
+                "<p class='error-log-lead'>Unexpected error found:</p>"
+                + "<pre class='error-log'>"
+                + format_exc()
+                + "</pre>"
+            )
             response = dumps(ajaxdict)
             result['response'] = response
             result['status'] = 400
@@ -358,7 +365,7 @@ def license_validate_helper(request):
         else :
             # If no file uploaded
             if utils.is_ajax(request):
-                ajaxdict=dict()
+                ajaxdict = dict()
                 ajaxdict["type"] = "error"
                 ajaxdict["data"] = "No file uploaded"
                 response = dumps(ajaxdict)
@@ -372,7 +379,7 @@ def license_validate_helper(request):
     except jpype.JException as ex :
         # Error raised by verifyclass.verify without exiting the application
         if utils.is_ajax(request):
-            ajaxdict=dict()
+            ajaxdict = dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = jpype.JException.message(ex)
             response = dumps(ajaxdict)
@@ -386,7 +393,7 @@ def license_validate_helper(request):
     except MultiValueDictKeyError:
         # If no files selected
         if utils.is_ajax(request):
-            ajaxdict=dict()
+            ajaxdict = dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = "No files selected."
             response = dumps(ajaxdict)
@@ -400,7 +407,7 @@ def license_validate_helper(request):
     except Exception:
         # Other error raised
         if utils.is_ajax(request):
-            ajaxdict=dict()
+            ajaxdict = dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = format_exc()
             response = dumps(ajaxdict)
@@ -478,6 +485,7 @@ def license_check_helper(request):
         result['status'] = 404
         return result
 
+
 def license_convert_helper(request):
     """
     A helper function to help in conversion of the license from one format to another.
@@ -490,7 +498,7 @@ def license_convert_helper(request):
     result = {}
     context_dict = {}
 
-    try :
+    try:
         if request.FILES["file"]:
             # Saving file to media directory
             folder = f"{request.user}/{int(time())}"
@@ -507,8 +515,8 @@ def license_convert_helper(request):
                 cfileformat = request.POST["cfileformat"]
             else :
                 cfileformat = utils.getFileFormat(option2)
-            convertfile =  request.POST["cfilename"] + cfileformat
-            fromFileFormat = serFileTypeEnum.valueOf(option1);\
+            convertfile = request.POST["cfilename"] + cfileformat
+            fromFileFormat = serFileTypeEnum.valueOf(option1)
             toFileFormat = serFileTypeEnum.valueOf(option2)
 
             # Call the Java function with parameters as list
@@ -625,7 +633,7 @@ def license_diff_helper(request):
     except jpype.JException as ex :
         # Java exception raised without exiting the application
         if utils.is_ajax(request):
-            ajaxdict=dict()
+            ajaxdict = dict()
             ajaxdict["data"] = jpype.JException.message(ex)
             response = dumps(ajaxdict)
             data['response'] = response

@@ -438,11 +438,11 @@ def licenseNamespaceInformation(request, licenseId):
 
 
 def ntia_check(request):
-    """ View for ntia checker tool
+    """ View for NTIA Conformance Checker tool
     returns ntia_conformance_checker.html template
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
-        context_dict={}
+        context_dict = {}
         if request.method == 'POST':
             result = core.ntia_check_helper(request)
             context_dict = result.get('context', None)
@@ -459,7 +459,7 @@ def ntia_check(request):
 
         else:
             return render(request,
-                'app/ntia_conformance_checker.html',context_dict
+                'app/ntia_conformance_checker.html', context_dict
             )
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
