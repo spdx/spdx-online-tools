@@ -54,6 +54,10 @@ from .forms import LicenseRequestForm, LicenseNamespaceRequestForm
 from .models import LicenseRequest, LicenseNamespace
 from spdx_license_matcher.utils import get_spdx_license_text
 
+# Initialize JPype before any functions - see issue https://github.com/spdx/spdx-online-tools/issues/609
+
+core.initialise_jpype()
+
 
 def index(request):
     """ View for index
