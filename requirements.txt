@@ -12,6 +12,6 @@ redis==4.4.4 # spdx-license-matcher depends on this specific version
 requests==2.32.5
 social-auth-app-django>=5.0,<6.0
 social-auth-core>=4.3,<5.0
-spdx-python-model==0.0.4
+spdx-python-model==0.0.3
 spdx-tools==0.8.3
 https://github.com/spdx/spdx-license-matcher/archive/refs/tags/v2.8.tar.gz#egg=spdx-license-matcher
