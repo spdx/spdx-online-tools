@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2020-2025 SPDX Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 """
@@ -5,16 +6,17 @@ Version file for displaying the respective version of
 the tools and online-tools repositories.
 """
 
+import json
 from importlib.metadata import version
 from os.path import abspath, dirname, exists, join
-from subprocess import run, PIPE
 from re import search
-import json
+from subprocess import PIPE, run
+from typing import Any, Dict, cast
 
 from .settings import LICENSE_ROOT
 
 
-def get_tools_version(jar_name):
+def get_tools_version(jar_name: str) -> str:
     """Returns SPDX Java Tools version.
 
     Visit https://github.com/spdx/tools-java/releases to know about the tools releases.
@@ -35,7 +37,7 @@ def get_tools_version(jar_name):
     return "Unknown"
 
 
-def get_spdx_license_list_version():
+def get_spdx_license_list_version() -> str:
     """
     Determine license list version from a local copy of licenses.json if available.
 
@@ -52,15 +54,18 @@ def get_spdx_license_list_version():
             with open(p, "r", encoding="utf-8") as fh:
                 data = json.load(fh)
             if isinstance(data, dict) and "licenseListVersion" in data:
-                return data["licenseListVersion"]
+                data_dict = cast(Dict[str, Any], data)
+                return data_dict.get("licenseListVersion", "Unknown")
         except (OSError, json.JSONDecodeError, UnicodeDecodeError):
             continue
     return "Unknown"
 
-spdx_online_tools_version = "1.3.3" # Update this when releasing new version
+
+spdx_online_tools_version = "1.3.3"  # Update this when releasing new version
 
 java_tools_version = get_tools_version("tool.jar")
 ntia_conformance_checker_version = version("ntia-conformance-checker")
 python_tools_version = version("spdx-tools")
 spdx_license_list_version = get_spdx_license_list_version()
 spdx_license_matcher_version = version("spdx-license-matcher")
+spdx_python_model_version = version("spdx-python-model")
