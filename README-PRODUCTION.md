@@ -55,8 +55,8 @@ Following are the steps for updating the images:
   - Update any dependencies as needed based on the vulnerability report
 - Deploy the images on EC2
   - Clone or update this repo on the EC2 instance - a convenient way to copy of the docker-compose files
-  - Build the image on the deployment machine:
-    - execute `docker-compose -f docker-compose.prod.yml build`
+  - Build the image on the deployment machine with the "no-cache" option:
+    - execute `docker-compose -f docker-compose.prod.yml build --no-cache`
   - Login to ECR using the AWS CLI by running
     `aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com`
     replacing the region and account ID
