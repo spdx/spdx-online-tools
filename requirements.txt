@@ -2,6 +2,7 @@ django-oauth-toolkit>=2.0.0
 django-rest-framework-social-oauth2>=1.2.0
 Django>=4.2,<4.3
 djangorestframework>=3.14.0
+drf-yasg==1.21.5
 gevent==25.9.1
 gunicorn==23.0.0
 jpype1==1.6.0
