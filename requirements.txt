@@ -9,7 +9,7 @@ lxml>=5.4.0,<6.0.0
 ntia-conformance-checker==4.1.2
 python-dotenv>=1.0.1
 redis==4.4.4 # spdx-license-matcher depends on this specific version
-requests==2.32.5
+requests==2.33.0
 social-auth-app-django>=5.0,<6.0
 social-auth-core>=4.3,<5.0
 spdx-python-model==0.0.3
