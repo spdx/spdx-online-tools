@@ -41,6 +41,15 @@ This runtime environment is configured to host a Django web application using Gu
 - Customization of Supervisor or Gunicorn configurations can be done by modifying the respective configuration files (`supervisor_api.conf` for Supervisor and Gunicorn configuration files).
 - Adjustments to Django settings or additional dependencies should be appropriately managed within the Django application.
 
+## Daily media cleanup schedule
+
+- Install host cron entry from this repository file (on EC2 host, not in container):
+  - `crontab crontab`
+- Verify it is installed:
+  - `crontab -l | grep spdx_cleanup`
+- Check recent cleanup logs:
+  - `journalctl -t spdx_cleanup --since "1 day ago"`
+
 ## Updating the image
 
 Following are the steps for updating the images:
@@ -62,6 +71,7 @@ Following are the steps for updating the images:
     replacing the region and account ID
   - Push the images by running `docker-compose -f docker-compose.prod.yml push`
   - Launch the containers with the command `docker-compose -f docker-compose.prod.yml up -d`
+  - Ensure host cron is installed (see "Daily media cleanup schedule").
 
 ## Clean Initial Install
 
@@ -126,6 +136,7 @@ Following are the steps for a clean initial installation of the application:
     ```
 
 - Launch the containers with the command `docker-compose -f docker-compose.prod.yml up -d`
+  - Ensure host cron is installed (see "Daily media cleanup schedule").
 
 ## Credits
 
