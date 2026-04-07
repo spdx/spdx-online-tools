@@ -1,5 +1,4 @@
 import argparse
-from datetime import datetime, timezone
 
 from django.core.management.base import BaseCommand
 
@@ -25,17 +24,4 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        started_at = datetime.now(tz=timezone.utc).isoformat()
-        self.stdout.write(f"Cleanup started at {started_at}")
-
-        deleted_files = clean_media(days_threshold=options["days_threshold"])
-        for file_info in deleted_files:
-            self.stdout.write(
-                f"Deleted file: {file_info['name']} (modified at {file_info['modified_at']})"
-            )
-
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"Cleanup completed; deleted {len(deleted_files)} file(s)."
-            )
-        )
+        clean_media(days_threshold=options["days_threshold"])

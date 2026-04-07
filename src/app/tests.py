@@ -1624,20 +1624,11 @@ class TestCronJob(TestCase):
                 self.assertTrue(os.path.exists(file_path), f'{file_path} should not have been deleted')
 
     def test_cleanup_management_command(self):
-        """cleanup_media command delegates to clean_media and formats output"""
-        stdout = StringIO()
-        deleted_files = [
-            {
-                'name': 'expired.txt',
-                'modified_at': '2026-01-01T00:00:00+00:00',
-            }
-        ]
+        """cleanup_media command delegates with correct threshold values"""
+        with patch('app.management.commands.cleanup_media.clean_media', return_value=[]) as clean_media_mock:
+            call_command('cleanup_media')
+            call_command('cleanup_media', '--days-threshold', '30')
 
-        with patch('app.management.commands.cleanup_media.clean_media', return_value=deleted_files) as clean_media_mock:
-            call_command('cleanup_media', '--days-threshold', '30', stdout=stdout)
-
-        clean_media_mock.assert_called_once_with(days_threshold=30)
-        output = stdout.getvalue()
-        self.assertIn('Cleanup started at', output)
-        self.assertIn('Deleted file: expired.txt (modified at 2026-01-01T00:00:00+00:00)', output)
-        self.assertIn('Cleanup completed; deleted 1 file(s).', output)
+        self.assertEqual(clean_media_mock.call_count, 2)
+        clean_media_mock.assert_any_call(days_threshold=10)
+        clean_media_mock.assert_any_call(days_threshold=30)

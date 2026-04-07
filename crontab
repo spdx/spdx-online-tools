@@ -3,4 +3,4 @@ SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Run the Django media cleanup job every day at 15:30 UTC.
-30 15 * * * sh -c 'if docker ps --format "{{.Names}}" | grep -qx spdx_prod; then docker exec spdx_prod /usr/local/bin/python /spdx/src/manage.py cleanup_media; else echo "spdx_cleanup skipped: container spdx_prod is not running"; fi' 2>&1 | logger -t spdx_cleanup
+30 15 * * * docker exec spdx_prod /usr/local/bin/python /spdx/src/manage.py cleanup_media

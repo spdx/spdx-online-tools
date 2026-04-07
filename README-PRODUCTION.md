@@ -46,9 +46,9 @@ This runtime environment is configured to host a Django web application using Gu
 - Install host cron entry from this repository file (on EC2 host, not in container):
   - `crontab crontab`
 - Verify it is installed:
-  - `crontab -l | grep spdx_cleanup`
+  - `crontab -l | grep cleanup_media`
 - Check recent cleanup logs:
-  - `journalctl -t spdx_cleanup --since "1 day ago"`
+  - `tail -n 50 container_logs/deletedFiles.log`
 
 ## Updating the image
 
