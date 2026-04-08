@@ -81,12 +81,6 @@ Following are the steps for a clean initial installation of the application:
   - Create an IAM role using the EC2 use case with the policy AmazonEC2ContainerRegistryPowerUser
   - Attach the role to the EC2 instance
 - Create a repository in the Amazon ECR spdx/online-tools
-- Create an RDS database
-  - Instance name `spdx-online-tools-db-production`
-  - Username `spdx`
-  - Set a password which will be used later in setting some of the environment variables in docker
-  - Under connectivity drop down, add VPC security group `spdx-online-tools-ec2`
-  - Change initial database name to `spdx_db` (under additional config)
 - Add an inbound rule to for PostgreSQL access
   - Edit the security group inbound rules for spdx-online-tools-ec2
   - Add PostgreSQL with a source of the EC2 instance (search for spdx-)
@@ -117,11 +111,14 @@ Following are the steps for a clean initial installation of the application:
     DJANGO_SECRET_KEY=[Django secret key - see README.md for more information]
     DIFF_REPO_WITH_OWNER=spdx/licenseRequestImages
     DIFF_REPO_GIT_TOKEN=[Github token for a github user with commit access to the DIFF_REPO_WITH_OWNER]
+    POSTGRES_USER=postgres
+    POSTGRES_PASSWORD=[create-random-password]
+    POSTGRES_DB=postgresql
     SQL_ENGINE=django.db.backends.postgresql
     SQL_DATABASE=spdx_db
     SQL_USER=postgres
-    SQL_PASSWORD=[SQL database password set while creating the RDS database]
-    SQL_HOST=[RDS Endpoint]
+    SQL_PASSWORD=[same password as POSTGRES_PASSWORD]
+    SQL_HOST=localhost
     SQL_PORT=5432
     ```
 
