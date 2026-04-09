@@ -220,7 +220,7 @@ class ValidateViewsTestCase(TestCase):
     def test_upload_tv(self):
         """POST Request for validate validating tag value files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
         resp = self.client.post(reverse("validate"),{'file' : self.tv_file, 'format' : 'TAG'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.content,b"This SPDX document is valid.")
@@ -229,7 +229,7 @@ class ValidateViewsTestCase(TestCase):
     def test_upload_rdf(self):
         """POST Request for validate validating rdf files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
         resp = self.client.post(reverse("validate"),{'file' : self.rdf_file, 'format' : 'RDFXML'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.content,b"This SPDX document is valid.")
@@ -239,7 +239,7 @@ class ValidateViewsTestCase(TestCase):
     def test_upload_other(self):
         """POST Request for validate validating other files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-        self.other_file = open("examples/Other.txt")
+        self.other_file = open(getExamplePath("Other.txt"))
         resp = self.client.post(reverse("validate"),{'file' : self.other_file, 'format' : 'TAG'},follow=True,secure=True)
         self.assertTrue(resp.status_code,400)
         self.assertTrue('error' in resp.context)
@@ -249,7 +249,7 @@ class ValidateViewsTestCase(TestCase):
     def test_upload_inv_tv(self):
         """POST Request for validate validating tag value files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-        self.invalid_tv_file = open("examples/SPDXTagExample-v2.0_invalid.spdx")
+        self.invalid_tv_file = open(getExamplePath("SPDXTagExample-v2.0_invalid.spdx"))
         resp = self.client.post(reverse("validate"),{'file' : self.invalid_tv_file, 'format' : 'TAG'},follow=True)
         self.assertTrue(resp.status_code,400)
         self.assertTrue('error' in resp.context)
@@ -259,7 +259,7 @@ class ValidateViewsTestCase(TestCase):
     def test_upload_inv_rdf(self):
         """POST Request for validate validating rdf files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-        self.invalid_rdf_file = open("examples/SPDXRdfExample-v2.0_invalid.rdf")
+        self.invalid_rdf_file = open(getExamplePath("SPDXRdfExample-v2.0_invalid.rdf"))
         resp = self.client.post(reverse("validate"),{'file' : self.invalid_rdf_file, 'format' : 'RDFXML'},follow=True)
         self.assertTrue(resp.status_code,400)
         self.assertTrue('error' in resp.context)
@@ -270,9 +270,9 @@ class CompareViewsTestCase(TestCase):
 
     def initialise(self):
         """ Open files"""
-        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-        self.rdf_file2 = open("examples/SPDXRdfExample.rdf")
-        self.invalid_rdf = open("examples/SPDXRdfExample-v2.0_invalid.rdf")
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
+        self.rdf_file2 = open(getExamplePath("SPDXRdfExample-v2.3.spdx.rdf"))
+        self.invalid_rdf = open(getExamplePath("SPDXRdfExample-v2.0_invalid.rdf"))
 
     def exit(self):
         """ Close files"""
@@ -373,7 +373,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_tagtordf(self):
         """POST Request for convert tag to rdf"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
         resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".rdf.xml",'from_format' : "TAG", 'to_format' : "RDFXML", 'file' : self.tv_file},follow=True,secure=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -387,7 +387,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_tagtoxlsx(self):
         """POST Request for convert tag to spreadsheet"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
         resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".xlsx",'from_format' : "TAG", 'to_format' : "XLSX", 'file' : self.tv_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -401,7 +401,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_rdftotag(self):
         """POST Request for convert rdf to tag"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
         resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".spdx",'from_format' : "RDFXML", 'to_format' : "TAG", 'file' : self.rdf_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -415,7 +415,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_rdftoxlsx(self):
         """POST Request for convert rdf to spreadsheet"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
         resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".xls",'from_format' : "RDFXML", 'to_format' : "XLS", 'file' : self.rdf_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -429,7 +429,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_xlsxtotag(self):
         """POST Request for convert spreadsheet to tag"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls", "rb")
+        self.xls_file = open(getExamplePath("SPDXSpreadsheetExample-2.0.xls"), "rb")
         resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".spdx",'from_format' : "XLS", 'to_format' : "TAG", 'file' : self.xls_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -443,7 +443,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_xlsxtordf(self):
         """POST Request for convert spreadsheet to rdf"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls", "rb")
+        self.xls_file = open(getExamplePath("SPDXSpreadsheetExample-2.0.xls"), "rb")
         resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".rdf",'from_format' : "XLS", 'to_format' : "RDFXML", 'file' : self.xls_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -682,6 +682,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         options = Options()
         options.add_argument('-headless')
         self.selenium = webdriver.Firefox(service=service, options=options)
+        self.selenium.set_window_size(1920, 1080)
         self.initialXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license></SPDXLicenseCollection>'
         self.invalidXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license>'
         super(LicenseXMLEditorTestCase, self).setUp()
@@ -695,12 +696,15 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabTreeEditor").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.in"))
+        )
         """ Adding attribute """
         driver.find_element(By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
         driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("firstAttribute")
@@ -710,6 +714,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.find_element(By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
         driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("secondAttribute")
         driver.find_element(By.CLASS_NAME, "addNewAttribute").click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Please enter valid attribute name and value")
         driver.find_element(By.CSS_SELECTOR, "div.modal-footer button.btn").click()
@@ -726,13 +731,16 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Delete attribute """
         driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].click()
         driver.find_element(By.CSS_SELECTOR, "img.removeAttribute").click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this attribute? This action cannot be undone.")
         driver.find_element(By.ID, "modalOk").click()
         time.sleep(0.5)
         driver.find_element(By.ID, "tabTextEditor").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
+        )
         codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
-        time.sleep(0.2)
         finalXML = ""
         for i in codemirror:
             finalXML += i.text.strip()
@@ -743,8 +751,8 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
@@ -788,12 +796,15 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabTreeEditor").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.in"))
+        )
         """ Adding node """
         driver.find_element(By.CSS_SELECTOR, "li.addChild.last").click()
         driver.find_element(By.CSS_SELECTOR, "input.textbox").send_keys("newNode")
@@ -801,6 +812,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Adding invalid node """
         driver.find_element(By.CSS_SELECTOR, "li.addChild.last").click()
         driver.find_element(By.CLASS_NAME, "buttonAddChild").click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "The tag name cannot be empty. Please enter a valid tag name.")
         driver.find_element(By.CSS_SELECTOR, "div.modal-footer button.btn").click()
@@ -808,11 +820,15 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.find_element(By.CLASS_NAME, "cancelAddChild").click()
         """ Delete attribute """
         driver.find_elements(By.CSS_SELECTOR, "img.deleteNode")[2].click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this tag? This cannot be undone.")
         driver.find_element(By.ID, "modalOk").click()
         time.sleep(0.5)
         driver.find_element(By.ID, "tabTextEditor").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
+        )
         codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
         finalXML = ""
         for i in codemirror:
@@ -824,8 +840,8 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
@@ -858,12 +874,15 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabTreeEditor").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.in"))
+        )
         """ Adding text """
         driver.find_element(By.CSS_SELECTOR, "li.emptyText").click()
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").send_keys("This is some sample text.")
@@ -884,6 +903,9 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.emptyText").text
         self.assertEqual(nodeText, "(No text value. Click to edit.)")
         driver.find_element(By.ID, "tabTextEditor").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
+        )
         codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
         finalXML = ""
         for i in codemirror:
@@ -895,8 +917,8 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
@@ -910,6 +932,9 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         self.assertEqual(nodeText, "This is some sample text.")
         """ Editing text """
         driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "ul textarea"))
+        )
         driver.execute_script("document.querySelector('ul textarea').value = ''")
         driver.execute_script("document.querySelector('ul textarea').value = 'Edited text.'")
         driver.execute_script("document.getElementsByClassName('editNodeText')[0].click()")
@@ -917,6 +942,9 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         self.assertEqual(nodeText, "Edited text.")
         """ Delete text """
         driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "ul textarea"))
+        )
         driver.execute_script("document.querySelector('ul textarea').value = ''")
         driver.execute_script("document.getElementsByClassName('editNodeText')[0].click()")
         nodeText = driver.execute_script("return document.querySelector('li.emptyText').innerHTML")
@@ -938,6 +966,9 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         )
         driver.find_element(By.ID, "tabTreeEditor").click()
         """ Checking for error message """
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.xmlParsingErrorMessage"))
+        )
         error_title = driver.find_element(By.CSS_SELECTOR, "h2.xmlParsingErrorMessage").text
         error_message = driver.find_element(By.CSS_SELECTOR, "span.xmlParsingErrorMessage").text
         self.assertEqual(error_title, "Invalid XML.")
@@ -955,6 +986,9 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         )
         driver.find_element(By.ID, "tabSplitView").click()
         """ Checking for error message """
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.xmlParsingErrorMessage"))
+        )
         error_title = driver.find_element(By.CSS_SELECTOR, "h2.xmlParsingErrorMessage").text
         error_message = driver.find_element(By.CSS_SELECTOR, "span.xmlParsingErrorMessage").text
         self.assertEqual(error_title, "Invalid XML.")
@@ -1396,6 +1430,7 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
         options = Options()
         options.add_argument('-headless')
         self.selenium = webdriver.Firefox(service=service, options=options)
+        self.selenium.set_window_size(1920, 1080)
         super(ArchiveLicenseNamespaceViewsTestCase, self).setUp()
 
     def tearDown(self):
@@ -1445,7 +1480,8 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseNamespace.objects.get(id=license_obj.id).archive, False)
         driver.find_element(By.ID, 'archive_button' + str(license_obj.id)).click()
-        driver.find_element(By.ID, 'confirm_archive').click()
+        confirm_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_archive')))
+        driver.execute_script("arguments[0].click();", confirm_btn)
         self.assertEqual(LicenseNamespace.objects.get(id=license_obj.id).archive, True)
 
     def test_unarchive_license_namespace_feature(self):
@@ -1471,7 +1507,8 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, True)
         driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)).click()
-        driver.find_element(By.ID, 'confirm_unarchive').click()
+        confirm_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_unarchive')))
+        driver.execute_script("arguments[0].click();", confirm_btn)
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, False)
 
 

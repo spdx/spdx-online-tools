@@ -112,7 +112,7 @@ in the [wiki][gsoc2017].
 ## How to Run Tests
 
 ```bash
-python src/manage.py test
+python src/manage.py test app.tests
 ```
 
 ## Running with Docker
