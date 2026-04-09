@@ -111,8 +111,10 @@ in the [wiki][gsoc2017].
 
 ## How to Run Tests
 
+Run all tests in the `api` and `app` directories:
+
 ```bash
-python src/manage.py test app.tests
+python src/manage.py test api app
 ```
 
 ## Running with Docker
