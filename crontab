@@ -2,5 +2,6 @@
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-# Run the Django media cleanup job every day at 15:30 UTC.
-30 15 * * * docker exec spdx_prod /usr/local/bin/python /spdx/src/manage.py cleanup_media
+# Every day at 15:30 UTC, finds the container by docker-compose
+# service label ("spdx"), and runs the media cleanup job.
+30 15 * * * c=$(docker ps -qf "label=com.docker.compose.service=spdx" | head -n 1) && [ -n "$c" ] && docker exec "$c" /usr/local/bin/python /spdx/src/manage.py cleanup_media
