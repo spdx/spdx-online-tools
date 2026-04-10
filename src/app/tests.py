@@ -798,8 +798,10 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.getElementById('modalOk').click()")
         time.sleep(0.5)
         driver.execute_script("document.getElementById('tabTextEditor').click()")
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
+        )
         finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<(codemirror.length/2)-1;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
-        time.sleep(0.2)
         self.assertEqual(self.initialXML, finalXML)
 
     def test_tree_editor_nodes(self):
@@ -876,8 +878,10 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.getElementById('modalOk').click()")
         time.sleep(0.5)
         driver.execute_script("document.getElementById('tabTextEditor').click()")
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
+        )
         finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<(codemirror.length/2)-1;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
-        time.sleep(0.2)
         self.assertEqual(self.initialXML, finalXML)
 
     def test_tree_editor_text(self):
@@ -942,7 +946,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         nodeText = driver.execute_script("return document.querySelector('li.nodeText').innerHTML")
         self.assertEqual(nodeText, "This is some sample text.")
         """ Editing text """
-        driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
+        driver.execute_script("document.querySelectorAll('li.nodeText')[1].click()")
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "ul textarea"))
         )
@@ -952,7 +956,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         nodeText = driver.execute_script("return document.querySelector('li.nodeText').innerHTML")
         self.assertEqual(nodeText, "Edited text.")
         """ Delete text """
-        driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
+        driver.execute_script("document.querySelectorAll('li.nodeText')[1].click()")
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "ul textarea"))
         )
@@ -1509,8 +1513,11 @@ class ArchiveLicenseNamespaceSeleniumTestCase(StaticLiveServerTestCase):
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseNamespace.objects.get(id=license_obj.id).archive, False)
         driver.find_element(By.ID, 'archive_button' + str(license_obj.id)).click()
-        confirm_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_archive')))
-        driver.execute_script("arguments[0].click();", confirm_btn)
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_archive')))
+        driver.find_element(By.ID, 'confirm_archive').click()
+        WebDriverWait(driver, 10).until(
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody'), "No data available in table")
+        )
         self.assertEqual(LicenseNamespace.objects.get(id=license_obj.id).archive, True)
 
     def test_unarchive_license_namespace_feature(self):
@@ -1536,8 +1543,11 @@ class ArchiveLicenseNamespaceSeleniumTestCase(StaticLiveServerTestCase):
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, True)
         driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)).click()
-        confirm_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_unarchive')))
-        driver.execute_script("arguments[0].click();", confirm_btn)
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_unarchive')))
+        driver.find_element(By.ID, 'confirm_unarchive').click()
+        WebDriverWait(driver, 10).until(
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody'), "No data available in table")
+        )
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, False)
 
 
