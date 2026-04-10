@@ -770,13 +770,19 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabSplitView").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#split.in"))
+        )
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
+        )
         """ Adding attribute """
-        driver.execute_script("document.getElementsByClassName('addAttribute')[1].click()")
+        driver.execute_script("document.getElementsByClassName('addAttribute')[0].click()")
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'firstAttribute'")
         driver.execute_script("document.getElementsByClassName('newAttributeValue')[0].value = 'firstValue'")
         driver.execute_script("document.getElementsByClassName('addNewAttribute')[0].click()")
         """ Adding Invalid attribute """
-        driver.execute_script("document.getElementsByClassName('addAttribute')[1].click()")
+        driver.execute_script("document.getElementsByClassName('addAttribute')[0].click()")
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'secondAttribute'")
         driver.execute_script("document.getElementsByClassName('addNewAttribute')[0].click()")
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
@@ -787,17 +793,17 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.getElementsByClassName('newAttributeValue')[0].value = 'secondValue'")
         driver.execute_script("document.getElementsByClassName('cancel')[0].click()")
         """ Editing attribute """
-        driver.execute_script("document.querySelectorAll('span.attributeValue')[1].click()")
+        driver.execute_script("document.querySelectorAll('span.attributeValue')[0].click()")
         driver.execute_script("document.querySelector('input.textbox').value = ''")
         driver.execute_script("document.querySelector('input.textbox').value = 'Edited Value'")
         driver.execute_script("document.querySelector('img.editAttribute').click()")
         WebDriverWait(driver, 10).until(
-            lambda d: d.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text == "Edited Value"
+            lambda d: d.find_elements(By.CSS_SELECTOR, "span.attributeValue")[0].text == "Edited Value"
         )
-        editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text
+        editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[0].text
         self.assertEqual(editedValue, "Edited Value")
         """ Delete attribute """
-        driver.execute_script("document.querySelectorAll('span.attributeValue')[1].click()")
+        driver.execute_script("document.querySelectorAll('span.attributeValue')[0].click()")
         driver.execute_script("document.querySelector('img.removeAttribute').click()")
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.execute_script("return document.getElementById('modal-body').innerHTML")
@@ -808,7 +814,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
-        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<(codemirror.length/2)-1;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_tree_editor_nodes(self):
@@ -866,6 +872,12 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabSplitView").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#split.in"))
+        )
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
+        )
         """ Adding node """
         driver.execute_script("document.querySelectorAll('li.addChild.last')[1].click()")
         driver.execute_script("document.querySelector('input.textbox').value = 'newNode'")
@@ -890,7 +902,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
-        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<(codemirror.length/2)-1;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_tree_editor_text(self):
@@ -956,6 +968,12 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabSplitView").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#split.in"))
+        )
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
+        )
         """ Adding text """
         driver.execute_script("document.querySelectorAll('li.emptyText')[1].click()")
         driver.execute_script("document.querySelectorAll('li.emptyText')[1].click()")
@@ -967,7 +985,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         nodeText = driver.execute_script("return document.querySelector('li.nodeText').innerHTML")
         self.assertEqual(nodeText, "This is some sample text.")
         """ Editing text """
-        driver.execute_script("document.querySelectorAll('li.nodeText')[1].click()")
+        driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "ul textarea"))
         )
@@ -980,7 +998,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         nodeText = driver.execute_script("return document.querySelector('li.nodeText').innerHTML")
         self.assertEqual(nodeText, "Edited text.")
         """ Delete text """
-        driver.execute_script("document.querySelectorAll('li.nodeText')[1].click()")
+        driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "ul textarea"))
         )
@@ -995,7 +1013,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
-        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<(codemirror.length/2)-1;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_tree_editor_invalid_xml(self):
