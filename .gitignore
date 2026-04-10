@@ -7,77 +7,68 @@
 # 1. Python artifacts
 # ========================
 # Byte-compiled / optimized / DLL files
-__pycache__/
 .mypy_cache/
-*.py[cod]
+__pycache__/
 *$py.class
 *.py.bak
+*.py[cod]
 .ipynb_checkpoints
 
 # C extensions
 *.so
 
-# Virtual environments
-.venv/
-venv/
-env/
-ENV/
-
-# pyenv
-.python-version
-
 # Distribution / packaging
-.Python
+*.egg-info/
+.eggs/
 build/
-dist/
 develop-eggs/
+dist/
 downloads/
 eggs/
-.eggs/
 sdist/
 wheels/
-*.egg-info/
 *.egg
-.installed.cfg
 *.manifest
 *.spec
+.Python
+.installed.cfg
 
 # Installer & pip logs
-pip-log.txt
 pip-delete-this-directory.txt
+pip-log.txt
 pip-selfcheck.json
 
 # ========================
 # 2. Test / coverage / reports
 # ========================
+.hypothesis/
 .tox/
 htmlcov/
+*.cover
+.cache
 .coverage
 .coverage.*
-.cache
-nosetests.xml
 coverage.xml
-*.cover
-.hypothesis/
+nosetests.xml
 
 # ========================
 # 3. Project-specific artifacts
 # ========================
 # Django logs / local settings / DB
 *.log
-local_settings.py
 *.sqlite3
+local_settings.py
 
 # Collected static and uploaded media (generated at runtime / mounts)
-static/
 media/
+static/
 
 # Older path (project-specific) — keep for compatibility
 src/app/media/
 
 # Downloaded license data and SSL certs used during build
-licenses/
 data/certbot/
+licenses/
 
 # container logs from local runs
 container_logs/
@@ -85,15 +76,15 @@ container_logs/
 # ========================
 # 4. Generated documentation
 # ========================
-docs/_build/
 /site/
+docs/_build/
 
 # ========================
 # 5. Editors
 # ========================
 .idea/
-*.iml
 .vscode/
+*.iml
 .project
 .pydevproject
 .ropeproject
@@ -109,15 +100,17 @@ org.eclipse.core.resources.prefs
 # ========================
 # 7. Secrets / env
 # ========================
+
+# Virtual environments
+.venv/
+ENV/
+env/
+venv/
 .env
 spdx-prod.env
 
+# pyenv
+.python-version
+
 # Keep legacy entry if present (harmless)
 github_utils.py
-
-# ========================
-# 8. VCS / tooling
-# ========================
-.git
-.github
-.gitignore
