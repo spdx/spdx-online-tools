@@ -1,6 +1,9 @@
 # Keep the Docker build context small;
 # exclude files not needed to build the image.
 
+# crontab is for the host's cron configuration, not needed in the image
+crontab
+
 # ========================
 # 1. Python artifacts
 # ========================
