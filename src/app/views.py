@@ -1136,7 +1136,7 @@ def beautify(request):
                 with open('test.xml','wt', encoding='utf-8') as f:
                     f.write(xmlString)
                     f.close()
-                commandRun = subprocess.call(["python", "src/app/formatxml.py","test.xml","-i", "3"])
+                commandRun = subprocess.call(["python", "app/formatxml.py","test.xml","-i", "3"])
                 if commandRun == 0:
                     data = codecs.open("test.xml", 'r', encoding='utf-8').read()
                     os.remove('test.xml')
