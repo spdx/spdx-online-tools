@@ -42,6 +42,9 @@ pip-selfcheck.json
 # 2. Test / coverage / reports
 # ========================
 .hypothesis/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
 .tox/
 htmlcov/
 *.cover

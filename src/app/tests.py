@@ -776,7 +776,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
             EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
         )
         """ Adding attribute """
-        driver.execute_script("document.getElementsByClassName('addAttribute')[0].click()")
+        driver.execute_script("document.getElementsByClassName('addAttribute')[1].click()")
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'firstAttribute'")
         driver.execute_script("document.getElementsByClassName('newAttributeValue')[0].value = 'firstValue'")
         driver.execute_script("document.getElementsByClassName('addNewAttribute')[0].click()")
@@ -784,7 +784,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
             lambda d: len(d.find_elements(By.CSS_SELECTOR, "#splitTreeView span.attributeValue")) > 1
         )
         """ Adding Invalid attribute """
-        driver.execute_script("document.getElementsByClassName('addAttribute')[0].click()")
+        driver.execute_script("document.getElementsByClassName('addAttribute')[1].click()")
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'secondAttribute'")
         driver.execute_script("document.getElementsByClassName('addNewAttribute')[0].click()")
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
@@ -878,11 +878,11 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
             EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
         )
         """ Adding node """
-        driver.execute_script("document.querySelectorAll('li.addChild.last')[0].click()")
+        driver.execute_script("document.querySelectorAll('li.addChild.last')[1].click()")
         driver.execute_script("document.querySelector('input.textbox').value = 'newNode'")
         driver.execute_script("document.getElementsByClassName('buttonAddChild')[0].click()")
         """ Adding invalid node """
-        driver.execute_script("document.querySelectorAll('li.addChild.last')[0].click()")
+        driver.execute_script("document.querySelectorAll('li.addChild.last')[1].click()")
         driver.execute_script("document.getElementsByClassName('buttonAddChild')[0].click()")
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
