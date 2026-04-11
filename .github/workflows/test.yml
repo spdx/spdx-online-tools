@@ -63,10 +63,23 @@ jobs:
           printf 'Package: firefox*\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n' | sudo tee /etc/apt/preferences.d/mozilla-firefox
           sudo apt-get update
           sudo apt-get install -y firefox
+      - name: Prepare geckodriver path
+        run: |
+          mkdir -p "$HOME/.local/geckodriver"
+          echo "$HOME/.local/geckodriver" >> "$GITHUB_PATH"
+      - name: Cache geckodriver
+        # Cache geckodriver to speed up subsequent runs and avoid rate limits.
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: ~/.local/geckodriver/geckodriver
+          key: geckodriver-v0.36.0-${{ runner.os }}-x64
       - name: Install geckodriver
         run: |
-          wget -q https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz -O geckodriver.tar.gz
-          sudo tar xzf geckodriver.tar.gz -C /usr/local/bin/
+          if [ ! -x "$HOME/.local/geckodriver/geckodriver" ]; then
+            wget -q https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz -O geckodriver.tar.gz
+            tar xzf geckodriver.tar.gz -C "$HOME/.local/geckodriver"
+            chmod +x "$HOME/.local/geckodriver/geckodriver"
+          fi
           geckodriver --version
       - name: Install Python dependencies
         run: |
