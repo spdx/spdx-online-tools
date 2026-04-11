@@ -3,7 +3,7 @@
 
 """Django management command for cleaning up old media files."""
 
-import argparse
+from argparse import ArgumentTypeError
 
 from django.core.management.base import BaseCommand
 
@@ -13,7 +13,7 @@ from app.scripts.cleanup import clean_media
 def _non_negative_int(value):
     parsed = int(value)
     if parsed < 0:
-        raise argparse.ArgumentTypeError("days-threshold must be non-negative")
+        raise ArgumentTypeError("days-threshold must be non-negative")
     return parsed
 
 
