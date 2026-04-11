@@ -6,12 +6,12 @@ gevent==25.9.1
 gunicorn==23.0.0
 jpype1==1.6.0
 lxml>=5.4.0,<6.0.0
-ntia-conformance-checker==4.1.2
+ntia-conformance-checker>=5.0.1,<6.0.0
 python-dotenv>=1.0.1
 redis==4.4.4 # spdx-license-matcher depends on this specific version
 requests==2.33.0
 social-auth-app-django>=5.0,<6.0
 social-auth-core>=4.3,<5.0
-spdx-python-model==0.0.3
-spdx-tools==0.8.3
+spdx-python-model>=0.0.4,<1.0.0
+spdx-tools>=0.8.5,<1.0.0
 https://github.com/spdx/spdx-license-matcher/archive/refs/tags/v2.8.tar.gz#egg=spdx-license-matcher

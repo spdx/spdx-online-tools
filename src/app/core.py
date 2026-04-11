@@ -228,32 +228,32 @@ def ntia_check_helper(request):
                 compliance=compliance,
                 sbom_spec=sbom_spec,
             )
-            html = schecker.output_html()
+            result_json = schecker.output_json()
 
-            if "Conformant: False" in html:
+            if schecker.parsing_errors or not schecker.compliant:
                 if utils.is_ajax(request):
-                    ajaxdict["type"] = "warning"
-                    ajaxdict["data"] = (
-                        "<div class='res-container'>\n" + html + "</div>\n"
+                    ajaxdict["type"] = (
+                        "error" if schecker.parsing_errors else "warning"
                     )
+                    ajaxdict["data"] = result_json
                     response = dumps(ajaxdict)
                     result["response"] = response
                     result["status"] = 400
                     return result
 
                 context_dict["error"] = (
-                    "This SPDX document does not meet conformance standards."
+                    "This SPDX document could not be parsed."
+                    if schecker.parsing_errors
+                    else "This SPDX document does not meet conformance standards."
                 )
                 result["context"] = context_dict
                 result["status"] = 400
                 return result
 
-            # Conformat: True
+            # Conformant: True
             if utils.is_ajax(request):
                 ajaxdict["type"] = "success"
-                ajaxdict["data"] = (
-                    "<div class='res-container'>\n" + html + "</div>\n"
-                )
+                ajaxdict["data"] = result_json
                 response = dumps(ajaxdict)
                 result["response"] = response
                 result["status"] = 200
