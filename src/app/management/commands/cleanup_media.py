@@ -29,4 +29,5 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        clean_media(days_threshold=options["days_threshold"])
+        deleted = clean_media(days_threshold=options["days_threshold"])
+        self.stdout.write(f"Deleted {len(deleted)} file(s).")

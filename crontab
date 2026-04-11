@@ -4,4 +4,5 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Every day at 15:30 UTC, finds the container by docker-compose
 # service label ("spdx"), and runs the media cleanup job.
-30 15 * * * c=$(docker ps -qf "label=com.docker.compose.service=spdx" | head -n 1) && [ -n "$c" ] && docker exec "$c" /usr/local/bin/python /spdx/src/manage.py cleanup_media
+# If no such container is running, logs a warning to the same log file used by the cleanup script.
+30 15 * * * c=$(docker ps -qf "label=com.docker.compose.service=spdx" | head -n 1) && [ -n "$c" ] && docker exec "$c" /usr/local/bin/python /spdx/src/manage.py cleanup_media || { d=$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' $(docker ps -aqf "label=com.docker.compose.service=spdx" | head -n 1) 2>/dev/null); echo "$(date -u +'\%Y-\%m-\%d \%H:\%M:\%S,000') - app.cleanup - WARNING - cleanup_media: no running container" >> "$d/container_logs/deletedFiles.log"; }

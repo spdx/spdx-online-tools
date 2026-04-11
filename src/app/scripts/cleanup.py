@@ -21,9 +21,10 @@ logger.setLevel(logging.INFO)
 
 def _setup_logger():
     log_file = Path(settings.PROJECT_ROOT) / "container_logs" / "deletedFiles.log"
-    
+
     if not any(
-        isinstance(handler, logging.FileHandler) and Path(handler.baseFilename) == log_file
+        isinstance(handler, logging.FileHandler)
+        and Path(handler.baseFilename).resolve() == log_file.resolve()
         for handler in logger.handlers
     ):
         log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -44,7 +45,10 @@ def clean_media(days_threshold=DEFAULT_DAYS_THRESHOLD, media_root=None):
     deleted_files = []
     now = time()
     cutoff_seconds = days_threshold * SECONDS_PER_DAY
-    logger.info("Cleanup job started at %s", datetime.fromtimestamp(now, tz=timezone.utc).isoformat())
+    logger.info(
+        "Cleanup job started at %s",
+        datetime.fromtimestamp(now, tz=timezone.utc).isoformat(),
+    )
 
     if not media_dir.is_dir():
         logger.info("Cleanup skipped because directory does not exist: %s", media_dir)
@@ -58,12 +62,22 @@ def clean_media(days_threshold=DEFAULT_DAYS_THRESHOLD, media_root=None):
         if (now - modified_at) <= cutoff_seconds:
             continue
 
-        filepath.unlink()
-        logger.info("Deleting file %s with date %s", filepath.name, datetime.fromtimestamp(modified_at, tz=timezone.utc).isoformat())
+        try:
+            filepath.unlink()
+        except OSError:
+            logger.exception("Failed to delete %s", filepath.name)
+            continue
+        logger.info(
+            "Deleted file %s with modified date %s",
+            filepath.name,
+            datetime.fromtimestamp(modified_at, tz=timezone.utc).strftime("%Y-%m-%d"),
+        )
         deleted_files.append(
             {
                 "name": filepath.name,
-                "modified_at": datetime.fromtimestamp(modified_at, tz=timezone.utc).isoformat(),
+                "modified_at": datetime.fromtimestamp(
+                    modified_at, tz=timezone.utc
+                ).isoformat(),
             }
         )
 

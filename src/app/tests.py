@@ -5,6 +5,7 @@
 
 import datetime
 import os
+import shutil
 import time
 from io import StringIO
 from unittest import skipIf
@@ -1594,9 +1595,10 @@ class EditLicenseNamespaceXmlViewsTestCase(TestCase):
 
 class TestCronJob(TestCase):
     def test_clean_media_deletes_only_expired_files(self):
-        """ Check if the files older than 10 days are getting deleted"""
+        """Check if the files older than 10 days are getting deleted"""
         test_dir = os.path.join(settings.MEDIA_ROOT, 'AnonymousUser')
         os.makedirs(test_dir, exist_ok=True)
+        self.addCleanup(shutil.rmtree, test_dir, True)
         for i in range(1, 11):
             file_path = os.path.join(test_dir, f'test_file_{i}.txt')
             with open(file_path, 'w') as f:
