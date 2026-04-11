@@ -38,6 +38,9 @@ import datetime
 import uuid
 from wsgiref.util import FileWrapper
 import subprocess
+import sys
+
+_FORMATXML_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'formatxml.py')
 
 from social_django.models import UserSocialAuth
 from app.models import UserID, LicenseNames
@@ -1136,7 +1139,7 @@ def beautify(request):
                 with open('test.xml','wt', encoding='utf-8') as f:
                     f.write(xmlString)
                     f.close()
-                commandRun = subprocess.call(["python", "app/formatxml.py","test.xml","-i", "3"])
+                commandRun = subprocess.call([sys.executable, _FORMATXML_SCRIPT, "test.xml", "-i", "3"])
                 if commandRun == 0:
                     data = codecs.open("test.xml", 'r', encoding='utf-8').read()
                     os.remove('test.xml')

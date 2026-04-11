@@ -4,6 +4,7 @@
 
 import datetime
 import os
+import shutil
 from unittest import skipIf
 from unittest.mock import patch
 
@@ -32,8 +33,8 @@ os.environ.setdefault('WDM_LOG', '0')
 
 def _init_selenium():
     try:
-        driver_path = GeckoDriverManager().install()
-        if os.path.isfile(driver_path) and os.access(driver_path, os.X_OK):
+        driver_path = shutil.which("geckodriver") or GeckoDriverManager().install()
+        if driver_path and os.path.isfile(driver_path) and os.access(driver_path, os.X_OK):
             return True, Service(driver_path)
         return False, None
     except Exception:
