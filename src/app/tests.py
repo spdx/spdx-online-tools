@@ -696,7 +696,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         except Exception as e:
             self.skipTest(f"geckodriver not available or not working: {e}")
         self.selenium.set_window_size(1920, 1080)
-        self.initialXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license></SPDXLicenseCollection>'
+        self.initialXML = '<?xml version="1.0" encoding="UTF-8"?>\n<SPDXLicenseCollection xmlns="http://www.spdx.org/license">\n   <license>\n   </license>\n</SPDXLicenseCollection>'
         self.invalidXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license>'
         super(LicenseXMLEditorTestCase, self).setUp()
 
