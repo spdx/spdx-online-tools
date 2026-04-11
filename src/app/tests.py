@@ -48,23 +48,22 @@ def getExamplePath(filename):
 class TestUtil(TestCase):
     def gitHubLogin(self):
         TEST_LOGIN_INFO = {
-        "provider": "github",
-        "uid": str(getGithubUserId()),
-        "access_token": getAccessToken(),
-        "login": getGithubUserName(),
-        "id": getGithubUserId(),
-        "password": 'pass'
+            "provider": "github",
+            "uid": str(getGithubUserId()),
+            "access_token": getAccessToken(),
+            "login": getGithubUserName(),
+            "id": getGithubUserId(),
+            "password": "pass",
         }
-        # login first
         self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
                                         is_active=True,
                                         is_superuser=True)
         self.user.set_password(TEST_LOGIN_INFO["password"])
         self.user.save()
-        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
-        uid=TEST_LOGIN_INFO["uid"],
-        extra_data=TEST_LOGIN_INFO,
-        user=self.user)
+        UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
+                                      uid=TEST_LOGIN_INFO["uid"],
+                                      extra_data=TEST_LOGIN_INFO,
+                                      user=self.user)
         self.user = authenticate(username=TEST_LOGIN_INFO["login"],
                                  password=TEST_LOGIN_INFO["password"])
         login = self.client.login(username=TEST_LOGIN_INFO["login"],
@@ -94,18 +93,18 @@ class AboutViewsTestCase(TestCase):
 class LoginViewsTestCase(TestCase):
 
     def initialise(self):
-        """ Create users"""
-        self.credentials = {'username':'testuser','password':'testpass' }
+        """Create users"""
+        self.credentials = {"username": "testuser", "password": "testpass"}
         user = User.objects.create_user(**self.credentials)
         user.is_staff = True
         user.is_active = True
         user.save()
-        self.credentials2 = {'username':'testuser2','password':'testpass2' }
+        self.credentials2 = {"username": "testuser2", "password": "testpass2"}
         user2 = User.objects.create_user(**self.credentials2)
         user2.is_staff = False
         user2.is_active = True
         user2.save()
-        self.credentials3 = {'username':'testuser3','password':'testpass3' }
+        self.credentials3 = {"username": "testuser3", "password": "testpass3"}
         user3 = User.objects.create_user(**self.credentials3)
         user3.is_staff = True
         user3.is_active = False
@@ -178,8 +177,13 @@ class RegisterViewsTestCase(TestCase):
         self.assertNotEqual(resp.redirect_chain,[])
         self.assertIn(settings.REGISTER_REDIRECT_URL, (i[0] for i in resp.redirect_chain))
 
-        loginresp = self.client.post(reverse("login"),{'username':self.username,'password':self.password},follow=True,secure=True)
-        self.assertEqual(loginresp.status_code,200)
+        loginresp = self.client.post(
+            reverse("login"),
+            {"username": self.username, "password": self.password},
+            follow=True,
+            secure=True,
+        )
+        self.assertEqual(loginresp.status_code, 200)
         self.assertTrue(loginresp.context['user'].is_active)
         self.assertTrue(loginresp.context['user'].is_staff)
         self.assertFalse(loginresp.context['user'].is_superuser)
@@ -585,21 +589,19 @@ class XMLUploadTestCase(TestCase):
         self.client.logout()
 
     def test_license_name(self):
-        """ POST request for xml input using license identifier"""
+        """POST request for xml input using license identifier or full name"""
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.post(reverse("xml-upload"),{'licenseName': 'Apache-2.0', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
-        """ POST request for xml input using license name"""
         resp = self.client.post(reverse("xml-upload"),{'licenseName': 'Apache License 2.0', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.client.logout()
 
     def test_exception_name(self):
-        """ POST request for xml input using license exception identifier"""
+        """POST request for xml input using exception identifier or full name"""
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.post(reverse("xml-upload"),{'licenseName': '389-exception', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
-        """ POST request for xml input using license name"""
         resp = self.client.post(reverse("xml-upload"),{'licenseName': '389 Directory Server Exception', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.client.logout()
@@ -753,10 +755,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
-        codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
-        finalXML = ""
-        for i in codemirror:
-            finalXML += i.text.strip()
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_split_tree_editor_attributes(self):
@@ -789,7 +788,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'secondAttribute'")
         driver.execute_script("document.getElementsByClassName('addNewAttribute')[0].click()")
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
-        modal_text = driver.execute_script("return document.getElementById('modal-body').innerHTML")
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Please enter valid attribute name and value")
         driver.execute_script("document.querySelector('div.modal-footer button.btn').click()")
         WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
@@ -809,7 +808,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.querySelectorAll('span.attributeValue')[1].click()")
         driver.execute_script("document.querySelector('img.removeAttribute').click()")
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
-        modal_text = driver.execute_script("return document.getElementById('modal-body').innerHTML")
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this attribute? This action cannot be undone.")
         driver.execute_script("document.getElementById('modalOk').click()")
         WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
@@ -858,10 +857,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
-        codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
-        finalXML = ""
-        for i in codemirror:
-            finalXML += i.text.strip()
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_split_tree_editor_nodes(self):
@@ -882,14 +878,14 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
             EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
         )
         """ Adding node """
-        driver.execute_script("document.querySelectorAll('li.addChild.last')[1].click()")
+        driver.execute_script("document.querySelectorAll('li.addChild.last')[0].click()")
         driver.execute_script("document.querySelector('input.textbox').value = 'newNode'")
         driver.execute_script("document.getElementsByClassName('buttonAddChild')[0].click()")
         """ Adding invalid node """
-        driver.execute_script("document.querySelectorAll('li.addChild.last')[1].click()")
+        driver.execute_script("document.querySelectorAll('li.addChild.last')[0].click()")
         driver.execute_script("document.getElementsByClassName('buttonAddChild')[0].click()")
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
-        modal_text = driver.execute_script("return document.getElementById('modal-body').innerHTML")
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "The tag name cannot be empty. Please enter a valid tag name.")
         driver.execute_script("document.querySelector('div.modal-footer button.btn').click()")
         WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
@@ -897,7 +893,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Delete attribute """
         driver.execute_script("document.querySelectorAll('img.deleteNode')[2].click()")
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
-        modal_text = driver.execute_script("return document.getElementById('modal-body').innerHTML")
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this tag? This cannot be undone.")
         driver.execute_script("document.getElementById('modalOk').click()")
         WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
@@ -954,10 +950,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
-        codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
-        finalXML = ""
-        for i in codemirror:
-            finalXML += i.text.strip()
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_split_tree_editor_text(self):
@@ -983,9 +976,9 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.querySelector('ul textarea').value = 'This is some sample text.'")
         driver.execute_script("document.getElementsByClassName('editNodeText')[0].click()")
         WebDriverWait(driver, 10).until(
-            lambda d: d.execute_script("var el = document.querySelector('li.nodeText'); return el && el.innerHTML === 'This is some sample text.';")
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, "li.nodeText"), "This is some sample text.")
         )
-        nodeText = driver.execute_script("return document.querySelector('li.nodeText').innerHTML")
+        nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "This is some sample text.")
         """ Editing text """
         driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
@@ -996,9 +989,9 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.querySelector('ul textarea').value = 'Edited text.'")
         driver.execute_script("document.getElementsByClassName('editNodeText')[0].click()")
         WebDriverWait(driver, 10).until(
-            lambda d: d.execute_script("var el = document.querySelector('li.nodeText'); return el && el.innerHTML === 'Edited text.';")
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, "li.nodeText"), "Edited text.")
         )
-        nodeText = driver.execute_script("return document.querySelector('li.nodeText').innerHTML")
+        nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "Edited text.")
         """ Delete text """
         driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
@@ -1008,9 +1001,9 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.querySelector('ul textarea').value = ''")
         driver.execute_script("document.getElementsByClassName('editNodeText')[0].click()")
         WebDriverWait(driver, 10).until(
-            lambda d: d.execute_script("return document.querySelector('li.emptyText') !== null;")
+            EC.presence_of_element_located((By.CSS_SELECTOR, "li.emptyText"))
         )
-        nodeText = driver.execute_script("return document.querySelector('li.emptyText').innerHTML")
+        nodeText = driver.find_element(By.CSS_SELECTOR, "li.emptyText").text
         self.assertEqual(nodeText, "(No text value. Click to edit.)")
         driver.execute_script("document.getElementById('tabTextEditor').click()")
         WebDriverWait(driver, 10).until(
@@ -1317,7 +1310,6 @@ class SubmitNewLicenseViewsTestCase(TestCase):
                     "sourceUrl": self.sourceUrl,'osiApproved': self.osiApproved, 'notes': self.notes,
                     "licenseHeader": self.licenseHeader, "text": self.text, "userEmail": self.userEmail,
                     "urlType": "tests", "exampleUrl":self.exampleUrl,"comments":self.comments}
-        self.data = self.data_no_author.update({"licenseAuthorName": self.licenseAuthorName})
 
     def test_submit_new_license(self):
         """GET Request for submit a new license"""
@@ -1327,15 +1319,14 @@ class SubmitNewLicenseViewsTestCase(TestCase):
         self.assertIn("app/submit_new_license.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"submitNewLicense")
         self.assertIn("form",resp.context)
-        if "form" in resp.context:
-            self.assertIn("fullname",resp.context["form"].fields)
-            self.assertIn("shortIdentifier",resp.context["form"].fields)
-            self.assertIn("sourceUrl",resp.context["form"].fields)
-            self.assertIn("osiApproved",resp.context["form"].fields)
-            self.assertIn("comments",resp.context["form"].fields)
-            self.assertIn("licenseHeader",resp.context["form"].fields)
-            self.assertIn("text",resp.context["form"].fields)
-            self.assertIn("userEmail",resp.context["form"].fields)
+        self.assertIn("fullname",resp.context["form"].fields)
+        self.assertIn("shortIdentifier",resp.context["form"].fields)
+        self.assertIn("sourceUrl",resp.context["form"].fields)
+        self.assertIn("osiApproved",resp.context["form"].fields)
+        self.assertIn("comments",resp.context["form"].fields)
+        self.assertIn("licenseHeader",resp.context["form"].fields)
+        self.assertIn("text",resp.context["form"].fields)
+        self.assertIn("userEmail",resp.context["form"].fields)
 
     def test_generate_xml(self):
         """View for generating an xml from license submittal form fields"""
@@ -1347,31 +1338,9 @@ class SubmitNewLicenseViewsTestCase(TestCase):
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_post_submit(self):
         """POST Request for submit a new license"""
-        TEST_LOGIN_INFO = {
-        "provider": "github",
-        "uid": str(getGithubUserId()),
-        "access_token": getAccessToken(),
-        "login": getGithubUserName(),
-        "id": getGithubUserId(),
-        "password": 'pass'
-        }
-        # login first
-        self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
-                                        is_active=True,
-                                        is_superuser=True)
-        self.user.set_password(TEST_LOGIN_INFO["password"])
-        self.user.save()
-        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
-        uid=TEST_LOGIN_INFO["uid"],
-        extra_data=TEST_LOGIN_INFO,
-        user=self.user)
-        self.user = authenticate(username=TEST_LOGIN_INFO["login"],
-                                 password=TEST_LOGIN_INFO["password"])
-        login = self.client.login(username=TEST_LOGIN_INFO["login"],
-                                  password=TEST_LOGIN_INFO["password"])
+        login = TestUtil.gitHubLogin(self)
         self.assertTrue(login)
         self.initialise()
-        # login via GitHub
         resp = self.client.post(reverse("submit-new-license"),
                                 self.data_no_author,
                                 follow=True,
@@ -1432,31 +1401,8 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
             self.selenium = webdriver.Firefox(service=service, options=options)
         except Exception as e:
             self.skipTest(f"geckodriver not available or not working: {e}")
-        #login
-        TEST_LOGIN_INFO = {
-        "provider": "github",
-        "uid": str(getGithubUserId()),
-        "access_token": getAccessToken(),
-        "login": getGithubUserName(),
-        "id": getGithubUserId(),
-        "password": 'pass'
-        }
-        # login first
-        self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
-                                        is_active=True,
-                                        is_superuser=True)
-        self.user.set_password(TEST_LOGIN_INFO["password"])
-        self.user.save()
-        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
-                                                    uid=TEST_LOGIN_INFO["uid"],
-                                                    extra_data=TEST_LOGIN_INFO,
-                                                    user=self.user)
-        self.user = authenticate(username=TEST_LOGIN_INFO["login"],
-                                 password=TEST_LOGIN_INFO["password"])
-        login = self.client.login(username=TEST_LOGIN_INFO["login"],
-                                  password=TEST_LOGIN_INFO["password"])
+        login = TestUtil.gitHubLogin(self)
         self.assertTrue(login)
-        # end login
         super(PromoteLicenseNamespaceViewsTestCase, self).setUp()
 
     def tearDown(self):
@@ -1466,8 +1412,8 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
 
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_promote_license_namespace_feature(self):
+        """Check if the license namespace is promoted when the promote action is taken"""
         # GitHub access token,id and username should be added in .env to execute the test properly
-        # Check if the license namespace is shifted to archive namespace when archive button is pressed
         driver = self.selenium
         driver.get(self.live_server_url+'/app/license_namespace_requests/')
         table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text
@@ -1624,8 +1570,8 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
         self.data_no_author = {"fullname": self.fullname, "shortIdentifier": self.shortIdentifier,
                     "url": self.sourceUrl,'osiApproved': self.osiApproved, 'notes': self.notes,
                     "licenseHeader": self.licenseHeader, "text": self.text, "userEmail": self.userEmail,
-                    "urlType": "tests", "namespace": self.namespace, "license_list_url": self.license_list_url, "github_repo_url": self.github_repo_url}
-        self.data = self.data_no_author.update({"licenseAuthorName": self.licenseAuthorName})
+                    "urlType": "tests", "namespace": self.namespace, "license_list_url": self.license_list_url,
+                    "github_repo_url": self.github_repo_url, "licenseAuthorName": self.licenseAuthorName}
 
     def test_submit_new_license_namespace(self):
         """GET Request for submit a new license namespace"""
@@ -1635,18 +1581,17 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
         self.assertIn("app/submit_new_license_namespace.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"submitNewLicenseNamespace")
         self.assertIn("form",resp.context)
-        if "form" in resp.context:
-            self.assertIn("fullname",resp.context["form"].fields)
-            self.assertIn("organisation",resp.context["form"].fields)
-            self.assertIn("namespace",resp.context["form"].fields)
-            self.assertIn("shortIdentifier",resp.context["form"].fields)
-            self.assertIn("publiclyShared",resp.context["form"].fields)
-            self.assertIn("url",resp.context["form"].fields)
-            self.assertIn("license_list_url",resp.context["form"].fields)
-            self.assertIn("github_repo_url",resp.context["form"].fields)
-            self.assertIn("description",resp.context["form"].fields)
-            self.assertIn("licenseAuthorName",resp.context["form"].fields)
-            self.assertIn("userEmail",resp.context["form"].fields)
+        self.assertIn("fullname",resp.context["form"].fields)
+        self.assertIn("organisation",resp.context["form"].fields)
+        self.assertIn("namespace",resp.context["form"].fields)
+        self.assertIn("shortIdentifier",resp.context["form"].fields)
+        self.assertIn("publiclyShared",resp.context["form"].fields)
+        self.assertIn("url",resp.context["form"].fields)
+        self.assertIn("license_list_url",resp.context["form"].fields)
+        self.assertIn("github_repo_url",resp.context["form"].fields)
+        self.assertIn("description",resp.context["form"].fields)
+        self.assertIn("licenseAuthorName",resp.context["form"].fields)
+        self.assertIn("userEmail",resp.context["form"].fields)
 
     def test_generate_xml(self):
         """View for generating an xml from license namespace submittal form fields"""
@@ -1658,33 +1603,11 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_post_submit(self):
         """POST Request for submit a new license namespace"""
-        TEST_LOGIN_INFO = {
-        "provider": "github",
-        "uid": str(getGithubUserId()),
-        "access_token": getAccessToken(),
-        "login": getGithubUserName(),
-        "id": getGithubUserId(),
-        "password": 'pass'
-        }
-        # login first
-        self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
-                                        is_active=True,
-                                        is_superuser=True)
-        self.user.set_password(TEST_LOGIN_INFO["password"])
-        self.user.save()
-        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
-        uid=TEST_LOGIN_INFO["uid"],
-        extra_data=TEST_LOGIN_INFO,
-        user=self.user)
-        self.user = authenticate(username=TEST_LOGIN_INFO["login"],
-                                 password=TEST_LOGIN_INFO["password"])
-        login = self.client.login(username=TEST_LOGIN_INFO["login"],
-                                  password=TEST_LOGIN_INFO["password"])
+        login = TestUtil.gitHubLogin(self)
         self.assertTrue(login)
         self.initialise()
-        # login via GitHub
         resp = self.client.post(reverse("submit-new-license-namespace"),
-                                self.data,
+                                self.data_no_author,
                                 follow=True,
                                 secure=True,
                                 HTTP_X_REQUESTED_WITH='XMLHttpRequest')
