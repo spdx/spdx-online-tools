@@ -108,18 +108,21 @@
       background: #ffc39e;
       font-size: 0.9em;
       margin-top: 0.5em;
+      padding: 0.5em 0;
     }
 
     .conformance-mis {
       background: #fff8e2;
       font-size: 0.9em;
       margin-top: 0.5em;
+      padding: 0.5em 0;
     }
 
     .conformance-val {
       background: #e8f4ff;
       font-size: 0.9em;
       margin-top: 0.5em;
+      padding: 0.5em 0;
     }
 
     .conformance-err-label, .conformance-mis-label, .conformance-val-label {
@@ -246,6 +249,120 @@ function checkform() {
 </script>
 
 <script type="text/javascript">
+  function escapeHtml(text) {
+    var map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
+    return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+  }
+
+  function renderConformanceData(data) {
+    if (typeof data !== "object" || data === null) {
+      return escapeHtml(String(data));
+    }
+
+    var html = "<div class='res-container'>";
+
+    // Parsing errors
+    if (data.parsingError && data.parsingError.length > 0) {
+      html += "<div class='conformance-err'>";
+      html += "<p class='conformance-err-label'>The document couldn't be parsed; check couldn't be performed.<br />"
+            + "The following parsing errors were raised:</p>";
+      html += "<ul class='conformance-err-list'>";
+      data.parsingError.forEach(function(err) {
+        html += "<li>" + escapeHtml(err) + "</li>";
+      });
+      html += "</ul></div></div>";
+      return html;
+    }
+
+    // Conformance results summary
+    var stdNames = {"ntia": "NTIA Minimum Elements", "fsct3-min": "CISA 2024 FSCT Minimum Expected"};
+    var stdName = stdNames[data.complianceStandard] || escapeHtml(data.complianceStandard || "");
+    html += "<div class='conformance-res'>";
+    html += "<h2 class='conformance-res-title'>" + stdName + " Conformance Results</h2>";
+    var conformantClass = data.isConformant ? "status-pass" : "status-fail";
+    html += "<h3 class='conformance-res-status'>Conformant: <span class='" + conformantClass + "'>"
+          + data.isConformant + "</span></h3>";
+
+    // Per-requirement table
+    var requirements = [
+      ["All component names provided?",        data.componentNames],
+      ["All component versions provided?",     data.componentVersions],
+      ["All component identifiers provided?",  data.componentIdentifiers],
+      ["All component suppliers provided?",    data.componentSuppliers],
+      ["SBOM author name provided?",           {allProvided: data.authorNameProvided}],
+      ["SBOM creation timestamp provided?",    {allProvided: data.timestampProvided}],
+      ["Dependency relationships provided?",   {allProvided: data.dependencyRelationshipsProvided}],
+    ].filter(function(r) { return r[1] !== undefined && r[1] !== null; });
+
+    if (requirements.length > 0) {
+      html += "<table class='conformance-res-tab'>";
+      if (data.sbomName) {
+        html += "<caption>" + escapeHtml(data.sbomName) + "</caption>";
+      }
+      html += "<thead><tr><th>Requirement</th><th>Conformant</th></tr></thead><tbody>";
+      requirements.forEach(function(req) {
+        var val = req[1].allProvided;
+        var cls = val ? "status-pass" : "status-fail";
+        html += "<tr><td class='conformance-res-tab-r'>" + req[0] + "</td>"
+              + "<td class='conformance-res-tab-v'><span class='" + cls + "'>" + val + "</span></td></tr>";
+      });
+      html += "</tbody></table>";
+    }
+    html += "</div>"; // conformance-res
+
+    // Components missing required information
+    var missingGroups = [
+      ["Components missing a name",              data.componentNames],
+      ["Components missing a version",           data.componentVersions],
+      ["Components missing an identifier",       data.componentIdentifiers],
+      ["Components missing a supplier",          data.componentSuppliers],
+      ["Components missing a concluded license", data.componentConcludedLicenses],
+      ["Components missing a copyright text",    data.componentCopyrightTexts],
+    ];
+    var hasMissing = missingGroups.some(function(g) {
+      return g[1] && !g[1].allProvided && g[1].nonconformantComponents && g[1].nonconformantComponents.length > 0;
+    });
+    if (hasMissing) {
+      html += "<div class='conformance-mis'>";
+      html += "<p class='conformance-mis-label'>Missing required information in these components:</p>";
+      html += "<ul class='conformance-mis-list'>";
+      missingGroups.forEach(function(g) {
+        if (g[1] && !g[1].allProvided && g[1].nonconformantComponents && g[1].nonconformantComponents.length > 0) {
+          html += "<li>" + escapeHtml(g[0]) + " (" + g[1].nonconformantComponents.length + "): "
+                + g[1].nonconformantComponents.map(escapeHtml).join(", ") + "</li>";
+        }
+      });
+      html += "</ul></div>";
+    }
+
+    // Validation messages (now structured with context: spdxId, parentId, elementType)
+    if (data.validationMessages && data.validationMessages.length > 0) {
+      html += "<div class='conformance-val'>";
+      html += "<p class='conformance-val-label'>The document is not valid according to the SBOM specification"
+            + " (\"" + escapeHtml(data.sbomSpec || "") + "\").<br />"
+            + "The following violations were found:</p>";
+      html += "<ul class='conformance-val-list'>";
+      data.validationMessages.forEach(function(msg) {
+        html += "<li>";
+        html += "<p class='conformance-val-msg-label'>Validation message:</p>";
+        html += "<p class='conformance-val-msg'>" + escapeHtml(msg.message) + "</p>";
+        if (msg.spdxId || msg.parentId || msg.elementType) {
+          html += "<p class='conformance-val-ctx-label'>Validation context:</p>";
+          html += "<ul class='conformance-val-ctx'>";
+          if (msg.spdxId)      html += "<li>SPDX ID: "      + escapeHtml(msg.spdxId)      + "</li>";
+          if (msg.parentId)    html += "<li>Parent ID: "    + escapeHtml(msg.parentId)    + "</li>";
+          if (msg.elementType) html += "<li>Element type: " + escapeHtml(msg.elementType) + "</li>";
+          html += "</ul>";
+        }
+        html += "</li>";
+      });
+      html += "</ul></div>";
+    }
+
+    html += "</div>"; // res-container
+    return html;
+  }
+
   $('#checkbutton').on('click', function(event){
     event.preventDefault();
     var check = checkform();
@@ -271,7 +388,7 @@ function checkform() {
                   $("#modal-header").removeClass("yellow-modal");
                   $("#modal-header").addClass("green-modal");
                   $("#modal-title").html("Success!");
-                  $("#modal-body").html("<h3>"+data.data+"</h3>");
+                  $("#modal-body").html(renderConformanceData(data.data));
                   $("#myModal").modal({
                           backdrop: 'static',
                           keyboard: true,
@@ -284,21 +401,21 @@ function checkform() {
                   console.log("ERROR : ", e);
                   $("#modal-header").removeClass("green-modal");
                   try {
-                  	var obj = JSON.parse(e.responseText);
-                  	if (obj.type=="warning"){
-	                    $("#modal-header").removeClass("red-modal");
-	                    $("#modal-header").addClass("yellow-modal");
-	                    $("#modal-title").html("Warning!");
-	                  }
-	                else if (obj.type=="error"){
-	                    $("#modal-header").removeClass("yellow-modal");
-	                    $("#modal-header").addClass("red-modal");
-	                    $("#modal-title").html("Error!");
-	                  }
-	                $("#modal-body").html(obj.data);
+                    var obj = JSON.parse(e.responseText);
+                    if (obj.type=="warning"){
+                      $("#modal-header").removeClass("red-modal");
+                      $("#modal-header").addClass("yellow-modal");
+                      $("#modal-title").html("Warning!");
+                    }
+                    else if (obj.type=="error"){
+                      $("#modal-header").removeClass("yellow-modal");
+                      $("#modal-header").addClass("red-modal");
+                      $("#modal-title").html("Error!");
+                    }
+                    $("#modal-body").html(renderConformanceData(obj.data));
                   }
                   catch (e){
-                  	$("#modal-header").removeClass("yellow-modal");
+                    $("#modal-header").removeClass("yellow-modal");
                     $("#modal-header").addClass("red-modal");
                     $("#modal-title").html("Error!");
                     $("#modal-body").text("The application could not be connected. Please try later.");
