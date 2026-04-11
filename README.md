@@ -78,15 +78,29 @@ in the [wiki][gsoc2017].
 
         * Install the Redis by running the command
 
-            `brew install redis`.
-        * If you want to run Redis whenever your computer starts then run
+            ```bash
+            brew install redis
+            ```
 
-            `ln -sfv /usr/local/opt/redis/*.plist ~/Library/LaunchAgents`.
+        * If you want to run Redis whenever your computer starts, run
 
-        * To run the Redis server use
+            ```bash
+            brew services start redis
+            ```
 
-            `launchctl load ~/Library/LaunchAgents/homebrew.mxcl.redis.plist`.
-        * To test if the Redis is working run the command `redis-cli ping`. If it returns `Pong` then you are good to go.
+        * To test if the Redis is working, run
+
+            ```bash
+            redis-cli ping
+            ```
+
+            If it returns `PONG` then you are good to go.
+
+        * To stop the Redis server, run
+
+            ```bash
+            brew services stop redis
+            ```
 
         **For Windows users**
 
