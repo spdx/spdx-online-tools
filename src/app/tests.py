@@ -781,6 +781,9 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'firstAttribute'")
         driver.execute_script("document.getElementsByClassName('newAttributeValue')[0].value = 'firstValue'")
         driver.execute_script("document.getElementsByClassName('addNewAttribute')[0].click()")
+        WebDriverWait(driver, 10).until(
+            lambda d: len(d.find_elements(By.CSS_SELECTOR, "#splitTreeView span.attributeValue")) > 1
+        )
         """ Adding Invalid attribute """
         driver.execute_script("document.getElementsByClassName('addAttribute')[0].click()")
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'secondAttribute'")
@@ -793,17 +796,17 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.getElementsByClassName('newAttributeValue')[0].value = 'secondValue'")
         driver.execute_script("document.getElementsByClassName('cancel')[0].click()")
         """ Editing attribute """
-        driver.execute_script("document.querySelectorAll('span.attributeValue')[0].click()")
+        driver.execute_script("document.querySelectorAll('span.attributeValue')[1].click()")
         driver.execute_script("document.querySelector('input.textbox').value = ''")
         driver.execute_script("document.querySelector('input.textbox').value = 'Edited Value'")
         driver.execute_script("document.querySelector('img.editAttribute').click()")
         WebDriverWait(driver, 10).until(
-            lambda d: d.find_elements(By.CSS_SELECTOR, "span.attributeValue")[0].text == "Edited Value"
+            lambda d: d.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text == "Edited Value"
         )
-        editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[0].text
+        editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text
         self.assertEqual(editedValue, "Edited Value")
         """ Delete attribute """
-        driver.execute_script("document.querySelectorAll('span.attributeValue')[0].click()")
+        driver.execute_script("document.querySelectorAll('span.attributeValue')[1].click()")
         driver.execute_script("document.querySelector('img.removeAttribute').click()")
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.execute_script("return document.getElementById('modal-body').innerHTML")
