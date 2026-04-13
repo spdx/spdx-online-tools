@@ -1,13 +1,10 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2017 Rohit Lodha
+# SPDX-FileCopyrightText: 2026 SPDX contributors
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2017 Rohit Lodha
 
 import datetime
 import os
 import shutil
-import time
-from io import StringIO
 from unittest import skipIf
 from unittest.mock import patch
 
@@ -18,7 +15,6 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
@@ -29,13 +25,23 @@ from social_django.models import UserSocialAuth
 from webdriver_manager.firefox import GeckoDriverManager
 
 from app.generateXml import generateLicenseXml
-from app.models import LicenseRequest, LicenseNamespace
-from app.models import UserID
+from app.models import LicenseNamespace, LicenseRequest, UserID
 from app.scripts.cleanup import clean_media
-
 from src.secret import getAccessToken, getGithubUserId, getGithubUserName
 
-service = Service(GeckoDriverManager().install())
+os.environ.setdefault('WDM_PROGRESS_BAR', '0')
+os.environ.setdefault('WDM_LOG', '0')
+
+def _init_selenium():
+    try:
+        driver_path = shutil.which("geckodriver") or GeckoDriverManager().install()
+        if driver_path and os.path.isfile(driver_path) and os.access(driver_path, os.X_OK):
+            return True, Service(driver_path)
+        return False, None
+    except Exception:
+        return False, None
+
+SELENIUM_AVAILABLE, service = _init_selenium()
 
 def getExamplePath(filename):
     return os.path.join(settings.EXAMPLES_DIR, filename)
@@ -44,23 +50,22 @@ def getExamplePath(filename):
 class TestUtil(TestCase):
     def gitHubLogin(self):
         TEST_LOGIN_INFO = {
-        "provider": "github",
-        "uid": str(getGithubUserId()),
-        "access_token": getAccessToken(),
-        "login": getGithubUserName(),
-        "id": getGithubUserId(),
-        "password": 'pass'
+            "provider": "github",
+            "uid": str(getGithubUserId()),
+            "access_token": getAccessToken(),
+            "login": getGithubUserName(),
+            "id": getGithubUserId(),
+            "password": "pass",
         }
-        # login first
         self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
                                         is_active=True,
                                         is_superuser=True)
         self.user.set_password(TEST_LOGIN_INFO["password"])
         self.user.save()
-        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
-        uid=TEST_LOGIN_INFO["uid"],
-        extra_data=TEST_LOGIN_INFO,
-        user=self.user)
+        UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
+                                      uid=TEST_LOGIN_INFO["uid"],
+                                      extra_data=TEST_LOGIN_INFO,
+                                      user=self.user)
         self.user = authenticate(username=TEST_LOGIN_INFO["login"],
                                  password=TEST_LOGIN_INFO["password"])
         login = self.client.login(username=TEST_LOGIN_INFO["login"],
@@ -90,18 +95,18 @@ class AboutViewsTestCase(TestCase):
 class LoginViewsTestCase(TestCase):
 
     def initialise(self):
-        """ Create users"""
-        self.credentials = {'username':'testuser','password':'testpass' }
+        """Create users"""
+        self.credentials = {"username": "testuser", "password": "testpass"}
         user = User.objects.create_user(**self.credentials)
         user.is_staff = True
         user.is_active = True
         user.save()
-        self.credentials2 = {'username':'testuser2','password':'testpass2' }
+        self.credentials2 = {"username": "testuser2", "password": "testpass2"}
         user2 = User.objects.create_user(**self.credentials2)
         user2.is_staff = False
         user2.is_active = True
         user2.save()
-        self.credentials3 = {'username':'testuser3','password':'testpass3' }
+        self.credentials3 = {"username": "testuser3", "password": "testpass3"}
         user3 = User.objects.create_user(**self.credentials3)
         user3.is_staff = True
         user3.is_active = False
@@ -174,8 +179,13 @@ class RegisterViewsTestCase(TestCase):
         self.assertNotEqual(resp.redirect_chain,[])
         self.assertIn(settings.REGISTER_REDIRECT_URL, (i[0] for i in resp.redirect_chain))
 
-        loginresp = self.client.post(reverse("login"),{'username':self.username,'password':self.password},follow=True,secure=True)
-        self.assertEqual(loginresp.status_code,200)
+        loginresp = self.client.post(
+            reverse("login"),
+            {"username": self.username, "password": self.password},
+            follow=True,
+            secure=True,
+        )
+        self.assertEqual(loginresp.status_code, 200)
         self.assertTrue(loginresp.context['user'].is_active)
         self.assertTrue(loginresp.context['user'].is_staff)
         self.assertFalse(loginresp.context['user'].is_superuser)
@@ -222,7 +232,7 @@ class ValidateViewsTestCase(TestCase):
     def test_upload_tv(self):
         """POST Request for validate validating tag value files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
         resp = self.client.post(reverse("validate"),{'file' : self.tv_file, 'format' : 'TAG'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.content,b"This SPDX document is valid.")
@@ -231,7 +241,7 @@ class ValidateViewsTestCase(TestCase):
     def test_upload_rdf(self):
         """POST Request for validate validating rdf files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
         resp = self.client.post(reverse("validate"),{'file' : self.rdf_file, 'format' : 'RDFXML'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.content,b"This SPDX document is valid.")
@@ -241,7 +251,7 @@ class ValidateViewsTestCase(TestCase):
     def test_upload_other(self):
         """POST Request for validate validating other files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-        self.other_file = open("examples/Other.txt")
+        self.other_file = open(getExamplePath("Other.txt"))
         resp = self.client.post(reverse("validate"),{'file' : self.other_file, 'format' : 'TAG'},follow=True,secure=True)
         self.assertTrue(resp.status_code,400)
         self.assertTrue('error' in resp.context)
@@ -251,7 +261,7 @@ class ValidateViewsTestCase(TestCase):
     def test_upload_inv_tv(self):
         """POST Request for validate validating tag value files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-        self.invalid_tv_file = open("examples/SPDXTagExample-v2.0_invalid.spdx")
+        self.invalid_tv_file = open(getExamplePath("SPDXTagExample-v2.0_invalid.spdx"))
         resp = self.client.post(reverse("validate"),{'file' : self.invalid_tv_file, 'format' : 'TAG'},follow=True)
         self.assertTrue(resp.status_code,400)
         self.assertTrue('error' in resp.context)
@@ -261,7 +271,7 @@ class ValidateViewsTestCase(TestCase):
     def test_upload_inv_rdf(self):
         """POST Request for validate validating rdf files """
         self.client.force_login(User.objects.get_or_create(username='validatetestuser')[0])
-        self.invalid_rdf_file = open("examples/SPDXRdfExample-v2.0_invalid.rdf")
+        self.invalid_rdf_file = open(getExamplePath("SPDXRdfExample-v2.0_invalid.rdf"))
         resp = self.client.post(reverse("validate"),{'file' : self.invalid_rdf_file, 'format' : 'RDFXML'},follow=True)
         self.assertTrue(resp.status_code,400)
         self.assertTrue('error' in resp.context)
@@ -272,9 +282,9 @@ class CompareViewsTestCase(TestCase):
 
     def initialise(self):
         """ Open files"""
-        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
-        self.rdf_file2 = open("examples/SPDXRdfExample.rdf")
-        self.invalid_rdf = open("examples/SPDXRdfExample-v2.0_invalid.rdf")
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
+        self.rdf_file2 = open(getExamplePath("SPDXRdfExample-v2.3.spdx.rdf"))
+        self.invalid_rdf = open(getExamplePath("SPDXRdfExample-v2.0_invalid.rdf"))
 
     def exit(self):
         """ Close files"""
@@ -375,7 +385,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_tagtordf(self):
         """POST Request for convert tag to rdf"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
         resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".rdf.xml",'from_format' : "TAG", 'to_format' : "RDFXML", 'file' : self.tv_file},follow=True,secure=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -389,7 +399,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_tagtoxlsx(self):
         """POST Request for convert tag to spreadsheet"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.tv_file = open("examples/SPDXTagExample-v2.0.spdx")
+        self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
         resp = self.client.post(reverse("convert"),{'cfilename': "tagtest" ,'cfileformat': ".xlsx",'from_format' : "TAG", 'to_format' : "XLSX", 'file' : self.tv_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -403,7 +413,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_rdftotag(self):
         """POST Request for convert rdf to tag"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
         resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".spdx",'from_format' : "RDFXML", 'to_format' : "TAG", 'file' : self.rdf_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -417,7 +427,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_rdftoxlsx(self):
         """POST Request for convert rdf to spreadsheet"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.rdf_file = open("examples/SPDXRdfExample-v2.0.rdf")
+        self.rdf_file = open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf"))
         resp = self.client.post(reverse("convert"),{'cfilename': "rdftest" ,'cfileformat': ".xls",'from_format' : "RDFXML", 'to_format' : "XLS", 'file' : self.rdf_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -431,7 +441,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_xlsxtotag(self):
         """POST Request for convert spreadsheet to tag"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls", "rb")
+        self.xls_file = open(getExamplePath("SPDXSpreadsheetExample-2.0.xls"), "rb")
         resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".spdx",'from_format' : "XLS", 'to_format' : "TAG", 'file' : self.xls_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -445,7 +455,7 @@ class ConvertViewsTestCase(TestCase):
     def test_convert_xlsxtordf(self):
         """POST Request for convert spreadsheet to rdf"""
         self.client.force_login(User.objects.get_or_create(username='converttestuser')[0])
-        self.xls_file = open("examples/SPDXSpreadsheetExample-2.0.xls", "rb")
+        self.xls_file = open(getExamplePath("SPDXSpreadsheetExample-2.0.xls"), "rb")
         resp = self.client.post(reverse("convert"),{'cfilename': "xlsxtest" ,'cfileformat': ".rdf",'from_format' : "XLS", 'to_format' : "RDFXML", 'file' : self.xls_file},follow=True)
         self.assertTrue(resp.status_code==406 or resp.status_code == 200)
         self.assertIn("medialink",resp.context)
@@ -581,21 +591,19 @@ class XMLUploadTestCase(TestCase):
         self.client.logout()
 
     def test_license_name(self):
-        """ POST request for xml input using license identifier"""
+        """POST request for xml input using license identifier or full name"""
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.post(reverse("xml-upload"),{'licenseName': 'Apache-2.0', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
-        """ POST request for xml input using license name"""
         resp = self.client.post(reverse("xml-upload"),{'licenseName': 'Apache License 2.0', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.client.logout()
 
     def test_exception_name(self):
-        """ POST request for xml input using license exception identifier"""
+        """POST request for xml input using exception identifier or full name"""
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.post(reverse("xml-upload"),{'licenseName': '389-exception', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
-        """ POST request for xml input using license name"""
         resp = self.client.post(reverse("xml-upload"),{'licenseName': '389 Directory Server Exception', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.client.logout()
@@ -678,13 +686,18 @@ class ValidateXMLViewsTestCase(TestCase):
         self.client.logout()
 
 
+@skipIf(not SELENIUM_AVAILABLE, "geckodriver not available or not working")
 class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
 
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(service=service, options=options)
-        self.initialXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license></SPDXLicenseCollection>'
+        try:
+            self.selenium = webdriver.Firefox(service=service, options=options)
+        except Exception as e:
+            self.skipTest(f"geckodriver not available or not working: {e}")
+        self.selenium.set_window_size(1920, 1080)
+        self.initialXML = '<?xml version="1.0" encoding="UTF-8"?>\n<SPDXLicenseCollection xmlns="http://www.spdx.org/license">\n   <license>\n   </license>\n</SPDXLicenseCollection>'
         self.invalidXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license>'
         super(LicenseXMLEditorTestCase, self).setUp()
 
@@ -697,12 +710,15 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabTreeEditor").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.in"))
+        )
         """ Adding attribute """
         driver.find_element(By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
         driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("firstAttribute")
@@ -712,10 +728,11 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.find_element(By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
         driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("secondAttribute")
         driver.find_element(By.CLASS_NAME, "addNewAttribute").click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Please enter valid attribute name and value")
         driver.find_element(By.CSS_SELECTOR, "div.modal-footer button.btn").click()
-        time.sleep(0.5)
+        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.find_element(By.CLASS_NAME, "newAttributeValue").send_keys("secondValue")
         driver.find_element(By.CLASS_NAME, "cancel").click()
         """ Editing attribute """
@@ -723,21 +740,24 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.find_element(By.CSS_SELECTOR, "input.textbox").clear()
         driver.find_element(By.CSS_SELECTOR, "input.textbox").send_keys("Edited Value")
         driver.find_element(By.CSS_SELECTOR, "img.editAttribute").click()
+        WebDriverWait(driver, 10).until(
+            lambda d: d.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text == "Edited Value"
+        )
         editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text
         self.assertEqual(editedValue, "Edited Value")
         """ Delete attribute """
         driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].click()
         driver.find_element(By.CSS_SELECTOR, "img.removeAttribute").click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this attribute? This action cannot be undone.")
         driver.find_element(By.ID, "modalOk").click()
-        time.sleep(0.5)
+        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.find_element(By.ID, "tabTextEditor").click()
-        codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
-        time.sleep(0.2)
-        finalXML = ""
-        for i in codemirror:
-            finalXML += i.text.strip()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
+        )
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_split_tree_editor_attributes(self):
@@ -745,25 +765,35 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabSplitView").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#split.in"))
+        )
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
+        )
         """ Adding attribute """
         driver.execute_script("document.getElementsByClassName('addAttribute')[1].click()")
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'firstAttribute'")
         driver.execute_script("document.getElementsByClassName('newAttributeValue')[0].value = 'firstValue'")
         driver.execute_script("document.getElementsByClassName('addNewAttribute')[0].click()")
+        WebDriverWait(driver, 10).until(
+            lambda d: len(d.find_elements(By.CSS_SELECTOR, "#splitTreeView span.attributeValue")) > 1
+        )
         """ Adding Invalid attribute """
         driver.execute_script("document.getElementsByClassName('addAttribute')[1].click()")
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'secondAttribute'")
         driver.execute_script("document.getElementsByClassName('addNewAttribute')[0].click()")
-        modal_text = driver.execute_script("return document.getElementById('modal-body').innerHTML")
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Please enter valid attribute name and value")
         driver.execute_script("document.querySelector('div.modal-footer button.btn').click()")
-        time.sleep(0.5)
+        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.execute_script("document.getElementsByClassName('newAttributeValue')[0].value = 'secondValue'")
         driver.execute_script("document.getElementsByClassName('cancel')[0].click()")
         """ Editing attribute """
@@ -771,18 +801,24 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.querySelector('input.textbox').value = ''")
         driver.execute_script("document.querySelector('input.textbox').value = 'Edited Value'")
         driver.execute_script("document.querySelector('img.editAttribute').click()")
+        WebDriverWait(driver, 10).until(
+            lambda d: d.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text == "Edited Value"
+        )
         editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text
         self.assertEqual(editedValue, "Edited Value")
         """ Delete attribute """
         driver.execute_script("document.querySelectorAll('span.attributeValue')[1].click()")
         driver.execute_script("document.querySelector('img.removeAttribute').click()")
-        modal_text = driver.execute_script("return document.getElementById('modal-body').innerHTML")
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this attribute? This action cannot be undone.")
         driver.execute_script("document.getElementById('modalOk').click()")
-        time.sleep(0.5)
+        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.execute_script("document.getElementById('tabTextEditor').click()")
-        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<(codemirror.length/2)-1;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
-        time.sleep(0.2)
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
+        )
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_tree_editor_nodes(self):
@@ -790,12 +826,15 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabTreeEditor").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.in"))
+        )
         """ Adding node """
         driver.find_element(By.CSS_SELECTOR, "li.addChild.last").click()
         driver.find_element(By.CSS_SELECTOR, "input.textbox").send_keys("newNode")
@@ -803,22 +842,24 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Adding invalid node """
         driver.find_element(By.CSS_SELECTOR, "li.addChild.last").click()
         driver.find_element(By.CLASS_NAME, "buttonAddChild").click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "The tag name cannot be empty. Please enter a valid tag name.")
         driver.find_element(By.CSS_SELECTOR, "div.modal-footer button.btn").click()
-        time.sleep(0.5)
+        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.find_element(By.CLASS_NAME, "cancelAddChild").click()
         """ Delete attribute """
         driver.find_elements(By.CSS_SELECTOR, "img.deleteNode")[2].click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this tag? This cannot be undone.")
         driver.find_element(By.ID, "modalOk").click()
-        time.sleep(0.5)
+        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.find_element(By.ID, "tabTextEditor").click()
-        codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
-        finalXML = ""
-        for i in codemirror:
-            finalXML += i.text.strip()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
+        )
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_split_tree_editor_nodes(self):
@@ -826,12 +867,18 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabSplitView").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#split.in"))
+        )
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
+        )
         """ Adding node """
         driver.execute_script("document.querySelectorAll('li.addChild.last')[1].click()")
         driver.execute_script("document.querySelector('input.textbox').value = 'newNode'")
@@ -839,20 +886,24 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Adding invalid node """
         driver.execute_script("document.querySelectorAll('li.addChild.last')[1].click()")
         driver.execute_script("document.getElementsByClassName('buttonAddChild')[0].click()")
-        modal_text = driver.execute_script("return document.getElementById('modal-body').innerHTML")
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "The tag name cannot be empty. Please enter a valid tag name.")
         driver.execute_script("document.querySelector('div.modal-footer button.btn').click()")
-        time.sleep(0.5)
+        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.execute_script("document.getElementsByClassName('cancelAddChild')[0].click()")
         """ Delete attribute """
         driver.execute_script("document.querySelectorAll('img.deleteNode')[2].click()")
-        modal_text = driver.execute_script("return document.getElementById('modal-body').innerHTML")
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this tag? This cannot be undone.")
         driver.execute_script("document.getElementById('modalOk').click()")
-        time.sleep(0.5)
+        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.execute_script("document.getElementById('tabTextEditor').click()")
-        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<(codemirror.length/2)-1;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
-        time.sleep(0.2)
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
+        )
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_tree_editor_text(self):
@@ -860,16 +911,22 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to tree editor """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabTreeEditor").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.in"))
+        )
         """ Adding text """
         driver.find_element(By.CSS_SELECTOR, "li.emptyText").click()
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").send_keys("This is some sample text.")
         driver.find_element(By.CLASS_NAME, "editNodeText").click()
+        WebDriverWait(driver, 10).until(
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, "li.nodeText"), "This is some sample text.")
+        )
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "This is some sample text.")
         """ Editing text """
@@ -877,19 +934,25 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").clear()
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").send_keys("Edited text.")
         driver.find_element(By.CLASS_NAME, "editNodeText").click()
+        WebDriverWait(driver, 10).until(
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, "li.nodeText"), "Edited text.")
+        )
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "Edited text.")
         """ Delete text """
         driver.find_element(By.CSS_SELECTOR, "li.nodeText").click()
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").clear()
         driver.find_element(By.CLASS_NAME, "editNodeText").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "li.emptyText"))
+        )
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.emptyText").text
         self.assertEqual(nodeText, "(No text value. Click to edit.)")
         driver.find_element(By.ID, "tabTextEditor").click()
-        codemirror = driver.find_elements(By.CSS_SELECTOR, "pre.CodeMirror-line")
-        finalXML = ""
-        for i in codemirror:
-            finalXML += i.text.strip()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
+        )
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_split_tree_editor_text(self):
@@ -897,35 +960,58 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver = self.selenium
         """ Opening the editor and navigating to split view """
         driver.get(self.live_server_url+'/app/xml_upload/')
-        driver.find_element(By.LINK_TEXT, 'New License XML').click()
-        driver.find_element(By.ID, "new-button").click()
+        driver.find_element(By.LINK_TEXT, 'New license XML').click()
+        driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
         driver.find_element(By.ID, "tabSplitView").click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#split.in"))
+        )
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
+        )
         """ Adding text """
         driver.execute_script("document.querySelectorAll('li.emptyText')[1].click()")
         driver.execute_script("document.querySelectorAll('li.emptyText')[1].click()")
         driver.execute_script("document.querySelector('ul textarea').value = 'This is some sample text.'")
         driver.execute_script("document.getElementsByClassName('editNodeText')[0].click()")
-        nodeText = driver.execute_script("return document.querySelector('li.nodeText').innerHTML")
+        WebDriverWait(driver, 10).until(
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, "li.nodeText"), "This is some sample text.")
+        )
+        nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "This is some sample text.")
         """ Editing text """
         driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "ul textarea"))
+        )
         driver.execute_script("document.querySelector('ul textarea').value = ''")
         driver.execute_script("document.querySelector('ul textarea').value = 'Edited text.'")
         driver.execute_script("document.getElementsByClassName('editNodeText')[0].click()")
-        nodeText = driver.execute_script("return document.querySelector('li.nodeText').innerHTML")
+        WebDriverWait(driver, 10).until(
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, "li.nodeText"), "Edited text.")
+        )
+        nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "Edited text.")
         """ Delete text """
         driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "ul textarea"))
+        )
         driver.execute_script("document.querySelector('ul textarea').value = ''")
         driver.execute_script("document.getElementsByClassName('editNodeText')[0].click()")
-        nodeText = driver.execute_script("return document.querySelector('li.emptyText').innerHTML")
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "li.emptyText"))
+        )
+        nodeText = driver.find_element(By.CSS_SELECTOR, "li.emptyText").text
         self.assertEqual(nodeText, "(No text value. Click to edit.)")
         driver.execute_script("document.getElementById('tabTextEditor').click()")
-        finalXML = driver.execute_script("var xml = ''; var codemirror = document.querySelectorAll('pre.CodeMirror-line'); for (var i=1;i<(codemirror.length/2)-1;i++){xml = xml + codemirror[i].textContent.trim();} return xml;")
-        time.sleep(0.2)
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
+        )
+        finalXML = driver.execute_script("return editor.getValue().trim()")
         self.assertEqual(self.initialXML, finalXML)
 
     def test_tree_editor_invalid_xml(self):
@@ -940,6 +1026,9 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         )
         driver.find_element(By.ID, "tabTreeEditor").click()
         """ Checking for error message """
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.xmlParsingErrorMessage"))
+        )
         error_title = driver.find_element(By.CSS_SELECTOR, "h2.xmlParsingErrorMessage").text
         error_message = driver.find_element(By.CSS_SELECTOR, "span.xmlParsingErrorMessage").text
         self.assertEqual(error_title, "Invalid XML.")
@@ -957,6 +1046,9 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         )
         driver.find_element(By.ID, "tabSplitView").click()
         """ Checking for error message """
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.xmlParsingErrorMessage"))
+        )
         error_title = driver.find_element(By.CSS_SELECTOR, "h2.xmlParsingErrorMessage").text
         error_message = driver.find_element(By.CSS_SELECTOR, "span.xmlParsingErrorMessage").text
         self.assertEqual(error_title, "Invalid XML.")
@@ -1110,17 +1202,7 @@ class LicenseRequestsViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"licenseRequests")
 
 
-class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
-
-    def setUp(self):
-        options = Options()
-        options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(service=service, options=options)
-        super(ArchiveLicenseRequestsViewsTestCase, self).setUp()
-
-    def tearDown(self):
-        self.selenium.quit()
-        super(ArchiveLicenseRequestsViewsTestCase, self).tearDown()
+class ArchiveLicenseRequestsViewsTestCase(TestCase):
 
     def test_archive_license_requests(self):
         """GET Request for archive license requests list"""
@@ -1138,6 +1220,23 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
         self.assertEqual(resp.redirect_chain,[])
         self.assertIn("404.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"licenseInformation")
+
+
+@skipIf(not SELENIUM_AVAILABLE, "geckodriver not available or not working")
+class ArchiveLicenseRequestsSeleniumTestCase(StaticLiveServerTestCase):
+
+    def setUp(self):
+        options = Options()
+        options.add_argument('-headless')
+        try:
+            self.selenium = webdriver.Firefox(service=service, options=options)
+        except Exception as e:
+            self.skipTest(f"geckodriver not available or not working: {e}")
+        super(ArchiveLicenseRequestsSeleniumTestCase, self).setUp()
+
+    def tearDown(self):
+        self.selenium.quit()
+        super(ArchiveLicenseRequestsSeleniumTestCase, self).tearDown()
 
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_archive_license_requests_feature(self):
@@ -1157,12 +1256,13 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
             license_name = driver.find_element(By.CSS_SELECTOR, 'td').text
             self.assertEqual(license_name, "BSD Zero Clause License-00")
             self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, False)
-            if driver.find_element(By.ID, 'archive_button' + str(license_obj.id)):
-                driver.find_element(By.ID, 'archive_button' + str(license_obj.id)).click()
-                driver.find_element(By.ID, 'confirm_archive').click()
-                self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, True)
-            else:
-                pass
+            driver.find_element(By.ID, 'archive_button' + str(license_obj.id)).click()
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_archive')))
+            driver.find_element(By.ID, 'confirm_archive').click()
+            WebDriverWait(driver, 10).until(
+                EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody'), "No data available in table")
+            )
+            self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, True)
 
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_unarchive_license_requests_feature(self):
@@ -1182,12 +1282,13 @@ class ArchiveLicenseRequestsViewsTestCase(StaticLiveServerTestCase):
             license_name = driver.find_element(By.CSS_SELECTOR, 'td').text
             self.assertEqual(license_name, "BSD Zero Clause License-00")
             self.assertEqual(LicenseRequest.objects.get(id=archive_license_obj.id).archive, True)
-            if driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)):
-                driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)).click()
-                driver.find_element(By.ID, 'confirm_unarchive').click()
-                self.assertEqual(LicenseRequest.objects.get(id=archive_license_obj.id).archive, False)
-            else:
-                pass
+            driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)).click()
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_unarchive')))
+            driver.find_element(By.ID, 'confirm_unarchive').click()
+            WebDriverWait(driver, 10).until(
+                EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody'), "No data available in table")
+            )
+            self.assertEqual(LicenseRequest.objects.get(id=archive_license_obj.id).archive, False)
 
 
 class SubmitNewLicenseViewsTestCase(TestCase):
@@ -1211,7 +1312,6 @@ class SubmitNewLicenseViewsTestCase(TestCase):
                     "sourceUrl": self.sourceUrl,'osiApproved': self.osiApproved, 'notes': self.notes,
                     "licenseHeader": self.licenseHeader, "text": self.text, "userEmail": self.userEmail,
                     "urlType": "tests", "exampleUrl":self.exampleUrl,"comments":self.comments}
-        self.data = self.data_no_author.update({"licenseAuthorName": self.licenseAuthorName})
 
     def test_submit_new_license(self):
         """GET Request for submit a new license"""
@@ -1221,15 +1321,14 @@ class SubmitNewLicenseViewsTestCase(TestCase):
         self.assertIn("app/submit_new_license.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"submitNewLicense")
         self.assertIn("form",resp.context)
-        if "form" in resp.context:
-            self.assertIn("fullname",resp.context["form"].fields)
-            self.assertIn("shortIdentifier",resp.context["form"].fields)
-            self.assertIn("sourceUrl",resp.context["form"].fields)
-            self.assertIn("osiApproved",resp.context["form"].fields)
-            self.assertIn("comments",resp.context["form"].fields)
-            self.assertIn("licenseHeader",resp.context["form"].fields)
-            self.assertIn("text",resp.context["form"].fields)
-            self.assertIn("userEmail",resp.context["form"].fields)
+        self.assertIn("fullname",resp.context["form"].fields)
+        self.assertIn("shortIdentifier",resp.context["form"].fields)
+        self.assertIn("sourceUrl",resp.context["form"].fields)
+        self.assertIn("osiApproved",resp.context["form"].fields)
+        self.assertIn("comments",resp.context["form"].fields)
+        self.assertIn("licenseHeader",resp.context["form"].fields)
+        self.assertIn("text",resp.context["form"].fields)
+        self.assertIn("userEmail",resp.context["form"].fields)
 
     def test_generate_xml(self):
         """View for generating an xml from license submittal form fields"""
@@ -1241,31 +1340,9 @@ class SubmitNewLicenseViewsTestCase(TestCase):
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_post_submit(self):
         """POST Request for submit a new license"""
-        TEST_LOGIN_INFO = {
-        "provider": "github",
-        "uid": str(getGithubUserId()),
-        "access_token": getAccessToken(),
-        "login": getGithubUserName(),
-        "id": getGithubUserId(),
-        "password": 'pass'
-        }
-        # login first
-        self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
-                                        is_active=True,
-                                        is_superuser=True)
-        self.user.set_password(TEST_LOGIN_INFO["password"])
-        self.user.save()
-        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
-        uid=TEST_LOGIN_INFO["uid"],
-        extra_data=TEST_LOGIN_INFO,
-        user=self.user)
-        self.user = authenticate(username=TEST_LOGIN_INFO["login"],
-                                 password=TEST_LOGIN_INFO["password"])
-        login = self.client.login(username=TEST_LOGIN_INFO["login"],
-                                  password=TEST_LOGIN_INFO["password"])
+        login = TestUtil.gitHubLogin(self)
         self.assertTrue(login)
         self.initialise()
-        # login via GitHub
         resp = self.client.post(reverse("submit-new-license"),
                                 self.data_no_author,
                                 follow=True,
@@ -1316,37 +1393,18 @@ class LicenseNamespaceViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"licenseNamespaceRequests")
 
 
+@skipIf(not SELENIUM_AVAILABLE, "geckodriver not available or not working")
 class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
 
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(service=service, options=options)
-        #login
-        TEST_LOGIN_INFO = {
-        "provider": "github",
-        "uid": str(getGithubUserId()),
-        "access_token": getAccessToken(),
-        "login": getGithubUserName(),
-        "id": getGithubUserId(),
-        "password": 'pass'
-        }
-        # login first
-        self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
-                                        is_active=True,
-                                        is_superuser=True)
-        self.user.set_password(TEST_LOGIN_INFO["password"])
-        self.user.save()
-        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
-                                                    uid=TEST_LOGIN_INFO["uid"],
-                                                    extra_data=TEST_LOGIN_INFO,
-                                                    user=self.user)
-        self.user = authenticate(username=TEST_LOGIN_INFO["login"],
-                                 password=TEST_LOGIN_INFO["password"])
-        login = self.client.login(username=TEST_LOGIN_INFO["login"],
-                                  password=TEST_LOGIN_INFO["password"])
+        try:
+            self.selenium = webdriver.Firefox(service=service, options=options)
+        except Exception as e:
+            self.skipTest(f"geckodriver not available or not working: {e}")
+        login = TestUtil.gitHubLogin(self)
         self.assertTrue(login)
-        # end login
         super(PromoteLicenseNamespaceViewsTestCase, self).setUp()
 
     def tearDown(self):
@@ -1356,8 +1414,8 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
 
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_promote_license_namespace_feature(self):
+        """Check if the license namespace is promoted when the promote action is taken"""
         # GitHub access token,id and username should be added in .env to execute the test properly
-        # Check if the license namespace is shifted to archive namespace when archive button is pressed
         driver = self.selenium
         driver.get(self.live_server_url+'/app/license_namespace_requests/')
         table_contents = driver.find_element(By.CSS_SELECTOR, 'tbody').text
@@ -1392,17 +1450,7 @@ class PromoteLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
         self.assertEqual(resp.redirect_chain,[])
 
 
-class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
-
-    def setUp(self):
-        options = Options()
-        options.add_argument('-headless')
-        self.selenium = webdriver.Firefox(service=service, options=options)
-        super(ArchiveLicenseNamespaceViewsTestCase, self).setUp()
-
-    def tearDown(self):
-        self.selenium.quit()
-        super(ArchiveLicenseNamespaceViewsTestCase, self).tearDown()
+class ArchiveLicenseNamespaceViewsTestCase(TestCase):
 
     def test_archive_license_requests(self):
         """GET Request for archive license namespace requests list"""
@@ -1420,6 +1468,24 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
         self.assertEqual(resp.redirect_chain,[])
         self.assertIn("404.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"licenseNamespaceInformation")
+
+
+@skipIf(not SELENIUM_AVAILABLE, "geckodriver not available or not working")
+class ArchiveLicenseNamespaceSeleniumTestCase(StaticLiveServerTestCase):
+
+    def setUp(self):
+        options = Options()
+        options.add_argument('-headless')
+        try:
+            self.selenium = webdriver.Firefox(service=service, options=options)
+        except Exception as e:
+            self.skipTest(f"geckodriver not available or not working: {e}")
+        self.selenium.set_window_size(1920, 1080)
+        super(ArchiveLicenseNamespaceSeleniumTestCase, self).setUp()
+
+    def tearDown(self):
+        self.selenium.quit()
+        super(ArchiveLicenseNamespaceSeleniumTestCase, self).tearDown()
 
     def test_archive_license_namespace_feature(self):
         """Check if the license namespace is shifted to archive namespace when archive button is pressed"""
@@ -1447,7 +1513,11 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseNamespace.objects.get(id=license_obj.id).archive, False)
         driver.find_element(By.ID, 'archive_button' + str(license_obj.id)).click()
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_archive')))
         driver.find_element(By.ID, 'confirm_archive').click()
+        WebDriverWait(driver, 10).until(
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody'), "No data available in table")
+        )
         self.assertEqual(LicenseNamespace.objects.get(id=license_obj.id).archive, True)
 
     def test_unarchive_license_namespace_feature(self):
@@ -1473,7 +1543,11 @@ class ArchiveLicenseNamespaceViewsTestCase(StaticLiveServerTestCase):
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, True)
         driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)).click()
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_unarchive')))
         driver.find_element(By.ID, 'confirm_unarchive').click()
+        WebDriverWait(driver, 10).until(
+            EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody'), "No data available in table")
+        )
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, False)
 
 
@@ -1498,8 +1572,8 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
         self.data_no_author = {"fullname": self.fullname, "shortIdentifier": self.shortIdentifier,
                     "url": self.sourceUrl,'osiApproved': self.osiApproved, 'notes': self.notes,
                     "licenseHeader": self.licenseHeader, "text": self.text, "userEmail": self.userEmail,
-                    "urlType": "tests", "namespace": self.namespace, "license_list_url": self.license_list_url, "github_repo_url": self.github_repo_url}
-        self.data = self.data_no_author.update({"licenseAuthorName": self.licenseAuthorName})
+                    "urlType": "tests", "namespace": self.namespace, "license_list_url": self.license_list_url,
+                    "github_repo_url": self.github_repo_url, "licenseAuthorName": self.licenseAuthorName}
 
     def test_submit_new_license_namespace(self):
         """GET Request for submit a new license namespace"""
@@ -1509,18 +1583,17 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
         self.assertIn("app/submit_new_license_namespace.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"submitNewLicenseNamespace")
         self.assertIn("form",resp.context)
-        if "form" in resp.context:
-            self.assertIn("fullname",resp.context["form"].fields)
-            self.assertIn("organisation",resp.context["form"].fields)
-            self.assertIn("namespace",resp.context["form"].fields)
-            self.assertIn("shortIdentifier",resp.context["form"].fields)
-            self.assertIn("publiclyShared",resp.context["form"].fields)
-            self.assertIn("url",resp.context["form"].fields)
-            self.assertIn("license_list_url",resp.context["form"].fields)
-            self.assertIn("github_repo_url",resp.context["form"].fields)
-            self.assertIn("description",resp.context["form"].fields)
-            self.assertIn("licenseAuthorName",resp.context["form"].fields)
-            self.assertIn("userEmail",resp.context["form"].fields)
+        self.assertIn("fullname",resp.context["form"].fields)
+        self.assertIn("organisation",resp.context["form"].fields)
+        self.assertIn("namespace",resp.context["form"].fields)
+        self.assertIn("shortIdentifier",resp.context["form"].fields)
+        self.assertIn("publiclyShared",resp.context["form"].fields)
+        self.assertIn("url",resp.context["form"].fields)
+        self.assertIn("license_list_url",resp.context["form"].fields)
+        self.assertIn("github_repo_url",resp.context["form"].fields)
+        self.assertIn("description",resp.context["form"].fields)
+        self.assertIn("licenseAuthorName",resp.context["form"].fields)
+        self.assertIn("userEmail",resp.context["form"].fields)
 
     def test_generate_xml(self):
         """View for generating an xml from license namespace submittal form fields"""
@@ -1532,33 +1605,11 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
     @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set gihub parameters in the secret.py file for this test to be executed properly.")
     def test_post_submit(self):
         """POST Request for submit a new license namespace"""
-        TEST_LOGIN_INFO = {
-        "provider": "github",
-        "uid": str(getGithubUserId()),
-        "access_token": getAccessToken(),
-        "login": getGithubUserName(),
-        "id": getGithubUserId(),
-        "password": 'pass'
-        }
-        # login first
-        self.user = User.objects.create(username=TEST_LOGIN_INFO["login"],
-                                        is_active=True,
-                                        is_superuser=True)
-        self.user.set_password(TEST_LOGIN_INFO["password"])
-        self.user.save()
-        social_auth = UserSocialAuth.objects.create(provider=TEST_LOGIN_INFO["provider"],
-        uid=TEST_LOGIN_INFO["uid"],
-        extra_data=TEST_LOGIN_INFO,
-        user=self.user)
-        self.user = authenticate(username=TEST_LOGIN_INFO["login"],
-                                 password=TEST_LOGIN_INFO["password"])
-        login = self.client.login(username=TEST_LOGIN_INFO["login"],
-                                  password=TEST_LOGIN_INFO["password"])
+        login = TestUtil.gitHubLogin(self)
         self.assertTrue(login)
         self.initialise()
-        # login via GitHub
         resp = self.client.post(reverse("submit-new-license-namespace"),
-                                self.data,
+                                self.data_no_author,
                                 follow=True,
                                 secure=True,
                                 HTTP_X_REQUESTED_WITH='XMLHttpRequest')
@@ -1593,43 +1644,53 @@ class EditLicenseNamespaceXmlViewsTestCase(TestCase):
         self.assertIn("app/license_namespace_requests.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"licenseNamespaceRequests")
 
+
 class TestCronJob(TestCase):
     def test_clean_media_deletes_only_expired_files(self):
         """Check if the files older than 10 days are getting deleted"""
-        test_dir = os.path.join(settings.MEDIA_ROOT, 'AnonymousUser')
+        test_dir = os.path.join(settings.MEDIA_ROOT, "AnonymousUser")
         os.makedirs(test_dir, exist_ok=True)
         self.addCleanup(shutil.rmtree, test_dir, True)
         for i in range(1, 11):
-            file_path = os.path.join(test_dir, f'test_file_{i}.txt')
-            with open(file_path, 'w') as f:
-                f.write('test')
+            file_path = os.path.join(test_dir, f"test_file_{i}.txt")
+            with open(file_path, "w") as f:
+                f.write("test")
             # set file creation time to 11 days ago
-            if i<=5: 
+            if i <= 5:
                 creation_time = datetime.datetime.now() - datetime.timedelta(days=11)
-                os.utime(file_path, (creation_time.timestamp(), creation_time.timestamp()))
+                os.utime(
+                    file_path, (creation_time.timestamp(), creation_time.timestamp())
+                )
 
         # check that only files older than 10 days were deleted
         deleted_files = clean_media()
 
         self.assertEqual(
-            [file_info['name'] for file_info in deleted_files],
-            [f'test_file_{i}.txt' for i in range(1, 6)],
+            [file_info["name"] for file_info in deleted_files],
+            [f"test_file_{i}.txt" for i in range(1, 6)],
         )
         for file_info in deleted_files:
-            self.assertIn('modified_at', file_info)
+            self.assertIn("modified_at", file_info)
 
         for i in range(1, 11):
-            file_path = os.path.join(test_dir, f'test_file_{i}.txt')
+            file_path = os.path.join(test_dir, f"test_file_{i}.txt")
             if i <= 5:
-                self.assertFalse(os.path.exists(file_path), f'{file_path} should have been deleted')
+                self.assertFalse(
+                    os.path.exists(file_path), f"{file_path} should have been deleted"
+                )
             else:
-                self.assertTrue(os.path.exists(file_path), f'{file_path} should not have been deleted')
+                self.assertTrue(
+                    os.path.exists(file_path),
+                    f"{file_path} should not have been deleted",
+                )
 
     def test_cleanup_management_command(self):
         """cleanup_media command delegates with correct threshold values"""
-        with patch('app.management.commands.cleanup_media.clean_media', return_value=[]) as clean_media_mock:
-            call_command('cleanup_media')
-            call_command('cleanup_media', '--days-threshold', '30')
+        with patch(
+            "app.management.commands.cleanup_media.clean_media", return_value=[]
+        ) as clean_media_mock:
+            call_command("cleanup_media")
+            call_command("cleanup_media", "--days-threshold", "30")
 
         self.assertEqual(clean_media_mock.call_count, 2)
         clean_media_mock.assert_any_call(days_threshold=10)
