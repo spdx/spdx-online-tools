@@ -3,41 +3,176 @@
 
 {% block head_block %}
   <link href="{% static 'css/dragdrop.css' %}" rel="stylesheet" type="text/css">
+  <style>
+    .res-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 220px;
+      box-sizing: border-box;
+    }
+
+    .res-container > * {
+      width: 100%;
+      max-width: 980px;
+      box-sizing: border-box;
+    }
+
+    .res-container h2 {
+      font-size: 0.9em;
+    }
+
+    .res-container h3 {
+      font-size: 0.9em;
+    }
+
+    .res-container ul {
+      padding-left: 10%;
+    }
+
+    .res-container li {
+      font-size: 0.8em;
+      text-align: left;
+    }
+
+    .res-container .status-pass {
+      color: #166534;
+      font-weight: 600;
+    }
+
+    .res-container .status-fail {
+      color: #942a1f;
+      font-weight: 600;
+    }
+
+    .res-container .status-warning {
+      color: #7a5800;
+      font-weight: 600;
+    }
+
+    .res-container caption {
+      caption-side: top;
+      text-align: left;
+      font-weight: 600;
+      color: #0f3b47;
+      padding: 8px 0;
+    }
+
+    .conformance-res table {
+      width: auto;
+      max-width: 100%;
+      margin: 0 auto 0.5em;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
+      border-radius: 6px;
+      overflow: hidden;
+      display: table;
+      font-size: 0.7em;
+      table-layout: auto;
+    }
+
+    .conformance-res th {
+      background: #dfdfdf;
+      color: #0f3b47;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(15, 59, 71, 0.08);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.9em;
+    }
+
+    .conformance-res td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(15, 59, 71, 0.04);
+      vertical-align: middle;
+      text-align: left;
+      font-size: 0.9em;
+    }
+
+    /* Alternating row backgrounds */
+    .conformance-res tbody tr:nth-child(odd) {
+      background-color: #f0f0f0;
+    }
+    .conformance-res tbody tr:nth-child(even) {
+      background-color: #ffffff;
+    }
+
+    .conformance-res tbody tr:hover {
+      background-color: #d0e9f6 !important;
+    }
+
+    .conformance-err {
+      background: #ffc39e;
+      font-size: 0.9em;
+      margin-top: 0.5em;
+    }
+
+    .conformance-mis {
+      background: #fff8e2;
+      font-size: 0.9em;
+      margin-top: 0.5em;
+    }
+
+    .conformance-val {
+      background: #e8f4ff;
+      font-size: 0.9em;
+      margin-top: 0.5em;
+    }
+
+    .conformance-err-label, .conformance-mis-label, .conformance-val-label {
+      font-size: 0.8em;
+      text-align: left;
+      padding-left: 5%;
+    }
+
+    .conformance-val-msg-label, .conformance-val-ctx-label {
+      font-weight: bold;
+    }
+  </style>
 {% endblock %}
 
 {% block body1 %}
 <div id="messages" class="messages">
 </div>
-<p class ="lead"> {{ error }}</p>
+<p class ="lead">{{ error }}</p>
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead">Tag-Value, RDF, JSON, Spreadsheet, XML SPDX Document</p> </div>
+<div class="panel-heading">
+  <p class="lead">Check conformance</p>
+</div>
 <div class="panel-body">
-	<form id="checkform" enctype="multipart/form-data" class="form-horizontal" method="post">
-	  {% csrf_token %}
-	  <div class = "form-group">
-			&nbsp; File Type &nbsp;
-				<select name="format" id="format">
-					  <option value="0" data-value="0" selected="">-</option>
-					  <option value="XLSX">XLSX Spreadsheet</option>
-					  <option value="XLS">XLS Spreadsheet</option>
-					  <option value="RDFXML">RDF/XML</option>
-					  <option value="TAG">Tag/Value</option>
-					  <option value="JSON">JSON</option>
-					  <option value="YAML">YAML</option>
-					  <option value="XML">XML</option>
-                </select>
-		</div>
-		<div id="drop-area" class="container">
-		  <h4>Upload file using the button or by dragging and dropping onto the dashed region </h4>
-		  <input type="file" id="file" onchange="handleFiles(this.files)">
-		  <label class="button" for="file">Select file</label>
-		  <p class="file-name">No file selected</p>
-		</div>
-    </form>
+  <form id="checkform" enctype="multipart/form-data" class="form-horizontal" method="post">
+    {% csrf_token %}
+    <div class = "form-group">
+      File Format &nbsp;
+      <select name="format" id="format">
+        <option value="0" data-value="0" selected="">-</option>
+        <option value="JSON">V2 JSON</option>
+        <option value="RDFXML">V2 RDF/XML</option>
+        <option value="TAG">V2 Tag/Value</option>
+        <option value="XML">V2 XML Spreadsheet</option>
+        <option value="SPDX3_JSON">V3 JSON-LD</option>
+      </select>
+    </div>
+    <div class = "form-group">
+      Compliance &nbsp;
+      <select name="compliance" id="compliance">
+        <option value="ntia" selected="">NTIA Minimum Elements</option>
+        <option value="fsct3-min">CISA 2024 FSCT minimum expected</option>
+      </select>
+    </div>
+    <div id="drop-area" class="container">
+      <h4>Upload SPDX document using the button or by dragging and dropping onto the dashed region</h4>
+      <input type="file" id="file" onchange="handleFiles(this.files)">
+      <label class="button" for="file">Select file</label>
+      <div class="file-name">No file selected</div>
+    </div>
+  </form>
 <hr>
-    <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check NTIA's Required Elements</button>
+  <button id="checkbutton" name="checkbutton" class="btn btn-md btn-info" type="submit" disabled="true">Check minimum elements</button>
   {% include "app/modal.html" %}
-
 </div>
 
 {% endblock %}
@@ -45,7 +180,7 @@
 {% block script_block %}
 
 <script type="text/javascript">
-  /* Javascript to handel drag and drop */
+  /* JavaScript to handle drag and drop */
   let dropArea = document.getElementById('drop-area');
   var selected_file = "";
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -85,9 +220,9 @@
     ([...files]).forEach(checkFile)
   }
 
-  function checkFile(file){
+  function checkFile(file) {
     if(file){
-      $(".file-name").html("<b>Selected File: </b>"+file.name);
+      $(".file-name").html("<b>Selected file:</b> "+file.name);
       $("#checkbutton").prop('disabled', false);
       selected_file = file;
     }
@@ -142,7 +277,7 @@ function checkform() {
                           keyboard: true,
                           show: true
                   });
-                  $("#checkbutton").text("Check NTIA's Required Elements");
+                  $("#checkbutton").text("Check minimum elements");
                   $("#checkbutton").prop('disabled', false);
               },
               error: function (e) {
@@ -173,13 +308,13 @@ function checkform() {
                           keyboard: true,
                           show: true
                   });
-                  $("#checkbutton").text("Check NTIA's Required Elements");
+                  $("#checkbutton").text("Check minimum elements");
                   $("#checkbutton").prop('disabled', false);
               }
           });
     }
     else{
-      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error! </strong>'+check+'</div>');
+      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error!</strong> '+check+'</div>');
       setTimeout(function() {
         $("#messages").html("");
       }, 5000);

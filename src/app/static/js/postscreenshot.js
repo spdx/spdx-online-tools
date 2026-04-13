@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 async function takeScreenshotAndUpload() {
   let screenshot = await makeScreenshot();
   let data = await getFileData(screenshot);
@@ -43,7 +45,7 @@ async function postToGithub(data) {
             }
             else {
               var warningMessage = "Please note that there was a problem opening the issue for the SPDX legal team. Please email spdx-legal@lists.spdx.org with SPDX ID for the license you are submitting";
-              $("#messages").html('<div class="alert alert-warning alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Warning! </strong>'+ warningMessage +'</div>');
+              $("#messages").html('<div class="alert alert-warning alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Warning!</strong> '+ warningMessage +'</div>');
                   setTimeout(function() {
                     $("#messages").html("");
                   }, 7000);
@@ -54,12 +56,15 @@ async function postToGithub(data) {
             $("#modal-header").removeClass("green-modal");
             try {
             var obj = JSON.parse(e.responseText);
-            if (obj.type=="error"){
+            // The server sets: data["type"] = "error"
+            if (obj.data && obj.data.type=="error"){
                 $("#modal-header").removeClass("yellow-modal");
                 $("#modal-header").addClass("red-modal");
                 $("#modal-title").html("Error!");
             }
-            $("#modal-body").text(obj.data);
+
+            // Show the server's error message in the modal
+            $("#modal-body").text(obj.message);
             $(".modal-footer").html('<button id="ok"><span class="glyphicon glyphicon-ok"></span> Ok</button>');
             $("#ok").on("click",function(){
                 $("#myModal").modal("hide");
@@ -67,6 +72,7 @@ async function postToGithub(data) {
             })
             }
             catch (e){
+                // If we cannot parse e.responseText or something else fails
                 $("#modal-header").removeClass("yellow-modal");
                 $("#modal-header").addClass("red-modal");
                 $("#modal-title").html("Error!");

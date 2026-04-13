@@ -1,0 +1,103 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/test.yml"
+      - "src/app/templates/**"
+      - "src/app/testFiles/**"
+      - "!src/api/testFiles/**.md"
+      - "src/examples/**"
+      - "**.py"
+      - "**.jar"
+      - "requirements.txt"
+      - "requirements-dev.txt"
+      - "pyproject.toml"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/test.yml"
+      - "src/app/templates/**"
+      - "src/app/testFiles/**"
+      - "!src/api/testFiles/**.md"
+      - "src/examples/**"
+      - "**.py"
+      - "**.jar"
+      - "requirements.txt"
+      - "requirements-dev.txt"
+      - "pyproject.toml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ["3.10"]
+
+    services:
+      redis:
+        # Redis is required for testing the license matching
+        image: redis
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Set up Java
+        # Java is required for JPype and Java tools (compare, convert, validate)
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install Firefox
+        # Make sure to install the latest version of Firefox to avoid compatibility issues with geckodriver
+        run: |
+          sudo snap remove --purge firefox || true
+          sudo add-apt-repository ppa:mozillateam/ppa -y
+          printf 'Package: firefox*\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n' | sudo tee /etc/apt/preferences.d/mozilla-firefox
+          sudo apt-get update
+          sudo apt-get install -y firefox
+      - name: Prepare geckodriver path
+        run: |
+          mkdir -p "$HOME/.local/geckodriver"
+          echo "$HOME/.local/geckodriver" >> "$GITHUB_PATH"
+      - name: Cache geckodriver
+        # Cache geckodriver to speed up subsequent runs and avoid rate limits.
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: ~/.local/geckodriver/geckodriver
+          key: geckodriver-v0.36.0-${{ runner.os }}-x64
+      - name: Install geckodriver
+        run: |
+          if [ ! -x "$HOME/.local/geckodriver/geckodriver" ]; then
+            wget -q https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz -O geckodriver.tar.gz
+            tar xzf geckodriver.tar.gz -C "$HOME/.local/geckodriver"
+            chmod +x "$HOME/.local/geckodriver/geckodriver"
+          fi
+          geckodriver --version
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      - name: Run tests
+        env:
+          ONLINE_TOOL_GITHUB_KEY: ${{ secrets.ONLINE_TOOL_GITHUB_KEY }}
+          ONLINE_TOOL_GITHUB_SECRET: ${{ secrets.ONLINE_TOOL_GITHUB_SECRET }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          TEST_GITHUB_USER_ID: ${{ secrets.TEST_GITHUB_USER_ID }}
+          TEST_GITHUB_USER_NAME: ${{ secrets.TEST_GITHUB_USER_NAME }}
+          OAUTH_APP_ID: ${{ secrets.OAUTH_APP_ID }}
+          OAUTH_APP_SECRET: ${{ secrets.OAUTH_APP_SECRET }}
+          AUTH_CODE: ${{ secrets.AUTH_CODE }}
+        run: |
+          cd src
+          python manage.py makemigrations
+          python manage.py migrate
+          python manage.py test app.tests api.tests -v 2

@@ -1,17 +1,19 @@
-version: "3"
-
 services:
   spdx:
     container_name: spdx_dev
+    image: spdx-dev:latest
     build:
       context: ./
       dockerfile: dockerfile.dev
     ports:
       - 8000:8000
     volumes:
-      - ./:/spdxonlinetools
+      - ./src:/spdx/src # Allow live code reloading
+      - static_volume:/spdx/static
+      - media_volume:/spdx/media
     environment:
       - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONPATH=/spdx/src
       - SPDX_REDIS_HOST=redis
       - SPDXParser.LocalLicensesDir=/licenses/current
       - SPDXParser.OnlyUseLocalLicenses=true
@@ -30,3 +32,5 @@ services:
 
 volumes:
   data-volume:
+  static_volume:
+  media_volume:

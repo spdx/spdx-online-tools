@@ -1,8 +1,9 @@
+# TODO
+
 - Drag and drop file method.
 - TagToRdf takes max 3 arguments. Include output format field in forms and call method accordingly.
-- In api, create models function is saving the files again. So files sent to api is saved to 2 folders
+- In api, create models function is saving the files again. So files sent to API is saved to 2 folders
     media/api/<username>/<time> --> This contains the result files too.
     media/apifiles/<username>/<time>
-    
 - API for check license
-- Implement scancode-toolkit in online tools ( Maybe using something similar to aboutcode-manager to display results)
+- Implement scancode-toolkit in online tools (Maybe using something similar to aboutcode-manager to display results)

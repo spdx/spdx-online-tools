@@ -11,14 +11,16 @@
 <p class ="lead"> {{ error }} </p>
 
 <div class="panel panel-default">
-  <div class="panel-heading"> <p class="lead">Upload the XML File</p> </div>
+  <div class="panel-heading">
+    <p class="lead">License XML Editor</p>
+  </div>
     <div class="panel-body">
-  
+
       <ul class="nav nav-tabs">
-        <li class="active"><a data-toggle="tab" href="#text">XML Text</a></li>
-        <li><a data-toggle="tab" href="#upload">Upload File</a></li>
-        <li><a data-toggle="tab" href="#license-name">License Name</a></li>
-        <li><a data-toggle="tab" href="#new">New License XML</a></li>
+        <li class="active"><a data-toggle="tab" href="#text">XML text</a></li>
+        <li><a data-toggle="tab" href="#upload">Upload file</a></li>
+        <li><a data-toggle="tab" href="#license-name">License name</a></li>
+        <li><a data-toggle="tab" href="#new">New license XML</a></li>
       </ul>
 
       <div class="tab-content">
@@ -27,7 +29,7 @@
             {% csrf_token %}
             <h4>Write the XML document text below: </h4>
             <textarea id="xmltext" name="xmltext" rows="15" style="width: 90%; resize:none;"></textarea> <hr>
-            <button id="xmlTextButton" name="xmlTextButton" class=" btn btn-md btn-info" type="submit">Edit Document</button>
+            <button id="xmlTextButton" name="xmlTextButton" class=" btn btn-md btn-info" type="submit">Edit document</button>
           </form>
         </div>
         <div id="upload" class="tab-pane fade">
@@ -40,18 +42,18 @@
               <div class="file-name">No file selected</div>
             </form>
           </div>
-          <button id="uploadButton" name="uploadButton" class="btn btn-md btn-info" type="submit">Edit Document</button>
+          <button id="uploadButton" name="uploadButton" class="btn btn-md btn-info" type="submit">Edit document</button>
         </div>
         <div id="license-name" class="tab-pane fade">
           <form id="form-license-name" enctype="multipart/form-data" class="form-horizontal" method="post">
             {% csrf_token %}
             <div class="container" style="margin-top:20px;">
-              <label class="control-label col-sm-6" >License Full Name or Identifier as on SPDX License List:</label>
+              <label class="control-label col-sm-6" >License full name or identifier as on SPDX License List:</label>
               <div class="col-sm-6" style="text-align:left;"> 
                 <input type="text" id="licenseName" placeholder="License Name" name="licenseName" autocomplete="off" autofocus style="width:280px;">
               </div>
             </div> <hr>
-            <button id="licenseNameButton" name="licenseNameButton" class="btn btn-md btn-info" type="submit">Edit Document</button>
+            <button id="licenseNameButton" name="licenseNameButton" class="btn btn-md btn-info" type="submit">Edit document</button>
           </form>
         </div>
         <div id="new" class="tab-pane fade">
@@ -112,14 +114,14 @@
   
   function checkFile(file){
     if(file.type=="text/xml" || file.type=="application/xml"){
-      $(".file-name").html("<b>Selected File: </b>"+file.name);
+      $(".file-name").html("<b>Selected file:</b> "+file.name);
       $(".file-name").removeClass("fail");
       $(".file-name").addClass("success");
       valid = true;
       xml_file = file;
     }
     else{
-      $(".file-name").html("<b>Selected File: </b>"+file.name);
+      $(".file-name").html("<b>Selected file:</b> "+file.name);
       $(".file-name").removeClass("success");
       $(".file-name").addClass("fail");
       valid = false;

@@ -5,9 +5,8 @@
 # SPDX-FileCopyrightText: 2017 Alexios Zavras
 # Copyright (c) 2017 Alexios Zavras
 # SPDX-License-Identifier: MIT
-#
 
-#-----------------------------------------------------------------
+# -----------------------------------------------------------------
 # configuration parameters, self-explanatory :-)
 # they are simply defaults; can be overwritten by command-line options
 
@@ -62,6 +61,11 @@ ATTRS_SEQ = {
             'name',
             'listVersionAdded',
         ],
+        'exception': [
+            'licenseId',
+            'name',
+            'listVersionAdded',
+        ],
         'alt': [
             'name',
             'match',
@@ -72,16 +76,13 @@ ATTRS_SEQ = {
 NAMESPACE_URL = 'http://www.spdx.org/license'
 NAMESPACE='{http://www.spdx.org/license}'
 
-#-----------------------------------------------------------------
+# -----------------------------------------------------------------
 
 VERSION = '1.0'
 
 import argparse
-import datetime
 import logging
 import re
-import shutil
-import sys
 import xml.etree.ElementTree as et
 
 NL = '\n'
@@ -100,11 +101,10 @@ def process(fname):
     root.set('xmlns', NAMESPACE_URL)
     blocks = pretty(root, 0)
     ser = fmt(blocks)
-    
+
     with open(fname, 'wt', encoding='utf-8') as f:
         f.write(XML_PROLOG+"\n")
         f.write(ser)
-    
 
 
 def pretty(node, level):
@@ -143,12 +143,15 @@ def pretty(node, level):
         text = text.replace('&', '&amp;').replace('>', '&gt;').replace('<', '&lt;')
         ser += text
     for child in node:
-        ser += pretty(child, child_level)
+        res = pretty(child, child_level)
+        if not('exception' in ser and 'standardLicenseHeader' in res):
+            ser += res
     ser += after
     if tail:
         ser += tail
     ser = ser.replace('\n\n', '\n')
     return ser
+
 
 def fmt(blocks):
     bregexp = re.compile(r'((?P<level>\d+)#)?(?P<paragraph>.*)')
@@ -161,6 +164,7 @@ def fmt(blocks):
             l = int(m.group('level'))
         else:
             logger.error('Block without level: "{}"'.format(line))
+
         par = m.group('paragraph')
         if par == '':
             continue

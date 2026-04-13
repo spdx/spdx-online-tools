@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2007, Snowtide Informatics Systems, Inc. All rights reserved.
+// SPDX-FileContributor: Chas Emerick <cemerick@snowtide.com>
+
 /***
 This is part of jsdifflib v1.0. <http://snowtide.com/jsdifflib>
 
