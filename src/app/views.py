@@ -217,7 +217,7 @@ def submitNewLicense(request):
                 github_login = request.user.social_auth.get(provider='github')
                 username = github_login.extra_data["login"]
                 email = User.objects.get(username=username).email
-            except UserSocialAuth.DoesNotExist as AttributeError:
+            except UserSocialAuth.DoesNotExist:
                 github_login = None
         context_dict["github_login"] = github_login
         form = LicenseRequestForm(auto_id='%s', email=email)
@@ -332,7 +332,7 @@ def submitNewLicenseNamespace(request):
                 github_login = request.user.social_auth.get(provider='github')
                 username = github_login.extra_data["login"]
                 email = User.objects.get(username=username).email
-            except UserSocialAuth.DoesNotExist as AttributeError:
+            except UserSocialAuth.DoesNotExist:
                 github_login = None
         context_dict["github_login"] = github_login
         form = LicenseNamespaceRequestForm(auto_id='%s', email=email)
