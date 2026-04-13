@@ -94,7 +94,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     response = requests.get(fork_url, headers=headers)
     data = json.loads(response.text)
     forks = [fork["owner"]["login"] for fork in data]
-    if not username in forks:
+    if username not in forks:
         """ If user has not forked the repo """
         response = requests.post(fork_url, headers=headers)
         if response.status_code != 202:
