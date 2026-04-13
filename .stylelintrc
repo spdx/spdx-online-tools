@@ -1,0 +1,19 @@
+{
+  "extends": "stylelint-config-recommended",
+  "rules": {
+    "indentation": 2, // Use 2 spaces for indentation
+    "block-no-empty": "warning", // Disallow empty blocks
+    "color-hex-length": "long", // Enforce long hex color notation (#RRGGBB)
+    "color-no-invalid-hex": "warning", // Disallow invalid hex colors
+    "declaration-block-trailing-semicolon": "always", // Require a trailing semicolon in declaration blocks
+    "declaration-colon-space-after": "always", // Require a space after the colon in declarations
+    "declaration-colon-space-before": "never", // Disallow a space before the colon in declarations
+    "declaration-block-single-line-max-declarations": 1, // Allow only one declaration per line in single-line declaration blocks
+    "property-no-unknown": "warning", // Disallow unknown properties
+    "selector-pseudo-element-no-unknown": "warning", // Disallow unknown pseudo-element selectors
+    "selector-pseudo-class-no-unknown": "warning", // Disallow unknown pseudo-class selectors
+    "selector-type-no-unknown": "warning", // Disallow unknown element type selectors
+    "string-quotes": "double", // Enforce double quotes for strings
+    "value-keyword-case": "lower"
+  }
+}
