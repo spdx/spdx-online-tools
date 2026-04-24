@@ -311,26 +311,30 @@ function checkform() {
     html += "</div>"; // conformance-res
 
     // Components missing required information
-    var missingGroups = [
-      ["Components missing a name",              data.componentNames],
-      ["Components missing a version",           data.componentVersions],
-      ["Components missing an identifier",       data.componentIdentifiers],
-      ["Components missing a supplier",          data.componentSuppliers],
-      ["Components missing a concluded license", data.componentConcludedLicenses],
-      ["Components missing a copyright text",    data.componentCopyrightTexts],
+    var missingFields = [
+      ["concluded license", data.componentConcludedLicenses],
+      ["copyright text",    data.componentCopyrightTexts],
+      ["identifier",        data.componentIdentifiers],
+      ["name",              data.componentNames],
+      ["supplier",          data.componentSuppliers],
+      ["version",           data.componentVersions],
     ];
-    var hasMissing = missingGroups.some(function(g) {
-      return g[1] && !g[1].allProvided && g[1].nonconformantComponents && g[1].nonconformantComponents.length > 0;
+    var componentMissing = {};
+    missingFields.forEach(function(g) {
+      if (g[1] && !g[1].allProvided && g[1].nonconformantComponents && g[1].nonconformantComponents.length > 0) {
+        g[1].nonconformantComponents.forEach(function(comp) {
+          if (!componentMissing[comp]) componentMissing[comp] = [];
+          componentMissing[comp].push(g[0]);
+        });
+      }
     });
-    if (hasMissing) {
+    var nonconformantComponents = Object.keys(componentMissing).sort();
+    if (nonconformantComponents.length > 0) {
       html += "<div class='conformance-mis'>";
-      html += "<p class='conformance-mis-label'>Missing required information in these components:</p>";
+      html += "<p class='conformance-mis-label'>Components with missing required information (" + nonconformantComponents.length + "):</p>";
       html += "<ul class='conformance-mis-list'>";
-      missingGroups.forEach(function(g) {
-        if (g[1] && !g[1].allProvided && g[1].nonconformantComponents && g[1].nonconformantComponents.length > 0) {
-          html += "<li>" + escapeHtml(g[0]) + " (" + g[1].nonconformantComponents.length + "): "
-                + g[1].nonconformantComponents.map(escapeHtml).join(", ") + "</li>";
-        }
+      nonconformantComponents.forEach(function(comp) {
+        html += "<li>" + escapeHtml(comp) + ": missing " + componentMissing[comp].join(", ") + "</li>";
       });
       html += "</ul></div>";
     }
