@@ -249,8 +249,12 @@ function convertTextToTree(textEditor, treeEditor){
         /* if xml is invalid display error message in tree editor */
         var newParser = new DOMParser();
         var DOM = newParser.parseFromString(xml, "application/xml");
-        var errorData = DOM.childNodes[1].firstChild.data;
-        var errorMessage = errorData.slice(0,errorData.indexOf('Location')).replace('<','&lt;').replace('>','&gt;')
+        /* Chrome puts the XML declaration as childNodes[0] (PI), parsererror as childNodes[1].
+           Firefox omits the PI child node, so parsererror is childNodes[0] / documentElement. */
+        var errorElement = DOM.querySelector('parsererror') || DOM.documentElement;
+        var errorData = errorElement ? (errorElement.textContent || '') : '';
+        var locationIdx = errorData.indexOf('Location');
+        var errorMessage = (locationIdx !== -1 ? errorData.slice(0, locationIdx) : errorData).replace('<','&lt;').replace('>','&gt;')
         if(treeEditor=="treeView"){
             $(".treeContainer").html('<center><h2 class="xmlParsingErrorMessage">Invalid XML.</h2><br><span class="xmlParsingErrorMessage">'+errorMessage+'<br> Please use the text editor to correct the error. Tree editor can only be used with valid XML.</span></center>');
         }
