@@ -1240,7 +1240,7 @@ class ArchiveLicenseRequestsSeleniumTestCase(StaticLiveServerTestCase):
         self.selenium.quit()
         super(ArchiveLicenseRequestsSeleniumTestCase, self).tearDown()
 
-    @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set GitHub parameters in the secret.py file for this test to be executed properly.")
+    @skipIf(not getAccessToken() or not getGithubUserId() or not getGithubUserName(), "You need to set GitHub parameters in the secret.py file for this test to be executed properly.")
     def test_archive_license_requests_feature(self):
         """Check if the license is shifted to archive requests when archive button is pressed"""
         login = TestUtil.gitHubLogin(self)
@@ -1266,7 +1266,7 @@ class ArchiveLicenseRequestsSeleniumTestCase(StaticLiveServerTestCase):
             )
             self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, True)
 
-    @skipIf(not getAccessToken() and not getGithubUserId() and not getGithubUserName(), "You need to set GitHub parameters in the secret.py file for this test to be executed properly.")
+    @skipIf(not getAccessToken() or not getGithubUserId() or not getGithubUserName(), "You need to set GitHub parameters in the secret.py file for this test to be executed properly.")
     def test_unarchive_license_requests_feature(self):
         """Check if license is shifted back to license requests when unarchive button is pressed"""
         login = TestUtil.gitHubLogin(self)
