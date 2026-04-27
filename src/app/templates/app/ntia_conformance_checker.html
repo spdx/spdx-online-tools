@@ -258,7 +258,7 @@ function checkform() {
 
   function renderConformanceData(data) {
     if (typeof data !== "object" || data === null) {
-      return escapeHtml(String(data));
+      return String(data);  // data is HTML
     }
 
     var html = "<div class='res-container'>";
