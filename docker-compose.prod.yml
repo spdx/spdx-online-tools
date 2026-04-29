@@ -27,7 +27,7 @@ services:
 
   postgres:
     container_name: container-pg
-    image: postgres
+    image: postgres:18-alpine
     hostname: localhost
     ports:
       - "5432:5432"
