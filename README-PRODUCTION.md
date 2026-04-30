@@ -118,7 +118,7 @@ Following are the steps for a clean initial installation of the application:
     SQL_DATABASE=spdx_db
     SQL_USER=postgres
     SQL_PASSWORD=[same password as POSTGRES_PASSWORD]
-    SQL_HOST=localhost
+    SQL_HOST=postgres
     SQL_PORT=5432
     ```
 
