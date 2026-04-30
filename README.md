@@ -199,7 +199,6 @@ where:
 * DIFF_REPO_GIT_TOKEN is the GitHub user's Personal Access Token which has write access to DIFF_REPO_WITH_OWNER (Follow [this](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token) to create your GitHub Personal access token with full repo and user scope access)
 * DIFF_REPO_WITH_OWNER is the repo where images related to license submittable process are uploaded
 
-**Note:** While setting up the GitHub OAuth App, set the `Homepage URL` to `http://localhost:8000/` and the `Authorization callback URL` to `http://localhost:8000/oauth/complete/github`
 **Note:** While setting up the GitHub OAuth App, set the `Homepage URL` to `http://localhost:8000/` and the `Authorization callback URL` to `http://localhost:8000/oauth/complete/github/` (ensure the trailing slash is included).
 
 ## How to Use API
