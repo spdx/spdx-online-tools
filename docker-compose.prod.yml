@@ -57,6 +57,7 @@ services:
       - SPDXParser.OnlyUseLocalLicenses=true
     depends_on:
       - postgres
+      - redis
     restart: always
 
   redis:
