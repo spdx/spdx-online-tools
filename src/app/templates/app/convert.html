@@ -16,8 +16,9 @@
 <div class="panel-body">
 <form id="convertform" enctype="multipart/form-data" class="form-horizontal" method="post">
 		{% csrf_token %}
-		<div class="form-group">
-      From &nbsp;
+		<div style="max-width: 600px; margin: 0 auto;">
+			<div class="form-group">
+				From &nbsp;
 			<select name="from_format" id="from_format">
 			 	  <option value="0" selected="">-</option>
 				  <option value="TAG">V2 Tag/Value</option>
@@ -32,7 +33,7 @@
 			&nbsp; to &nbsp;
 			<select name="to_format" id="to_format">
 			 	  <option value="0" data-value="INGORE" data-ext="" selected="">-</option>
-				  <option value="JSONLD" data-value="JSONLD" data-ext=".jsonld.json">V3 JSON-LD</option>
+			 	  <option value="JSONLD" data-value="JSONLD" data-ext=".spdx3.json">V3 JSON-LD</option>
 				  <option value="TAG" data-value="TAG" data-ext=".spdx">V2 Tag/Value</option>
 				  <option value="RDFXML" data-value="RDFXML" data-ext=".rdf.xml">V2 RDF/XML</option>
 				  <option value="RDFTTL" data-value="RDFTTL" data-ext=".rdf.ttl">V2 RDF/TTL</option>
@@ -42,7 +43,8 @@
 				  <option value="XML" data-value="XML" data-ext=".xml">V2 XML</option>
 				  <option value="YAML" data-value="YAML" data-ext=".yaml">V2 YAML</option>
       </select>
-    </div>
+	    </div>
+		</div>
     <div id="drop-area" class="container">
       <h4 id="doclabel">Upload SPDX document using the button or by dragging and dropping onto the dashed region</h4>
       <input type="file" id="file" onchange="handleFiles(this.files)">
@@ -59,14 +61,14 @@
 			</div>	
     </div>
     -->
-		<div class = "form-group">
-			<div class="col-sm-12">
-			<label class="control-label col-sm-3">Converted file name</label>
-				<div class="col-sm-3"> 
+		<div style="max-width: 600px; margin: 0 auto;">
+			<div class="form-group">
+				<label class="control-label col-sm-5">Converted file name</label>
+				<div class="col-sm-7"> 
 				  <input type="text" id="cfilename" name="cfilename">
 				  <label class="control-label" id="convertdoclabel"></label>
 				</div>
-			</div>	
+			</div>
 		</div>
     <hr>
 		<input type="hidden" id="cfileformat" name="cfileformat" value="">
