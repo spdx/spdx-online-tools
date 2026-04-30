@@ -26,8 +26,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import include
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 from django.contrib import admin
 from django.views.generic import RedirectView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -52,8 +51,13 @@ urlpatterns = [
     path('api2/', include(router.urls)),
     path('api-auth/', include(("rest_framework.urls", 'api_auth'), namespace='rest_framework')),
     path('oauth/', include('social_django.urls', namespace='social')),
-    path('auth/', include(("rest_framework_social_oauth2.urls", 'github_auth'), namespace='github_social')),
+    path('auth/', include(("drf_social_oauth2.urls", 'github_auth'), namespace='github_social')),
 ]
+
+handler400 = 'app.views.handler400'
+handler403 = 'app.views.handler403'
+handler404 = 'app.views.handler404'
+handler500 = 'app.views.handler500'
 
 urlpatterns += staticfiles_urlpatterns()
 if settings.DEBUG:

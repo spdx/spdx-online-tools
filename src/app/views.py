@@ -1042,7 +1042,10 @@ def licenseRequests(request, license_id=None):
     context_dict = {}
     if request.user.is_authenticated:
         user = request.user
-        github_login = user.social_auth.get(provider="github")
+        try:
+            github_login = user.social_auth.get(provider="github")
+        except Exception:
+            github_login = None
         if utils.checkPermission(user):
             context_dict["authorized"] = "True"
     else:
@@ -1078,7 +1081,10 @@ def licenseNamespaceRequests(request, license_id=None):
     """
     github_login = None
     if request.user.is_authenticated:
-        github_login = request.user.social_auth.get(provider="github")
+        try:
+            github_login = request.user.social_auth.get(provider="github")
+        except Exception:
+            github_login = None
     if request.method == "POST" and utils.is_ajax(request):
         archive = request.POST.get("archive", True)
         license_id = request.POST.get("license_id", False)
@@ -1498,16 +1504,16 @@ def post_to_github(request):
 
 def handler400(request, exception=None):
     context = {}
-    return render(request, 'app/400.html', context)
+    return render(request, '400.html', context, status=400)
 
 def handler403(request, exception=None):
     context = {}
-    return render(request, 'app/403.html', context)
+    return render(request, '403.html', context, status=403)
 
 def handler404(request, exception=None):
     context = {}
-    return render(request, 'app/404.html', context)
+    return render(request, '404.html', context, status=404)
 
 def handler500(request, exception=None):
     context = {}
-    return render(request, 'app/500.html', context)
+    return render(request, '500.html', context, status=500)

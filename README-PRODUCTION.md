@@ -28,7 +28,7 @@ This runtime environment is configured to host a Django web application using Gu
 
 - The Django web framework powers the application.
 - The WSGI script is used to interface between Django and Gunicorn for handling HTTP requests and responses.
-- Detailed information about Django deployment via WSGI can be found in the [Django documentation](https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/).
+- Detailed information about Django deployment via WSGI can be found in the [Django documentation](https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/).
 
 ### Startup Process
 

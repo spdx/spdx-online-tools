@@ -200,6 +200,7 @@ where:
 * DIFF_REPO_WITH_OWNER is the repo where images related to license submittable process are uploaded
 
 **Note:** While setting up the GitHub OAuth App, set the `Homepage URL` to `http://localhost:8000/` and the `Authorization callback URL` to `http://localhost:8000/oauth/complete/github`
+**Note:** While setting up the GitHub OAuth App, set the `Homepage URL` to `http://localhost:8000/` and the `Authorization callback URL` to `http://localhost:8000/oauth/complete/github/` (ensure the trailing slash is included).
 
 ## How to Use API
 
@@ -259,10 +260,10 @@ can be found in the [wiki][rest-api].
 
         **Note** You can only use your code once. If you want to use the license submittal API again, you can generate a new code by following the above point. The code is valid for 10 minutes only.
 
-    * Send the request to `/api/submit-license/`.
+    * Send the request to `/api/submit_license/`.
 
         ```bash
-        curl -X POST http://localhost:8000/api/ submit_license/ -F 'fullname=<your-fullname>' -F 'shortIdentifier=<your-identifier>' -F 'licenseAuthorName=<license-author>' -F 'userEmail=<your-email>' -F 'text=<text>' -F 'osiApproved=<osi>' -F 'sourceUrl=<url>' -F 'code=<your-code-here>'
+        curl -X POST http://localhost:8000/api/submit_license/ -F 'fullname=<your-fullname>' -F 'shortIdentifier=<your-identifier>' -F 'licenseAuthorName=<license-author>' -F 'userEmail=<your-email>' -F 'text=<text>' -F 'osiApproved=<osi>' -F 'sourceUrl=<url>' -F 'code=<your-code-here>'
         ```
 
 ## Dependencies

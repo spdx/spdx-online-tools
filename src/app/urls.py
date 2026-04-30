@@ -4,16 +4,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.urls import path, re_path
-from django.conf.urls import handler400, handler403, handler404, handler500
 from django.views.decorators.csrf import csrf_exempt
 
 from app import views
 #from django.contrib.auth import views as auth_views
-
-handler400 = 'app.views.handler400'
-handler403 = 'app.views.handler403'
-handler404 = 'app.views.handler404'
-handler500 = 'app.views.handler500'
 
 urlpatterns = [
     path('', views.index, name='index'),
