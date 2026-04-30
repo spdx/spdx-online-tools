@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2017 Rohit Lodha
 # Copyright (c) 2017 Rohit Lodha
 # SPDX-License-Identifier: Apache-2.0
@@ -34,10 +33,8 @@ class License(models.Model):
 
 class LicenseRequest(License):
 
-    def __unicode__(self):
-        return "%s" % (self.fullname)
     def __str__(self):
-        return "%s" % (self.fullname)
+        return self.fullname
 
     class Meta:
         verbose_name = "LicenseRequest"
@@ -47,9 +44,6 @@ class LicenseRequest(License):
 class OrganisationName(models.Model):
     name = models.CharField(max_length=250)
     orgId = models.CharField(max_length=25)
-
-    def __unicode__(self):
-        return "%s" % (self.name)
 
     def __str__(self):
         return "{0} [{1}]".format(self.name, self.orgId)
@@ -70,11 +64,8 @@ class LicenseNamespace(License):
     promoted = models.BooleanField(default=False)
     license_request = models.ForeignKey(LicenseRequest, null=True, blank=True, on_delete=models.CASCADE)
 
-    def __unicode__(self):
-        return "%s" % (self.namespace)
-
     def __str__(self):
-        return "%s" % (self.namespace)
+        return self.namespace
 
     class Meta:
         verbose_name = "LicenseNamespace"

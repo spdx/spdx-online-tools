@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2017 Rohit Lodha
 # SPDX-FileCopyrightText: 2025 SPDX Contributors
 # SPDX-License-Identifier: Apache-2.0

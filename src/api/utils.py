@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2017 Rohit Lodha
 # Copyright (c) 2017 Rohit Lodha
 # SPDX-License-Identifier: Apache-2.0
 
+import re
 from rest_framework import status
 
 
