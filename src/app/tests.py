@@ -712,27 +712,27 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element(By.ID, "tabTreeEditor").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabTreeEditor"))).click()
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.in"))
         )
         """ Adding attribute """
-        driver.find_element(By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]"))).click()
         driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("firstAttribute")
         driver.find_element(By.CLASS_NAME, "newAttributeValue").send_keys("firstValue")
         driver.find_element(By.CLASS_NAME, "addNewAttribute").click()
         """ Adding Invalid attribute """
-        driver.find_element(By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]").click()
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]"))).click()
         driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("secondAttribute")
         driver.find_element(By.CLASS_NAME, "addNewAttribute").click()
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Please enter valid attribute name and value")
         driver.find_element(By.CSS_SELECTOR, "div.modal-footer button.btn").click()
-        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
+        WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.find_element(By.CLASS_NAME, "newAttributeValue").send_keys("secondValue")
         driver.find_element(By.CLASS_NAME, "cancel").click()
         """ Editing attribute """
@@ -740,7 +740,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.find_element(By.CSS_SELECTOR, "input.textbox").clear()
         driver.find_element(By.CSS_SELECTOR, "input.textbox").send_keys("Edited Value")
         driver.find_element(By.CSS_SELECTOR, "img.editAttribute").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             lambda d: d.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text == "Edited Value"
         )
         editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text
@@ -748,13 +748,13 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Delete attribute """
         driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].click()
         driver.find_element(By.CSS_SELECTOR, "img.removeAttribute").click()
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this attribute? This action cannot be undone.")
         driver.find_element(By.ID, "modalOk").click()
-        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
-        driver.find_element(By.ID, "tabTextEditor").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabTextEditor"))).click()
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
         finalXML = driver.execute_script("return editor.getValue().trim()")
@@ -767,10 +767,10 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element(By.ID, "tabSplitView").click()
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabSplitView"))).click()
         # Set wait time to 30 seconds to compensate the cold browser start
         # (test_split_tree_editor_attributes is currently the first test)
         WebDriverWait(driver, 30).until(
@@ -784,18 +784,18 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'firstAttribute'")
         driver.execute_script("document.getElementsByClassName('newAttributeValue')[0].value = 'firstValue'")
         driver.execute_script("document.getElementsByClassName('addNewAttribute')[0].click()")
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             lambda d: len(d.find_elements(By.CSS_SELECTOR, "#splitTreeView span.attributeValue")) > 1
         )
         """ Adding Invalid attribute """
         driver.execute_script("document.getElementsByClassName('addAttribute')[1].click()")
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'secondAttribute'")
         driver.execute_script("document.getElementsByClassName('addNewAttribute')[0].click()")
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Please enter valid attribute name and value")
         driver.execute_script("document.querySelector('div.modal-footer button.btn').click()")
-        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
+        WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.execute_script("document.getElementsByClassName('newAttributeValue')[0].value = 'secondValue'")
         driver.execute_script("document.getElementsByClassName('cancel')[0].click()")
         """ Editing attribute """
@@ -803,7 +803,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.querySelector('input.textbox').value = ''")
         driver.execute_script("document.querySelector('input.textbox').value = 'Edited Value'")
         driver.execute_script("document.querySelector('img.editAttribute').click()")
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             lambda d: d.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text == "Edited Value"
         )
         editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text
@@ -811,13 +811,13 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Delete attribute """
         driver.execute_script("document.querySelectorAll('span.attributeValue')[1].click()")
         driver.execute_script("document.querySelector('img.removeAttribute').click()")
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this attribute? This action cannot be undone.")
         driver.execute_script("document.getElementById('modalOk').click()")
-        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
+        WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.execute_script("document.getElementById('tabTextEditor').click()")
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
         finalXML = driver.execute_script("return editor.getValue().trim()")
@@ -830,11 +830,11 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element(By.ID, "tabTreeEditor").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabTreeEditor"))).click()
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.in"))
         )
         """ Adding node """
@@ -844,21 +844,21 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Adding invalid node """
         driver.find_element(By.CSS_SELECTOR, "li.addChild.last").click()
         driver.find_element(By.CLASS_NAME, "buttonAddChild").click()
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "The tag name cannot be empty. Please enter a valid tag name.")
         driver.find_element(By.CSS_SELECTOR, "div.modal-footer button.btn").click()
-        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
+        WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.find_element(By.CLASS_NAME, "cancelAddChild").click()
         """ Delete attribute """
         driver.find_elements(By.CSS_SELECTOR, "img.deleteNode")[2].click()
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this tag? This cannot be undone.")
         driver.find_element(By.ID, "modalOk").click()
-        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
-        driver.find_element(By.ID, "tabTextEditor").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabTextEditor"))).click()
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
         finalXML = driver.execute_script("return editor.getValue().trim()")
@@ -871,14 +871,14 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element(By.ID, "tabSplitView").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabSplitView"))).click()
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#split.in"))
         )
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
         )
         """ Adding node """
@@ -888,21 +888,21 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         """ Adding invalid node """
         driver.execute_script("document.querySelectorAll('li.addChild.last')[1].click()")
         driver.execute_script("document.getElementsByClassName('buttonAddChild')[0].click()")
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "The tag name cannot be empty. Please enter a valid tag name.")
         driver.execute_script("document.querySelector('div.modal-footer button.btn').click()")
-        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
+        WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.execute_script("document.getElementsByClassName('cancelAddChild')[0].click()")
         """ Delete attribute """
         driver.execute_script("document.querySelectorAll('img.deleteNode')[2].click()")
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "modal-body")))
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
         self.assertEqual(modal_text, "Are you sure you want to delete this tag? This cannot be undone.")
         driver.execute_script("document.getElementById('modalOk').click()")
-        WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.ID, "myModal")))
-        driver.execute_script("document.getElementById('tabTextEditor').click()")
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabTextEditor"))).click()
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
         finalXML = driver.execute_script("return editor.getValue().trim()")
@@ -915,18 +915,18 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element(By.ID, "tabTreeEditor").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabTreeEditor"))).click()
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.in"))
         )
         """ Adding text """
         driver.find_element(By.CSS_SELECTOR, "li.emptyText").click()
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").send_keys("This is some sample text.")
         driver.find_element(By.CLASS_NAME, "editNodeText").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.text_to_be_present_in_element((By.CSS_SELECTOR, "li.nodeText"), "This is some sample text.")
         )
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
@@ -936,7 +936,7 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").clear()
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").send_keys("Edited text.")
         driver.find_element(By.CLASS_NAME, "editNodeText").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.text_to_be_present_in_element((By.CSS_SELECTOR, "li.nodeText"), "Edited text.")
         )
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
@@ -945,13 +945,13 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.find_element(By.CSS_SELECTOR, "li.nodeText").click()
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").clear()
         driver.find_element(By.CLASS_NAME, "editNodeText").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "li.emptyText"))
         )
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.emptyText").text
         self.assertEqual(nodeText, "(No text value. Click to edit.)")
-        driver.find_element(By.ID, "tabTextEditor").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabTextEditor"))).click()
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
         finalXML = driver.execute_script("return editor.getValue().trim()")
@@ -964,14 +964,14 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element(By.ID, "tabSplitView").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabSplitView"))).click()
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#split.in"))
         )
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
         )
         """ Adding text """
@@ -979,38 +979,38 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.execute_script("document.querySelectorAll('li.emptyText')[1].click()")
         driver.execute_script("document.querySelector('ul textarea').value = 'This is some sample text.'")
         driver.execute_script("document.getElementsByClassName('editNodeText')[0].click()")
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.text_to_be_present_in_element((By.CSS_SELECTOR, "li.nodeText"), "This is some sample text.")
         )
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "This is some sample text.")
         """ Editing text """
         driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "ul textarea"))
         )
         driver.execute_script("document.querySelector('ul textarea').value = ''")
         driver.execute_script("document.querySelector('ul textarea').value = 'Edited text.'")
         driver.execute_script("document.getElementsByClassName('editNodeText')[0].click()")
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.text_to_be_present_in_element((By.CSS_SELECTOR, "li.nodeText"), "Edited text.")
         )
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "Edited text.")
         """ Delete text """
         driver.execute_script("document.querySelectorAll('li.nodeText')[0].click()")
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "ul textarea"))
         )
         driver.execute_script("document.querySelector('ul textarea').value = ''")
         driver.execute_script("document.getElementsByClassName('editNodeText')[0].click()")
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "li.emptyText"))
         )
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.emptyText").text
         self.assertEqual(nodeText, "(No text value. Click to edit.)")
-        driver.execute_script("document.getElementById('tabTextEditor').click()")
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabTextEditor"))).click()
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#text.in"))
         )
         finalXML = driver.execute_script("return editor.getValue().trim()")
@@ -1023,12 +1023,12 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.ID, "xmltext").send_keys(self.invalidXML)
         driver.find_element(By.ID, "xmlTextButton").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element(By.ID, "tabTreeEditor").click()
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabTreeEditor"))).click()
         """ Checking for error message """
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.xmlParsingErrorMessage"))
         )
         error_title = driver.find_element(By.CSS_SELECTOR, "h2.xmlParsingErrorMessage").text
@@ -1043,12 +1043,12 @@ class LicenseXMLEditorTestCase(StaticLiveServerTestCase):
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.ID, "xmltext").send_keys(self.invalidXML)
         driver.find_element(By.ID, "xmlTextButton").click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, "CodeMirror"))
         )
-        driver.find_element(By.ID, "tabSplitView").click()
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "tabSplitView"))).click()
         """ Checking for error message """
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.xmlParsingErrorMessage"))
         )
         error_title = driver.find_element(By.CSS_SELECTOR, "h2.xmlParsingErrorMessage").text
@@ -1259,9 +1259,9 @@ class ArchiveLicenseRequestsSeleniumTestCase(StaticLiveServerTestCase):
             self.assertEqual(license_name, "BSD Zero Clause License-00")
             self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, False)
             driver.find_element(By.ID, 'archive_button' + str(license_obj.id)).click()
-            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_archive')))
+            WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, 'confirm_archive')))
             driver.find_element(By.ID, 'confirm_archive').click()
-            WebDriverWait(driver, 10).until(
+            WebDriverWait(driver, 30).until(
                 EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody'), "No data available in table")
             )
             self.assertEqual(LicenseRequest.objects.get(id=license_obj.id).archive, True)
@@ -1285,9 +1285,9 @@ class ArchiveLicenseRequestsSeleniumTestCase(StaticLiveServerTestCase):
             self.assertEqual(license_name, "BSD Zero Clause License-00")
             self.assertEqual(LicenseRequest.objects.get(id=archive_license_obj.id).archive, True)
             driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)).click()
-            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_unarchive')))
+            WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, 'confirm_unarchive')))
             driver.find_element(By.ID, 'confirm_unarchive').click()
-            WebDriverWait(driver, 10).until(
+            WebDriverWait(driver, 30).until(
                 EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody'), "No data available in table")
             )
             self.assertEqual(LicenseRequest.objects.get(id=archive_license_obj.id).archive, False)
@@ -1516,9 +1516,9 @@ class ArchiveLicenseNamespaceSeleniumTestCase(StaticLiveServerTestCase):
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseNamespace.objects.get(id=license_obj.id).archive, False)
         driver.find_element(By.ID, 'archive_button' + str(license_obj.id)).click()
-        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_archive')))
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, 'confirm_archive')))
         driver.find_element(By.ID, 'confirm_archive').click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody'), "No data available in table")
         )
         self.assertEqual(LicenseNamespace.objects.get(id=license_obj.id).archive, True)
@@ -1546,9 +1546,9 @@ class ArchiveLicenseNamespaceSeleniumTestCase(StaticLiveServerTestCase):
         self.assertEqual(license_name, "BSD Zero Clause License-00")
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, True)
         driver.find_element(By.ID, 'unarchive_button' + str(archive_license_obj.id)).click()
-        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'confirm_unarchive')))
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, 'confirm_unarchive')))
         driver.find_element(By.ID, 'confirm_unarchive').click()
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'tbody'), "No data available in table")
         )
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, False)

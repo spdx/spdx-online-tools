@@ -187,9 +187,9 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     else:
         commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)        
     text_commit_url = "{0}repos/{1}/{2}/contents/test/simpleTestForGenerator/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, textFileName)
-    xmlText = xmlText.encode('utf-8') if isinstance(xmlText, str) else xmlText
+    xmlText = xmlText.encode('utf-8')
     fileContent = base64.b64encode(xmlText).decode()
-    plainText = plainText.encode('utf-8') if isinstance(plainText, str) else plainText
+    plainText = plainText.encode('utf-8')
     textFileContent = base64.b64encode(plainText).decode()
     body = {
         "path":"src/"+fileName,
@@ -536,7 +536,6 @@ def get_license_data(issues):
                     licenseIdentifier = re.search(r'(?im)short identifier:\s([a-zA-Z0-9|.|-]+)', licenseInfo).group(1)
                     dbId = re.search(r'License Request Url:.+/app/license_requests/([0-9]+)', licenseInfo).group(1)
                     licenseXml = LicenseRequest.objects.get(id=dbId, shortIdentifier=licenseIdentifier).xml
-                    licenseXml = licenseXml.decode('utf-8') if not isinstance(licenseXml, str) else licenseXml
                     licenseText = parseXmlString(licenseXml)['text']
                     licenseTexts.append(clean(licenseText))
                     licenseIds.append(licenseIdentifier)
@@ -544,7 +543,7 @@ def get_license_data(issues):
                     pass
                 except AttributeError:
                     pass
-    licenseData = dict(list(zip(licenseIds, licenseTexts)))
+    licenseData = dict(zip(licenseIds, licenseTexts))
     return licenseData
 
 
@@ -659,7 +658,7 @@ def check_spdx_license(licenseText):
 
     spdxLicenseIds = list(r.keys())
     spdxLicenseTexts = r.mget(spdxLicenseIds)
-    licenseData = dict(list(zip(spdxLicenseIds, spdxLicenseTexts)))
+    licenseData = dict(zip(spdxLicenseIds, spdxLicenseTexts))
     matches = get_close_matches(licenseText, licenseData)
     if not matches:
         matchedLicenseIds = None

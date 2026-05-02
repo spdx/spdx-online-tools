@@ -219,7 +219,7 @@ def singlespaceline(txt):
 if NAMESPACE:
     full_TAGS_inline = list(NAMESPACE+e for e in TAGS_inline)
     full_TAGS_block = list(NAMESPACE+e for e in TAGS_block)
-    full_ATTRS_SEQ = dict((NAMESPACE+k, v) for k,v in list(ATTRS_SEQ.items()))
+    full_ATTRS_SEQ = dict((NAMESPACE+k, v) for k,v in ATTRS_SEQ.items())
 
 if __name__ == '__main__':
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2017 Rohit Lodha
 # SPDX-FileCopyrightText: 2025-present SPDX Contributors
 # SPDX-License-Identifier: Apache-2.0
@@ -14,8 +13,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
-import codecs
-import jpype
 import requests
 from lxml import etree
 import os
@@ -463,8 +460,8 @@ def validate(request):
         context_dict={}
         if request.method == 'POST':
             core.initialise_jpype()
-            result = core.license_validate_helper(request)
-            jpype.detachThreadFromJVM()
+            with core.jvm_thread():
+                result = core.license_validate_helper(request)
             context_dict = result.get('context', None)
             status = result.get('status', None)
             response = result.get('response', None)
@@ -494,8 +491,7 @@ def validate_xml(request):
             try :
                 if "xmlText" in request.POST:
                     # Saving file to the media directory
-                    xmlText = request.POST['xmlText']
-                    xmlText = xmlText.encode('utf-8') if isinstance(xmlText, str) else xmlText
+                    xmlText = request.POST['xmlText'].encode('utf-8')
                     folder = f"{request.user}/{int(time())}"
                     folder_path = os.path.join(settings.MEDIA_ROOT, folder)
                     if not os.path.isdir(folder_path):
@@ -511,11 +507,11 @@ def validate_xml(request):
                         xmlschema_doc = etree.fromstring(schema_text.encode('utf-8'))
                     except:
                         schema_url = settings.BASE_DIR + "/examples/xml-schema.xsd"
-                        with open(schema_url) as f:
+                        with open(schema_url, 'rb') as f:
                             xmlschema_doc = etree.parse(f)
                     # Using the lxml etree functions
                     xmlschema = etree.XMLSchema(xmlschema_doc)
-                    with open(uploaded_file_url) as f:
+                    with open(uploaded_file_url, 'rb') as f:
                         xml_input = etree.parse(f)
 
                     try:
@@ -572,8 +568,8 @@ def compare(request):
         context_dict = {}
         if request.method == 'POST':
             core.initialise_jpype()
-            result = core.license_compare_helper(request)
-            jpype.detachThreadFromJVM()
+            with core.jvm_thread():
+                result = core.license_compare_helper(request)
             context_dict = result.get('context', None)
             status = result.get('status', None)
             response = result.get('response', None)
@@ -600,8 +596,8 @@ def convert(request):
         context_dict={}
         if request.method == 'POST':
             core.initialise_jpype()
-            result = core.license_convert_helper(request)
-            jpype.detachThreadFromJVM()
+            with core.jvm_thread():
+                result = core.license_convert_helper(request)
             context_dict = result.get('context', None)
             status = result.get('status', None)
             response = result.get('response', None)
@@ -631,11 +627,8 @@ def check_license(request):
             # If we do not initialise JPype here, spdx_license_matcher will
             # start its own JVM with its own CLASSPATH which may cause issues.
             core.initialise_jpype()
-            result = core.license_check_helper(request)
-            try:
-                jpype.detachThreadFromJVM()
-            except Exception:
-                pass
+            with core.jvm_thread():
+                result = core.license_check_helper(request)
             context_dict = result.get('context', None)
             status = result.get('status', None)
             response = result.get('response', None)
@@ -667,11 +660,8 @@ def license_diff(request):
             # If we do not initialise JPype here, spdx_license_matcher will
             # start its own JVM with its own CLASSPATH which may cause issues.
             core.initialise_jpype()
-            result = core.license_diff_helper(request)
-            try:
-                jpype.detachThreadFromJVM()
-            except Exception:
-                pass
+            with core.jvm_thread():
+                result = core.license_diff_helper(request)
             return JsonResponse(result)
         else:
             return render(request,
@@ -1129,7 +1119,8 @@ def beautify(request):
                     f.close()
                 commandRun = subprocess.call([sys.executable, _FORMATXML_SCRIPT, "test.xml", "-i", "3"])
                 if commandRun == 0:
-                    data = codecs.open("test.xml", 'r', encoding='utf-8').read()
+                    with open("test.xml", 'r', encoding='utf-8') as f:
+                        data = f.read()
                     os.remove('test.xml')
                     if (utils.is_ajax(request)):
                         ajaxdict["type"] = "success"

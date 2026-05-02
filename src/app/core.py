@@ -5,12 +5,14 @@
 """This file contains the core logic used in the SPDX Online Tools' APP and API"""
 
 import os
+from contextlib import contextmanager
 from json import dumps
 from time import time
 from traceback import format_exc
 from urllib.parse import urljoin
 
 import jpype
+import jpype.imports  # noqa: F401 - required for Java package imports
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.utils.datastructures import MultiValueDictKeyError
@@ -21,33 +23,47 @@ import app.utils as utils
 
 
 def initialise_jpype():
-    """Start JVM if not already started, attach a Thread and start processing the request
+    """Start JVM if not already started.
 
     The SPDX Online Tools must control the lifecycle of the JVM itself,
-    since the CLASSPATH must be set to include the tool.jar file in a specifc
+    since the CLASSPATH must be set to include the tool.jar file in a specific
     location (JAR_ABSOLUTE_PATH in settings).
     If we let libraries, like spdx_license_matcher, start the JVM, they may not
     include the correct tool.jar in the CLASSPATH.
     """
-
-    # Check is the JVM is already running or not. If not, start JVM.
     if not jpype.isJVMStarted():
         jpype.startJVM(
             "-ea", "-Djava.awt.headless=true", classpath=settings.JAR_ABSOLUTE_PATH
         )
-    # Attach a thread to JVM and start processing
-    jpype.attachThreadToJVM()
-    jpype.JPackage("org.spdx.library").SpdxModelFactory.init()
+        from org.spdx.library import SpdxModelFactory
+        SpdxModelFactory.init()
+
+
+@contextmanager
+def jvm_thread():
+    """Attach current thread to JVM as daemon; detach on exit.
+
+    Guards the detach with isAttached() because spdx_license_matcher (v2.8)
+    calls detachThreadFromJVM() internally, which can leave the thread already
+    detached by the time the finally block runs.
+    """
+    JThread = jpype.JClass("java.lang.Thread")
+    JThread.attachAsDaemon()
+    try:
+        yield
+    finally:
+        if JThread.isAttached():
+            JThread.detach()
 
 
 def license_compare_helper(request):
     """
     A helper function to compare two given licenses.
     """
-    package = jpype.JPackage("org.spdx.tools")
-    verifyclass = package.Verify
-    compareclass = package.CompareSpdxDocs
-    helperclass = package.SpdxToolsHelper
+    from org.spdx.tools import CompareSpdxDocs, SpdxToolsHelper, Verify
+    verifyclass = Verify
+    compareclass = CompareSpdxDocs
+    helperclass = SpdxToolsHelper
     ajaxdict = dict()
     filelist = list()
     errorlist = list()
@@ -96,7 +112,7 @@ def license_compare_helper(request):
                     except jpype.JException as ex:
                         # Error raised by verifyclass.verifyRDFFile without exiting the application
                         filelist.append(myfile.name)
-                        errorlist.append(jpype.JException.message(ex))
+                        errorlist.append(str(ex))
                     except Exception:
                         # Other Exceptions
                         erroroccurred = True
@@ -315,8 +331,7 @@ def license_validate_helper(request):
     """
     A helper function to validate the given license file in various formats.
     """
-    package = jpype.JPackage("org.spdx.tools")
-    verifyclass = package.Verify
+    from org.spdx.tools import Verify as verifyclass
     ajaxdict = dict()
     context_dict = {}
     result = {}
@@ -381,12 +396,12 @@ def license_validate_helper(request):
         if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["type"] = "error"
-            ajaxdict["data"] = jpype.JException.message(ex)
+            ajaxdict["data"] = str(ex)
             response = dumps(ajaxdict)
             result['response'] = response
             result['status'] = 400
             return result
-        context_dict["error"] = jpype.JException.message(ex)
+        context_dict["error"] = str(ex)
         result['context'] = context_dict
         result['status'] = 400
         return result
@@ -462,12 +477,12 @@ def license_check_helper(request):
         # Java exception raised without exiting the application
         if utils.is_ajax(request):
             ajaxdict = dict()
-            ajaxdict["data"] = jpype.JException.message(ex)
+            ajaxdict["data"] = str(ex)
             response = dumps(ajaxdict)
             result['response'] = response
             result['status'] = 404
             return result
-        context_dict["error"] = jpype.JException.message(ex)
+        context_dict["error"] = str(ex)
         result['context'] = context_dict
         result['status'] = 404
         return result
@@ -490,10 +505,8 @@ def license_convert_helper(request):
     """
     A helper function to help in conversion of the license from one format to another.
     """
-    package = jpype.JPackage("org.spdx.tools")
+    from org.spdx.tools import SpdxConverter as spdxConverter, Verify as verifyclass
     serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
-    spdxConverter = package.SpdxConverter
-    verifyclass = package.Verify
     ajaxdict = dict()
     result = {}
     context_dict = {}
@@ -564,13 +577,13 @@ def license_convert_helper(request):
         # Java exception raised without exiting the application
         if utils.is_ajax(request):
             ajaxdict["type"] = "error"
-            ajaxdict["data"] = jpype.JException.message(ex)
+            ajaxdict["data"] = str(ex)
             response = dumps(ajaxdict)
             result['response'] = response
             result['status'] = 400
             return result
         context_dict["type"] = "error"
-        context_dict["error"] = jpype.JException.message(ex)
+        context_dict["error"] = str(ex)
         result['context'] = context_dict
         result['status'] = 400
         return result
@@ -634,12 +647,12 @@ def license_diff_helper(request):
         # Java exception raised without exiting the application
         if utils.is_ajax(request):
             ajaxdict = dict()
-            ajaxdict["data"] = jpype.JException.message(ex)
+            ajaxdict["data"] = str(ex)
             response = dumps(ajaxdict)
             data['response'] = response
             data['status'] = 404
             return data
-        data["error"] = jpype.JException.message(ex)
+        data["error"] = str(ex)
         data['context'] = data
         data['status'] = 404
         return data

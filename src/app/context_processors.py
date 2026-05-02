@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any
 
 import redis
 
-from app.core import initialise_jpype
 from src.secret import getRedisHost
 from src.version import (
     java_tools_version,
