@@ -22,19 +22,33 @@
     width: auto;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: 992px) {
     .about-cols {
       display: flex;
-      gap: 2em;
+      gap: 2.5em;
       align-items: flex-start;
     }
 
+    .about-col-main,
+    .about-col-side {
+      flex: 1;
+      min-width: 0; /* Prevents flex items from overflowing */
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 991px) {
+    .about-cols {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2em;
+    }
+
     .about-col-main {
-      flex: 1.2;
+      flex: 1 1 100%;
     }
 
     .about-col-side {
-      flex: 1;
+      flex: 1 1 45%;
     }
   }
 
@@ -46,25 +60,17 @@
     margin-bottom: 0.4em;
   }
 
-  .about-contributors {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-size: 0.9em;
-    text-align: left;
-  }
-
   .about-links {
     padding-left: 1.2em;
     margin: 0;
-    font-size: 0.9em;
+    font-size: 0.85em;
     text-align: left;
   }
 
   .version-table {
     width: auto;
     border-collapse: collapse;
-    font-size: 0.88em;
+    font-size: 0.82em;
   }
 
   .version-table td {
@@ -90,7 +96,7 @@
   }
 
   .about-note {
-    font-size: 0.82em;
+    font-size: 0.8em;
     color: #666;
     margin-top: 0.8em;
   }
@@ -113,9 +119,10 @@
 
     <div class="about-col-main">
       <h3 class="about-section-title">What is SPDX?</h3>
-      <p><a href="https://spdx.dev/">System Package Data Exchange (SPDX)</a> is a standard
-        format for communicating the components, licenses, and copyrights
-        associated with a software package.</p>
+      <p><a href="https://spdx.dev/">System Package Data Exchange (SPDX)</a>
+        is a standard format for communicating the components, licenses, copyrights,
+        provenance, and security information associated with systems
+        and software packages.</p>
 
       <h3 class="about-section-title">What is SPDX Online Tools?</h3>
       <p>A portal for SPDX SBOM and license management.
