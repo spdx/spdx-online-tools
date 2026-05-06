@@ -7,15 +7,15 @@
 <div id="messages" class="messages"></div>
 {% if error %}<p class="lead">{{ error }}</p>{% endif %}
 <div class="panel panel-default">
-<div class="panel-heading"> <p class="lead">License Requests List</p> </div>
+<div class="panel-heading"> <p class="lead">License requests list</p> </div>
 <div class="panel-body" style="overflow: scroll;">
     <table id="requests_table" class="display dataTable">
       <thead>
         <tr>
           <th>Fullname</th>
-          <th>Short Identifier</th>
+          <th>Short identifier</th>
           <th>License author name</th>
-          <th>Submission Date (UTC)</th>
+          <th>Submission date (UTC)</th>
           {% if github_login and authorized %}
           <th>Archive</th>
           {% endif %}

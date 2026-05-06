@@ -85,7 +85,7 @@
 .btn-convert     { background-color: #007aa0; }
 .btn-compare     { background-color: #005f7d; }
 .btn-conformance { background-color: #00495e; }
-.btn-visual      { background-color: #016b91; }
+.btn-visual      { background-color: #003646; }
 
 /* License palette — greens */
 .btn-lic-check   { background-color: #388e3c; }
@@ -110,7 +110,7 @@
     position: absolute;
     bottom: 7px;
     right: 10px;
-    font-size: 0.63em;
+    font-size: 0.75em !important;
     font-weight: 700;
     opacity: 0.72;
     letter-spacing: 0.06em;
@@ -133,7 +133,9 @@
     padding-top: 16px;
     border-top: 1px solid #dde5e8;
     color: #666;
-    font-size: 0.88em;
+}
+.home-footer, .home-footer * {
+    font-size: 0.94em !important;
     line-height: 1.6;
 }
 .home-footer p { margin: 0 0 6px; }
@@ -178,32 +180,32 @@
         <div class="cat-label cat-sbom">SBOM Tools</div>
         <div class="tool-grid">
 
-            <a href="/app/validate/" class="tool-btn btn-validate">
-                <span class="tool-icon glyphicon glyphicon-ok-sign"></span>
+            <a href="/app/validate/" class="tool-btn btn-validate" aria-label="Validate SPDX document">
+                <span class="tool-icon glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
                 <span class="tool-name">Validate</span>
                 <span class="tool-versions">SPDX 2 &middot; 3</span>
             </a>
 
-            <a href="/app/convert/" class="tool-btn btn-convert">
-                <span class="tool-icon glyphicon glyphicon-transfer"></span>
+            <a href="/app/convert/" class="tool-btn btn-convert" aria-label="Convert SPDX document between formats">
+                <span class="tool-icon glyphicon glyphicon-transfer" aria-hidden="true"></span>
                 <span class="tool-name">Convert</span>
                 <span class="tool-versions">SPDX 2 &rarr; 2 / 3</span>
             </a>
 
-            <a href="/app/compare/" class="tool-btn btn-compare">
-                <span class="tool-icon glyphicon glyphicon-adjust"></span>
+            <a href="/app/compare/" class="tool-btn btn-compare" aria-label="Compare multiple SPDX documents">
+                <span class="tool-icon glyphicon glyphicon-adjust" aria-hidden="true"></span>
                 <span class="tool-name">Compare</span>
                 <span class="tool-versions">SPDX 2</span>
             </a>
 
-            <a href="/app/ntia_checker/" class="tool-btn btn-conformance">
-                <span class="tool-icon glyphicon glyphicon-list-alt"></span>
+            <a href="/app/ntia_checker/" class="tool-btn btn-conformance" aria-label="Check SPDX document for NTIA minimum elements conformance">
+                <span class="tool-icon glyphicon glyphicon-list-alt" aria-hidden="true"></span>
                 <span class="tool-name">Conformance Check</span>
                 <span class="tool-versions">SPDX 2 &middot; 3</span>
             </a>
 
-            <a href="/app/dots/" class="tool-btn btn-visual">
-                <span class="tool-icon glyphicon glyphicon-hand-up"></span>
+            <a href="/app/dots/" class="tool-btn btn-visual" aria-label="Open the SPDX 3 visual editor">
+                <span class="tool-icon glyphicon glyphicon-hand-up" aria-hidden="true"></span>
                 <span class="tool-name">Visual Editor</span>
                 <span class="tool-versions">SPDX 3</span>
             </a>
@@ -216,22 +218,20 @@
         <div class="cat-label cat-lic">License Tools</div>
         <div class="tool-grid">
 
-            <a href="/app/check_license/" class="tool-btn btn-lic-check">
-                <span class="tool-icon glyphicon glyphicon-search"></span>
+            <a href="/app/check_license/" class="tool-btn btn-lic-check" aria-label="Check license text against SPDX License List">
+                <span class="tool-icon glyphicon glyphicon-search" aria-hidden="true"></span>
                 <span class="tool-name">License Check</span>
                 <span class="tool-versions">SPDX License List</span>
             </a>
 
-            <a href="/app/xml_upload/" class="tool-btn btn-lic-xml">
-                <span class="tool-icon glyphicon glyphicon-pencil"></span>
+            <a href="/app/xml_upload/" class="tool-btn btn-lic-xml" aria-label="Edit license XML for submission">
+                <span class="tool-icon glyphicon glyphicon-pencil" aria-hidden="true"></span>
                 <span class="tool-name">License XML Editor</span>
-                <span class="tool-versions"></span>
             </a>
 
-            <a href="/app/submit_new_license/" class="tool-btn btn-lic-req">
-                <span class="tool-icon glyphicon glyphicon-send"></span>
+            <a href="/app/submit_new_license/" class="tool-btn btn-lic-req" aria-label="Submit a new license request to SPDX">
+                <span class="tool-icon glyphicon glyphicon-send" aria-hidden="true"></span>
                 <span class="tool-name">License Requests</span>
-                <span class="tool-versions"></span>
             </a>
 
         </div>

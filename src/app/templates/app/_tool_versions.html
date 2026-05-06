@@ -1,19 +1,25 @@
-<div style="font-size:0.8em; color:#666; margin-top:1.2em; border-top:1px solid #e0e0e0; padding-top:0.6em; padding-left:5px;">
-  Component versions used by this tool:
-  <ul style="list-style:none; padding:0; margin:0.3em 0 0 0;">
-    {% if show_java_tools %}
-    <li><a href="https://github.com/spdx/tools-java">SPDX Java Tools</a>: <span style="color:#0097c4;">{{ java_tools_version }}</span></li>
-    {% endif %}
-    {% if show_python_tools %}
-    <li><a href="https://github.com/spdx/tools-python">SPDX Python Tools</a>: <span style="color:#0097c4;">{{ python_tools_version }}</span></li>
-    <li><a href="https://github.com/spdx/spdx-python-model">SPDX Python Model</a>: <span style="color:#0097c4;">{{ spdx_python_model_version }}</span></li>
-    {% endif %}
-    {% if show_ntia %}
-    <li><a href="https://github.com/spdx/ntia-conformance-checker">NTIA Conformance Checker</a>: <span style="color:#0097c4;">{{ ntia_conformance_checker_version }}</span></li>
-    {% endif %}
-    {% if show_license_matcher %}
-    <li><a href="https://github.com/spdx/spdx-license-matcher">SPDX License Matcher</a>: <span style="color:#0097c4;">{{ spdx_license_matcher_version }}</span></li>
-    <li><a href="https://github.com/spdx/license-list-XML">SPDX License List</a>: <span style="color:#0097c4;">{{ spdx_license_list_version }}</span></li>
-    {% endif %}
-  </ul>
+<div class="tool-versions-container" style="color:#666; margin-top:1.2em; border-top:1px solid #e0e0e0; padding-top:0.6em; padding-left:20px;">
+  Components used by this tool:
+  <span style="white-space:normal;">
+    {% if show_java_tools %}<span class="tool-ver-item"><a href="https://github.com/spdx/tools-java">SPDX Java Tools</a>: <span style="color:#0097c4;">{{ java_tools_version }}</span></span>{% endif %}
+    {% if show_python_tools %}<span class="tool-ver-item"><a href="https://github.com/spdx/tools-python">SPDX Python Tools</a>: <span style="color:#0097c4;">{{ python_tools_version }}</span></span><span class="tool-ver-item"><a href="https://github.com/spdx/spdx-python-model">SPDX Python Model</a>: <span style="color:#0097c4;">{{ spdx_python_model_version }}</span></span>{% endif %}
+    {% if show_ntia %}<span class="tool-ver-item"><a href="https://github.com/spdx/ntia-conformance-checker">NTIA Conformance Checker</a>: <span style="color:#0097c4;">{{ ntia_conformance_checker_version }}</span></span>{% endif %}
+    {% if show_license_matcher %}<span class="tool-ver-item"><a href="https://github.com/spdx/spdx-license-matcher">SPDX License Matcher</a>: <span style="color:#0097c4;">{{ spdx_license_matcher_version }}</span></span><span class="tool-ver-item"><a href="https://github.com/spdx/license-list-XML">SPDX License List</a>: <span style="color:#0097c4;">{{ license_list_version }}</span></span>{% endif %}
+  </span>
 </div>
+<style>
+.tool-versions-container, .tool-versions-container * { font-size: 13px !important; }
+.tool-ver-item { display: inline-block; vertical-align: middle; }
+.tool-ver-item + .tool-ver-item::before {
+  content: "\B7";
+  display: inline-block;
+  margin: 0 6px;
+  color: #ccc;
+  font-weight: bold;
+  font-size: 1.4em !important;
+  line-height: 1;
+  vertical-align: middle;
+  position: relative;
+  top: -0.1em;
+}
+</style>

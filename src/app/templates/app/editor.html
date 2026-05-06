@@ -26,12 +26,10 @@
         </ul>
         <div class="tab-content">
             <div id="text" class="tab-pane fade in active">
-                <div class="text-editor-options">
-                    <center>
+                <div class="text-editor-options text-center">
                     <button id="dec-fontsize" class="btn"> <b>-</b> </button> Font size <button id="inc-fontsize" class="btn"> <b>+</b> </button>&nbsp;
                     <button id="fullscreen" class="btn btn-default">Fullscreen</button>
                     <button class="btn btn-md btn-default" id="beautify">Beautify</button>
-                    </center>
                 </div>
                 <textarea class="codemirror-textarea">{{xml_text}}</textarea>
             </div>
@@ -54,13 +52,11 @@
             </div>
         </div>
     </div><hr>
-    <div class="document-options">
-        <center>
+    <div class="document-options text-center">
             <button class="btn btn-success" id="download" data-toggle="tooltip" data-placement="left" title="Download the XML Document">Download</button>
             <button class="btn btn-primary" id="generateDiff" data-toggle="tooltip" title="Generate a diff to see all the changes made" data-placement="top">Generate diff</button>
             <button class="btn btn-warning" id="validateXML" data-toggle="tooltip" title="Validate the XML against the SPDX License Schema" data-placement="top">Validate</button>
             <button class="btn btn-info" id="makePullRequest" data-toggle="tooltip" title="Make a Pull Request in the SPDX XML License Repository to get your changes reviewed and merged" data-placement="right">Submit changes</button>
-        </center>
     </div>
     <form style="display:none" id="form">
         {% csrf_token %}
@@ -127,4 +123,9 @@
 <script type="text/javascript" src="{% static 'js/editor/treeview.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
+<script type="text/javascript">
+  $(document).ready(function () {
+    $("#license-xml-editor").addClass('linkactive');
+  });
+</script>
 {% endblock %}
