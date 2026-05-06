@@ -708,7 +708,7 @@ function display_message(message){
     });
     setTimeout(function() {
         $(".close").click();
-    }, 2000);
+    }, 15000);
     $(".close").click(function(){
         editor.focus();
     })
