@@ -401,10 +401,10 @@ $(document).ready(function(){
             data: form,
             success: function (data) {
                 if(data.type=="valid"){
-                    displayModal("<h3>"+data.data+"</h3>","success");
+                    displayModal("<p>"+data.data+"</p>","success");
                 }
                 else{
-                    displayModal("<h3>"+data.data+"</h3>","alert");
+                    displayModal("<p>"+data.data+"</p>","alert");
                 }
                 $("#validateXML").text("Validate");
                 $("#validateXML").prop('disabled', false);
@@ -432,7 +432,7 @@ $(document).ready(function(){
         var githubLogin = $("#githubLogin").text();
         $("#modal-body").removeClass("diff-modal-body");
         $(".modal-dialog").removeClass("diff-modal-dialog");
-        $("#modal-title").html("SPDX License XML Editor");
+        $("#modal-title").html("License XML editor");
         $('button.close').remove();
         /* if user not authenticated using GitHub, display modal with login button */
         if(githubLogin == "False"){
@@ -596,7 +596,7 @@ function makePR(data=null){
         data: form,
         success: function (data) {
             if(data.type=="success"){
-                displayModal('<h3>Your Pull Request was created successfully <a href="'+data.data+'">here</a></h3>',"success");
+                displayModal('<p>Your Pull Request was created successfully <a href="'+data.data+'">here</a></p>',"success");
             }
             $("#prOk").html('<span class="glyphicon glyphicon-ok"></span> Confirm');
             $("#prCancel").html('<span class="glyphicon glyphicon-remove"></span> Cancel');
@@ -696,8 +696,8 @@ function display_message(message){
     $("#modal-header").removeClass("red-modal");
     $("#modal-header").removeClass("yellow-modal");
     $("#modal-header").addClass("green-modal");
-    $("#modal-title").html("SPDX License XML Editor");
-    $("#modal-body").html("<h3>"+message+"</h3>");
+    $("#modal-title").html("License XML editor");
+    $("#modal-body").html("<p>"+message+"</p>");
     $('button.close').remove();
     $('<button type="button" class="close" data-dismiss="modal">&times;</button>').insertBefore($("h4.modal-title"));
     $(".modal-footer").html('<button class="btn btn-default" data-dismiss="modal">OK</button>')
