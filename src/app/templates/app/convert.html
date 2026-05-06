@@ -6,286 +6,260 @@
 {% endblock %}
 
 {% block body1 %}
-<div id="messages" class="messages"></div>
-{% if medialink %}<p class="lead">{{ medialink }}</p>{% endif %}
-{% if error %}<p class="lead">{{ error }}</p>{% endif %}
+<div id="messages" class="messages" role="status" aria-live="polite"></div>
+{% if error %}<p class="lead text-danger" role="alert">{{ error }}</p>{% endif %}
 <div class="panel panel-default">
-<div class="panel-heading">
-    <p class="lead">Convert to other SPDX format</p>
+  <div class="panel-heading">
+    <p class="lead">Convert to another SPDX format</p>
+  </div>
+  <div class="panel-body">
+    <form id="convertform" enctype="multipart/form-data" class="form-horizontal" method="post" aria-label="Convert SPDX document">
+      {% csrf_token %}
+      <div class="form-narrow">
+        <div class="form-group">
+          <label for="from_format">From</label>
+          <select name="from_format" id="from_format" aria-required="true">
+            <option value="0" selected="">— Select source format —</option>
+            <option value="JSON">V2 JSON</option>
+            <option value="RDFTTL">V2 RDF/TTL</option>
+            <option value="RDFXML">V2 RDF/XML</option>
+            <option value="TAG">V2 Tag/Value</option>
+            <option value="XLS">V2 XLS Spreadsheet</option>
+            <option value="XLSX">V2 XLSX Spreadsheet</option>
+            <option value="XML">V2 XML</option>
+            <option value="YAML">V2 YAML</option>
+          </select>
+          <label for="to_format">to</label>
+          <select name="to_format" id="to_format" aria-required="true">
+            <option value="0" data-value="INGORE" data-ext="" selected="">— Select target format —</option>
+            <option value="JSONLD" data-value="JSONLD" data-ext=".spdx3.json">V3 JSON-LD</option>
+            <option value="JSON" data-value="JSON" data-ext=".json">V2 JSON</option>
+            <option value="RDFTTL" data-value="RDFTTL" data-ext=".rdf.ttl">V2 RDF/TTL</option>
+            <option value="RDFXML" data-value="RDFXML" data-ext=".rdf.xml">V2 RDF/XML</option>
+            <option value="TAG" data-value="TAG" data-ext=".spdx">V2 Tag/Value</option>
+            <option value="XLS" data-value="XLS" data-ext=".xls">V2 XLS Spreadsheet</option>
+            <option value="XLSX" data-value="XLSX" data-ext=".xlsx">V2 XLSX Spreadsheet</option>
+            <option value="XML" data-value="XML" data-ext=".xml">V2 XML</option>
+            <option value="YAML" data-value="YAML" data-ext=".yaml">V2 YAML</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="drop-area" class="container" role="region" aria-label="File upload area">
+        <p id="drop-instructions">Upload SPDX document using the button or by dragging and dropping onto the dashed region</p>
+        <input type="file" id="file" onchange="handleFiles(this.files)" aria-label="Select SPDX document" aria-describedby="drop-instructions">
+        <label class="button" for="file">Select file</label>
+        <div class="file-name" aria-live="polite" aria-atomic="true">No file selected</div>
+      </div>
+
+      <div class="form-narrow">
+        <div class="form-group">
+          <label for="cfilename" class="control-label col-sm-5">Converted file name</label>
+          <div class="col-sm-7">
+            <input type="text" id="cfilename" name="cfilename" aria-describedby="cfileext-hint">
+            <span id="cfileext-hint" class="control-label" aria-live="polite"></span>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+      <input type="hidden" id="cfileformat" name="cfileformat" value="">
+      <p id="warning-msg" hidden></p>
+      <button class="btn btn-md btn-info btn-submit-center" id="convertbutton" type="submit">Convert</button>
+    </form>
+
+    <section id="result-section" class="result-section" role="region" aria-label="Conversion result" tabindex="-1" hidden>
+      <div id="result-header" class="result-header">
+        <h2 id="result-title" class="result-title"></h2>
+        <button type="button" class="result-close" aria-label="Close result" onclick="hideResult()">&times;</button>
+      </div>
+      <div id="result-body" class="result-body"></div>
+    </section>
+  </div>
 </div>
-<div class="panel-body">
-<form id="convertform" enctype="multipart/form-data" class="form-horizontal" method="post">
-		{% csrf_token %}
-		<div style="max-width: 600px; margin: 0 auto;">
-			<div class="form-group">
-				From &nbsp;
-			<select name="from_format" id="from_format">
-			 	  <option value="0" selected="">-</option>
-				  <option value="TAG">V2 Tag/Value</option>
-				  <option value="RDFXML">V2 RDF/XML</option>
-				  <option value="RDFTTL">V2 RDF/TTL</option>
-				  <option value="XLSX">V2 XLSX Spreadsheet</option>
-				  <option value="XLS">V2 XLS Spreadsheet</option>
-				  <option value="JSON">V2 JSON</option>
-				  <option value="XML">V2 XML</option>
-				  <option value="YAML">V2 YAML</option>
-			</select>
-			&nbsp; to &nbsp;
-			<select name="to_format" id="to_format">
-			 	  <option value="0" data-value="INGORE" data-ext="" selected="">-</option>
-			 	  <option value="JSONLD" data-value="JSONLD" data-ext=".spdx3.json">V3 JSON-LD</option>
-				  <option value="TAG" data-value="TAG" data-ext=".spdx">V2 Tag/Value</option>
-				  <option value="RDFXML" data-value="RDFXML" data-ext=".rdf.xml">V2 RDF/XML</option>
-				  <option value="RDFTTL" data-value="RDFTTL" data-ext=".rdf.ttl">V2 RDF/TTL</option>
-				  <option value="XLSX" data-value="XLSX" data-ext=".xlsx">V2 XLSX Spreadsheet</option>
-				  <option value="XLS" data-value="XLS" data-ext=".xls">V2 XLS Spreadsheet</option>
-				  <option value="JSON" data-value="JSON" data-ext=".json">V2 JSON</option>
-				  <option value="XML" data-value="XML" data-ext=".xml">V2 XML</option>
-				  <option value="YAML" data-value="YAML" data-ext=".yaml">V2 YAML</option>
-      </select>
-	    </div>
-		</div>
-    <div id="drop-area" class="container">
-      <h4 id="doclabel">Upload SPDX document using the button or by dragging and dropping onto the dashed region</h4>
-      <input type="file" id="file" onchange="handleFiles(this.files)">
-      <label class="button" for="file">Select file</label>
-      <div class="file-name">No file selected</div>
-    </div>
-    <!--
-    <div class = "form-group">
-			<div class="col-sm-12">
-			<label class="control-label col-sm-3" id="doclabel">SPDX document</label>
-				<div class="col-sm-3"> 
-				  <input type="file" id="file" placeholder="" name = "file"  >
-				</div>
-			</div>	
-    </div>
-    -->
-		<div style="max-width: 600px; margin: 0 auto;">
-			<div class="form-group">
-				<label class="control-label col-sm-5">Converted file name</label>
-				<div class="col-sm-7"> 
-				  <input type="text" id="cfilename" name="cfilename">
-				  <label class="control-label" id="convertdoclabel"></label>
-				</div>
-			</div>
-		</div>
-    <hr>
-		<input type="hidden" id="cfileformat" name="cfileformat" value="">
-        <p id ="warning-msg" hidden="true"></p>
-		<button class="btn btn-md btn-info" id="convertbutton" type="submit">Convert</button>
-</form>
-</div>
-</div>
-{% include "app/modal.html" %}
 {% include "app/_tool_versions.html" with show_java_tools=True %}
 {% endblock %}
 
 {% block script_block %}
 
 <script type="text/javascript">
-  /* Javascript to handel drag and drop */
-  let dropArea = document.getElementById('drop-area');
-  var selected_file = "";
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, preventDefaults, false)
+  /* Drag and drop handling */
+  var dropArea = document.getElementById('drop-area');
+  var selected_file = '';
+  var filenameUserEdited = false;
+
+  document.getElementById('cfilename').addEventListener('input', function () {
+    filenameUserEdited = true;
   });
-  
-  function preventDefaults (e) {
-    e.preventDefault()
-    e.stopPropagation()
+
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function (ev) {
+    dropArea.addEventListener(ev, preventDefaults, false);
+  });
+  function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    dropArea.addEventListener(ev, function () { dropArea.classList.add('highlight'); }, false);
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    dropArea.addEventListener(ev, function () { dropArea.classList.remove('highlight'); }, false);
+  });
+  dropArea.addEventListener('drop', function (e) { handleFiles(e.dataTransfer.files); }, false);
+
+  function handleFiles(files) { Array.from(files).forEach(checkFile); }
+
+  function updateDefaultFilename() {
+    if (filenameUserEdited) return;
+    var field = document.getElementById('cfilename');
+    if (selected_file) {
+      var name = selected_file.name;
+      field.value = name.replace(/(\.(spdx3|spdx))?\.[^.]+$/, '') || name;
+    } else {
+      field.value = '';
+    }
   }
 
-  ['dragenter', 'dragover'].forEach(eventName => {
-    dropArea.addEventListener(eventName, highlight, false)
-  });
-  
-  ['dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, unhighlight, false)
-  });
-  
-  function highlight(e) {
-    dropArea.classList.add('highlight')
-  }
-  
-  function unhighlight(e) {
-    dropArea.classList.remove('highlight')
-  }
-  
-  dropArea.addEventListener('drop', handleDrop, false)
-
-  function handleDrop(e) {
-    let dt = e.dataTransfer
-    let files = dt.files
-    handleFiles(files)
-  }
-
-  function handleFiles(files) {
-    ([...files]).forEach(checkFile)
-  }
-  
-  function checkFile(file){
-    if(file){
-      $(".file-name").html("<b>Selected file:</b> "+file.name);
-      $("#cfilename").val(file.name.split('.').slice(0,-1).join('.') || file.name);
+  function checkFile(file) {
+    if (file) {
+      document.querySelector('.file-name').innerHTML = '<b>Selected file:</b> ' + file.name;
       selected_file = file;
-      checkFilesSize([file], "#warning-msg");
-    }
-    else{
-      $(".file-name").html("No file selected");
-    }
-  }
-</script>
+      updateDefaultFilename();
+      checkFilesSize([file], '#warning-msg');
 
-<script type="text/javascript">
-$(document).ready(function () {
-  $("#convertpage").addClass('linkactive');
-
-  $("#from_format").change(function() {
-    if ($(this).data('options') === undefined) {
-      /*Taking an array of all options-2 and kind of embedding it on the select1*/
-      $(this).data('options', $('#to_format option').clone());
-    }
-    var id = $(this).val();
-    var id2 = $('#to_format').val();
-    var options = $(this).data('options').filter('[data-value!=' + id + ']');
-    $('#to_format').html(options);
-    if (id!="0"){
-      $('#doclabel').text("Upload SPDX "+ id +" document using the button or by dragging and dropping onto the dashed region");
-    }
-    else{
-      $('#doclabel').text("Upload SPDX document using the button or by dragging and dropping onto the dashed region");
-    }
-	if (id2 == id) {
-	    $('#to_format').val("0");
-	    $('#convertdoclabel').text("");
-	    $('#cfileformat').val("");
+      /* Auto-select from_format if not already selected */
+      var fromFormatDropdown = document.getElementById('from_format');
+      if (fromFormatDropdown.value === '0') {
+        var name = file.name.toLowerCase();
+        var detected = '';
+        if (name.endsWith('.spdx')) detected = 'TAG';
+        else if (name.endsWith('.jsonld') || name.endsWith('.spdx3.json') || name.endsWith('.jsonld.json')) {
+          document.getElementById('messages').innerHTML =
+            '<div class="alert alert-danger" role="alert"><strong>Error:</strong> ' +
+            'Conversion from SPDX 3 JSON-LD is not supported yet.</div>';
+          setTimeout(function () { document.getElementById('messages').innerHTML = ''; }, 5000);
+        } else if (name.endsWith('.json')) detected = 'JSON';
+        else if (name.endsWith('.rdf.xml') || name.endsWith('.rdf')) detected = 'RDFXML';
+        else if (name.endsWith('.rdf.ttl') || name.endsWith('.ttl')) detected = 'RDFTTL';
+        else if (name.endsWith('.xlsx')) detected = 'XLSX';
+        else if (name.endsWith('.xls')) detected = 'XLS';
+        else if (name.endsWith('.xml')) detected = 'XML';
+        else if (name.endsWith('.yaml') || name.endsWith('.yml')) detected = 'YAML';
+        if (detected) {
+          fromFormatDropdown.value = detected;
+          $(fromFormatDropdown).change();
+        }
+      }
     } else {
-	    $('#to_format').val(id2);
-	    file_ext = $('#to_format').find(':selected').attr("data-ext");
-	    $('#convertdoclabel').text(file_ext);
-	    $('#cfileformat').val(file_ext);
+      document.querySelector('.file-name').textContent = 'No file selected';
+      selected_file = '';
+      updateDefaultFilename();
     }
-  });
-
-  $("#to_format").change(function() {
-    var id2 = $('#to_format').val();
-    if (id2 == "0") {
-	    $('#convertdoclabel').text("");
-	    $('#cfileformat').val("");
-    } else {
-	    file_ext = $('#to_format').find(':selected').attr("data-ext");
-	    $('#convertdoclabel').text(file_ext);
-	    $('#cfileformat').val(file_ext);
-    }
-  });
-})
+  }
 </script>
 
 <script type="text/javascript">
-function checkform() {
-  if (selected_file == "") {
-    return ("No files selected.");
-  }
-  else if (($('#from_format').val() == "0")){
-    $('#from_format').focus();
-    return("Please select the conversion type.");
-  }
-  else if (($('#to_format').val() == "0")){
-    $('#to_format').focus();
-    return("Please select the conversion type.");
-  }
-  else if (($('#cfilename').val() == "")){
-    $('#cfilename').focus();
-    return("Please choose a file name for the converted file.");
-  }
-  else {
-    return "1";
-  }
-}
+  $(document).ready(function () {
+    $('#convertpage').addClass('linkactive');
+
+    $('#from_format').change(function () {
+      if ($(this).data('options') === undefined) {
+        $(this).data('options', $('#to_format option').clone());
+      }
+      var id = $(this).val();
+      var id2 = $('#to_format').val();
+      var options = $(this).data('options').filter('[data-value!=' + id + ']');
+      $('#to_format').html(options);
+      var label = id !== '0'
+        ? 'Upload SPDX ' + id + ' document using the button or by dragging and dropping onto the dashed region'
+        : 'Upload SPDX document using the button or by dragging and dropping onto the dashed region';
+      document.getElementById('drop-instructions').textContent = label;
+      if (id2 === id) {
+        $('#to_format').val('0');
+        $('#cfileext-hint').text('');
+        $('#cfileformat').val('');
+      } else {
+        $('#to_format').val(id2);
+        var ext = $('#to_format').find(':selected').attr('data-ext') || '';
+        $('#cfileext-hint').text(ext);
+        $('#cfileformat').val(ext);
+      }
+    });
+
+    $('#to_format').change(function () {
+      var id2 = $(this).val();
+      var ext = id2 === '0' ? '' : ($(this).find(':selected').attr('data-ext') || '');
+      $('#cfileext-hint').text(ext);
+      $('#cfileformat').val(ext);
+    });
+  });
 </script>
+
 <script type="text/javascript">
-  $('#convertform').on('submit', function(event){
+  function checkform() {
+    if (selected_file === '') return 'No files selected.';
+    if ($('#from_format').val() === '0') { $('#from_format').focus(); return 'Please select the source format.'; }
+    if ($('#to_format').val() === '0') { $('#to_format').focus(); return 'Please select the target format.'; }
+    if ($('#cfilename').val() === '') { $('#cfilename').focus(); return 'Please choose a file name for the converted file.'; }
+    return '1';
+  }
+</script>
+
+<script type="text/javascript">
+  $('#convertform').on('submit', function (event) {
     event.preventDefault();
     var check = checkform();
-    if (check=="1") {
-      $("#convertbutton").text("Converting...");
-      $("#convertbutton").prop('disabled', true);
-      $("#messages").html("");
-      var form = new FormData($("#convertform")[0]);
-      form.append("file", selected_file);
+    if (check === '1') {
+      $('#convertbutton').text('Converting…').prop('disabled', true).attr('aria-disabled', 'true');
+      $('#messages').html('');
+      hideResult();
+
+      var form = new FormData($('#convertform')[0]);
+      form.append('file', selected_file);
+
       $.ajax({
-              type: "POST",
-              enctype: 'multipart/form-data',
-              url: "/app/convert/",
-              processData: false,
-              contentType: false,
-              dataType: 'json',
-              cache: false,
-              timeout: 600000,
-              data: form,
-              success: function (data) {
-                  console.log("SUCCESS : ", data);
-                  $("#modal-header").removeClass("red-modal");
-                  $("#modal-header").removeClass("yellow-modal");
-                  $("#modal-header").addClass("green-modal");
-                  $("#modal-title").html("Success!");
-                  $("#modal-body").html('<h3><a href="'+data.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
-                  $("#myModal").modal({
-                          backdrop: 'static',
-                          keyboard: true, 
-                          show: true
-                  });
-                  $("#convertbutton").text("Convert");
-                  $("#convertbutton").prop('disabled', false);
-              },
-              error: function (e) {
-                  console.log("ERROR : ", e);
-                  $("#modal-header").removeClass("green-modal");
-                  $("#modal-body").text("");
-              	  try{
-              	  	var obj = JSON.parse(e.responseText);
-              	  	if (obj.type=="warning"){
-	                    $("#modal-header").removeClass("red-modal");
-	                    $("#modal-header").addClass("yellow-modal");
-	                    $("#modal-title").html("Warning!");
-	                    $("#modal-body").append(obj.data+"<br><hr>");
-	                    $("#modal-body").append("Ignoring the warnings, the following file was generated<br>");
-	                    $("#modal-body").append('<h3><a href="'+obj.medialink+'"><span class="glyphicon glyphicon-save-file"></span> Download file now</a></h3>');
-	                  }
-	                  else if (obj.type=="error") {
-	                    $("#modal-header").removeClass("yellow-modal");
-	                    $("#modal-header").addClass("red-modal");
-	                    $("#modal-title").html("Error!");
-	                    $("#modal-body").text(obj.data);
-	                  }
-              	  }
-              	  catch (e) {
-              	  	$("#modal-header").removeClass("yellow-modal");
-                    $("#modal-header").addClass("red-modal");
-                    $("#modal-title").html("Error!");
-                    $("#modal-body").text("The application could not be connected. Please try later.");
-              	  }
-                  
-                  $("#myModal").modal({
-                          backdrop: 'static',
-                          keyboard: true, 
-                          show: true
-                  });
-                  $("#convertbutton").text("Convert");
-                  $("#convertbutton").prop('disabled', false);
-              }
-          });
+        type: 'POST',
+        enctype: 'multipart/form-data',
+        url: '/app/convert/',
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        cache: false,
+        timeout: 600000,
+        data: form,
+        success: function (data) {
+          var link = '<a href="' + data.medialink + '" class="btn btn-default">' +
+            '<span class="glyphicon glyphicon-save-file" aria-hidden="true"></span>' +
+            ' Download converted file</a>';
+          showResult('success', 'Conversion successful', link);
+          $('#convertbutton').text('Convert').prop('disabled', false).removeAttr('aria-disabled');
+          filenameUserEdited = false;
+        },
+        error: function (e) {
+          try {
+            var obj = JSON.parse(e.responseText);
+            if (obj.type === 'warning') {
+              var body = '<p>' + obj.data + '</p><hr>' +
+                '<p>Despite warnings, a file was generated:</p>' +
+                '<a href="' + obj.medialink + '" class="btn btn-default">' +
+                '<span class="glyphicon glyphicon-save-file" aria-hidden="true"></span>' +
+                ' Download converted file</a>';
+              showResult('warning', 'Conversion completed with warnings', body);
+            } else {
+              showResult('error', 'Conversion failed', '<p>' + obj.data + '</p>');
+            }
+          } catch (_) {
+            showResult('error', 'Error',
+              '<p>The application could not be connected. Please try later.</p>');
+          }
+          $('#convertbutton').text('Convert').prop('disabled', false).removeAttr('aria-disabled');
+        }
+      });
+    } else {
+      $('#messages').html(
+        '<div class="alert alert-danger" role="alert"><strong>Error:</strong> ' +
+        $('<span>').text(check).html() + '</div>'
+      );
+      setTimeout(function () { $('#messages').html(''); }, 5000);
     }
-    else{
-      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error!</strong> '+check+'</div>');
-      setTimeout(function() {
-        $("#messages").html("");
-      }, 5000);
-
-    }
-});
-
+  });
 </script>
 
 {% endblock %}
