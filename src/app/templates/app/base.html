@@ -424,6 +424,20 @@ h2 { font-size: 1.8em !important; }
 h3 { font-size: 1.5em !important; }
 h4 { font-size: 1.2em !important; }
 
+/* Auto-center form submit buttons inside tool panels without requiring an extra class */
+.panel-body .btn[type="submit"]:not(.btn-block) {
+    display: block;
+    width: -webkit-fit-content;
+    width: -moz-fit-content;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    float: none;
+    clear: both;
+}
+
 .btn-submit-center {
     display: block !important;
     width: -webkit-fit-content !important;
