@@ -1,23 +1,32 @@
 {% extends 'app/base.html' %}
 {% load static %}
 {% block body1 %}
-<div id="messages" class="messages"></div>
-{% if error %}<p class="lead">{{ error }}</p>{% endif %}
+<div id="messages" class="messages" role="status" aria-live="polite"></div>
+{% if error %}<p class="lead text-danger" role="alert">{{ error }}</p>{% endif %}
 <div class="panel panel-default">
   <div class="panel-heading">
     <p class="lead">Check license</p>
   </div>
-  <div class="panel-body" style="overflow:scroll;">
-    <form id="checklicenseform" enctype="multipart/form-data" class="form-horizontal" method="post">
+  <div class="panel-body">
+    <form id="checklicenseform" enctype="multipart/form-data" class="form-horizontal" method="post" aria-label="Check license text">
       {% csrf_token %}
       <p>Enter full license text in the text area below to check it against 
       <a href="https://spdx.org/licenses/">SPDX License List</a> and
       <a href="https://spdx.org/licenses/exceptions-index.html">License Exceptions</a>.</p>
-      <p>The result of the compare would be one of "Exact match", "Close match" or "No match".</p>
-      <textarea id="licensetext" name="licensetext" rows="18" style="width: 100%"></textarea>
-      <button id="checklicensebutton" class=" btn btn-md btn-info" type="submit">Check license</button>
+      <p>The result will be one of the following: <em>Perfect match</em>, <em>Standard License match</em>, <em>Close match</em>, or <em>Error (no match)</em>.</p>
+      <div class="form-group">
+        <label for="licensetext" class="sr-only">License text</label>
+        <textarea id="licensetext" name="licensetext" rows="12" style="width:100%; resize: vertical;" aria-required="true" placeholder="Paste the full license text here..."></textarea>
+      </div>
+      <button id="checklicensebutton" class="btn btn-md btn-info btn-submit-center" type="submit">Check license</button>
     </form>
-    {% include "app/modal.html" %}
+    <section id="result-section" class="result-section" role="region" aria-label="License check result" tabindex="-1" hidden>
+      <div id="result-header" class="result-header">
+        <h2 id="result-title" class="result-title"></h2>
+        <button type="button" class="result-close" aria-label="Close result" onclick="hideResult()">&times;</button>
+      </div>
+      <div id="result-body" class="result-body"></div>
+    </section>
   </div>
 </div>
 {% include "app/_tool_versions.html" with show_license_matcher=True %}
@@ -44,9 +53,9 @@ function checkform() {
     event.preventDefault();
     var check = checkform();
     if (check=="1"){
-      $("#checklicensebutton").text("Checking...");
-      $("#checklicensebutton").prop('disabled', true);
+      $("#checklicensebutton").text("Checking...").prop('disabled', true).attr('aria-disabled', 'true');
       $("#messages").html("");
+      hideResult();
       var form = new FormData($("#checklicenseform")[0]);
       $.ajax({
               type: "POST",
@@ -58,49 +67,44 @@ function checkform() {
               dataType: 'json',
               data: form,
               success: function (data) {
-                  console.log("SUCCESS : ", data);
-				  $("#modal-header").removeClass("red-modal");
-				  if (data["data"].toLowerCase().indexOf("perfect match") > -1 || data["data"].toLowerCase().indexOf("exact match") > -1) {
-                     $("#modal-header").addClass("green-modal");
-				  } else {
-				     $("#modal-header").addClass("yellow-modal");
-				  }
-                  $("#modal-title").html("Success!");
-                  $("#modal-body").html("<h3>"+data.data+"</h3>");
-                  $("#myModal").modal({
-                          backdrop: 'static',
-                          keyboard: true, 
-                          show: true
-                  });
-                  $("#checklicensebutton").text("Check license");
-                  $("#checklicensebutton").prop('disabled', false);
+                  var msg = data.data || '';
+                  var title = 'Result';
+                  var body = msg;
+        
+                  // Parse the standard "X found.<br />Y" format from the backend
+                  if (msg.indexOf(' found.<br />') > -1) {
+                    var parts = msg.split(' found.<br />');
+                    title = parts[0];
+                    body = parts[1];
+                  } else if (msg === "There are no matching SPDX listed licenses") {
+                    title = "No match";
+                  }
+        
+                  var lowerTitle = title.toLowerCase();
+                  var type = (lowerTitle.indexOf('perfect') > -1 || lowerTitle.indexOf('exact') > -1 || lowerTitle.indexOf('standard') > -1)
+                    ? 'success' : (title === 'No match' ? 'error' : 'warning');
+        
+                  showResult(type, title, '<p>' + body + '</p>');
+                  $('#checklicensebutton').text('Check license').prop('disabled', false).removeAttr('aria-disabled');
               },
               error: function (e) {
-                  console.log("ERROR : ", e);
-                  $("#modal-header").removeClass("green-modal");
                   try {
                     var obj = JSON.parse(e.responseText);
-                    $("#modal-header").addClass("red-modal");
-                    $("#modal-title").html("Error!");
-                    $("#modal-body").text(obj.data);
+                    showResult('error', 'Error', '<p>' + obj.data + '</p>');
                   }
-                  catch (e){
-                    $("#modal-header").addClass("red-modal");
-                    $("#modal-title").html("Error!");
-                    $("#modal-body").text("The application could not be connected. Please try later.");
+                  catch (_){
+                    showResult('error', 'Error',
+                               '<p>The application could not be connected. Please try later.</p>');
                   }
-                  $("#myModal").modal({
-                          backdrop: 'static',
-                          keyboard: true, 
-                          show: true
-                  });
-                  $("#checklicensebutton").text("Check license");
-                  $("#checklicensebutton").prop('disabled', false);
+                  $('#checklicensebutton').text('Check license').prop('disabled', false).removeAttr('aria-disabled');
               }
           });
     }
     else{
-      $("#messages").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error!</strong> '+check+'</div>');
+      $('#messages').html(
+        '<div class="alert alert-danger" role="alert"><strong>Error:</strong> ' +
+        $('<span>').text(check).html() + '</div>'
+      );
       setTimeout(function() {
         $("#messages").html("");
       }, 5000);
