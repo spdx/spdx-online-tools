@@ -126,28 +126,26 @@
       updateDefaultFilename();
       checkFilesSize([file], '#warning-msg');
 
-      /* Auto-select from_format if not already selected */
+      /* Auto-detect and set from_format based on file extension */
       var fromFormatDropdown = document.getElementById('from_format');
-      if (fromFormatDropdown.value === '0') {
-        var name = file.name.toLowerCase();
-        var detected = '';
-        if (name.endsWith('.spdx')) detected = 'TAG';
-        else if (name.endsWith('.jsonld') || name.endsWith('.spdx3.json') || name.endsWith('.jsonld.json')) {
-          document.getElementById('messages').innerHTML =
-            '<div class="alert alert-danger" role="alert"><strong>Error:</strong> ' +
-            'Conversion from SPDX 3 JSON-LD is not supported yet.</div>';
-          setTimeout(function () { document.getElementById('messages').innerHTML = ''; }, 5000);
-        } else if (name.endsWith('.json')) detected = 'JSON';
-        else if (name.endsWith('.rdf.xml') || name.endsWith('.rdf')) detected = 'RDFXML';
-        else if (name.endsWith('.rdf.ttl') || name.endsWith('.ttl')) detected = 'RDFTTL';
-        else if (name.endsWith('.xlsx')) detected = 'XLSX';
-        else if (name.endsWith('.xls')) detected = 'XLS';
-        else if (name.endsWith('.xml')) detected = 'XML';
-        else if (name.endsWith('.yaml') || name.endsWith('.yml')) detected = 'YAML';
-        if (detected) {
-          fromFormatDropdown.value = detected;
-          $(fromFormatDropdown).change();
-        }
+      var name = file.name.toLowerCase();
+      var detected = '';
+      if (name.endsWith('.spdx')) detected = 'TAG';
+      else if (name.endsWith('.jsonld') || name.endsWith('.spdx3.json') || name.endsWith('.jsonld.json')) {
+        document.getElementById('messages').innerHTML =
+          '<div class="alert alert-danger" role="alert"><strong>Error:</strong> ' +
+          'Conversion from SPDX 3 JSON-LD is not supported yet.</div>';
+        setTimeout(function () { document.getElementById('messages').innerHTML = ''; }, 5000);
+      } else if (name.endsWith('.json')) detected = 'JSON';
+      else if (name.endsWith('.rdf.xml') || name.endsWith('.rdf')) detected = 'RDFXML';
+      else if (name.endsWith('.rdf.ttl') || name.endsWith('.ttl')) detected = 'RDFTTL';
+      else if (name.endsWith('.xlsx')) detected = 'XLSX';
+      else if (name.endsWith('.xls')) detected = 'XLS';
+      else if (name.endsWith('.xml')) detected = 'XML';
+      else if (name.endsWith('.yaml') || name.endsWith('.yml')) detected = 'YAML';
+      if (detected) {
+        fromFormatDropdown.value = detected;
+        $(fromFormatDropdown).change();
       }
     } else {
       document.querySelector('.file-name').textContent = 'No file selected';
