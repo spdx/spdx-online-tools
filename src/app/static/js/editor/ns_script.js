@@ -393,10 +393,10 @@ $(document).ready(function(){
             data: form,
             success: function (data) {
                 if(data.type=="valid"){
-                    displayModal("<h3>"+data.data+"</h3>","success");
+                    displayModal("<p>"+data.data+"</p>","success");
                 }
                 else{
-                    displayModal("<h3>"+data.data+"</h3>","alert");
+                    displayModal("<p>"+data.data+"</p>","alert");
                 }
                 $("#validateXML").text("Validate");
                 $("#validateXML").prop('disabled', false);
@@ -405,14 +405,14 @@ $(document).ready(function(){
                 try {
                     var obj = JSON.parse(e.responseText);
                     if (obj.type=="warning"){
-                        displayModal(obj.data, "alert");
+                        displayModal("<p>"+obj.data+"</p>", "alert");
                     }
                     else if (obj.type=="error"){
-                        displayModal(obj.data, "error");
+                        displayModal("<p>"+obj.data+"</p>", "error");
                     }
                 }
                 catch (e){
-                    displayModal("The application could not be connected. Please try later.","error");
+                    displayModal("<p>The application could not be connected. Please try later.</p>","error");
                 }
                 $("#validateXML").text("Validate");
                 $("#validateXML").prop('disabled', false);
@@ -714,8 +714,8 @@ function display_message(message){
     $("#modal-header").removeClass("red-modal");
     $("#modal-header").removeClass("yellow-modal");
     $("#modal-header").addClass("green-modal");
-    $("#modal-title").html("SPDX License XML Editor");
-    $("#modal-body").html("<h3>"+message+"</h3>");
+    $("#modal-title").html("License XML editor");
+    $("#modal-body").html("<p>"+message+"</p>");
     $('button.close').remove();
     $('<button type="button" class="close" data-dismiss="modal">&times;</button>').insertBefore($("h4.modal-title"));
     $(".modal-footer").html('<button class="btn btn-default" data-dismiss="modal">OK</button>')
@@ -726,7 +726,7 @@ function display_message(message){
     });
     setTimeout(function() {
         $(".close").click();
-    }, 2000);
+    }, 15000);
     $(".close").click(function(){
         editor.focus();
     })

@@ -578,6 +578,9 @@ h4 { font-size: 1.2em !important; }
           const navHeight = $('.navbar-fixed-top').height();
           const newPadding = navHeight + 10; // Add 10px for extra space
           $('body').css('padding-top', newPadding + 'px');
+          // Expose navbar height as CSS custom property so fullscreen overlays
+          // (e.g. CodeMirror fullscreen) can stay below the navbar on any screen width.
+          document.documentElement.style.setProperty('--navbar-height', navHeight + 'px');
           var $dotsIframe = $('#dots-iframe');
           if ($dotsIframe.length) {
             $dotsIframe.css('height', 'calc(100vh - ' + newPadding + 'px)');

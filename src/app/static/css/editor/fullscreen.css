@@ -1,7 +1,15 @@
 .CodeMirror-fullscreen {
   position: fixed;
-  margin-top: 50px;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: var(--navbar-height, 50px);
+  left: 0; right: 0; bottom: 0;
   height: auto;
   z-index: 9;
+}
+
+/* In fullscreen mode: hide navbar and use full viewport height */
+body:has(.CodeMirror-fullscreen) .navbar-fixed-top {
+  display: none;
+}
+body:has(.CodeMirror-fullscreen) .CodeMirror-fullscreen {
+  top: 0;
 }
