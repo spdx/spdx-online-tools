@@ -53,22 +53,10 @@
         </div>
     </div><hr>
     <div class="document-options text-center" role="toolbar" aria-label="Document actions">
-            <button type="button" class="btn btn-success" id="download"
-                    data-toggle="tooltip" data-placement="left"
-                    title="Download the XML document"
-                    aria-label="Download XML document">Download</button>
-            <button type="button" class="btn btn-primary" id="generateDiff"
-                    data-toggle="tooltip" data-placement="top"
-                    title="Generate a diff to see all the changes made"
-                    aria-label="Generate diff of all changes made">Generate diff</button>
-            <button type="button" class="btn btn-warning" id="validateXML"
-                    data-toggle="tooltip" data-placement="top"
-                    title="Validate the XML against the SPDX License Schema"
-                    aria-label="Validate XML against SPDX License Schema">Validate</button>
-            <button type="button" class="btn btn-info" id="makePullRequest"
-                    data-toggle="tooltip" data-placement="right"
-                    title="Submit changes as a pull request to the SPDX License List repository"
-                    aria-label="Submit changes as a pull request">Submit changes</button>
+            <button type="button" class="btn btn-success" id="download" data-toggle="tooltip" data-placement="left" title="Download the XML document" aria-label="Download XML document">Download</button>
+            <button type="button" class="btn btn-primary" id="generateDiff" data-toggle="tooltip" data-placement="top" title="Generate a diff to see all the changes made" aria-label="Generate diff of all changes made">Generate diff</button>
+            <button type="button" class="btn btn-warning" id="validateXML" data-toggle="tooltip" data-placement="top" title="Validate the XML against the SPDX License Schema" aria-label="Validate XML against SPDX License Schema">Validate</button>
+            <button type="button" class="btn btn-info" id="makePullRequest" data-toggle="tooltip" data-placement="right" title="Submit changes as a pull request to the SPDX License List repository" aria-label="Submit changes as a pull request">Submit changes</button>
     </div>
     <form style="display:none" id="form">
         {% csrf_token %}
