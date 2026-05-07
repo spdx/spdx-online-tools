@@ -202,9 +202,16 @@ $(document).ready(function(){
         editor.focus();
     }
     function exitFullScreen(){
-        if (editor.getOption("fullScreen")) editor.setOption("fullScreen", false);
-        fullscreen = false;
-        editor.focus();
+        if (editor.getOption("fullScreen")) {
+            editor.setOption("fullScreen", false);
+            fullscreen = false;
+            editor.focus();
+        } else {
+            /* Not in fullscreen — release focus back to the active tab link
+               so the user can Tab forward to the action buttons. */
+            var activeTabLink = document.querySelector('.nav-tabs [role="tab"][aria-selected="true"]');
+            if (activeTabLink) activeTabLink.focus();
+        }
     }
 
     /* make editor responsive, whenever browser is resized,

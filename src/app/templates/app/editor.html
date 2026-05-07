@@ -9,7 +9,27 @@
     <link href="{% static 'css/editor/foldgutter.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/treeview.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'css/editor/diffview.css' %}" rel="stylesheet" type="text/css">
-    <style>.starter-template { padding: 0; }</style>
+    <style>
+        .starter-template { padding: 0; }
+        .skip-to-actions {
+            position: absolute;
+            left: -9999px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+        .skip-to-actions:focus {
+            position: static;
+            width: auto;
+            height: auto;
+            overflow: visible;
+            display: block;
+            margin: 4px auto;
+            text-align: center;
+            font-size: 0.9em;
+        }
+    </style>
 {% endblock %}
 
 {% block body1 %}
@@ -31,7 +51,9 @@
                     <button type="button" id="fullscreen" class="btn btn-default">Fullscreen</button>
                     <button type="button" class="btn btn-md btn-default" id="beautify">Beautify</button>
                 </div>
-                <textarea class="codemirror-textarea">{{xml_text}}</textarea>
+                <a href="#document-options" class="skip-to-actions">Skip to document actions</a>
+                <p class="sr-only" id="editor-kb-hint">Press Escape to leave the editor and return focus to the tab bar. Or use the Skip to document actions link above.</p>
+                <textarea class="codemirror-textarea" aria-describedby="editor-kb-hint">{{xml_text}}</textarea>
             </div>
             <div id="tree" class="tab-pane fade" role="tabpanel" aria-labelledby="tabTreeEditor" tabindex="0">
                 <div class="treeContainer">
@@ -52,7 +74,7 @@
             </div>
         </div>
     </div><hr>
-    <div class="document-options text-center" role="toolbar" aria-label="Document actions">
+    <div class="document-options text-center" role="toolbar" aria-label="Document actions" id="document-options" tabindex="-1">
             <button type="button" class="btn btn-success" id="download" data-toggle="tooltip" data-placement="left" title="Download the XML document" aria-label="Download XML document">Download</button>
             <button type="button" class="btn btn-primary" id="generateDiff" data-toggle="tooltip" data-placement="top" title="Generate a diff to see all the changes made" aria-label="Generate diff of all changes made">Generate diff</button>
             <button type="button" class="btn btn-warning" id="validateXML" data-toggle="tooltip" data-placement="top" title="Validate the XML against the SPDX License Schema" aria-label="Validate XML against SPDX License Schema">Validate</button>
@@ -146,8 +168,11 @@
     else if (e.key === 'End')        next = tabs.length - 1;
     else return;
     e.preventDefault();
-    tabs[next].click();
-    tabs[next].focus();
+    var toFocus = tabs[next];
+    toFocus.click();
+    /* script.js calls editor.focus() inside setTimeout(..., 200) after tab switch.
+       Re-focus the tab link at 250ms to reclaim focus after CodeMirror steals it. */
+    setTimeout(function () { toFocus.focus(); }, 250);
   });
 
   /* Keep aria-selected + tabindex in sync after Bootstrap activates a tab */

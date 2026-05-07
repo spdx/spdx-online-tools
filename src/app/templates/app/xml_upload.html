@@ -26,10 +26,10 @@
     <div class="panel-body">
 
       <ul class="nav nav-tabs" role="tablist">
-        <li class="active" role="presentation"><a data-toggle="tab" href="#text" role="tab" aria-controls="text" aria-selected="true" id="tab-text">XML text</a></li>
-        <li role="presentation"><a data-toggle="tab" href="#upload" role="tab" aria-controls="upload" aria-selected="false" id="tab-upload">Upload file</a></li>
-        <li role="presentation"><a data-toggle="tab" href="#license-name" role="tab" aria-controls="license-name" aria-selected="false" id="tab-license-name">License name</a></li>
-        <li role="presentation"><a data-toggle="tab" href="#new" role="tab" aria-controls="new" aria-selected="false" id="tab-new">New license XML</a></li>
+        <li class="active" role="presentation"><a data-toggle="tab" href="#text" role="tab" aria-controls="text" aria-selected="true" id="tab-text" tabindex="0">XML text</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#upload" role="tab" aria-controls="upload" aria-selected="false" id="tab-upload" tabindex="-1">Upload file</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#license-name" role="tab" aria-controls="license-name" aria-selected="false" id="tab-license-name" tabindex="-1">License name</a></li>
+        <li role="presentation"><a data-toggle="tab" href="#new" role="tab" aria-controls="new" aria-selected="false" id="tab-new" tabindex="-1">New license XML</a></li>
       </ul>
 
       <div class="tab-content">
@@ -53,7 +53,7 @@
               <div id="file-name-status" class="file-name" role="status" aria-live="polite">No file selected</div>
             </form>
           </div>
-          <button id="uploadButton" name="uploadButton" class="btn btn-md btn-info btn-submit-center" type="submit">Edit document</button>
+          <button id="uploadButton" name="uploadButton" class="btn btn-md btn-info btn-submit-center" type="button">Edit document</button>
         </div>
         <div id="license-name" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-license-name" >
           <form id="form-license-name" enctype="multipart/form-data" class="form-horizontal" method="post" aria-label="Look up license by name">
@@ -297,6 +297,35 @@
     });
     $("#license-xml-editor").addClass('linkactive');
   });
+</script>
+
+<script type="text/javascript">
+  (function () {
+    var tabList = document.querySelector('[role="tablist"]');
+    if (!tabList) return;
+    tabList.addEventListener('keydown', function (e) {
+      var tabs = Array.from(tabList.querySelectorAll('[role="tab"]'));
+      var idx  = tabs.indexOf(document.activeElement);
+      if (idx === -1) return;
+      var next;
+      if      (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
+      else if (e.key === 'ArrowLeft')  next = (idx - 1 + tabs.length) % tabs.length;
+      else if (e.key === 'Home')       next = 0;
+      else if (e.key === 'End')        next = tabs.length - 1;
+      else return;
+      e.preventDefault();
+      tabs[next].click();
+      tabs[next].focus();
+    });
+    $('[role="tab"]').on('shown.bs.tab', function () {
+      var tabs = Array.from(tabList.querySelectorAll('[role="tab"]'));
+      tabs.forEach(function (t) {
+        var active = t.parentElement.classList.contains('active');
+        t.setAttribute('aria-selected', active ? 'true' : 'false');
+        t.setAttribute('tabindex',      active ? '0'    : '-1');
+      });
+    });
+  }());
 </script>
 
 {% endblock %}
