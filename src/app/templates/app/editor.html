@@ -19,28 +19,28 @@
 {% block body2 %}
     <div class="container-fluid editor-container">
         <input type="hidden" id="xmlText" value="{{xml_text}}">
-        <ul class="nav nav-tabs">
-            <li class="active"><a href="#text" id="tabTextEditor">Text editor</a></li>
-            <li><a data-toggle="tab" href="#tree" id="tabTreeEditor">Tree editor</a></li>
-            <li><a data-toggle="tab" href="#split" id="tabSplitView">Split view</a></li>
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="active" role="presentation"><a href="#text" id="tabTextEditor" role="tab" aria-selected="true" aria-controls="text" data-toggle="tab" tabindex="0">Text editor</a></li>
+            <li role="presentation"><a data-toggle="tab" href="#tree" id="tabTreeEditor" role="tab" aria-selected="false" aria-controls="tree" tabindex="-1">Tree editor</a></li>
+            <li role="presentation"><a data-toggle="tab" href="#split" id="tabSplitView" role="tab" aria-selected="false" aria-controls="split" tabindex="-1">Split view</a></li>
         </ul>
         <div class="tab-content">
-            <div id="text" class="tab-pane fade in active">
+            <div id="text" class="tab-pane fade in active" role="tabpanel" aria-labelledby="tabTextEditor" tabindex="0">
                 <div class="text-editor-options text-center">
-                    <button id="dec-fontsize" class="btn"> <b>-</b> </button> Font size <button id="inc-fontsize" class="btn"> <b>+</b> </button>&nbsp;
-                    <button id="fullscreen" class="btn btn-default">Fullscreen</button>
-                    <button class="btn btn-md btn-default" id="beautify">Beautify</button>
+                    <button type="button" id="dec-fontsize" class="btn" aria-label="Decrease font size"><b aria-hidden="true">-</b></button> Font size <button type="button" id="inc-fontsize" class="btn" aria-label="Increase font size"><b aria-hidden="true">+</b></button>&nbsp;
+                    <button type="button" id="fullscreen" class="btn btn-default">Fullscreen</button>
+                    <button type="button" class="btn btn-md btn-default" id="beautify">Beautify</button>
                 </div>
                 <textarea class="codemirror-textarea">{{xml_text}}</textarea>
             </div>
-            <div id="tree" class="tab-pane fade">
+            <div id="tree" class="tab-pane fade" role="tabpanel" aria-labelledby="tabTreeEditor" tabindex="0">
                 <div class="treeContainer">
                     <ul id="treeView" class="treeView">
                         <li></li>
                     </ul>
                 </div>
             </div>
-            <div id="split" class="tab-pane fade">
+            <div id="split" class="tab-pane fade" role="tabpanel" aria-labelledby="tabSplitView" tabindex="0">
                 <div class="col-md-6 splitTextEditorContainer">
                     <textarea class="codemirror-textarea">{{xml_text}}</textarea>
                 </div>
@@ -52,11 +52,23 @@
             </div>
         </div>
     </div><hr>
-    <div class="document-options text-center">
-            <button class="btn btn-success" id="download" data-toggle="tooltip" data-placement="left" title="Download the XML Document">Download</button>
-            <button class="btn btn-primary" id="generateDiff" data-toggle="tooltip" title="Generate a diff to see all the changes made" data-placement="top">Generate diff</button>
-            <button class="btn btn-warning" id="validateXML" data-toggle="tooltip" title="Validate the XML against the SPDX License Schema" data-placement="top">Validate</button>
-            <button class="btn btn-info" id="makePullRequest" data-toggle="tooltip" title="Make a Pull Request in the SPDX XML License Repository to get your changes reviewed and merged" data-placement="right">Submit changes</button>
+    <div class="document-options text-center" role="toolbar" aria-label="Document actions">
+            <button type="button" class="btn btn-success" id="download"
+                    data-toggle="tooltip" data-placement="left"
+                    title="Download the XML document"
+                    aria-label="Download XML document">Download</button>
+            <button type="button" class="btn btn-primary" id="generateDiff"
+                    data-toggle="tooltip" data-placement="top"
+                    title="Generate a diff to see all the changes made"
+                    aria-label="Generate diff of all changes made">Generate diff</button>
+            <button type="button" class="btn btn-warning" id="validateXML"
+                    data-toggle="tooltip" data-placement="top"
+                    title="Validate the XML against the SPDX License Schema"
+                    aria-label="Validate XML against SPDX License Schema">Validate</button>
+            <button type="button" class="btn btn-info" id="makePullRequest"
+                    data-toggle="tooltip" data-placement="right"
+                    title="Submit changes as a pull request to the SPDX License List repository"
+                    aria-label="Submit changes as a pull request">Submit changes</button>
     </div>
     <form style="display:none" id="form">
         {% csrf_token %}
@@ -71,30 +83,30 @@
             {% csrf_token %}
             <div class="form-group">
                 <label for="branchName">Branch Name:</label>
-                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Pull Request will be made from this branch to the main branch" style="font-size:12px;"></span>
+                <span class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="tooltip" title="Pull Request will be made from this branch to the main branch" style="font-size:12px;"></span>
                 <input type="text" class="form-control" id="branchName" name="branchName">
             </div><br>
             <div class="checkbox">
-                <label><input type="checkbox" id="updateUpstream">Update with upstream main</label> <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Select this if you want to update your forked repo with the upstream repo, before making the pull request" style="font-size:12px;"></span>
+                <label><input type="checkbox" id="updateUpstream">Update with upstream main</label> <span class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="tooltip" title="Select this if you want to update your forked repo with the upstream repo, before making the pull request" style="font-size:12px;"></span>
             </div>
             <div class="form-group">
                 <label for="fileName">File Name:</label>
-                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Name of the XML file" style="font-size:12px;"></span>
+                <span class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="tooltip" title="Name of the XML file" style="font-size:12px;"></span>
                 <input type="text" class="form-control" id="fileName" name="fileName" value={{license_name}}> .xml
             </div><br>
             <div class="form-group">
                 <label for="commitMessage">Commit Message:</label>
-                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="Git commit message, a brief description of your changes" style="font-size:12px;"></span>
+                <span class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="tooltip" title="Git commit message, a brief description of your changes" style="font-size:12px;"></span>
                 <input type="text" class="form-control" id="commitMessage" name="commitMessage">
             </div><br>
             <div class="form-group">
                 <label for="prTitle">Pull Request Title:</label>
-                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request title, can be edited later." style="font-size:12px;"></span>
+                <span class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="tooltip" title="GitHub Pull Request title, can be edited later." style="font-size:12px;"></span>
                 <input type="text" class="form-control" id="prTitle" name="prTitle">
             </div><br>
             <div class="form-group">
                 <label for="prBody">Pull Request Body:</label>
-                <span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="GitHub Pull Request body, can be edited later." style="font-size:12px;"></span>
+                <span class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="tooltip" title="GitHub Pull Request body, can be edited later." style="font-size:12px;"></span>
                 <textarea class="form-control" rows="5" id="prBody" name="prBody" style="resize:none; width:200px;"></textarea>
             </div><br>
             <input type="hidden" name="hidden_license_id" value="{{license_id}}">
@@ -127,5 +139,38 @@
   $(document).ready(function () {
     $("#license-xml-editor").addClass('linkactive');
   });
+</script>
+<script type="text/javascript">
+/* Tab keyboard navigation — ARIA Authoring Practices §3.22 */
+(function () {
+  var tabList = document.querySelector('[role="tablist"]');
+  if (!tabList) return;
+
+  /* Arrow keys move focus and activate tab */
+  tabList.addEventListener('keydown', function (e) {
+    var tabs = Array.from(tabList.querySelectorAll('[role="tab"]'));
+    var idx  = tabs.indexOf(document.activeElement);
+    if (idx === -1) return;
+    var next;
+    if      (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft')  next = (idx - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home')       next = 0;
+    else if (e.key === 'End')        next = tabs.length - 1;
+    else return;
+    e.preventDefault();
+    tabs[next].click();
+    tabs[next].focus();
+  });
+
+  /* Keep aria-selected + tabindex in sync after Bootstrap activates a tab */
+  $('[role="tab"]').on('shown.bs.tab', function () {
+    var tabs = Array.from(tabList.querySelectorAll('[role="tab"]'));
+    tabs.forEach(function (t) {
+      var active = t.parentElement.classList.contains('active');
+      t.setAttribute('aria-selected', active ? 'true' : 'false');
+      t.setAttribute('tabindex',      active ? '0'    : '-1');
+    });
+  });
+}());
 </script>
 {% endblock %}

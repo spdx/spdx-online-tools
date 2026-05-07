@@ -65,7 +65,6 @@
     transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
     cursor: pointer;
     border: none;
-    outline: none;
 }
 .tool-btn:hover, .tool-btn:focus {
     text-decoration: none;
@@ -73,6 +72,15 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0,0,0,0.24);
     filter: brightness(1.08);
+}
+.tool-btn:focus {
+    outline: 3px solid #fff;
+    outline-offset: 3px;
+}
+.tool-btn:focus:not(:focus-visible) { outline: none; }
+.tool-btn:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 3px;
 }
 .tool-btn:active {
     transform: translateY(0);
