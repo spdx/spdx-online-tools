@@ -156,10 +156,10 @@
 
 <script type="text/javascript">
   /* JavaScript to handle drag and drop */
-  var dropArea = document.getElementById('drop-area');
+  let dropArea = document.getElementById('drop-area');
   var selected_file = "";
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function (ev) {
-    dropArea.addEventListener(ev, preventDefaults, false);
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false)
   });
 
   function preventDefaults (e) {
@@ -167,24 +167,42 @@
     e.stopPropagation()
   }
 
-  ['dragenter', 'dragover'].forEach(function (ev) {
-    dropArea.addEventListener(ev, function () { dropArea.classList.add('highlight'); }, false);
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false)
   });
-  ['dragleave', 'drop'].forEach(function (ev) {
-    dropArea.addEventListener(ev, function () { dropArea.classList.remove('highlight'); }, false);
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false)
   });
-  dropArea.addEventListener('drop', function (ev) { handleFiles(ev.dataTransfer.files); }, false);
 
-  function handleFiles(files) { Array.from(files).forEach(checkFile); }
+  function highlight(e) {
+    dropArea.classList.add('highlight')
+  }
 
-  function checkFile(file) {
+  function unhighlight(e) {
+    dropArea.classList.remove('highlight')
+  }
+
+  dropArea.addEventListener('drop', handleDrop, false)
+
+  function handleDrop(e) {
+    let dt = e.dataTransfer
+    let files = dt.files
+    handleFiles(files)
+  }
+
+  function handleFiles(files) {
+    ([...files]).forEach(checkFile)
+  }
+
+  function checkFile(file){
     if(file){
-      document.querySelector('.file-name').innerHTML = '<b>Selected file:</b> ' + file.name;
+      document.querySelector('.file-name').innerHTML = "<b>Selected file:</b> " + file.name;
       var btn = document.getElementById('checkbutton');
       btn.disabled = false;
       btn.removeAttribute('aria-disabled');
       selected_file = file;
-      checkFilesSize([file], '#warning-msg');
+      checkFilesSize([file], "#warning-msg");
 
       /* Auto-detect format from file extension */
       var formatDropdown = document.getElementById('format');
@@ -194,8 +212,9 @@
       else if (name.endsWith('.json')) formatDropdown.value = 'JSON';
       else if (name.endsWith('.rdf.xml') || name.endsWith('.rdf')) formatDropdown.value = 'RDFXML';
       else if (name.endsWith('.xml')) formatDropdown.value = 'XML';
-    } else {
-      document.querySelector('.file-name').textContent = 'No file selected';
+    }
+    else{
+      document.querySelector('.file-name').textContent = "No file selected";
       var btn = document.getElementById('checkbutton');
       btn.disabled = true;
       btn.setAttribute('aria-disabled', 'true');
@@ -205,7 +224,7 @@
 function checkform() {
   if (selected_file == "") {
     return ("No files selected.");
-  } else if (document.getElementById("format").value === "0") {
+  } else if (document.getElementById("format").value == "0") {
     document.getElementById("format").focus();
     return("Please select the file format.");
   }
