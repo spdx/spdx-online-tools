@@ -87,32 +87,5 @@ $('#diffform').on('submit', function(event) {
   }
 });
 
-/* Render a side-by-side diff inline in the result section */
-function generate_text_diff(base, newtxt) {
-  var sm = new difflib.SequenceMatcher(base, newtxt);
-  var opcodes = sm.get_opcodes();
-  var diffEl = diffview.buildView({
-    baseTextLines: base,
-    newTextLines: newtxt,
-    opcodes: opcodes,
-    baseTextName: "SPDX license text",
-    newTextName: "Your license text",
-    contextSize: null,
-    viewType: 1,
-  });
-  // Strip the thead/th so only the diff body rows show
-  $(diffEl).find('thead').remove();
-  $(diffEl).find('th').remove();
-
-  var body = document.getElementById('result-body');
-  body.className = 'result-body diff-result-body';
-  body.innerHTML = '';
-  body.appendChild(diffEl);
-
-  // Scroll back to result section
-  var section = document.getElementById('result-section');
-  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  section.focus();
-}
 </script>
 {% endblock %}

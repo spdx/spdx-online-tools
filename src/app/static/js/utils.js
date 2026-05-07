@@ -1,7 +1,33 @@
 // SPDX-FileCopyrightText: 2025 SPDX Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-function findLicenseMatch(request) {
+/* Render a side-by-side diff inline in the result section */
+function generate_text_diff(base, newtxt) {
+  var sm = new difflib.SequenceMatcher(base, newtxt);
+  var opcodes = sm.get_opcodes();
+  var diffEl = diffview.buildView({
+    baseTextLines: base,
+    newTextLines: newtxt,
+    opcodes: opcodes,
+    baseTextName: "SPDX license text",
+    newTextName: "Your license text",
+    contextSize: null,
+    viewType: 1,
+  });
+  $(diffEl).find('thead').remove();
+  $(diffEl).find('th').remove();
+
+  var body = document.getElementById('result-body');
+  body.className = 'result-body diff-result-body';
+  body.innerHTML = '';
+  body.appendChild(diffEl);
+
+  var section = document.getElementById('result-section');
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  section.focus();
+}
+
+function findLicenseMatch(request, onComplete) {
   $.ajax({
     ...request,
     success: function (data) {
@@ -12,7 +38,7 @@ function findLicenseMatch(request) {
         var inputLicenseText = data.inputLicenseText.replace(/\r\n/g, "\n");
         var originalLicenseText = data.originalLicenseText;
         var matchingGuidelinesUrl =
-          "https://spdx.org/spdx-license-list/matching-guidelines";
+          "https://spdx.github.io/spdx-spec/latest/annexes/license-matching-guidelines-and-templates/";
         var bodyHtml =
           '<p>Close match found! The license closely matches with the license ID(s): ' +
           '<strong>' + $('<span>').text(matchIds).html() + '</strong> ' +
@@ -57,6 +83,7 @@ function findLicenseMatch(request) {
       }
       $("#licensediffbutton").text("License diff");
       $("#licensediffbutton").prop("disabled", false);
+      if (onComplete) onComplete();
     },
     error: function (e) {
       console.log("ERROR : ", e);
@@ -72,6 +99,7 @@ function findLicenseMatch(request) {
       }
       $("#licensediffbutton").text("Check license");
       $("#licensediffbutton").prop("disabled", false);
+      if (onComplete) onComplete();
     },
   });
 }

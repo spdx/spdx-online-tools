@@ -1,5 +1,12 @@
 {% extends 'app/base.html' %}
 {% load static %}
+{% block head_block %}
+  <link href="{% static 'css/editor/diffview.css' %}" rel="stylesheet" type="text/css">
+  <style>
+    .diff-result-body { padding: 0; overflow-x: auto; }
+    .diff-result-body table { font-size: 0.82em; }
+  </style>
+{% endblock %}
 {% block body1 %}
 <div id="messages" class="messages" role="status" aria-live="polite"></div>
 {% if error %}<p class="lead text-danger" role="alert">{{ error }}</p>{% endif %}
@@ -32,84 +39,41 @@
 {% include "app/_tool_versions.html" with show_license_matcher=True %}
 {% endblock %}
 {% block script_block %}
+<script src="{% static 'js/utils.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/difflib.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/editor/diffview.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function () {
     $("#checklicensepage").addClass('linkactive');
     });
 </script>
 <script type="text/javascript">
-function checkform() {
-  if ($('#licensetext').val() == "") {
+$('#checklicenseform').on('submit', function(event) {
+  event.preventDefault();
+  if ($('#licensetext').val() === '') {
     $('#licensetext').focus();
-    return ("No text entered.");
+    $('#messages').html(
+      '<div class="alert alert-danger" role="alert"><strong>Error:</strong> No text entered.</div>'
+    );
+    setTimeout(function() { $('#messages').html(''); }, 5000);
+    return;
   }
-  else {
-    return "1";
-  }
-}
-</script>
-<script type="text/javascript">
-  $('#checklicenseform').on('submit', function(event){
-    event.preventDefault();
-    var check = checkform();
-    if (check=="1"){
-      $("#checklicensebutton").text("Checking...").prop('disabled', true).attr('aria-disabled', 'true');
-      $("#messages").html("");
-      hideResult();
-      var form = new FormData($("#checklicenseform")[0]);
-      $.ajax({
-              type: "POST",
-              enctype: 'multipart/form-data',
-              url: "/app/check_license/",
-              processData: false,
-              contentType: false,
-              cache: false,
-              dataType: 'json',
-              data: form,
-              success: function (data) {
-                  var msg = data.data || '';
-                  var title = 'Result';
-                  var body = msg;
-        
-                  // Parse the standard "X found.<br />Y" format from the backend
-                  if (msg.indexOf(' found.<br />') > -1) {
-                    var parts = msg.split(' found.<br />');
-                    title = parts[0];
-                    body = parts[1];
-                  } else if (msg === "There are no matching SPDX listed licenses") {
-                    title = "No match";
-                  }
-        
-                  var lowerTitle = title.toLowerCase();
-                  var type = (lowerTitle.indexOf('perfect') > -1 || lowerTitle.indexOf('exact') > -1 || lowerTitle.indexOf('standard') > -1)
-                    ? 'success' : (title === 'No match' ? 'error' : 'warning');
-        
-                  showResult(type, title, '<p>' + body + '</p>');
-                  $('#checklicensebutton').text('Check license').prop('disabled', false).removeAttr('aria-disabled');
-              },
-              error: function (e) {
-                  try {
-                    var obj = JSON.parse(e.responseText);
-                    showResult('error', 'Error', '<p>' + obj.data + '</p>');
-                  }
-                  catch (_){
-                    showResult('error', 'Error',
-                               '<p>The application could not be connected. Please try later.</p>');
-                  }
-                  $('#checklicensebutton').text('Check license').prop('disabled', false).removeAttr('aria-disabled');
-              }
-          });
-    }
-    else{
-      $('#messages').html(
-        '<div class="alert alert-danger" role="alert"><strong>Error:</strong> ' +
-        $('<span>').text(check).html() + '</div>'
-      );
-      setTimeout(function() {
-        $("#messages").html("");
-      }, 5000);
-    }
+  $('#checklicensebutton').text('Checking...').prop('disabled', true).attr('aria-disabled', 'true');
+  $('#messages').html('');
+  hideResult();
+  var form = new FormData($('#checklicenseform')[0]);
+  findLicenseMatch({
+    type: 'POST',
+    enctype: 'multipart/form-data',
+    url: '/app/diff/',
+    processData: false,
+    contentType: false,
+    cache: false,
+    dataType: 'json',
+    data: form,
+  }, function() {
+    $('#checklicensebutton').text('Check license').prop('disabled', false).removeAttr('aria-disabled');
+  });
 });
-
 </script>
 {% endblock %}
