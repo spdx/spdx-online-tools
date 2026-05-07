@@ -16,26 +16,26 @@
 	<form id="validateform" enctype="multipart/form-data" class="form-horizontal" method="post" aria-label="Validate SPDX document">
 	  {% csrf_token %}
 	  <div class="form-narrow" style="text-align:center">
-	    <div class="form-group">
-	      <label for="format">File format:</label>
-	      <select name="format" id="format" aria-required="true">
-	        <option value="0" data-value="0" selected="">— Select format —</option>
-	        <option value="JSONLD">V3 JSON-LD</option>
-	        <option value="JSON">V2 JSON</option>
-	        <option value="RDFXML">V2 RDF/XML</option>
-	        <option value="TAG">V2 Tag/Value</option>
-	        <option value="XLS">V2 XLS Spreadsheet</option>
-	        <option value="XLSX">V2 XLSX Spreadsheet</option>
-	        <option value="XML">V2 XML</option>
-	        <option value="YAML">V2 YAML</option>
-	      </select>
-	    </div>
+	  <div class="form-group">
+			<label for="format">File format:</label>
+				<select name="format" id="format" aria-required="true">
+					  <option value="0" data-value="0" selected="">— Select format —</option>
+					  <option value="JSONLD">V3 JSON-LD</option>
+					  <option value="JSON">V2 JSON</option>
+					  <option value="RDFXML">V2 RDF/XML</option>
+					  <option value="TAG">V2 Tag/Value</option>
+					  <option value="XLS">V2 XLS Spreadsheet</option>
+					  <option value="XLSX">V2 XLSX Spreadsheet</option>
+					  <option value="XML">V2 XML</option>
+					  <option value="YAML">V2 YAML</option>
+        </select>
+		</div>
 	  </div>
-	  <div id="drop-area" class="container" role="region" aria-label="File upload area">
-	    <p id="drop-instructions">Upload SPDX document using the button or by dragging and dropping onto the dashed region</p>
-	    <input type="file" id="file" onchange="handleFiles(this.files)" aria-label="Select SPDX document" aria-describedby="drop-instructions">
-	    <label class="button" for="file">Select file</label>
-	    <div class="file-name" aria-live="polite" aria-atomic="true">No file selected</div>
+		<div id="drop-area" class="container" role="region" aria-label="File upload area">
+		 <p id="drop-instructions">Upload SPDX document using the button or by dragging and dropping onto the dashed region</p>
+		  <input type="file" id="file" onchange="handleFiles(this.files)" aria-label="Select SPDX document" aria-describedby="drop-instructions">
+		  <label class="button" for="file">Select file</label>
+		  <div class="file-name" aria-live="polite" aria-atomic="true">No file selected</div>
 	  </div>
 	</form>
 
@@ -52,6 +52,7 @@
 </div>
 </div>
 {% include "app/_tool_versions.html" with show_java_tools=True %}
+
 {% endblock %}
 
 {% block script_block %}
@@ -63,7 +64,7 @@
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, preventDefaults, false)
   });
-
+  
   function preventDefaults (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -72,19 +73,19 @@
   ['dragenter', 'dragover'].forEach(eventName => {
     dropArea.addEventListener(eventName, highlight, false)
   });
-
+  
   ['dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, unhighlight, false)
   });
-
+  
   function highlight(e) {
     dropArea.classList.add('highlight')
   }
-
+  
   function unhighlight(e) {
     dropArea.classList.remove('highlight')
   }
-
+  
   dropArea.addEventListener('drop', handleDrop, false)
 
   function handleDrop(e) {
@@ -92,7 +93,7 @@
     let files = dt.files
     handleFiles(files)
   }
-
+  
   function handleFiles(files) {
     ([...files]).forEach(checkFile)
   }
@@ -153,7 +154,6 @@ function checkform() {
 
       var form = new FormData(document.getElementById('validateform'));
       form.append("file", selected_file);
-
       $.ajax({
               type: "POST",
               enctype: 'multipart/form-data',
@@ -197,7 +197,6 @@ function checkform() {
     }
   });
 </script>
-
 <script type="text/javascript">
 $(document).ready(function () {
     $("#validatepage").addClass('linkactive');

@@ -195,7 +195,7 @@
     ([...files]).forEach(checkFile)
   }
 
-  function checkFile(file){
+  function checkFile(file) {
     if(file){
       document.querySelector('.file-name').innerHTML = "<b>Selected file:</b> " + file.name;
       var btn = document.getElementById('checkbutton');
@@ -257,7 +257,7 @@ function checkform() {
       inner += "</ul></div>";
     } else {
     // Conformance results summary
-    var stdNames = { "ntia": "NTIA Minimum Elements", "fsct3-min": "CISA 2024 FSCT Minimum Expected" };
+    var stdNames = {"ntia": "NTIA Minimum Elements", "fsct3-min": "CISA 2024 FSCT Minimum Expected"};
     var stdName = stdNames[data.complianceStandard] || escapeHtml(data.complianceStandard || "");
     var conformantClass = data.isConformant ? "status-pass" : "status-fail";
 
