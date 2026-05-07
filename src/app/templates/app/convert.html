@@ -85,27 +85,50 @@
 
 <script type="text/javascript">
   /* Drag and drop handling */
-  var dropArea = document.getElementById('drop-area');
-  var selected_file = '';
+  let dropArea = document.getElementById('drop-area');
+  var selected_file = "";
   var filenameUserEdited = false;
 
   document.getElementById('cfilename').addEventListener('input', function () {
     filenameUserEdited = true;
   });
 
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function (ev) {
-    dropArea.addEventListener(ev, preventDefaults, false);
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false)
   });
-  function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
-  ['dragenter', 'dragover'].forEach(function (ev) {
-    dropArea.addEventListener(ev, function () { dropArea.classList.add('highlight'); }, false);
-  });
-  ['dragleave', 'drop'].forEach(function (ev) {
-    dropArea.addEventListener(ev, function () { dropArea.classList.remove('highlight'); }, false);
-  });
-  dropArea.addEventListener('drop', function (e) { handleFiles(e.dataTransfer.files); }, false);
 
-  function handleFiles(files) { Array.from(files).forEach(checkFile); }
+  function preventDefaults (e) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false)
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false)
+  });
+
+  function highlight(e) {
+    dropArea.classList.add('highlight')
+  }
+
+  function unhighlight(e) {
+    dropArea.classList.remove('highlight')
+  }
+
+  dropArea.addEventListener('drop', handleDrop, false)
+
+  function handleDrop(e) {
+    let dt = e.dataTransfer
+    let files = dt.files
+    handleFiles(files)
+  }
+
+  function handleFiles(files) {
+    ([...files]).forEach(checkFile)
+  }
 
   function updateDefaultFilename() {
     if (filenameUserEdited) return;
@@ -114,151 +137,172 @@
       var name = selected_file.name;
       field.value = name.replace(/(\.(spdx3|spdx))?\.[^.]+$/, '') || name;
     } else {
-      field.value = '';
+      field.value = "";
     }
   }
 
-  function checkFile(file) {
-    if (file) {
-      document.querySelector('.file-name').innerHTML = '<b>Selected file:</b> ' + file.name;
+  function checkFile(file){
+    if(file){
+      $(".file-name").html("<b>Selected file:</b> "+file.name);
       selected_file = file;
       updateDefaultFilename();
-      checkFilesSize([file], '#warning-msg');
+      checkFilesSize([file], "#warning-msg");
 
       /* Auto-detect and set from_format based on file extension */
       var fromFormatDropdown = document.getElementById('from_format');
       var name = file.name.toLowerCase();
-      var detected = '';
-      if (name.endsWith('.spdx')) detected = 'TAG';
+      var detected = "";
+      if (name.endsWith('.spdx')) detected = "TAG";
       else if (name.endsWith('.jsonld') || name.endsWith('.spdx3.json') || name.endsWith('.jsonld.json')) {
-        document.getElementById('messages').innerHTML =
-          '<div class="alert alert-danger" role="alert"><strong>Error:</strong> ' +
-          'Conversion from SPDX 3 JSON-LD is not supported yet.</div>';
-        setTimeout(function () { document.getElementById('messages').innerHTML = ''; }, 5000);
-      } else if (name.endsWith('.json')) detected = 'JSON';
-      else if (name.endsWith('.rdf.xml') || name.endsWith('.rdf')) detected = 'RDFXML';
-      else if (name.endsWith('.rdf.ttl') || name.endsWith('.ttl')) detected = 'RDFTTL';
-      else if (name.endsWith('.xlsx')) detected = 'XLSX';
-      else if (name.endsWith('.xls')) detected = 'XLS';
-      else if (name.endsWith('.xml')) detected = 'XML';
-      else if (name.endsWith('.yaml') || name.endsWith('.yml')) detected = 'YAML';
+        $("#messages").html('<div class="alert alert-danger" role="alert"><strong>Error:</strong> ' +
+          'Conversion from SPDX 3 JSON-LD is not supported yet.</div>');
+        setTimeout(function () { $("#messages").html(""); }, 5000);
+      } else if (name.endsWith('.json')) detected = "JSON";
+      else if (name.endsWith('.rdf.xml') || name.endsWith('.rdf')) detected = "RDFXML";
+      else if (name.endsWith('.rdf.ttl') || name.endsWith('.ttl')) detected = "RDFTTL";
+      else if (name.endsWith('.xlsx')) detected = "XLSX";
+      else if (name.endsWith('.xls')) detected = "XLS";
+      else if (name.endsWith('.xml')) detected = "XML";
+      else if (name.endsWith('.yaml') || name.endsWith('.yml')) detected = "YAML";
       if (detected) {
         fromFormatDropdown.value = detected;
         $(fromFormatDropdown).change();
       }
-    } else {
-      document.querySelector('.file-name').textContent = 'No file selected';
-      selected_file = '';
+    }
+    else{
+      $(".file-name").html("No file selected");
+      selected_file = "";
       updateDefaultFilename();
     }
   }
 </script>
 
 <script type="text/javascript">
-  $(document).ready(function () {
-    $('#convertpage').addClass('linkactive');
+$(document).ready(function () {
+  $("#convertpage").addClass('linkactive');
 
-    $('#from_format').change(function () {
-      if ($(this).data('options') === undefined) {
-        $(this).data('options', $('#to_format option').clone());
-      }
-      var id = $(this).val();
-      var id2 = $('#to_format').val();
-      var options = $(this).data('options').filter('[data-value!=' + id + ']');
-      $('#to_format').html(options);
-      var label = id !== '0'
-        ? 'Upload SPDX ' + id + ' document using the button or by dragging and dropping onto the dashed region'
-        : 'Upload SPDX document using the button or by dragging and dropping onto the dashed region';
-      document.getElementById('drop-instructions').textContent = label;
-      if (id2 === id) {
-        $('#to_format').val('0');
-        $('#cfileext-hint').text('');
-        $('#cfileformat').val('');
-      } else {
-        $('#to_format').val(id2);
-        var ext = $('#to_format').find(':selected').attr('data-ext') || '';
-        $('#cfileext-hint').text(ext);
-        $('#cfileformat').val(ext);
-      }
-    });
-
-    $('#to_format').change(function () {
-      var id2 = $(this).val();
-      var ext = id2 === '0' ? '' : ($(this).find(':selected').attr('data-ext') || '');
-      $('#cfileext-hint').text(ext);
-      $('#cfileformat').val(ext);
-    });
-  });
-</script>
-
-<script type="text/javascript">
-  function checkform() {
-    if (selected_file === '') return 'No files selected.';
-    if ($('#from_format').val() === '0') { $('#from_format').focus(); return 'Please select the source format.'; }
-    if ($('#to_format').val() === '0') { $('#to_format').focus(); return 'Please select the target format.'; }
-    if ($('#cfilename').val() === '') { $('#cfilename').focus(); return 'Please choose a file name for the converted file.'; }
-    return '1';
-  }
-</script>
-
-<script type="text/javascript">
-  $('#convertform').on('submit', function (event) {
-    event.preventDefault();
-    var check = checkform();
-    if (check === '1') {
-      $('#convertbutton').text('Converting…').prop('disabled', true).attr('aria-disabled', 'true');
-      $('#messages').html('');
-      hideResult();
-
-      var form = new FormData($('#convertform')[0]);
-      form.append('file', selected_file);
-
-      $.ajax({
-        type: 'POST',
-        enctype: 'multipart/form-data',
-        url: '/app/convert/',
-        processData: false,
-        contentType: false,
-        dataType: 'json',
-        cache: false,
-        timeout: 600000,
-        data: form,
-        success: function (data) {
-          var link = '<a href="' + data.medialink + '" class="btn btn-default">' +
-            '<span class="glyphicon glyphicon-save-file" aria-hidden="true"></span>' +
-            ' Download converted file</a>';
-          showResult('success', 'Conversion successful', link);
-          $('#convertbutton').text('Convert').prop('disabled', false).removeAttr('aria-disabled');
-          filenameUserEdited = false;
-        },
-        error: function (e) {
-          try {
-            var obj = JSON.parse(e.responseText);
-            if (obj.type === 'warning') {
-              var body = '<p>' + obj.data + '</p><hr>' +
-                '<p>Despite warnings, a file was generated:</p>' +
-                '<a href="' + obj.medialink + '" class="btn btn-default">' +
-                '<span class="glyphicon glyphicon-save-file" aria-hidden="true"></span>' +
-                ' Download converted file</a>';
-              showResult('warning', 'Conversion completed with warnings', body);
-            } else {
-              showResult('error', 'Conversion failed', '<p>' + obj.data + '</p>');
-            }
-          } catch (_) {
-            showResult('error', 'Error',
-              '<p>The application could not be connected. Please try later.</p>');
-          }
-          $('#convertbutton').text('Convert').prop('disabled', false).removeAttr('aria-disabled');
-        }
-      });
+  $("#from_format").change(function() {
+    if ($(this).data('options') === undefined) {
+      $(this).data('options', $('#to_format option').clone());
+    }
+    var id = $(this).val();
+    var id2 = $('#to_format').val();
+    var options = $(this).data('options').filter('[data-value!=' + id + ']');
+    $('#to_format').html(options);
+    if (id!="0"){
+      document.getElementById('drop-instructions').textContent = "Upload SPDX "+ id +" document using the button or by dragging and dropping onto the dashed region";
+    }
+    else{
+      document.getElementById('drop-instructions').textContent = "Upload SPDX document using the button or by dragging and dropping onto the dashed region";
+    }
+	if (id2 == id) {
+	    $('#to_format').val("0");
+	    $('#cfileext-hint').text("");
+	    $('#cfileformat').val("");
     } else {
-      $('#messages').html(
-        '<div class="alert alert-danger" role="alert"><strong>Error:</strong> ' +
-        $('<span>').text(check).html() + '</div>'
-      );
-      setTimeout(function () { $('#messages').html(''); }, 5000);
+	    $('#to_format').val(id2);
+	    file_ext = $('#to_format').find(':selected').attr("data-ext") || "";
+	    $('#cfileext-hint').text(file_ext);
+	    $('#cfileformat').val(file_ext);
     }
   });
+
+  $("#to_format").change(function() {
+    var id2 = $('#to_format').val();
+    if (id2 == "0") {
+	    $('#cfileext-hint').text("");
+	    $('#cfileformat').val("");
+    } else {
+	    file_ext = $('#to_format').find(':selected').attr("data-ext") || "";
+	    $('#cfileext-hint').text(file_ext);
+	    $('#cfileformat').val(file_ext);
+    }
+  });
+})
+</script>
+
+<script type="text/javascript">
+function checkform() {
+  if (selected_file == "") {
+    return ("No files selected.");
+  }
+  else if (($('#from_format').val() == "0")){
+    $('#from_format').focus();
+    return("Please select the source format.");
+  }
+  else if (($('#to_format').val() == "0")){
+    $('#to_format').focus();
+    return("Please select the target format.");
+  }
+  else if (($('#cfilename').val() == "")){
+    $('#cfilename').focus();
+    return("Please choose a file name for the converted file.");
+  }
+  else {
+    return "1";
+  }
+}
+</script>
+
+<script type="text/javascript">
+  $('#convertform').on('submit', function(event){
+    event.preventDefault();
+    var check = checkform();
+    if (check=="1") {
+      $("#convertbutton").text("Converting…").prop('disabled', true).attr('aria-disabled', 'true');
+      $("#messages").html("");
+      hideResult();
+      var form = new FormData($("#convertform")[0]);
+      form.append("file", selected_file);
+      $.ajax({
+              type: "POST",
+              enctype: 'multipart/form-data',
+              url: "/app/convert/",
+              processData: false,
+              contentType: false,
+              dataType: 'json',
+              cache: false,
+              timeout: 600000,
+              data: form,
+              success: function (data) {
+                  var link = '<a href="' + data.medialink + '" class="btn btn-default">' +
+                    '<span class="glyphicon glyphicon-save-file" aria-hidden="true"></span>' +
+                    ' Download converted file</a>';
+                  showResult("success", "Conversion successful", link);
+                  $("#convertbutton").text("Convert").prop('disabled', false).removeAttr('aria-disabled');
+                  filenameUserEdited = false;
+              },
+              error: function (e) {
+              	  try{
+              	  	var obj = JSON.parse(e.responseText);
+              	  	if (obj.type=="warning"){
+                        var body = '<p>' + obj.data + '</p><hr>' +
+                          '<p>Despite warnings, a file was generated:</p>' +
+                          '<a href="' + obj.medialink + '" class="btn btn-default">' +
+                          '<span class="glyphicon glyphicon-save-file" aria-hidden="true"></span>' +
+                          ' Download converted file</a>';
+                        showResult("warning", "Conversion completed with warnings", body);
+	                  }
+	                  else {
+	                    showResult("error", "Conversion failed", '<p>' + obj.data + '</p>');
+	                  }
+              	  }
+              	  catch (e) {
+              	  	showResult("error", "Error",
+              	  	  '<p>The application could not be connected. Please try later.</p>');
+              	  }
+                  $("#convertbutton").text("Convert").prop('disabled', false).removeAttr('aria-disabled');
+              }
+          });
+    }
+    else{
+      $("#messages").html('<div class="alert alert-danger" role="alert"><strong>Error:</strong> ' +
+        $("<span>").text(check).html() + '</div>');
+      setTimeout(function() {
+        $("#messages").html("");
+      }, 5000);
+    }
+});
 </script>
 
 {% endblock %}
