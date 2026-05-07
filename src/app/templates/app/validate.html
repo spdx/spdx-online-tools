@@ -93,11 +93,11 @@
     let files = dt.files
     handleFiles(files)
   }
-  
+
   function handleFiles(files) {
     ([...files]).forEach(checkFile)
   }
-
+  
   function checkFile(file){
     if(file){
       document.querySelector('.file-name').innerHTML = "<b>Selected file:</b> " + file.name;
