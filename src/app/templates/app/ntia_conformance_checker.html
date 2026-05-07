@@ -186,16 +186,14 @@
       selected_file = file;
       checkFilesSize([file], '#warning-msg');
 
-      /* Auto-select format if not already selected */
+      /* Auto-detect format from file extension */
       var formatDropdown = document.getElementById('format');
-      if (formatDropdown.value === '0') {
-        var name = file.name.toLowerCase();
-        if (name.endsWith('.spdx')) formatDropdown.value = 'TAG';
-        else if (name.endsWith('.jsonld') || name.endsWith('.spdx3.json') || name.endsWith('.jsonld.json')) formatDropdown.value = 'SPDX3_JSON';
-        else if (name.endsWith('.json')) formatDropdown.value = 'JSON';
-        else if (name.endsWith('.rdf.xml') || name.endsWith('.rdf')) formatDropdown.value = 'RDFXML';
-        else if (name.endsWith('.xml')) formatDropdown.value = 'XML';
-      }
+      var name = file.name.toLowerCase();
+      if (name.endsWith('.spdx')) formatDropdown.value = 'TAG';
+      else if (name.endsWith('.jsonld') || name.endsWith('.spdx3.json') || name.endsWith('.jsonld.json')) formatDropdown.value = 'SPDX3_JSON';
+      else if (name.endsWith('.json')) formatDropdown.value = 'JSON';
+      else if (name.endsWith('.rdf.xml') || name.endsWith('.rdf')) formatDropdown.value = 'RDFXML';
+      else if (name.endsWith('.xml')) formatDropdown.value = 'XML';
     } else {
       document.querySelector('.file-name').textContent = 'No file selected';
       var btn = document.getElementById('checkbutton');
@@ -366,7 +364,7 @@ function checkform() {
                     showResult(type, title, renderConformanceData(obj.data));
                   }
                   catch (_) {
-                    showResult("error', "Error",
+                    showResult("error", "Error",
                       "<p>The application could not be connected. Please try later.</p>");
                   }
                   btn.textContent = "Check conformance";

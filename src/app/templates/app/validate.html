@@ -96,19 +96,17 @@
       selected_file = file;
       checkFilesSize([file], '#warning-msg');
 
-      /* Auto-select format if not already selected */
+      /* Auto-detect format from file extension */
       var formatDropdown = document.getElementById('format');
-      if (formatDropdown.value === '0') {
-        var name = file.name.toLowerCase();
-        if (name.endsWith('.spdx')) formatDropdown.value = 'TAG';
-        else if (name.endsWith('.jsonld') || name.endsWith('.spdx3.json') || name.endsWith('.jsonld.json')) formatDropdown.value = 'JSONLD';
-        else if (name.endsWith('.json')) formatDropdown.value = 'JSON';
-        else if (name.endsWith('.rdf.xml') || name.endsWith('.rdf')) formatDropdown.value = 'RDFXML';
-        else if (name.endsWith('.xlsx')) formatDropdown.value = 'XLSX';
-        else if (name.endsWith('.xls')) formatDropdown.value = 'XLS';
-        else if (name.endsWith('.xml')) formatDropdown.value = 'XML';
-        else if (name.endsWith('.yaml') || name.endsWith('.yml')) formatDropdown.value = 'YAML';
-      }
+      var name = file.name.toLowerCase();
+      if (name.endsWith('.spdx')) formatDropdown.value = 'TAG';
+      else if (name.endsWith('.jsonld') || name.endsWith('.spdx3.json') || name.endsWith('.jsonld.json')) formatDropdown.value = 'JSONLD';
+      else if (name.endsWith('.json')) formatDropdown.value = 'JSON';
+      else if (name.endsWith('.rdf.xml') || name.endsWith('.rdf')) formatDropdown.value = 'RDFXML';
+      else if (name.endsWith('.xlsx')) formatDropdown.value = 'XLSX';
+      else if (name.endsWith('.xls')) formatDropdown.value = 'XLS';
+      else if (name.endsWith('.xml')) formatDropdown.value = 'XML';
+      else if (name.endsWith('.yaml') || name.endsWith('.yml')) formatDropdown.value = 'YAML';
     } else {
       document.querySelector('.file-name').textContent = 'No file selected';
       var btn = document.getElementById('validatebutton');
