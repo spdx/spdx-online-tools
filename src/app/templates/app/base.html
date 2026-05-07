@@ -290,10 +290,12 @@ label.control-label { font-weight: 600; color: #444; font-size: 0.92em; }
 .btn-primary { background-color: #2a6496; border-color: #2a6496; color: #fff; }
 .btn-primary:hover,
 .btn-primary:focus { background-color: #1e4d73; border-color: #1e4d73; color: #fff; }
-/* btn-warning: white on #856500 ≈ 5.4:1 ✓  (Bootstrap default #f0ad4e ≈ 1.9:1 ✗) */
-.btn-warning { background-color: #856500; border-color: #856500; color: #fff; }
+/* btn-warning: white on #c04000 ≈ 5.3:1 ✓  (Bootstrap default #f0ad4e ≈ 1.9:1 ✗) */
+/* #c04000 is the brightest achievable orange where white text passes WCAG AA;         */
+/* adding more green shifts toward yellow and blows past the luminance ceiling.        */
+.btn-warning { background-color: #c04000; border-color: #c04000; color: #fff; }
 .btn-warning:hover,
-.btn-warning:focus { background-color: #6b5200; border-color: #6b5200; color: #fff; }
+.btn-warning:focus { background-color: #963200; border-color: #963200; color: #fff; }
 /* btn-info: white on #007aa0 ≈ 4.9:1 ✓  (white on #0097c4 ≈ 3.4:1 ✗) */
 .btn-info { background-color: #007aa0; border: none; padding: 8px 20px; color: #fff; }
 .btn-info:hover,
