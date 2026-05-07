@@ -16,8 +16,8 @@
     <form id="convertform" enctype="multipart/form-data" class="form-horizontal" method="post" aria-label="Convert SPDX document">
       {% csrf_token %}
       <div class="form-narrow">
-        <div class="form-group">
-          <label for="from_format">From</label>
+        <div class="form-group text-center">
+          <label for="from_format">From</label>&nbsp;
           <select name="from_format" id="from_format" aria-required="true">
             <option value="0" selected="">— Select source format —</option>
             <option value="JSON">V2 JSON</option>
@@ -29,7 +29,7 @@
             <option value="XML">V2 XML</option>
             <option value="YAML">V2 YAML</option>
           </select>
-          <label for="to_format">to</label>
+          &nbsp;<label for="to_format">to</label>&nbsp;
           <select name="to_format" id="to_format" aria-required="true">
             <option value="0" data-value="INGORE" data-ext="" selected="">— Select target format —</option>
             <option value="JSONLD" data-value="JSONLD" data-ext=".spdx3.json">V3 JSON-LD</option>
@@ -56,8 +56,10 @@
         <div class="form-group">
           <label for="cfilename" class="control-label col-sm-5">Converted file name</label>
           <div class="col-sm-7">
-            <input type="text" id="cfilename" name="cfilename" aria-describedby="cfileext-hint">
-            <span id="cfileext-hint" class="control-label" aria-live="polite"></span>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <input type="text" id="cfilename" name="cfilename" aria-describedby="cfileext-hint" style="flex: 1; min-width: 0;">
+              <span id="cfileext-hint" class="control-label" aria-live="polite" style="white-space: nowrap;"></span>
+            </div>
           </div>
         </div>
       </div>
