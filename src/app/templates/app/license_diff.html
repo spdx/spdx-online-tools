@@ -14,28 +14,28 @@
 <div id="messages" class="messages" role="status" aria-live="polite"></div>
 <p class="lead">{{ error }}</p>
 <div class="panel panel-default">
-  <div class="panel-heading">
-    <h1 class="panel-title">License diff</h1>
-    <p>Check license text against existing SPDX licenses</p>
-  </div>
-  <div class="panel-body">
-    <form id="diffform" enctype="multipart/form-data" class="form-horizontal" method="post" aria-label="Check license diff">
-      {% csrf_token %}
-      <div class="form-group">
-        <label for="licensetext"><strong>License text</strong></label>
-        <textarea id="licensetext" name="licensetext" rows="18" style="width:100%" aria-required="true" placeholder="Paste the full license text here…"></textarea>
-      </div>
-      <button id="licensediffbutton" class="btn btn-md btn-info" type="submit">Check license diff</button>
-    </form>
+<div class="panel-heading">
+  <h1 class="panel-title">License diff</h1>
+  <p>Check license text against existing SPDX licenses</p>
+</div>
+<div class="panel-body">
+  <form id="diffform" enctype="multipart/form-data" class="form-horizontal" method="post" aria-label="Check license diff">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="licensetext"><strong>License text</strong></label>
+      <textarea id="licensetext" name="licensetext" rows="18" style="width:100%" aria-required="true" placeholder="Paste the full license text here…"></textarea>
+    </div>
+    <button id="licensediffbutton" class="btn btn-md btn-info" type="submit">Check license diff</button>
+  </form>
 
-    <section id="result-section" class="result-section" role="region" aria-label="License diff result" tabindex="-1" hidden>
-      <div id="result-header" class="result-header">
-        <h2 id="result-title" class="result-title"></h2>
-        <button type="button" class="result-close" aria-label="Close result" onclick="hideResult()">&times;</button>
-      </div>
-      <div id="result-body" class="result-body"></div>
-    </section>
-  </div>
+  <section id="result-section" class="result-section" role="region" aria-label="License diff result" tabindex="-1" hidden>
+    <div id="result-header" class="result-header">
+      <h2 id="result-title" class="result-title"></h2>
+      <button type="button" class="result-close" aria-label="Close result" onclick="hideResult()">&times;</button>
+    </div>
+    <div id="result-body" class="result-body"></div>
+  </section>
+</div>
 </div>
 {% endblock %}
 {% block script_block %}
@@ -58,32 +58,33 @@ function checkform() {
   }
 }
 
-$('#diffform').on('submit', function(event) {
+$('#diffform').on('submit', function(event){
   event.preventDefault();
   var check = checkform();
-  if (check=="1") {
-    $('#licensediffbutton').text('Checking…').prop('disabled', true).attr('aria-disabled', 'true');
-    $('#messages').html('');
+  if (check=="1"){
+    $("#licensediffbutton").text("Checking…").prop('disabled', true).attr('aria-disabled', 'true');
+    $("#messages").html("");
     hideResult();
 
-    var form = new FormData($('#diffform')[0]);
+    var form = new FormData($("#diffform")[0]);
     var request = {
-      type: 'POST',
-      enctype: 'multipart/form-data',
-      url: '/app/diff/',
+      type: "POST",
+      enctype: "multipart/form-data",
+      url: "/app/diff/",
       processData: false,
       contentType: false,
       cache: false,
-      dataType: 'json',
+      dataType: "json",
       data: form,
     };
     findLicenseMatch(request);
-  } else {
-    $('#messages').html(
+  }
+  else{
+    $("#messages").html(
       '<div class="alert alert-danger" role="alert"><strong>Error:</strong> ' +
       $('<span>').text(check).html() + '</div>'
     );
-    setTimeout(function() { $('#messages').html(''); }, 5000);
+    setTimeout(function() { $("#messages").html(""); }, 5000);
   }
 });
 

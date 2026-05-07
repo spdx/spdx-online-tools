@@ -48,31 +48,31 @@ $(document).ready(function () {
     });
 </script>
 <script type="text/javascript">
-$('#checklicenseform').on('submit', function(event) {
+$('#checklicenseform').on('submit', function(event){
   event.preventDefault();
-  if ($('#licensetext').val() === '') {
-    $('#licensetext').focus();
-    $('#messages').html(
+  if ($("#licensetext").val() == "") {
+    $("#licensetext").focus();
+    $("#messages").html(
       '<div class="alert alert-danger" role="alert"><strong>Error:</strong> No text entered.</div>'
     );
-    setTimeout(function() { $('#messages').html(''); }, 5000);
+    setTimeout(function() { $("#messages").html(""); }, 5000);
     return;
   }
-  $('#checklicensebutton').text('Checking...').prop('disabled', true).attr('aria-disabled', 'true');
-  $('#messages').html('');
+  $("#checklicensebutton").text("Checking...").prop('disabled', true).attr('aria-disabled', 'true');
+  $("#messages").html("");
   hideResult();
-  var form = new FormData($('#checklicenseform')[0]);
+  var form = new FormData($("#checklicenseform")[0]);
   findLicenseMatch({
-    type: 'POST',
+    type: "POST",
     enctype: 'multipart/form-data',
-    url: '/app/diff/',
+    url: "/app/diff/",
     processData: false,
     contentType: false,
     cache: false,
     dataType: 'json',
     data: form,
   }, function() {
-    $('#checklicensebutton').text('Check license').prop('disabled', false).removeAttr('aria-disabled');
+    $("#checklicensebutton").text("Check license").prop('disabled', false).removeAttr('aria-disabled');
   });
 });
 </script>
