@@ -241,8 +241,9 @@ function checkform() {
   }
 
   function renderConformanceData(data) {
+    // If data is HTML, escape to prevent injection and immediately return
     if (typeof data !== "object" || data === null) {
-      return String(data);  // data is HTML
+      return escapeHtml(String(data));
     }
 
     var inner = '';
