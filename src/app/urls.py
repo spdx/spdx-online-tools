@@ -34,13 +34,12 @@ urlpatterns = [
     path('beautify/', views.beautify, name='beautify'),
     path('update_session/',views.update_session_variables, name='update-session-variables'),
     path('submit_new_license/', views.submitNewLicense, name='submit-new-license'),
-    # Disabled: license namespace was never accepted into the SPDX spec (see issue #337)
-    # path('submit_new_license_namespace/', views.submitNewLicenseNamespace, name='submit-new-license-namespace'),
     path('license_requests/', views.licenseRequests, name='license-requests'),
     re_path(r'^license_requests/(?P<licenseId>\d+)/$', views.licenseInformation, name='license-information'),
     path('archive_requests/', views.archiveRequests, name='archive-license-xml'),
     re_path(r'^archive_requests/(?P<licenseId>\d+)/$', views.licenseInformation, name='archived-license-information'),
     # Disabled: license namespace not accepted into the SPDX spec (see issue #337)
+    # path('submit_new_license_namespace/', views.submitNewLicenseNamespace, name='submit-new-license-namespace'),
     # path('license_namespace_requests/', views.licenseNamespaceRequests, name='license-namespace-requests'),
     # re_path(r'^license_namespace_requests/(?P<licenseId>\d+)/$', views.licenseNamespaceInformation, name='license-namespace-information'),
     # path('archive_namespace_requests/', views.archiveNamespaceRequests, name='archive-license-namespace-xml'),
