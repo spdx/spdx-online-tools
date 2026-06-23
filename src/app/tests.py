@@ -1337,7 +1337,7 @@ class SubmitNewLicenseViewsTestCase(TestCase):
         self.exampleUrl = "testUrl"
         self.sourceUrl = "http://landley.net/toybox/license.html"
         self.urls = [self.sourceUrl]
-        self.osiApproved = "no"
+        self.osiApproved = "Unknown"
         self.comments = "Test Comment"
         self.notes = ""
         self.licenseHeader = ""
@@ -1578,7 +1578,7 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
         self.sourceUrl = "http://landley.net/toybox/license.html"
         self.license_list_url = self.sourceUrl
         self.github_repo_url = self.sourceUrl
-        self.osiApproved = "no"
+        self.osiApproved = "Unknown"
         self.comments = ""
         self.notes = ""
         self.licenseHeader = ""
