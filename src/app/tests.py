@@ -6,7 +6,7 @@ import datetime
 import logging
 import os
 import shutil
-from unittest import skipIf
+from unittest import skip, skipIf
 from unittest.mock import patch
 
 from django.conf import settings
@@ -1594,8 +1594,19 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
                     "urlType": "tests", "namespace": self.namespace, "license_list_url": self.license_list_url,
                     "github_repo_url": self.github_repo_url, "licenseAuthorName": self.licenseAuthorName}
 
+    @skip("URL disabled: license namespace not accepted into SPDX spec (see issue #337)")
     def test_submit_new_license_namespace(self):
-        """GET Request for submit a new license namespace"""
+        """GET Request for submit a new license namespace.
+
+        Note that the license namespace feature is not accepted into the SPDX
+        specification, and therefore this URL is disabled.
+        The test is skipped to avoid failures.
+
+        See more details in the following links:
+        - https://github.com/spdx/spdx-spec/issues/113
+        - https://github.com/spdx/spdx-spec/pull/209
+        - https://github.com/spdx/spdx-online-tools/issues/337#issuecomment-1504244538
+        """
         resp = self.client.get(reverse("submit-new-license-namespace"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.redirect_chain,[])
@@ -1621,9 +1632,20 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
                                 [self.sourceUrl], self.licenseHeader, self.notes, self.text).replace(">","> ")
         self.assertEqual(self.xml, xml)
 
+    @skip("URL disabled: license namespace not accepted into SPDX spec (see issue #337)")
     @skipIf(not getAccessToken() or not getGithubUserId() or not getGithubUserName(), "You need to set GitHub parameters in the secret.py file for this test to be executed properly.")
     def test_post_submit(self):
-        """POST Request for submit a new license namespace"""
+        """POST Request for submit a new license namespace.
+
+        Note that the license namespace feature is not accepted into the SPDX
+        specification, and therefore this URL is disabled.
+        The test is skipped to avoid failures.
+
+        See more details in the following links:
+        - https://github.com/spdx/spdx-spec/issues/113
+        - https://github.com/spdx/spdx-spec/pull/209
+        - https://github.com/spdx/spdx-online-tools/issues/337#issuecomment-1504244538
+        """
         login = TestUtil.gitHubLogin(self)
         self.assertTrue(login)
         self.initialise()
