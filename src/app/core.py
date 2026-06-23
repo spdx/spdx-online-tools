@@ -21,6 +21,17 @@ from spdx_license_matcher.utils import get_spdx_license_text
 
 import app.utils as utils
 
+UNEXPECTED_ERROR_MSG = (
+    "An unexpected error occurred while processing your request. "
+    "Please report this at https://github.com/spdx/spdx-online-tools/issues "
+    "and include the error details below:\n"
+)
+JAVA_ERROR_MSG = (
+    "An unexpected error was returned by the Java tools while processing your request. "
+    "Please report this at https://github.com/spdx/spdx-online-tools/issues "
+    "and include the error details below:\n"
+)
+
 
 def initialise_jpype():
     """Start JVM if not already started.
@@ -112,18 +123,18 @@ def license_compare_helper(request):
                     except jpype.JException as ex:
                         # Error raised by verifyclass.verifyRDFFile without exiting the application
                         filelist.append(myfile.name)
-                        errorlist.append(str(ex))
+                        errorlist.append(JAVA_ERROR_MSG + str(ex))
                     except Exception:
                         # Other Exceptions
                         erroroccurred = True
                         filelist.append(myfile.name)
-                        errorlist.append(format_exc())
+                        errorlist.append(UNEXPECTED_ERROR_MSG + format_exc())
                 except Exception:
                     # Invalid file extension
                     erroroccurred = True
                     filelist.append(myfile.name)
                     errorlist.append("Invalid file extension for "+filename+".  Must be .xls, .xlsx, .xml, .json, .yaml, .spdx, .rdfxml")
-                    errorlist.append(format_exc())
+                    errorlist.append(UNEXPECTED_ERROR_MSG + format_exc())
             if erroroccurred is False:
                 # If no errors in any of the file,call the java function with parameters as list
                 try :
@@ -134,7 +145,7 @@ def license_compare_helper(request):
                         ajaxdict["type"] = "warning2"
                         ajaxdict["files"] = filelist
                         ajaxdict["errors"] = errorlist
-                        ajaxdict["toolerror"] = format_exc()
+                        ajaxdict["toolerror"] = UNEXPECTED_ERROR_MSG + format_exc()
                         response = dumps(ajaxdict)
                         result['status'] = 400
                         result['response'] = response
@@ -312,16 +323,14 @@ def ntia_check_helper(request):
             ajaxdict = dict()
             ajaxdict["type"] = "error"
             ajaxdict["data"] = (
-                "<p class='error-log-lead'>Unexpected error found:</p>"
-                + "<pre class='error-log'>"
-                + format_exc()
-                + "</pre>"
+                "<p class='error-log-lead'>" + UNEXPECTED_ERROR_MSG + "</p>"
+                + "<pre class='error-log'>" + format_exc() + "</pre>"
             )
             response = dumps(ajaxdict)
             result['response'] = response
             result['status'] = 400
             return result
-        context_dict["error"] = format_exc()
+        context_dict["error"] = UNEXPECTED_ERROR_MSG + format_exc()
         result['context'] = context_dict
         result['status'] = 400
         return result
@@ -396,12 +405,12 @@ def license_validate_helper(request):
         if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["type"] = "error"
-            ajaxdict["data"] = str(ex)
+            ajaxdict["data"] = JAVA_ERROR_MSG + str(ex)
             response = dumps(ajaxdict)
             result['response'] = response
             result['status'] = 400
             return result
-        context_dict["error"] = str(ex)
+        context_dict["error"] = JAVA_ERROR_MSG + str(ex)
         result['context'] = context_dict
         result['status'] = 400
         return result
@@ -424,12 +433,12 @@ def license_validate_helper(request):
         if utils.is_ajax(request):
             ajaxdict = dict()
             ajaxdict["type"] = "error"
-            ajaxdict["data"] = format_exc()
+            ajaxdict["data"] = UNEXPECTED_ERROR_MSG + format_exc()
             response = dumps(ajaxdict)
             result['response'] = response
             result['status'] = 400
             return result
-        context_dict["error"] = format_exc()
+        context_dict["error"] = UNEXPECTED_ERROR_MSG + format_exc()
         result['context'] = context_dict
         result['status'] = 400
         return result
@@ -477,12 +486,12 @@ def license_check_helper(request):
         # Java exception raised without exiting the application
         if utils.is_ajax(request):
             ajaxdict = dict()
-            ajaxdict["data"] = str(ex)
+            ajaxdict["data"] = JAVA_ERROR_MSG + str(ex)
             response = dumps(ajaxdict)
             result['response'] = response
             result['status'] = 404
             return result
-        context_dict["error"] = str(ex)
+        context_dict["error"] = JAVA_ERROR_MSG + str(ex)
         result['context'] = context_dict
         result['status'] = 404
         return result
@@ -490,12 +499,12 @@ def license_check_helper(request):
         # Other exception raised
         if utils.is_ajax(request):
             ajaxdict = dict()
-            ajaxdict["data"] = format_exc()
+            ajaxdict["data"] = UNEXPECTED_ERROR_MSG + format_exc()
             response = dumps(ajaxdict)
             result['response'] = response
             result['status'] = 404
             return result
-        context_dict["error"] = format_exc()
+        context_dict["error"] = UNEXPECTED_ERROR_MSG + format_exc()
         result['context'] = context_dict
         result['status'] = 404
         return result
@@ -577,13 +586,13 @@ def license_convert_helper(request):
         # Java exception raised without exiting the application
         if utils.is_ajax(request):
             ajaxdict["type"] = "error"
-            ajaxdict["data"] = str(ex)
+            ajaxdict["data"] = JAVA_ERROR_MSG + str(ex)
             response = dumps(ajaxdict)
             result['response'] = response
             result['status'] = 400
             return result
         context_dict["type"] = "error"
-        context_dict["error"] = str(ex)
+        context_dict["error"] = JAVA_ERROR_MSG + str(ex)
         result['context'] = context_dict
         result['status'] = 400
         return result
@@ -605,12 +614,12 @@ def license_convert_helper(request):
         # Other error raised
         if utils.is_ajax(request):
             ajaxdict["type"] = "error"
-            ajaxdict["data"] = format_exc()
+            ajaxdict["data"] = UNEXPECTED_ERROR_MSG + format_exc()
             response = dumps(ajaxdict)
             result['response'] = response
             return result
         context_dict["type"] = "error"
-        context_dict["error"] = format_exc()
+        context_dict["error"] = UNEXPECTED_ERROR_MSG + format_exc()
         result['context'] = context_dict
         result['status'] = 400
         return result
@@ -647,12 +656,12 @@ def license_diff_helper(request):
         # Java exception raised without exiting the application
         if utils.is_ajax(request):
             ajaxdict = dict()
-            ajaxdict["data"] = str(ex)
+            ajaxdict["data"] = JAVA_ERROR_MSG + str(ex)
             response = dumps(ajaxdict)
             data['response'] = response
             data['status'] = 404
             return data
-        data["error"] = str(ex)
+        data["error"] = JAVA_ERROR_MSG + str(ex)
         data['context'] = data
         data['status'] = 404
         return data
@@ -660,12 +669,12 @@ def license_diff_helper(request):
         # Other exception raised
         if utils.is_ajax(request):
             ajaxdict = dict()
-            ajaxdict["data"] = format_exc()
+            ajaxdict["data"] = UNEXPECTED_ERROR_MSG + format_exc()
             response = dumps(ajaxdict)
             data['response'] = response
             data['status'] = 404
             return data
-        data["error"] = format_exc()
+        data["error"] = UNEXPECTED_ERROR_MSG + format_exc()
         data['context'] = data
         data['status'] = 404
         return data
