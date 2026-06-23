@@ -1421,6 +1421,7 @@ class EditLicenseXmlViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"licenseRequests")
 
 
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 class LicenseNamespaceViewsTestCase(TestCase):
 
     def test_license_requests(self):
@@ -1434,6 +1435,7 @@ class LicenseNamespaceViewsTestCase(TestCase):
 
 # @skipIf is intentionally kept alongside the BaseSeleniumTestCase.setUp check to skip
 # the class before any fixtures are set up, which is faster.
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 @skipIf(not SELENIUM_AVAILABLE, "Selenium not available (Firefox or Chrome required)")
 class PromoteLicenseNamespaceViewsTestCase(BaseSeleniumTestCase):
 
@@ -1481,6 +1483,7 @@ class PromoteLicenseNamespaceViewsTestCase(BaseSeleniumTestCase):
         self.assertEqual(resp.redirect_chain,[])
 
 
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 class ArchiveLicenseNamespaceViewsTestCase(TestCase):
 
     def test_archive_license_requests(self):
@@ -1503,6 +1506,7 @@ class ArchiveLicenseNamespaceViewsTestCase(TestCase):
 
 # @skipIf is intentionally kept alongside the BaseSeleniumTestCase.setUp check to skip
 # the class before any fixtures are set up, which is faster.
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 @skipIf(not SELENIUM_AVAILABLE, "Selenium not available (Firefox or Chrome required)")
 class ArchiveLicenseNamespaceSeleniumTestCase(BaseSeleniumTestCase):
 
@@ -1570,6 +1574,7 @@ class ArchiveLicenseNamespaceSeleniumTestCase(BaseSeleniumTestCase):
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, False)
 
 
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
 
     def initialise(self):
@@ -1658,6 +1663,7 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
         self.assertEqual(resp.redirect_chain,[])
 
 
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 class EditLicenseNamespaceXmlViewsTestCase(TestCase):
     def test_edit_license_xml(self):
         """View for editing the xml of a license namespace, given its id"""
