@@ -1293,6 +1293,61 @@ class ArchiveLicenseRequestsViewsTestCase(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertNotContains(resp, "unarchive_button" + str(archive_license_obj.id))
 
+    def loginGithubUser(self):
+        """Create a GitHub-associated user and log them in.
+
+        Returns the user. The archive/unarchive buttons require both a GitHub
+        social-auth record (``github_login``) and ``authorized`` (set from
+        ``checkPermission``), so the social-auth row is needed for the buttons
+        to ever render. checkPermission is mocked in the individual tests, so no
+        real GitHub credentials are needed and these tests are not @skipIf-gated."""
+        user = User.objects.create(username="collab-test-user", is_active=True)
+        UserSocialAuth.objects.create(provider="github", uid="0BSD-collab-uid",
+                                      extra_data={"login": "collab-test-user"},
+                                      user=user)
+        self.client.force_login(user)
+        return user
+
+    def test_archive_button_shown_for_collaborator(self):
+        """A GitHub collaborator (checkPermission True) must see the Archive button."""
+        self.loginGithubUser()
+        license_obj = LicenseRequest.objects.create(
+            fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
+        with patch("app.utils.checkPermission", return_value=True):
+            resp = self.client.get(reverse("license-requests"), follow=True, secure=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "archive_button" + str(license_obj.id))
+
+    def test_archive_button_hidden_for_non_collaborator(self):
+        """A logged-in non-collaborator (checkPermission False) must not see the Archive button."""
+        self.loginGithubUser()
+        license_obj = LicenseRequest.objects.create(
+            fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
+        with patch("app.utils.checkPermission", return_value=False):
+            resp = self.client.get(reverse("license-requests"), follow=True, secure=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "archive_button" + str(license_obj.id))
+
+    def test_unarchive_button_shown_for_collaborator(self):
+        """A GitHub collaborator (checkPermission True) must see the Unarchive button."""
+        self.loginGithubUser()
+        archive_license_obj = LicenseRequest.objects.create(
+            fullname="BSD Zero Clause License-00", shortIdentifier="0BSD", archive="True")
+        with patch("app.utils.checkPermission", return_value=True):
+            resp = self.client.get(reverse("archive-license-xml"), follow=True, secure=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "unarchive_button" + str(archive_license_obj.id))
+
+    def test_unarchive_button_hidden_for_non_collaborator(self):
+        """A logged-in non-collaborator (checkPermission False) must not see the Unarchive button."""
+        self.loginGithubUser()
+        archive_license_obj = LicenseRequest.objects.create(
+            fullname="BSD Zero Clause License-00", shortIdentifier="0BSD", archive="True")
+        with patch("app.utils.checkPermission", return_value=False):
+            resp = self.client.get(reverse("archive-license-xml"), follow=True, secure=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "unarchive_button" + str(archive_license_obj.id))
+
 
 # @skipIf is intentionally kept alongside the BaseSeleniumTestCase.setUp check to skip
 # the class before any fixtures are set up, which is faster.
