@@ -6,7 +6,7 @@ import datetime
 import logging
 import os
 import shutil
-from unittest import skipIf
+from unittest import skip, skipIf
 from unittest.mock import patch
 
 from django.conf import settings
@@ -1270,6 +1270,84 @@ class ArchiveLicenseRequestsViewsTestCase(TestCase):
         self.assertIn("404.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"licenseInformation")
 
+    def test_archive_button_hidden_for_anonymous_user(self):
+        """A user who is not logged in via GitHub must not see the Archive button.
+
+        The archive/unarchive feature is only available to GitHub-authorised
+        collaborators (see the ``{% if github_login and authorized %}`` guard in
+        the templates and ``checkPermission`` in utils.py). The logged-in path is
+        covered by ArchiveLicenseRequestsSeleniumTestCase; this is the negative
+        case and needs no GitHub credentials, so it is intentionally not gated
+        with @skipIf."""
+        license_obj = LicenseRequest.objects.create(
+            fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
+        resp = self.client.get(reverse("license-requests"), follow=True, secure=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "archive_button" + str(license_obj.id))
+
+    def test_unarchive_button_hidden_for_anonymous_user(self):
+        """A user who is not logged in via GitHub must not see the Unarchive button."""
+        archive_license_obj = LicenseRequest.objects.create(
+            fullname="BSD Zero Clause License-00", shortIdentifier="0BSD", archive="True")
+        resp = self.client.get(reverse("archive-license-xml"), follow=True, secure=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "unarchive_button" + str(archive_license_obj.id))
+
+    def loginGithubUser(self):
+        """Create a GitHub-associated user and log them in.
+
+        Returns the user. The archive/unarchive buttons require both a GitHub
+        social-auth record (``github_login``) and ``authorized`` (set from
+        ``checkPermission``), so the social-auth row is needed for the buttons
+        to ever render. checkPermission is mocked in the individual tests, so no
+        real GitHub credentials are needed and these tests are not @skipIf-gated."""
+        user = User.objects.create(username="collab-test-user", is_active=True)
+        UserSocialAuth.objects.create(provider="github", uid="0BSD-collab-uid",
+                                      extra_data={"login": "collab-test-user"},
+                                      user=user)
+        self.client.force_login(user)
+        return user
+
+    def test_archive_button_shown_for_collaborator(self):
+        """A GitHub collaborator (checkPermission True) must see the Archive button."""
+        self.loginGithubUser()
+        license_obj = LicenseRequest.objects.create(
+            fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
+        with patch("app.utils.checkPermission", return_value=True):
+            resp = self.client.get(reverse("license-requests"), follow=True, secure=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "archive_button" + str(license_obj.id))
+
+    def test_archive_button_hidden_for_non_collaborator(self):
+        """A logged-in non-collaborator (checkPermission False) must not see the Archive button."""
+        self.loginGithubUser()
+        license_obj = LicenseRequest.objects.create(
+            fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
+        with patch("app.utils.checkPermission", return_value=False):
+            resp = self.client.get(reverse("license-requests"), follow=True, secure=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "archive_button" + str(license_obj.id))
+
+    def test_unarchive_button_shown_for_collaborator(self):
+        """A GitHub collaborator (checkPermission True) must see the Unarchive button."""
+        self.loginGithubUser()
+        archive_license_obj = LicenseRequest.objects.create(
+            fullname="BSD Zero Clause License-00", shortIdentifier="0BSD", archive="True")
+        with patch("app.utils.checkPermission", return_value=True):
+            resp = self.client.get(reverse("archive-license-xml"), follow=True, secure=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "unarchive_button" + str(archive_license_obj.id))
+
+    def test_unarchive_button_hidden_for_non_collaborator(self):
+        """A logged-in non-collaborator (checkPermission False) must not see the Unarchive button."""
+        self.loginGithubUser()
+        archive_license_obj = LicenseRequest.objects.create(
+            fullname="BSD Zero Clause License-00", shortIdentifier="0BSD", archive="True")
+        with patch("app.utils.checkPermission", return_value=False):
+            resp = self.client.get(reverse("archive-license-xml"), follow=True, secure=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "unarchive_button" + str(archive_license_obj.id))
+
 
 # @skipIf is intentionally kept alongside the BaseSeleniumTestCase.setUp check to skip
 # the class before any fixtures are set up, which is faster.
@@ -1337,7 +1415,7 @@ class SubmitNewLicenseViewsTestCase(TestCase):
         self.exampleUrl = "testUrl"
         self.sourceUrl = "http://landley.net/toybox/license.html"
         self.urls = [self.sourceUrl]
-        self.osiApproved = "no"
+        self.osiApproved = "Unknown"
         self.comments = "Test Comment"
         self.notes = ""
         self.licenseHeader = ""
@@ -1421,6 +1499,7 @@ class EditLicenseXmlViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"licenseRequests")
 
 
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 class LicenseNamespaceViewsTestCase(TestCase):
 
     def test_license_requests(self):
@@ -1434,6 +1513,7 @@ class LicenseNamespaceViewsTestCase(TestCase):
 
 # @skipIf is intentionally kept alongside the BaseSeleniumTestCase.setUp check to skip
 # the class before any fixtures are set up, which is faster.
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 @skipIf(not SELENIUM_AVAILABLE, "Selenium not available (Firefox or Chrome required)")
 class PromoteLicenseNamespaceViewsTestCase(BaseSeleniumTestCase):
 
@@ -1481,6 +1561,7 @@ class PromoteLicenseNamespaceViewsTestCase(BaseSeleniumTestCase):
         self.assertEqual(resp.redirect_chain,[])
 
 
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 class ArchiveLicenseNamespaceViewsTestCase(TestCase):
 
     def test_archive_license_requests(self):
@@ -1503,6 +1584,7 @@ class ArchiveLicenseNamespaceViewsTestCase(TestCase):
 
 # @skipIf is intentionally kept alongside the BaseSeleniumTestCase.setUp check to skip
 # the class before any fixtures are set up, which is faster.
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 @skipIf(not SELENIUM_AVAILABLE, "Selenium not available (Firefox or Chrome required)")
 class ArchiveLicenseNamespaceSeleniumTestCase(BaseSeleniumTestCase):
 
@@ -1570,6 +1652,7 @@ class ArchiveLicenseNamespaceSeleniumTestCase(BaseSeleniumTestCase):
         self.assertEqual(LicenseNamespace.objects.get(id=archive_license_obj.id).archive, False)
 
 
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
 
     def initialise(self):
@@ -1578,7 +1661,7 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
         self.sourceUrl = "http://landley.net/toybox/license.html"
         self.license_list_url = self.sourceUrl
         self.github_repo_url = self.sourceUrl
-        self.osiApproved = "no"
+        self.osiApproved = "Unknown"
         self.comments = ""
         self.notes = ""
         self.licenseHeader = ""
@@ -1594,8 +1677,19 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
                     "urlType": "tests", "namespace": self.namespace, "license_list_url": self.license_list_url,
                     "github_repo_url": self.github_repo_url, "licenseAuthorName": self.licenseAuthorName}
 
+    @skip("URL disabled: license namespace not accepted into SPDX spec (see issue #337)")
     def test_submit_new_license_namespace(self):
-        """GET Request for submit a new license namespace"""
+        """GET Request for submit a new license namespace.
+
+        Note that the license namespace feature is not accepted into the SPDX
+        specification, and therefore this URL is disabled.
+        The test is skipped to avoid failures.
+
+        See more details in the following links:
+        - https://github.com/spdx/spdx-spec/issues/113
+        - https://github.com/spdx/spdx-spec/pull/209
+        - https://github.com/spdx/spdx-online-tools/issues/337#issuecomment-1504244538
+        """
         resp = self.client.get(reverse("submit-new-license-namespace"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertEqual(resp.redirect_chain,[])
@@ -1621,9 +1715,20 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
                                 [self.sourceUrl], self.licenseHeader, self.notes, self.text).replace(">","> ")
         self.assertEqual(self.xml, xml)
 
+    @skip("URL disabled: license namespace not accepted into SPDX spec (see issue #337)")
     @skipIf(not getAccessToken() or not getGithubUserId() or not getGithubUserName(), "You need to set GitHub parameters in the secret.py file for this test to be executed properly.")
     def test_post_submit(self):
-        """POST Request for submit a new license namespace"""
+        """POST Request for submit a new license namespace.
+
+        Note that the license namespace feature is not accepted into the SPDX
+        specification, and therefore this URL is disabled.
+        The test is skipped to avoid failures.
+
+        See more details in the following links:
+        - https://github.com/spdx/spdx-spec/issues/113
+        - https://github.com/spdx/spdx-spec/pull/209
+        - https://github.com/spdx/spdx-online-tools/issues/337#issuecomment-1504244538
+        """
         login = TestUtil.gitHubLogin(self)
         self.assertTrue(login)
         self.initialise()
@@ -1636,6 +1741,7 @@ class SubmitNewLicenseNamespaceViewsTestCase(TestCase):
         self.assertEqual(resp.redirect_chain,[])
 
 
+@skip("URLs disabled: license namespace not accepted into SPDX spec (see issue #337)")
 class EditLicenseNamespaceXmlViewsTestCase(TestCase):
     def test_edit_license_xml(self):
         """View for editing the xml of a license namespace, given its id"""
