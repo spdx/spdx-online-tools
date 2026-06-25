@@ -70,6 +70,20 @@ class SubmitLicenseSerializer(serializers.HyperlinkedModelSerializer):
         read_only=True,
         slug_field='id'
     )
+    # OSI_CHOICES mixes int 0 and strings; override with all-string keys for schema compatibility.
+    osiApproved = serializers.ChoiceField(
+        choices=[
+            ("-", "-"),
+            ("Approved", "Approved"),
+            ("Not Submitted", "Not Submitted"),
+            ("Pending", "Submitted, but pending"),
+            ("Rejected", "Rejected"),
+            ("Unknown", "Don't know"),
+        ],
+        required=False,
+        default="-",
+    )
+
     class Meta:
         model = SubmitLicenseModel
         fields = ('created','owner','fullname','shortIdentifier','licenseAuthorName','userEmail','sourceUrl','osiApproved','comments','licenseHeader','text','result','status')
