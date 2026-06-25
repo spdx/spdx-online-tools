@@ -19,6 +19,7 @@ from src.secret import (
     getDiffRepoGitToken,
     getDiffRepoWithOwner,
 )
+from src.version import spdx_online_tools_version
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -84,6 +85,7 @@ INSTALLED_APPS = [
     'app',
     'api',
     'rest_framework',
+    'drf_spectacular',
     'social_django',
     'oauth2_provider',
     'drf_social_oauth2',
@@ -221,6 +223,7 @@ print("LICENSE_ROOT:", LICENSE_ROOT)
 # Rest API framework
 
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
@@ -236,6 +239,62 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "SPDX Online Tools REST API",
+    "DESCRIPTION": (
+        "## Authentication\n\n"
+        "All endpoints require authentication. Authenticate via:\n\n"
+        "- **Session cookie** — log in at [`/app/login/`](/app/login/) "
+        "and include the session cookie.\n"
+        "- **OAuth2 Bearer token** — exchange a GitHub OAuth access token at "
+        "[`/auth/convert-token/`](/auth/convert-token/) for an OAuth2 token, "
+        " then pass it as `Authorization: Bearer <token>`.\n\n"
+        "## Known limitations\n\n"
+        "- All uploads must be `multipart/form-data`; JSON body is not supported.\n"
+        "- The `result` field in validate responses is truncated at 128 characters.\n"
+    ),
+    "VERSION": spdx_online_tools_version,
+    "SERVE_INCLUDE_SCHEMA": False,
+    "CONTACT": {
+        "name": "SPDX Online Tools",
+        "url": "https://github.com/spdx/spdx-online-tools/",
+    },
+    "LICENSE": {
+        "name": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0",
+    },
+    "EXTERNAL_DOCS": {
+        "url": "https://spdx.org/specifications",
+        "description": "SPDX specification",
+    },
+    "TAGS": [
+        {
+            "name": "SBOM",
+            "description": "Validate, convert, and compare SPDX documents.",
+        },
+        {
+            "name": "License",
+            "description": "Match license text against the SPDX License List. Submit new licenses for inclusion in the list.",
+        },
+    ],
+    "ENUM_NAME_OVERRIDES": {
+        "SpdxFormatEnum": [
+            "TAG",
+            "RDFXML",
+            "RDFTTL",
+            "JSON",
+            "XML",
+            "YAML",
+            "XLS",
+            "XLSX",
+            "JSONLD",
+        ],
+    },
+    "PREPROCESSING_HOOKS": [
+        "api.spectacular.preprocess_exclude_internal_paths",
+    ],
 }
 
 # To avoid unwanted migrations in the future, either explicitly set DEFAULT_AUTO_FIELD to AutoField
