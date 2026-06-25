@@ -767,12 +767,12 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
             EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.in"))
         )
         """ Adding attribute """
-        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//*[@id='main-content']/div/div[2]/div/ul/li/ul/li[3]/img[3]"))).click()
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//ul[@id='treeView']/li/ul/li[3]/img[3]"))).click()
         driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("firstAttribute")
         driver.find_element(By.CLASS_NAME, "newAttributeValue").send_keys("firstValue")
         driver.find_element(By.CLASS_NAME, "addNewAttribute").click()
         """ Adding Invalid attribute """
-        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//*[@id='main-content']/div/div[2]/div/ul/li/ul/li[3]/img[3]"))).click()
+        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//ul[@id='treeView']/li/ul/li[3]/img[3]"))).click()
         driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("secondAttribute")
         driver.find_element(By.CLASS_NAME, "addNewAttribute").click()
         WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
