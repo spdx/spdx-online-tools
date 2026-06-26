@@ -32,6 +32,8 @@ class License(models.Model):
         abstract = True
 
 class LicenseRequest(License):
+    github_issue_url = models.URLField(max_length=500, blank=True, default="")
+    github_issue_number = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.fullname
