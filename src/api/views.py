@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2017 Rohit Lodha
 # SPDX-FileCopyrightText: 2025-present SPDX Contributors
+# SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2017 Rohit Lodha
 

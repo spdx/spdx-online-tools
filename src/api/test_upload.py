@@ -1,12 +1,17 @@
-# SPDX-FileCopyrightText: 2026 SPDX contributors
+# SPDX-FileCopyrightText: 2026-present SPDX contributors
+# SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 
-"""Regression tests for large-file uploads (issue #499).
+"""Regression tests for large-file uploads.
 
-Django stores uploads above FILE_UPLOAD_MAX_MEMORY_SIZE as a TemporaryUploadedFile
-on disk. The core helper moves that temp file into media on first save, so a second
-save in the view raised FileNotFoundError. Setting the threshold to 0 forces every
-upload through that path without needing real multi-MB fixtures.
+Django stores uploads above FILE_UPLOAD_MAX_MEMORY_SIZE (default: 2.5 MB) as a
+TemporaryUploadedFile on disk.
+https://docs.djangoproject.com/en/5.2/topics/http/file-uploads/#where-uploaded-data-is-stored
+
+Errors could occur if the code take wrong assumptions about the file location.
+See https://github.com/spdx/spdx-online-tools/issues/499
+
+Setting the threshold to 0 forces every upload through file on disk path.
 """
 
 import os

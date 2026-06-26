@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 SPDX contributors
+# SPDX-FileCopyrightText: 2022-present SPDX contributors
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 
