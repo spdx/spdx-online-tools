@@ -3,10 +3,10 @@
 {% block body1 %}
 {% if user.is_authenticated %}
 {% if success %}
-<h3 style="color:green;">{{ success }}</h3>
+<div class="alert alert-success" role="alert">{{ success }}</div>
 {% endif %}
 {% if error %}
-<h3 style="color:red;">{{ error }}</h3>
+<div class="alert alert-danger" role="alert">{{ error }}</div>
 {% endif %}
 <ul class="nav nav-tabs nav-justified" >
   <li  class="active"><a data-toggle="tab" href="#info">Info</a></li>
@@ -19,7 +19,7 @@
     <div class="col-md-6">
     <hr>
     <div class="panel panel-default">
-    <div class="panel-heading"> <p class="lead">Information</p></div>
+    <div class="panel-heading"> <h2 class="panel-title">Information</h2></div>
     <div class="panel-body">
       <form id="myform" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
         {% csrf_token %}
@@ -63,7 +63,7 @@
     </div>
     <div class="col-md-6">
     <div class="panel panel-default">
-    <div class="panel-heading"><p class="lead">Change password</p></div>
+    <div class="panel-heading"><h2 class="panel-title">Change password</h2></div>
     <div class="panel-body">
       <form id="myform2" enctype="multipart/form-data" class = "form-horizontal" method = "post"  >
         {% csrf_token %}

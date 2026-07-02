@@ -9,7 +9,7 @@
 </div>
 <div class="col-md-6">
 <div class="panel panel-default">
-<div class="panel-heading"><p class="lead">Join the community</p></div>
+<div class="panel-heading"><h1 class="panel-title">Join the community</h1></div>
 <div class="panel-body">
 <p class="lead" style="color:red;">{{ invalid }}</p>
     <form id="register_form" role="form"  class="form-horizontal"  method="post" action="/app/register/" enctype="multipart/form-data" onsubmit="return checkForm()">
@@ -17,32 +17,26 @@
         {% for field in user_form %}
         <div class="form-group">
       	<label class="control-label col-sm-4" >{{ field.label_tag }}</label>
-    	      	<div class="col-sm-5">
+    	      	<div class="col-sm-8">
           		  {{ field }}
           		</div>
-              <div class="col-sm-3">
-              </div>
       	</div>
 	      {% endfor %}
       	{% for field in profile_form %}
       	<div class="form-group">
       	<div class="text-danger">{{ field.errors }}</div>
            	 <label class="control-label col-sm-4" >{{ field.label_tag }}</label>
-      	      	<div class="col-sm-5">
+      	      	<div class="col-sm-8">
             		{{ field }}
             		</div>
-                <div class="col-sm-3">
-                </div>
       	</div>
 		    {% endfor %}
         <div class="form-group">
-          <div class="col-sm-offset-4 col-sm-5">
-            <button type="submit" class="btn btn-lg btn-block btn-info"><span class="glyphicon glyphicon-ok"></span> Create Account</button>
-          </div>
+          <button type="submit" class="btn btn-info btn-submit-center">Create account</button>
         </div>
-    </form> 
-    <h5><a href="{% url 'social:begin' 'github' %}?next=/app">Login with GitHub</a></h5>
-    <h5><a href="/app/login/">Already a user?</a></h5>
+    </form>
+    <p class="text-center"><a href="{% url 'social:begin' 'github' %}?next=/app">Login with GitHub</a></p>
+    <p class="text-center"><a href="/app/login/">Already a user?</a></p>
 </div>
 </div>
 </div>

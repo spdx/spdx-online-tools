@@ -8,54 +8,56 @@
 <p class ="lead"> {{ error }}</p>
 <div class="panel panel-default">
     {% if licenseInformation %}
-<div class="panel-heading"> <p class="lead">{{licenseInformation.fullname}}
+<div class="panel-heading"> <h1 class="panel-title">{{licenseInformation.fullname}}
         {% if licenseInformation.archive %}
             <span class="label label-success">Archived</span>
         {% endif %}
-    </p>
+    </h1>
 </div>
     {% endif %}
 <div class="panel-body">
     {% if licenseInformation %}
+    <dl>
     <div class="licenseField col-sm-12">
-        <p class="fieldName">Fullname</p>
-        <p>{{licenseInformation.fullname}}</p>
+        <dt class="fieldName">Fullname</dt>
+        <dd>{{licenseInformation.fullname}}</dd>
     </div>
     <div class="licenseField col-sm-12">
-        <p class="fieldName">License author name</p>
-        <p>{{licenseInformation.licenseAuthorName}}</p>
+        <dt class="fieldName">License author name</dt>
+        <dd>{{licenseInformation.licenseAuthorName}}</dd>
     </div>
     <div class="licenseField col-sm-12">
-        <p class="fieldName">Namespace</p>
-        <p>{{licenseInformation.namespace}}</p>
+        <dt class="fieldName">Namespace</dt>
+        <dd>{{licenseInformation.namespace}}</dd>
     </div>
     <div class="licenseField col-sm-12">
-        <p class="fieldName">Short Identifier</p>
-        <p>{{licenseInformation.shortIdentifier}}</p>
+        <dt class="fieldName">Short identifier</dt>
+        <dd>{{licenseInformation.shortIdentifier}}</dd>
     </div>
     <div class="licenseField col-sm-12">
-        <p class="fieldName">Source/URL</p>
-        <p>{{licenseInformation.url}}</p>
+        <dt class="fieldName">Source/URL</dt>
+        <dd>{{licenseInformation.url}}</dd>
     </div>
     <div class="licenseField col-sm-12">
-        <p class="fieldName">Publicly shared</p>
-        <p>{{licenseInformation.publiclyShared}}</p>
+        <dt class="fieldName">Publicly shared</dt>
+        <dd>{{licenseInformation.publiclyShared}}</dd>
     </div>
     <div class="licenseField col-sm-12">
-        <p class="fieldName">Description</p>
-        <p>{{licenseInformation.description}}</p>
+        <dt class="fieldName">Description</dt>
+        <dd>{{licenseInformation.description}}</dd>
     </div>
     <div class="licenseField col-sm-12">
-        <p class="fieldName">Notes</p>
-        <p>{{licenseInformation.notes|safe}}</p>
+        <dt class="fieldName">Notes</dt>
+        <dd>{{licenseInformation.notes|safe}}</dd>
     </div>
     <div class="licenseField col-sm-12">
-        <p class="fieldName">Submission Date</p>
-        <p>{{licenseInformation.submissionDatetime}}</p>
+        <dt class="fieldName">Submission date</dt>
+        <dd>{{licenseInformation.submissionDatetime}}</dd>
     </div>
+    </dl>
     <div class="col-sm-12">
         <div class="col-sm-12">
-            <a href="/app/license_namespace_requests/" class="btn">Go Back</a>
+            <a href="/app/license_namespace_requests/" class="btn">Go back</a>
         </div>
         <div class="col-sm-12">
             <form name="download_xml" method="post" action=''>

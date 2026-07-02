@@ -191,7 +191,7 @@
 .panel-heading .lead,
 .panel-heading p.lead {
     margin: 0;
-    font-size: 1.05em;
+    font-size: 1.05em !important;
     font-weight: 700;
     color: #1a1a1a;
     text-align: left;
@@ -568,13 +568,13 @@ h4 { font-size: 1.2em !important; }
       </div>
     </nav>
 
-  <div class="container body1" id="main-content" tabindex="-1">
+  <main class="container body1" id="main-content" tabindex="-1">
 
       <div class="starter-template">
         {% block body1 %}{% endblock %}
       </div>
 
-    </div><!-- /.container -->
+    </main><!-- /.container -->
 		{% block body2 %}{% endblock %}
 
     <!-- Bootstrap core JavaScript
