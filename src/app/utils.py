@@ -379,15 +379,16 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
             response_json = r.json()
         except ValueError:
             # Handle JSON parsing error
-            return None, None
-            
+            return None, None, ""
 
+    issue_html_url = ""
     if status_code in [200, 201] and "number" in response_json:
         issue_id = response_json["number"]
+        issue_html_url = response_json.get("html_url", "")
     else:
         issue_id = None
 
-    return status_code, issue_id
+    return status_code, issue_id, issue_html_url
 
 
 def postToGithub(message, encodedContent, filename):
