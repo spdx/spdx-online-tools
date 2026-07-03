@@ -8,7 +8,7 @@ Django stores uploads above FILE_UPLOAD_MAX_MEMORY_SIZE (default: 2.5 MB) as a
 TemporaryUploadedFile on disk.
 https://docs.djangoproject.com/en/5.2/topics/http/file-uploads/#where-uploaded-data-is-stored
 
-Errors could occur if the code take wrong assumptions about the file location.
+Errors could occur if the code takes wrong assumptions about the file location.
 See https://github.com/spdx/spdx-online-tools/issues/499
 
 Setting the threshold to 0 forces every upload through file on disk path.
