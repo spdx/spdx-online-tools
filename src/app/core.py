@@ -100,6 +100,8 @@ def license_compare_helper(request):
             fs = FileSystemStorage(location=folder_path, base_url=folder_url)
             saved_files = []
             for myfile in request.FILES.getlist("files"):
+                filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
+                local_path = fs.path(filename)
                 saved_files.append(f"{folder}/{filename}")
                 callfunc.append(str(local_path))
                 nameoffile, fileext = os.path.splitext(filename)
@@ -353,6 +355,8 @@ def license_validate_helper(request):
             folder_path = os.path.join(settings.MEDIA_ROOT, folder)
             folder_url = urljoin(settings.MEDIA_URL, folder + '/')
             fs = FileSystemStorage(location=folder_path, base_url=folder_url)
+            filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
+            local_path = fs.path(filename)
             result['uploaded_file'] = f"{folder}/{filename}"
             formatstr = request.POST["format"]
             serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
@@ -528,6 +532,8 @@ def license_convert_helper(request):
             folder_url = urljoin(settings.MEDIA_URL, folder + '/')
             myfile = request.FILES['file']
             fs = FileSystemStorage(location=folder_path, base_url=folder_url)
+            filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
+            local_path = fs.path(filename)
             result['uploaded_file'] = f"{folder}/{filename}"
             option1 = request.POST["from_format"]
             option2 = request.POST["to_format"]
