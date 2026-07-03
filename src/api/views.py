@@ -539,7 +539,19 @@ def submit_license(request):
             if 'urlType' in request.POST:
                 # This is present only when executing submit license via tests
                 urlType = request.POST["urlType"]
-            statusCode, githubIssueId, githubIssueUrl = createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseRequestUrl, token, urlType)
+            statusCode, githubIssueId, githubIssueUrl = createIssue(
+                licenseAuthorName,
+                licenseName,
+                licenseIdentifier,
+                licenseComments,
+                licenseSourceUrls,
+                licenseHeader,
+                licenseOsi,
+                [],  # empty licenseExamples
+                licenseRequestUrl,
+                token,
+                urlType,
+            )
             licenseRequest.github_issue_number = githubIssueId
             licenseRequest.github_issue_url = githubIssueUrl
             licenseRequest.save()
