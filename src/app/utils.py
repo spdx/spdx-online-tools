@@ -393,7 +393,7 @@ def createIssue(
             response_json = r.json()
         except ValueError:
             # Handle JSON parsing error
-            return None, None, ""
+            return status_code, None, ""
 
     issue_html_url = ""
     if status_code in [200, 201] and "number" in response_json:
