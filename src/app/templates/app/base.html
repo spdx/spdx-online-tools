@@ -529,6 +529,7 @@ h4 { font-size: 1.2em !important; }
             <li><a href="/app/compare/"      id="comparepage">Compare</a></li>
             <li><a href="/app/ntia_checker/" id="checkerpage">Conformance</a></li>
             <li><a href="/app/dots/"         id="dots">Edit</a></li>
+            <li><a href="/app/spdx3_viz/"   id="spdx3viz">Visualize</a></li>
             <li class="nav-sep" role="separator" aria-hidden="true"><span></span></li>
             <!-- License tools -->
             <li class="nav-cat" aria-hidden="true">License</li>
@@ -621,12 +622,11 @@ h4 { font-size: 1.2em !important; }
           // Expose navbar height as CSS custom property so fullscreen overlays
           // (e.g. CodeMirror fullscreen) can stay below the navbar on any screen width.
           document.documentElement.style.setProperty('--navbar-height', navHeight + 'px');
-          var $dotsIframe = $('#dots-iframe');
-          if ($dotsIframe.length) {
-            $dotsIframe.css('height', 'calc(100vh - ' + newPadding + 'px)');
-            $dotsIframe.css('min-height', 'calc(100vh - ' + newPadding + 'px)');
-            $dotsIframe.css('margin-top', newPadding + 'px');
-          }
+          $('#dots-iframe, #spdx3-viz-iframe').each(function() {
+            $(this).css('height', 'calc(100vh - ' + newPadding + 'px)');
+            $(this).css('min-height', 'calc(100vh - ' + newPadding + 'px)');
+            $(this).css('margin-top', newPadding + 'px');
+          });
         }
         // Adjust on load and resize
         $(window).on("load resize", adjustContentPadding);
