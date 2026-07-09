@@ -28,7 +28,7 @@ in the [wiki][gsoc2017].
 
 ## Requirements
 
-* Python 3.10+
+* Python 3.12+
 * Java 17+
 
 ## Installation

@@ -4,7 +4,7 @@
 FROM eclipse-temurin:17-jre AS jdk
 
 # Stage 2: Builder stage - install build deps and wheel the application
-FROM python:3.10-slim AS builder
+FROM python:3.12-slim AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -48,7 +48,7 @@ RUN apt-get purge -y --auto-remove ca-certificates curl || true \
     && rm -rf /var/lib/apt/lists/*
 
 # Stage 3: Final runtime
-FROM python:3.10-slim AS final
+FROM python:3.12-slim AS final
 
 # Minimal runtime dependencies
 RUN apt-get update \
