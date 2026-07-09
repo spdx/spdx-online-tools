@@ -2,6 +2,76 @@
 {% load static %}
 {% block body1 %}
 
+<style>
+    .licenseInfoTable {
+        border: 1px solid #e1e6e9;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 15px;
+    }
+    .licenseInfoField {
+        padding: 10px 14px;
+    }
+    /* zebra striping; colors below meet WCAG AA contrast */
+    .licenseInfoTable > .licenseInfoField:nth-child(even) {
+        background: #f4f7f8;
+    }
+    .licenseInfoField .fieldKey {
+        font-weight: 600;
+        color: #006d8c;
+        margin-bottom: 2px;
+    }
+    .licenseInfoField .fieldValue {
+        word-break: break-word;
+        color: #333;
+        margin: 0;
+    }
+    .licenseInfoActions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 20px;
+    }
+    .licenseInfoActions form {
+        display: flex;
+        margin: 0;
+    }
+    /* shared box so <a> and <button> render identically */
+    .actionBtn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        padding: 0 18px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        font-size: 14px;
+        line-height: 1;
+        text-decoration: none;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+    .actionBtn--primary {
+        background: #0097c4;
+        color: #fff;
+    }
+    .actionBtn--primary:hover,
+    .actionBtn--primary:focus {
+        background: #007ba1;
+        color: #fff;
+    }
+    .actionBtn--secondary {
+        background: #fff;
+        color: #333;
+        border-color: #c8d0d4;
+    }
+    .actionBtn--secondary:hover,
+    .actionBtn--secondary:focus {
+        background: #f4f7f8;
+        color: #333;
+    }
+</style>
+
 <div id="messages" class="messages">
 </div>
 <p class ="lead"> {{ medialink }}</p>
@@ -17,62 +87,66 @@
     {% endif %}
 <div class="panel-body">
     {% if licenseInformation %}
-    <div class="licenseField col-sm-12">
-        <p class="fieldName">Fullname</p>
-        <p>{{licenseInformation.fullname}}</p>
+    <div class="licenseInfoTable">
+    <div class="licenseInfoField">
+        <div class="fieldKey">Fullname</div>
+        <div class="fieldValue">{{licenseInformation.fullname}}</div>
     </div>
-    <div class="licenseField col-sm-12">
-        <p class="fieldName">License author name</p>
-        <p>{{licenseInformation.licenseAuthorName}}</p>
+    <div class="licenseInfoField">
+        <div class="fieldKey">License author name</div>
+        <div class="fieldValue">{{licenseInformation.licenseAuthorName}}</div>
     </div>
-    <div class="licenseField col-sm-12">
-        <p class="fieldName">Short Identifier</p>
-        <p>{{licenseInformation.shortIdentifier}}</p>
+    <div class="licenseInfoField">
+        <div class="fieldKey">Short identifier</div>
+        <div class="fieldValue">{{licenseInformation.shortIdentifier}}</div>
     </div>
-    <div class="licenseField col-sm-12">
-        <p class="fieldName">Source/URL</p>
-        {% for crossRef in licenseInformation.crossRefs %}
-        <p>{{crossRef}}</p>
-        {% endfor %}
-    </div>
-    <div class="licenseField col-sm-12">
-        <p class="fieldName">Osi Approved</p>
-        <p>{{licenseInformation.osiApproved}}</p>
-    </div>
-    <div class="licenseField col-sm-12">
-        <p class="fieldName">Notes</p>
-        <p>{{licenseInformation.notes}}</p>
-    </div>
-    <div class="licenseField col-sm-12">
-        <p class="fieldName">Standard License Header</p>
-        <p>{{licenseInformation.standardLicenseHeader}}</p>
-    </div>
-    <div class="licenseField col-sm-12">
-        <p class="fieldName">Text</p>
-        <p>{{licenseInformation.text|safe}}</p>
-    </div>
-    <div class="licenseField col-sm-12">
-        <p class="fieldName">Submission Date</p>
-        <p>{{licenseInformation.submissionDatetime}}</p>
-    </div>
-    <div class="col-sm-12">
-        <div class="col-sm-12">
-            <a href="/app/license_requests/" class="btn">Go Back</a>
+    <div class="licenseInfoField">
+        <div class="fieldKey">Source/URL</div>
+        <div class="fieldValue">
+            {% for crossRef in licenseInformation.crossRefs %}
+            <div>{{crossRef}}</div>
+            {% endfor %}
         </div>
-        <div class="col-sm-12">
-            <form name="download_xml" method="post" action=''>
-                {% csrf_token %}
-                <input type="hidden" name="supporttype" />
-                <button type="submit" class="btn btn-md btn-info" id="downloadBtn">Download the XML</button>
-            </form>
-        </div>
-        <div class="col-sm-12" style="margin-top: 5px">
-            <form id="edit-license-xml" name="edit_license_xml" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="hidden" name="supporttype" />
-                <button id="editButton" class="btn btn-md btn-info">Edit the XML</button>
-            </form>
-        </div>
+    </div>
+    <div class="licenseInfoField">
+        <div class="fieldKey">OSI approved</div>
+        <div class="fieldValue">{{licenseInformation.osiApproved}}</div>
+    </div>
+    <div class="licenseInfoField">
+        <div class="fieldKey">Notes</div>
+        <div class="fieldValue">{{licenseInformation.notes}}</div>
+    </div>
+    <div class="licenseInfoField">
+        <div class="fieldKey">Standard license header</div>
+        <div class="fieldValue">{{licenseInformation.standardLicenseHeader}}</div>
+    </div>
+    <div class="licenseInfoField">
+        <div class="fieldKey">Text</div>
+        <div class="fieldValue">{{licenseInformation.text|safe}}</div>
+    </div>
+    <div class="licenseInfoField">
+        <div class="fieldKey">Submission date</div>
+        <div class="fieldValue">{{licenseInformation.submissionDatetime}}</div>
+    </div>
+    {% if licenseInformation.githubIssueUrl %}
+    <div class="licenseInfoField">
+        <div class="fieldKey">GitHub issue</div>
+        <div class="fieldValue"><a id="githubIssueLink" href="{{licenseInformation.githubIssueUrl}}" target="_blank" rel="noopener noreferrer">#{{licenseInformation.githubIssueNumber}}</a></div>
+    </div>
+    {% endif %}
+    </div>
+    <div class="col-sm-12 licenseInfoActions">
+        <a href="/app/license_requests/" class="actionBtn actionBtn--secondary">Go back</a>
+        <form name="download_xml" method="post" action=''>
+            {% csrf_token %}
+            <input type="hidden" name="supporttype" />
+            <button type="submit" class="actionBtn actionBtn--primary" id="downloadBtn">Download the XML</button>
+        </form>
+        <form id="edit-license-xml" name="edit_license_xml" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="supporttype" />
+            <button id="editButton" class="actionBtn actionBtn--primary">Edit the XML</button>
+        </form>
     </div>
     {% endif %}
 </div>

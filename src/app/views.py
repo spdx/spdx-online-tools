@@ -154,11 +154,14 @@ def submitNewLicense(request):
                         licenseId = licenseRequest.id
                         serverUrl = request.build_absolute_uri('/')
                         licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseId))
-                        statusCode, githubIssueId = utils.createIssue(
+                        statusCode, githubIssueId, githubIssueUrl = utils.createIssue(
                             licenseAuthorName, licenseName, licenseIdentifier,
                             licenseComments, licenseSourceUrls, licenseHeader,
                             licenseOsi, licenseExamples, licenseRequestUrl,
                             token, urlType)
+                        licenseRequest.github_issue_number = githubIssueId
+                        licenseRequest.github_issue_url = githubIssueUrl
+                        licenseRequest.save()
 
                     # If the license text matches with either rejected or yet not approved license then return 409 Conflict
                     else:
@@ -352,6 +355,8 @@ def licenseInformation(request, licenseId):
     licenseInformation['notes'] = data['notes']
     licenseInformation['standardLicenseHeader'] = data['standardLicenseHeader']
     licenseInformation['text'] = data['text']
+    licenseInformation['githubIssueUrl'] = licenseRequest.github_issue_url
+    licenseInformation['githubIssueNumber'] = licenseRequest.github_issue_number
     context_dict ={'licenseInformation': licenseInformation}
     if request.method == 'POST':
         tempFilename = 'output.xml'
@@ -999,7 +1004,7 @@ def promoteNamespaceRequests(request, license_id=None):
             if "urlType" in request.POST:
                 # This is present only when executing submit license via tests
                 urlType = request.POST["urlType"]
-            statusCode, _ = utils.createIssue(
+            statusCode, githubIssueId, githubIssueUrl = utils.createIssue(
                 licenseAuthorName,
                 licenseName,
                 licenseIdentifier,
@@ -1012,6 +1017,9 @@ def promoteNamespaceRequests(request, license_id=None):
                 token,
                 urlType,
             )
+            licenseRequest.github_issue_number = githubIssueId
+            licenseRequest.github_issue_url = githubIssueUrl
+            licenseRequest.save()
             return_tuple = (statusCode, licenseRequest)
             statusCode = return_tuple[0]
             if statusCode == 201:
@@ -1192,11 +1200,14 @@ def issue(request):
                     licenseRequestId = licenseRequest.id
                     serverUrl = request.build_absolute_uri('/')
                     licenseRequestUrl = os.path.join(serverUrl, reverse('license-requests')[1:], str(licenseRequestId))
-                    statusCode, _ = utils.createIssue(
+                    statusCode, githubIssueId, githubIssueUrl = utils.createIssue(
                         licenseAuthorName, licenseName, licenseIdentifier,
                         licenseComments, licenseSourceUrls, licenseHeader,
                         licenseOsi, licenseExamples, licenseRequestUrl, token,
                         urlType, matchId, diffUrl, msg)
+                    licenseRequest.github_issue_number = githubIssueId
+                    licenseRequest.github_issue_url = githubIssueUrl
+                    licenseRequest.save()
                     data['statusCode'] = str(statusCode)
                     return JsonResponse(data)
                 except UserSocialAuth.DoesNotExist:

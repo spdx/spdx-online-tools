@@ -338,9 +338,23 @@ def createLicenseNamespaceIssue(licenseNamespace, token, urlType):
     return r.status_code
 
 
-
-def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseComments, licenseSourceUrls, licenseHeader, licenseOsi, licenseExamples, licenseRequestUrl, token, urlType, matchId=None, diffUrl=None, msg=None):
-    """ View for creating an GitHub issue
+def createIssue(
+        licenseAuthorName,
+        licenseName,
+        licenseIdentifier,
+        licenseComments,
+        licenseSourceUrls,
+        licenseHeader,
+        licenseOsi,
+        licenseExamples,
+        licenseRequestUrl,
+        token,
+        urlType,
+        matchId=None,
+        diffUrl=None,
+        msg=None,
+    ):
+    """View for creating an GitHub issue
     when submitting a new license request
     """
     licenseUrls = ""
@@ -349,14 +363,14 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
         for i in range(1, len(licenseSourceUrls)):
             licenseUrls += ', '
             licenseUrls += licenseSourceUrls[i]
-            
+
     licenseExampleUrls = ""
     if licenseExamples != None and len(licenseExamples) > 0:
         licenseExampleUrls = licenseExamples[0]
         for i in range(1, len(licenseExamples)):
             licenseExampleUrls += ', '
             licenseExampleUrls += licenseExamples[i]
-  
+
     body = "**1.** License name: {0}\n**2.** Short identifier: {1}\n**3.** License author or steward: {2}\n**4.** Comments: {3}\n**5.** License request Url: {4}\n**6.** URL(s): {5}\n**7.** OSI status: {6}\n**8.** Example projects: {7}".format(licenseName, licenseIdentifier, licenseAuthorName, licenseComments, licenseRequestUrl, licenseUrls, licenseOsi, licenseExampleUrls)
     if diffUrl:
         body = body + "\n**8.** License text diff: {0}".format(diffUrl)
@@ -379,15 +393,16 @@ def createIssue(licenseAuthorName, licenseName, licenseIdentifier, licenseCommen
             response_json = r.json()
         except ValueError:
             # Handle JSON parsing error
-            return None, None
-            
+            return status_code, None, ""
 
+    issue_html_url = ""
     if status_code in [200, 201] and "number" in response_json:
         issue_id = response_json["number"]
+        issue_html_url = response_json.get("html_url", "")
     else:
         issue_id = None
 
-    return status_code, issue_id
+    return status_code, issue_id, issue_html_url
 
 
 def postToGithub(message, encodedContent, filename):
