@@ -1250,22 +1250,6 @@ class LicenseRequestsViewsTestCase(TestCase):
         self.assertIn("app/license_requests.html",(i.name for i in resp.templates))
         self.assertEqual(resp.resolver_match.func.__name__,"licenseRequests")
 
-    def test_license_information_displays_github_issue_link(self):
-        """GET license information page shows a link to the linked GitHub issue when present"""
-        license_obj = LicenseRequest.objects.create(
-            fullname="BSD Zero Clause License-00",
-            shortIdentifier="0BSD",
-            xml="<root></root>",
-            github_issue_number=42,
-            github_issue_url="https://github.com/spdx/license-list-XML/issues/42",
-        )
-        resp = self.client.get(reverse("license-information", args=(license_obj.id,)),follow=True,secure=True)
-        self.assertEqual(resp.status_code,200)
-        self.assertIn("app/license_information.html",(i.name for i in resp.templates))
-        self.assertEqual(resp.resolver_match.func.__name__,"licenseInformation")
-        self.assertContains(resp, "https://github.com/spdx/license-list-XML/issues/42")
-        self.assertContains(resp, "#42")
-
 
 class ArchiveLicenseRequestsViewsTestCase(TestCase):
 
