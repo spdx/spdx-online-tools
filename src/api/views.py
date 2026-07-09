@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2017 Rohit Lodha
 # SPDX-FileCopyrightText: 2025-present SPDX Contributors
+# SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2017 Rohit Lodha
 
@@ -133,16 +134,16 @@ def validate(request):
                 response = core.license_validate_helper(request)
             httpstatus, _, result = utils.get_json_response_data(response)
             returnstatus = utils.get_return_code(httpstatus)
-            uploaded_file_obj = request.FILES.get("file") or request.data.get("file")
-            query = ValidateFileUpload.objects.create(
-                owner=request.user, file=uploaded_file_obj
+            saved_file = response.get("uploaded_file")
+            query = ValidateFileUpload(
+                owner=request.user, result=result, status=httpstatus
             )
-            query.result = result
-            query.status = httpstatus
-            uploaded_file = str(query.file)
-            ValidateFileUpload.objects.filter(file=uploaded_file).update(
-                result=result, status=httpstatus
-            )
+            if saved_file:
+                # Helper already saved to media; avoid re-saving (issue #499).
+                query.file.name = saved_file
+            else:
+                query.file = request.FILES.get("file") or request.data.get("file")
+            query.save()
             serial = ValidateSerializerReturn(instance=query)
             return Response(serial.data, status=returnstatus)
         else:
@@ -208,21 +209,22 @@ def convert(request):
             
             if httpstatus != 200:
                 message = 'Failed'
-            
-            query = ConvertFileUpload.objects.create(
+
+            saved_file = response.get("uploaded_file")
+            query = ConvertFileUpload(
                 owner=request.user,
-                file=request.data.get('file'),
                 from_format=request.POST["from_format"],
                 to_format=request.POST["to_format"],
                 cfilename=request.POST["cfilename"],
+                message=message,
+                status=httpstatus,
+                result=result,
             )
-            uploaded_file = str(query.file)
-            uploaded_file_path = str(query.file.path)
-            print("uploaded_file_path:", uploaded_file_path)
-            query.message = message
-            query.status = httpstatus
-            query.result = result
-            ConvertFileUpload.objects.filter(file=uploaded_file).update(status=httpstatus, result=result, message=message)
+            if saved_file:
+                query.file.name = saved_file
+            else:
+                query.file = request.data.get('file')
+            query.save()
             serial = ConvertSerializerReturn(instance=query)
             return Response(
                 serial.data,status=returnstatus
@@ -296,22 +298,21 @@ def compare(request):
                 message = 'Failed'
 
             rfilename = request.POST["rfilename"]
-            file1_obj = request.FILES.get("file1") or file1
-            file2_obj = request.FILES.get("file2") or file2
-            query = CompareFileUpload.objects.create(
+            saved_files = response.get("uploaded_files") or []
+            query = CompareFileUpload(
                 owner=request.user,
-                file1=file1_obj,
-                file2=file2_obj,
                 rfilename=rfilename,
+                message=message,
+                result=result,
+                status=httpstatus,
             )
-            uploaded_file1 = str(query.file1)
-            uploaded_file2 = str(query.file2)
-            query.message = message
-            query.result = result
-            query.status = httpstatus
-            CompareFileUpload.objects.filter(file1=uploaded_file1).filter(
-                file2=uploaded_file2
-            ).update(message=message, result=result, status=httpstatus)
+            if len(saved_files) >= 2:
+                query.file1.name = saved_files[0]
+                query.file2.name = saved_files[1]
+            else:
+                query.file1 = request.FILES.get("file1") or file1
+                query.file2 = request.FILES.get("file2") or file2
+            query.save()
             serial = CompareSerializerReturn(instance=query)
             return Response(serial.data, status=returnstatus)
         else:

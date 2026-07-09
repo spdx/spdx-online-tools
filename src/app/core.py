@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 SPDX contributors
+# SPDX-FileCopyrightText: 2022-present SPDX contributors
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 
@@ -98,9 +98,11 @@ def license_compare_helper(request):
                 return result
             # Loop through the list of files
             fs = FileSystemStorage(location=folder_path, base_url=folder_url)
+            saved_files = []
             for myfile in request.FILES.getlist("files"):
                 filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
                 local_path = fs.path(filename)
+                saved_files.append(f"{folder}/{filename}")
                 callfunc.append(str(local_path))
                 nameoffile, fileext = os.path.splitext(filename)
                 if (nameoffile.endswith(".rdf") and fileext == ".xml") or fileext == ".rdf":
@@ -135,6 +137,7 @@ def license_compare_helper(request):
                     filelist.append(myfile.name)
                     errorlist.append("Invalid file extension for "+filename+".  Must be .xls, .xlsx, .xml, .json, .yaml, .spdx, .rdfxml")
                     errorlist.append(UNEXPECTED_ERROR_MSG + format_exc())
+            result['uploaded_files'] = saved_files
             if erroroccurred is False:
                 # If no errors in any of the file,call the java function with parameters as list
                 try :
@@ -354,6 +357,7 @@ def license_validate_helper(request):
             fs = FileSystemStorage(location=folder_path, base_url=folder_url)
             filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             local_path = fs.path(filename)
+            result['uploaded_file'] = f"{folder}/{filename}"
             formatstr = request.POST["format"]
             serFileTypeEnum = jpype.JClass("org.spdx.tools.SpdxToolsHelper$SerFileType")
             fileformat = serFileTypeEnum.valueOf(formatstr)
@@ -530,6 +534,7 @@ def license_convert_helper(request):
             fs = FileSystemStorage(location=folder_path, base_url=folder_url)
             filename = fs.save(utils.removeSpecialCharacters(myfile.name), myfile)
             local_path = fs.path(filename)
+            result['uploaded_file'] = f"{folder}/{filename}"
             option1 = request.POST["from_format"]
             option2 = request.POST["to_format"]
             content_type = utils.formatToContentType(option2)
