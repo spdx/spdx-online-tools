@@ -837,6 +837,15 @@ def dots(request):
     else:
         return HttpResponseRedirect(settings.LOGIN_URL)
 
+def spdx3_viz(request):
+    """ View for SPDX 3 SBOM Visualizer tool
+    returns spdx3_viz.html
+    """
+    if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
+        return render(request, 'app/spdx3_viz.html', {})
+    else:
+        return HttpResponseRedirect(settings.LOGIN_URL)
+
 
 def autocompleteModel(request):
     if 'term' in request.GET:
