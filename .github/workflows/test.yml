@@ -6,8 +6,7 @@ on:
     paths:
       - ".github/workflows/test.yml"
       - "src/app/templates/**"
-      - "src/app/testFiles/**"
-      - "!src/api/testFiles/**.md"
+      - "src/tests/fixtures/**"
       - "src/examples/**"
       - "**.py"
       - "**.jar"
@@ -19,8 +18,7 @@ on:
     paths:
       - ".github/workflows/test.yml"
       - "src/app/templates/**"
-      - "src/app/testFiles/**"
-      - "!src/api/testFiles/**.md"
+      - "src/tests/fixtures/**"
       - "src/examples/**"
       - "**.py"
       - "**.jar"
