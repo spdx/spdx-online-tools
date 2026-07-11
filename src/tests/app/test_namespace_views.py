@@ -4,7 +4,6 @@ Tests for skipped license namespace views (issue #337).
 """
 
 from unittest import skip, skipIf
-from django.contrib.auth.models import User
 from django.test import TestCase, tag
 from django.urls import reverse
 
