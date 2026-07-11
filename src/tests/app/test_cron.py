@@ -15,7 +15,7 @@ from django.test import TestCase
 from app.scripts.cleanup import clean_media
 
 
-class TestCronJob(TestCase):
+class CronJobTestCase(TestCase):
     def test_clean_media_deletes_only_expired_files(self):
         """Check if the files older than 10 days are getting deleted"""
         test_dir = os.path.join(settings.MEDIA_ROOT, "AnonymousUser")
