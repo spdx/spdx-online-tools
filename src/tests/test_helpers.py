@@ -15,7 +15,7 @@ Provides:
   - GitHubLoginMixin           logs a test client in via GitHub credentials
 
 Import pattern (mirrors src.secret):
-    from src.test_helpers import (
+    from tests.test_helpers import (
         getExamplePath, BaseSeleniumTestCase, GitHubLoginMixin,
         github_creds_available, SELENIUM_AVAILABLE,
     )

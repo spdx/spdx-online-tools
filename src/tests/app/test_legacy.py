@@ -24,7 +24,7 @@ from app.generateXml import generateLicenseXml
 from app.models import LicenseNamespace, LicenseRequest, UserID
 from app.scripts.cleanup import clean_media
 from src.secret import getAccessToken, getGithubUserId, getGithubUserName
-from src.test_helpers import BaseSeleniumTestCase, SELENIUM_AVAILABLE, getExamplePath
+from tests.test_helpers import BaseSeleniumTestCase, SELENIUM_AVAILABLE, getExamplePath
 
 
 class TestUtil(TestCase):

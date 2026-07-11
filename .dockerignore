@@ -51,6 +51,7 @@ pip-selfcheck.json
 # ========================
 # 2. Test / coverage / reports
 # ========================
+src/tests/
 .tox/
 htmlcov/
 .coverage

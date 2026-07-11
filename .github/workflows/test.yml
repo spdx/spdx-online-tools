@@ -76,4 +76,4 @@ jobs:
           cd src
           python manage.py makemigrations
           python manage.py migrate
-          python manage.py test app.tests api.tests -v 2
+          python manage.py test tests -v 2
