@@ -11,5 +11,5 @@ The file [licenseRequests.json](licenseRequests.json) contains LicenseRequest mo
 To load the LicenseRequest records you can run:
 
 ```shell
-python manage.py loaddata ./app/testFiles/licenseRequests.json
+python manage.py loaddata licenseRequests.json
 ```

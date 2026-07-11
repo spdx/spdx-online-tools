@@ -217,6 +217,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = PROJECT_ROOT / 'media'
 print("MEDIA_ROOT:", MEDIA_ROOT)
 
+FIXTURE_DIRS = [
+    PROJECT_ROOT / 'tests' / 'fixtures',
+]
+
 LICENSE_ROOT = '/licenses/current/'
 print("LICENSE_ROOT:", LICENSE_ROOT)
 
