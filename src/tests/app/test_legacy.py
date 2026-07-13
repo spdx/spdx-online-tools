@@ -6,6 +6,7 @@
 import datetime
 import os
 import shutil
+import time
 from unittest import skip, skipIf
 from unittest.mock import patch
 
@@ -960,13 +961,11 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#split.active"))
         )
-        import time
         time.sleep(0.5)
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
         )
         """ Adding text """
-        import time
         # Blur the text editor first to ensure all blur/update events are fired and processed
         driver.execute_script("if (typeof splitTextEditor !== 'undefined' && splitTextEditor.getInputField) { splitTextEditor.getInputField().blur(); } document.activeElement.blur();")
         time.sleep(0.3)
@@ -1039,8 +1038,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         )
         error_title = driver.find_element(By.CSS_SELECTOR, "h2.xmlParsingErrorMessage").text
         error_message = driver.find_element(By.CSS_SELECTOR, "span.xmlParsingErrorMessage").text
-        print("DEBUG INVALID XML ERROR TITLE:", error_title)
-        print("DEBUG INVALID XML ERROR MESSAGE:", error_message)
+
         self.assertEqual(error_title, "Invalid XML.")
         assert "xml" in error_message.lower() and "error" in error_message.lower()
 
@@ -1063,8 +1061,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         )
         error_title = driver.find_element(By.CSS_SELECTOR, "h2.xmlParsingErrorMessage").text
         error_message = driver.find_element(By.CSS_SELECTOR, "span.xmlParsingErrorMessage").text
-        print("DEBUG SPLIT INVALID XML ERROR TITLE:", error_title)
-        print("DEBUG SPLIT INVALID XML ERROR MESSAGE:", error_message)
+
         self.assertEqual(error_title, "Invalid XML.")
         assert "xml" in error_message.lower() and "error" in error_message.lower()
 
