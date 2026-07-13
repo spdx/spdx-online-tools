@@ -21,7 +21,6 @@ Import pattern (mirrors src.secret):
     )
 """
 
-import logging
 import os
 import shutil
 
@@ -32,17 +31,10 @@ from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.firefox.service import Service as FirefoxService
 from social_django.models import UserSocialAuth
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
 
 from src.secret import getAccessToken, getGithubUserId, getGithubUserName, getRedisHost
-
-os.environ.setdefault("WDM_PROGRESS_BAR", "0")
-os.environ.setdefault("WDM_LOG", "0")
 
 
 # ---------------------------------------------------------------------------
@@ -78,35 +70,48 @@ def github_creds_available():
 # ---------------------------------------------------------------------------
 
 
-def _init_selenium():
-    # Attempt Firefox
-    try:
-        driver_path = shutil.which("geckodriver") or GeckoDriverManager().install()
-        if (
-            driver_path
-            and os.path.isfile(driver_path)
-            and os.access(driver_path, os.X_OK)
-        ):
-            return "firefox", driver_path
-    except Exception as e:
-        logging.warning(f"Firefox initialization failed or geckodriver not found: {e}")
+def _detect_browser():
+    # 1. Try resolving via PATH (works on Linux/macOS, and Windows if on PATH)
+    for browser in ["chrome", "google-chrome", "chromium", "chrome.exe", "google-chrome.exe", "chromium.exe"]:
+        if shutil.which(browser):
+            return "chrome"
+    for browser in ["firefox", "firefox.exe"]:
+        if shutil.which(browser):
+            return "firefox"
 
-    # Attempt Chrome
-    try:
-        driver_path = shutil.which("chromedriver") or ChromeDriverManager().install()
-        if (
-            driver_path
-            and os.path.isfile(driver_path)
-            and os.access(driver_path, os.X_OK)
-        ):
-            return "chrome", driver_path
-    except Exception as e:
-        logging.warning(f"Chrome initialization failed or chromedriver not found: {e}")
+    # 2. Try standard macOS paths
+    if os.path.exists("/Applications/Google Chrome.app"):
+        return "chrome"
+    if os.path.exists("/Applications/Firefox.app"):
+        return "firefox"
 
-    return None, None
+    # 3. Try standard Windows paths
+    if os.name == "nt":
+        program_files = os.environ.get("ProgramFiles", "C:\\Program Files")
+        program_files_x86 = os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)")
+        local_app_data = os.environ.get("LocalAppData", os.path.expanduser("~\\AppData\\Local"))
+        
+        chrome_paths = [
+            os.path.join(program_files, "Google\\Chrome\\Application\\chrome.exe"),
+            os.path.join(program_files_x86, "Google\\Chrome\\Application\\chrome.exe"),
+            os.path.join(local_app_data, "Google\\Chrome\\Application\\chrome.exe"),
+        ]
+        for path in chrome_paths:
+            if os.path.exists(path):
+                return "chrome"
+                
+        firefox_paths = [
+            os.path.join(program_files, "Mozilla Firefox\\firefox.exe"),
+            os.path.join(program_files_x86, "Mozilla Firefox\\firefox.exe"),
+        ]
+        for path in firefox_paths:
+            if os.path.exists(path):
+                return "firefox"
+
+    return None
 
 
-DRIVER_TYPE, DRIVER_PATH = _init_selenium()
+DRIVER_TYPE = _detect_browser()
 SELENIUM_AVAILABLE = DRIVER_TYPE is not None
 
 
@@ -126,23 +131,36 @@ class BaseSeleniumTestCase(StaticLiveServerTestCase):
             if DRIVER_TYPE == "firefox":
                 options = FirefoxOptions()
                 options.add_argument("-headless")
-                self.selenium = webdriver.Firefox(
-                    service=FirefoxService(DRIVER_PATH), options=options
-                )
+                self.selenium = webdriver.Firefox(options=options)
             elif DRIVER_TYPE == "chrome":
                 options = ChromeOptions()
                 options.add_argument("--headless")
                 options.add_argument("--no-sandbox")
                 options.add_argument("--disable-dev-shm-usage")
-                self.selenium = webdriver.Chrome(
-                    service=ChromeService(DRIVER_PATH), options=options
-                )
+                self.selenium = webdriver.Chrome(options=options)
 
             self.selenium.set_window_size(1920, 1080)
         except Exception as e:
             self.skipTest(f"Failed to initialize {DRIVER_TYPE} driver: {e}")
 
         super(BaseSeleniumTestCase, self).setUp()
+
+    def disable_animations(self):
+        """Disable CSS transitions, animations, and jQuery effects to prevent timing flakes."""
+        disable_effects = """
+        if (window.jQuery) {
+            jQuery.fx.off = true;
+            jQuery('.fade').removeClass('fade');
+        }
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = '* { transition: none !important; animation: none !important; }';
+        document.head.appendChild(style);
+        """
+        try:
+            self.selenium.execute_script(disable_effects)
+        except Exception:
+            pass
 
     def tearDown(self):
         if hasattr(self, "selenium"):
