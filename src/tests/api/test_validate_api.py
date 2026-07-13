@@ -50,14 +50,14 @@ class ValidateFileUploadTests(APITestCase):
         ValidateFileUpload.objects.all().delete()
 
     def test_validate_api(self):
-        """Access get without login"""
+        # Access get without login
         resp1 = self.client.get(reverse("validate-api"))
         self.assertEqual(resp1.status_code, 200)
         self.client.login(username=self.username, password=self.password)
-        """ Access get after login"""
+        # Access get after login
         resp2 = self.client.get(reverse("validate-api"))
         self.assertEqual(resp2.status_code, 200)
-        """ Valid Tag Value File"""
+        # Valid Tag Value file
         resp3 = self.client.post(
             reverse("validate-api"),
             {"file": self.tv_file, "format": "TAG"},
@@ -68,7 +68,7 @@ class ValidateFileUploadTests(APITestCase):
             resp3.data["owner"], User.objects.get_by_natural_key(self.username).id
         )
         self.assertEqual(resp3.data["result"], "This SPDX document is valid.")
-        """ Valid RDF File"""
+        # Valid RDF file
         resp4 = self.client.post(
             reverse("validate-api"),
             {"file": self.rdf_file, "format": "RDFXML"},
@@ -79,7 +79,7 @@ class ValidateFileUploadTests(APITestCase):
             resp4.data["owner"], User.objects.get_by_natural_key(self.username).id
         )
         self.assertEqual(resp4.data["result"], "This SPDX document is valid.")
-        """ Invalid Tag Value File"""
+        # Invalid Tag Value file
         resp5 = self.client.post(
             reverse("validate-api"),
             {"file": self.invalid_tv_file, "format": "TAG"},
@@ -90,7 +90,7 @@ class ValidateFileUploadTests(APITestCase):
         )
         self.assertEqual(resp5.status_code, 400)
         self.assertNotEqual(resp5.data["result"], "This SPDX document is valid.")
-        """ Invalid RDF File"""
+        # Invalid RDF file
         resp6 = self.client.post(
             reverse("validate-api"),
             {"file": self.invalid_rdf_file, "format": "RDFXML"},
@@ -133,6 +133,7 @@ class ValidateLargeFileUploadTests(APITestCase):
 
     def test_validate_api_large_file(self):
         """A large (temp-file) upload must not raise FileNotFoundError."""
+
         self.client.login(username=self.username, password=self.password)
         with open(getExamplePath("SPDXTagExample-v2.0.spdx")) as f:
             resp = self.client.post(

@@ -52,10 +52,10 @@ class ConvertFileUploadTests(APITestCase):
         ConvertFileUpload.objects.all().delete()
 
     def test_convert_api(self):
-        """Access get without login"""
+        # Access get without login
         resp1 = self.client.get(reverse("convert-api"))
         self.assertEqual(resp1.status_code, 200)
-        """Access get after login"""
+        # Access get after login
         self.client.login(username=self.username, password=self.password)
         resp2 = self.client.get(reverse("convert-api"))
         self.assertEqual(resp2.status_code, 200)
@@ -250,6 +250,7 @@ class ConvertLargeFileUploadTests(APITestCase):
 
     def test_convert_api_large_file(self):
         """A large (temp-file) upload must not raise FileNotFoundError."""
+
         self.client.login(username=self.username, password=self.password)
         with open(getExamplePath("SPDXTagExample-v2.2.spdx"), "rb") as f:
             resp = self.client.post(

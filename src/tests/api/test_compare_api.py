@@ -71,7 +71,7 @@ class CompareFileUploadTests(APITestCase):
             resp3.data["owner"], User.objects.get_by_natural_key(self.username).id
         )
         self.assertTrue(resp3.data["result"].startswith(settings.MEDIA_URL))
-        # Compare RDF file with TAG-Value file (mixed formats, both valid SPDX)
+        # Compare RDF file with TAG Value file (mixed formats, both valid SPDX)
         self.rdf_file.seek(0)
         resp4 = self.client.post(
             reverse("compare-api"),
@@ -133,6 +133,7 @@ class CompareLargeFileUploadTests(APITestCase):
 
     def test_compare_api_large_file(self):
         """A large (temp-file) upload must not raise FileNotFoundError."""
+
         self.client.login(username=self.username, password=self.password)
         with open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf")) as f1, \
                 open(getExamplePath("SPDXRdfExample-v2.3.spdx.rdf")) as f2:
