@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Tests for Submit License API views.
+Tests for Submit License API.
 """
 
 from unittest import skipIf

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Tests for Check License API views.
+Tests for Check License API.
 """
 
 import json
