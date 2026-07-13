@@ -49,14 +49,14 @@ class CompareFileUploadTests(APITestCase):
         CompareFileUpload.objects.all().delete()
 
     def test_compare_api(self):
-        """Access get without login"""
+        # Access get without login
         resp1 = self.client.get(reverse("compare-api"))
         self.assertEqual(resp1.status_code, 200)
-        """Access get after login"""
+        # Access get after login
         self.client.login(username=self.username, password=self.password)
         resp2 = self.client.get(reverse("compare-api"))
         self.assertEqual(resp2.status_code, 200)
-        """Compare two valid RDF files"""
+        # Compare two valid RDF files
         resp3 = self.client.post(
             reverse("compare-api"),
             {
@@ -71,7 +71,7 @@ class CompareFileUploadTests(APITestCase):
             resp3.data["owner"], User.objects.get_by_natural_key(self.username).id
         )
         self.assertTrue(resp3.data["result"].startswith(settings.MEDIA_URL))
-        """Compare RDF file with TAG/TV file (mixed formats, both valid SPDX)"""
+        # Compare RDF file with TAG-Value file (mixed formats, both valid SPDX)
         self.rdf_file.seek(0)
         resp4 = self.client.post(
             reverse("compare-api"),
