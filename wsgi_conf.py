@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2020-present SPDX contributors
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+
 """gunicorn WSGI server configuration."""
 
 from multiprocessing import cpu_count

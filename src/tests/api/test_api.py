@@ -2,6 +2,10 @@
 # SPDX-FileCopyrightText: 2026 SPDX contributors
 # SPDX-License-Identifier: Apache-2.0
 
+"""
+Tests for API functionality.
+"""
+
 import json
 import os
 from unittest import skipIf
