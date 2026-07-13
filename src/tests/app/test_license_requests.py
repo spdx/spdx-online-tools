@@ -3,6 +3,10 @@
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 
+"""
+Tests for license requests views and submit new license view.
+"""
+
 from unittest import skipIf
 from unittest.mock import patch
 

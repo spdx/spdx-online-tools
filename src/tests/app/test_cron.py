@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026-present SPDX contributors
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Tests for cron jobs and cleanup scripts.
 """

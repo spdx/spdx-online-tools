@@ -4,6 +4,10 @@
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 
+"""
+Tests for about view.
+"""
+
 from django.test import TestCase
 from django.urls import reverse
 
