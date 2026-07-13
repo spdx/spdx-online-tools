@@ -29,9 +29,13 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
+try:
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    from selenium.webdriver.firefox.options import Options as FirefoxOptions
+    SELENIUM_IMPORTED = True
+except ImportError:
+    SELENIUM_IMPORTED = False
 from social_django.models import UserSocialAuth
 
 from src.secret import getAccessToken, getGithubUserId, getGithubUserName, getRedisHost
@@ -111,7 +115,7 @@ def _detect_browser():
     return None
 
 
-DRIVER_TYPE = _detect_browser()
+DRIVER_TYPE = _detect_browser() if SELENIUM_IMPORTED else None
 SELENIUM_AVAILABLE = DRIVER_TYPE is not None
 
 
