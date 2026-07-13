@@ -1,31 +1,38 @@
-name: Tests
+
+# SPDX-FileCopyrightText: 2026-present SPDX contributors
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+---
+name: App tests
 
 on:
   push:
     branches: [main]
     paths:
-      - ".github/workflows/test.yml"
-      - "src/app/templates/**"
-      - "src/app/static/**"
+      - ".github/workflows/test-app.yml"
+      - "src/app/**"
+      - "src/tests/app/**"
+      - "src/tests/test_helpers.py"
       - "src/tests/fixtures/**"
-      - "src/tests/**/*.py"
       - "src/examples/**"
-      - "**.py"
-      - "**.jar"
+      - "src/src/**"
+      - "src/manage.py"
+      - "src/tool.jar"
       - "requirements.txt"
       - "requirements-dev.txt"
       - "pyproject.toml"
   pull_request:
     branches: [main]
     paths:
-      - ".github/workflows/test.yml"
-      - "src/app/templates/**"
-      - "src/app/static/**"
+      - ".github/workflows/test-app.yml"
+      - "src/app/**"
+      - "src/tests/app/**"
+      - "src/tests/test_helpers.py"
       - "src/tests/fixtures/**"
-      - "src/tests/**/*.py"
       - "src/examples/**"
-      - "**.py"
-      - "**.jar"
+      - "src/src/**"
+      - "src/manage.py"
+      - "src/tool.jar"
       - "requirements.txt"
       - "requirements-dev.txt"
       - "pyproject.toml"
@@ -40,31 +47,29 @@ jobs:
 
     services:
       redis:
-        # Redis is required for testing the license matching
         image: redis
         ports:
           - 6379:6379
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Set up Java
-        # Java is required for JPype and Java tools (compare, convert, validate)
-        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
         with:
           distribution: temurin
           java-version: "17"
       - name: Set up Firefox
-        uses: browser-actions/setup-firefox@fcf821c621167805dd63a29662bd7cb5676c81a8 # v1.7.1
+        uses: browser-actions/setup-firefox@0bc507ddf224827e3b1af68e014d5e42ab93e795 # v1.7.2
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
-      - name: Run tests
+      - name: Run App tests
         env:
           ONLINE_TOOL_GITHUB_KEY: ${{ secrets.ONLINE_TOOL_GITHUB_KEY }}
           ONLINE_TOOL_GITHUB_SECRET: ${{ secrets.ONLINE_TOOL_GITHUB_SECRET }}
@@ -78,4 +83,4 @@ jobs:
           cd src
           python manage.py makemigrations
           python manage.py migrate
-          python manage.py test tests -v 2
+          python manage.py test tests.app -v 2
