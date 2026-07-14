@@ -43,14 +43,14 @@ class CheckLicenseFileUploadTests(APITestCase):
             pass
 
     def test_checklicense_api(self):
-        """Access get without login"""
+        # Access get without login
         resp1 = self.client.get(reverse("check_license-api"))
         self.assertEqual(resp1.status_code, 405)
         self.client.login(username=self.username, password=self.password)
-        """ Access get after login"""
+        # Access get after login
         resp2 = self.client.get(reverse("check_license-api"))
         self.assertEqual(resp2.status_code, 405)
-        """ Valid License File"""
+        # Valid license file
         resp3 = self.client.post(
             reverse("check_license-api"),
             {"file": self.license_file},
@@ -61,7 +61,7 @@ class CheckLicenseFileUploadTests(APITestCase):
         self.assertEqual(result3["matched_license"], self.license)
         self.assertEqual(result3["match_type"], "Perfect match")
         self.assertEqual(result3["all_matches"], {self.license: 1.0})
-        """ Other File"""
+        # Other file
         resp4 = self.client.post(
             reverse("check_license-api"), {"file": self.other_file}, format="multipart"
         )

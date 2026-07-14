@@ -81,10 +81,10 @@ class SubmitLicenseModelsTests(APITestCase):
         SubmitLicenseModel.objects.all().delete()
 
     def test_submitlicense_api(self):
-        """Access submit license api get request without login"""
+        # Access submit license api get request without login
         resp1 = self.client.get(reverse("submit_license-api"), follow=True, secure=True)
         self.assertEqual(resp1.status_code, 200)
-        """ Access get after login"""
+        # Access get after login
         app = Application.objects.get(name="Owner")
         token = generate_token()
         expires = now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
@@ -100,7 +100,7 @@ class SubmitLicenseModelsTests(APITestCase):
         self.assertEqual(resp2.status_code, 200)
 
     def test_generate_xml(self):
-        """View for generating an xml from license submittal form fields"""
+        # View for generating an XML from license submittal form fields
         xml = generateLicenseXml(
             self.osiApproved,
             self.shortIdentifier,
@@ -114,7 +114,7 @@ class SubmitLicenseModelsTests(APITestCase):
         self.assertEqual(self.xml, xml)
 
     def test_submitlicense_api_with_invalid_code(self):
-        """Post submit license api with empty authentication code"""
+        # Post submit license API with empty authentication code
         resp3 = self.client.post(
             reverse("submit_license-api"),
             {
@@ -130,7 +130,7 @@ class SubmitLicenseModelsTests(APITestCase):
             format="multipart",
         )
         self.assertIn("No authentication code provided.", str(resp3.content))
-        """ Post submit license api with invalid authentication code"""
+        # Post submit license API with invalid authentication code
         resp4 = self.client.post(
             reverse("submit_license-api"),
             {
@@ -152,7 +152,7 @@ class SubmitLicenseModelsTests(APITestCase):
         "You need to set the authentication code in the secret.py file for this test to be executed properly.",
     )
     def test_submitlicense_api_with_valid_fields(self):
-        """Test working of oauth.py file"""
+        # Test working of oauth.py file
         app = Application.objects.get(name="Owner")
         auth_code = getAuthCode()
         github_client_id = getGithubKey()
@@ -186,7 +186,7 @@ class SubmitLicenseModelsTests(APITestCase):
             headers={"Authorization": "token %s" % github_access_token},
         )
         self.assertIn(user.username, resp6.json()["login"])
-        """ Test submit licence with valid auth code and valid fields"""
+        # Test submit licence with valid auth code and valid fields
         self.data.update(
             {"user_id": userID, "code": auth_code, "token": github_access_token}
         )
@@ -201,10 +201,10 @@ class SubmitLicenseModelsTests(APITestCase):
         self.assertEqual(resp7.data["owner"], userID)
 
     def test_submitlicense_api_with_invalid_fields(self):
-        """Test for invalid serializer"""
+        # Test for invalid serializer
         resp8 = self.client.post(reverse("submit_license-api"), {}, format="multipart")
         self.assertEqual(resp8.status_code, 400)
-        """ Test with incorrect osi choice"""
+        # Test with incorrect osi choice
         resp9 = self.client.post(
             reverse("submit_license-api"),
             {"osiApproved": self.incorrectOsiApproved},
