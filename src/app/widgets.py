@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2019-present SPDX Contributors
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.forms import widgets

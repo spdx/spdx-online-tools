@@ -15,7 +15,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase
 
-from app.scripts.cleanup import clean_media
+from app.utils.cleanup_media import clean_media
 
 
 class CronJobTestCase(TestCase):

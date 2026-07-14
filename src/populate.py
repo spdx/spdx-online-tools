@@ -1,3 +1,10 @@
+# SPDX-FileCopyrightText: 2017-present SPDX Contributors
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+
+"""Script to populate the database with license and exception names
+from SPDX data."""
+
 import os
 import django
 import requests
@@ -20,7 +27,7 @@ def populate(url, type):
     return (total_count, new_count)
 
 if __name__ == "__main__":
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'src.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     django.setup()
     from app.models import LicenseNames
     license_url = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json"

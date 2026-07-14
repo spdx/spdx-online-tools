@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2018 Tushar Mittal
 # SPDX-FileCopyrightText: 2025-present SPDX Contributors
+# SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 
 import base64
@@ -19,7 +20,7 @@ from spdx_license_matcher.computation import (checkTextStandardLicense,
 
 from app.models import User, UserID, LicenseRequest
 
-from src.secret import getRedisHost
+from config.secret import getRedisHost
 
 NORMAL = "normal"
 TESTS = "tests"

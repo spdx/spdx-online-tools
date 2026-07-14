@@ -14,7 +14,7 @@ Provides:
   - BaseSeleniumTestCase       base class for Selenium tests
   - GitHubLoginMixin           logs a test client in via GitHub credentials
 
-Import pattern (mirrors src.secret):
+Import pattern (mirrors config.secret):
     from tests.test_helpers import (
         getExamplePath, BaseSeleniumTestCase, GitHubLoginMixin,
         github_creds_available, SELENIUM_AVAILABLE,
@@ -38,7 +38,7 @@ except ImportError:
     SELENIUM_IMPORTED = False
 from social_django.models import UserSocialAuth
 
-from src.secret import getAccessToken, getGithubUserId, getGithubUserName, getRedisHost
+from config.secret import getAccessToken, getGithubUserId, getGithubUserName, getRedisHost
 
 
 # ---------------------------------------------------------------------------

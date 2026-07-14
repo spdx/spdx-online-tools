@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2017-present SPDX Contributors
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Django settings for project src.
 
@@ -10,7 +14,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
-from src.secret import (
+from config.secret import (
     getGithubKey,
     getGithubSecret,
     getSecretKey,
@@ -19,7 +23,7 @@ from src.secret import (
     getDiffRepoGitToken,
     getDiffRepoWithOwner,
 )
-from src.version import spdx_online_tools_version
+from config.version import spdx_online_tools_version
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -102,7 +106,7 @@ MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
-ROOT_URLCONF = 'src.urls'
+ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
@@ -123,7 +127,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'src.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database

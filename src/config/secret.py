@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2019-present SPDX Contributors
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: Apache-2.0
+
+"""Functions to retrieve secret keys and tokens from environment variables."""
+
 from dotenv import load_dotenv
 import os
 
