@@ -51,8 +51,9 @@ core.initialise_jpype()
 
 
 def index(request):
-    """ View for index
-    returns index.html template
+    """View for index.
+
+    Returns index.html template.
     """
     context_dict={}
     return render(request,
@@ -61,15 +62,17 @@ def index(request):
 
 
 def about(request):
-    """ View for about
-    returns about.html template
+    """View for about.
+
+    Returns about.html template.
     """
     return render(request, "app/about.html", {})
 
 
 def submitNewLicense(request):
-    """ View for submit new licenses
-    returns submit_new_license.html template
+    """View for submit new licenses.
+
+    Returns submit_new_license.html template.
     """
     context_dict = {}
     ajaxdict = {}
@@ -211,8 +214,9 @@ def submitNewLicense(request):
 
 
 def submitNewLicenseNamespace(request):
-    """ View for submit new licenses namespace
-    returns submit_new_license_namespace.html template
+    """View for submit new licenses namespace.
+
+    Returns submit_new_license_namespace.html template
     """
     context_dict = {}
     ajaxdict = {}
@@ -326,8 +330,9 @@ def submitNewLicenseNamespace(request):
 
 
 def licenseInformation(request, licenseId):
-    """ View for license request and archive request information
-    returns license_information.html template
+    """View for license request and archive request information.
+
+    Returns license_information.html template.
     """
     if "archive_requests" in str(request.META.get('PATH_INFO')):
         if not LicenseRequest.objects.filter(archive='True').filter(id=licenseId).exists():
@@ -375,8 +380,9 @@ def licenseInformation(request, licenseId):
 
 
 def licenseNamespaceInformation(request, licenseId):
-    """ View for license namespace request and archive request information
-    returns license_namespace_information.html template
+    """View for license namespace request and archive request information.
+
+    Returns license_namespace_information.html template.
     """
     if "archive_namespace_requests" in str(request.META.get('PATH_INFO')):
         if not LicenseNamespace.objects.filter(archive='True').filter(id=licenseId).exists():
@@ -430,8 +436,9 @@ def licenseNamespaceInformation(request, licenseId):
 
 
 def ntia_check(request):
-    """ View for NTIA Conformance Checker tool
-    returns ntia_conformance_checker.html template
+    """View for NTIA Conformance Checker tool.
+
+    Returns ntia_conformance_checker.html template.
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict = {}
@@ -458,8 +465,9 @@ def ntia_check(request):
 
 
 def validate(request):
-    """ View for validate tool
-    returns validate.html template
+    """View for validate tool.
+
+    Returns validate.html template.
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
@@ -488,8 +496,8 @@ def validate(request):
 
 
 def validate_xml(request):
-    """ View to validate xml text against SPDX License XML Schema,
-         used in the license xml editor """
+    """View to validate XML text against SPDX License XML Schema,
+    used in the License XML editor."""
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         if request.method == 'POST':
             ajaxdict=dict()
@@ -566,8 +574,9 @@ def validate_xml(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def compare(request):
-    """ View for compare tool
-    returns compare.html template
+    """View for compare tool.
+
+    Returns compare.html template.
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict = {}
@@ -594,8 +603,9 @@ def compare(request):
 
 
 def convert(request):
-    """ View for convert tool
-    returns convert.html template
+    """View for convert tool.
+
+    Returns convert.html template.
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
@@ -621,8 +631,9 @@ def convert(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def check_license(request):
-    """ View for check license tool
-    returns check_license.html template
+    """View for check license tool.
+
+    Returns check_license.html template.
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
@@ -653,8 +664,9 @@ def check_license(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def license_diff(request):
-    """ View for diff section tool
-    returns license_diff.html template
+    """View for diff section tool.
+
+    Returns license_diff.html template.
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict = {}
@@ -677,8 +689,9 @@ def license_diff(request):
 
 
 def xml_upload(request):
-    """ View for uploading XML file
-    returns xml_upload.html
+    """View for uploading XML file.
+
+    Returns xml_upload.html template.
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         context_dict={}
@@ -829,8 +842,9 @@ def xml_upload(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def dots(request):
-    """ View for dots tool
-    returns dots.html
+    """View for dots tool.
+
+    Returns dots.html.
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         return render(request, 'app/dots.html', {})
@@ -838,8 +852,9 @@ def dots(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
 def spdx3_viz(request):
-    """ View for SPDX 3 SBOM Visualizer tool
-    returns spdx3_viz.html
+    """View for SPDX 3 SBOM Visualizer tool.
+
+    Returns spdx3_viz.html.
     """
     if request.user.is_authenticated or settings.ANONYMOUS_LOGIN_ENABLED:
         return render(request, 'app/spdx3_viz.html', {})
@@ -854,8 +869,9 @@ def autocompleteModel(request):
     return HttpResponse()
 
 def license_xml_edit(request, page_id):
-    """View for editing the License XML file
-    returns editor.html """
+    """View for editing the License XML file.
+
+    Returns editor.html template."""
     context_dict = {}
     if (page_id in request.session):
         if request.user.is_authenticated:
@@ -890,8 +906,9 @@ def get_context_dict_for_license_xml(request, license_obj, license_id):
 
 
 def edit_license_xml(request, license_id=None):
-    """View for editing the XML file corresponsing to a license entry
-    returns editor.html"""
+    """View for editing the XML file corresponding to a license entry.
+
+    Returns editor.html template."""
     if license_id:
         if not LicenseRequest.objects.filter(id=license_id).exists():
             return render(request, "404.html", {}, status=404)
@@ -903,8 +920,9 @@ def edit_license_xml(request, license_id=None):
 
 
 def edit_license_namespace_xml(request, license_id=None):
-    """View for editing the XML file corresponsing to a license namespace entry
-    returns editor.html"""
+    """View for editing the XML file corresponding to a license namespace entry.
+
+    Returns editor.html template."""
     if license_id:
         if not LicenseNamespace.objects.filter(id=license_id).exists():
             return render(request, "404.html", {}, status=404)
@@ -916,8 +934,9 @@ def edit_license_namespace_xml(request, license_id=None):
 
 
 def archiveRequests(request, license_id=None):
-    """ View for archive license requests
-    returns archive_requests.html template
+    """View for archive license requests.
+
+    Returns archive_requests.html template.
     """
     context_dict = {}
     if request.user.is_authenticated:
@@ -954,8 +973,9 @@ def archiveRequests(request, license_id=None):
 
 
 def archiveNamespaceRequests(request, license_id=None):
-    """ View for archive namespace license requests
-    returns archive_namespace_requests.html template
+    """View for archive namespace license requests.
+
+    Returns archive_namespace_requests.html template.
     """
     if request.method == "POST" and utils.is_ajax(request):
         archive = request.POST.get('archive', False)
@@ -972,8 +992,9 @@ def archiveNamespaceRequests(request, license_id=None):
 
 
 def promoteNamespaceRequests(request, license_id=None):
-    """ View for promote namespace license requests
-    returns promote_namespace_requests.html template
+    """View for promote namespace license requests.
+
+    Returns promote_namespace_requests.html template.
     """
     if request.method == "POST" and utils.is_ajax(request):
         promoted = request.POST.get('promoted', False)
@@ -1043,8 +1064,9 @@ def promoteNamespaceRequests(request, license_id=None):
 
 
 def licenseRequests(request, license_id=None):
-    """ View for license requests which are not archived
-    returns license_requests.html template
+    """View for license requests which are not archived.
+
+    Returns license_requests.html template.
     """
     context_dict = {}
     if request.user.is_authenticated:
@@ -1083,8 +1105,9 @@ def licenseRequests(request, license_id=None):
 
 
 def licenseNamespaceRequests(request, license_id=None):
-    """ View for license namespace requests which are not archived
-    returns license_namespace_requests.html template
+    """View for license namespace requests which are not archived.
+
+    Returns license_namespace_requests.html template.
     """
     github_login = None
     if request.user.is_authenticated:
@@ -1108,7 +1131,7 @@ def licenseNamespaceRequests(request, license_id=None):
 
 
 def update_session_variables(request):
-    """ View for updating the XML text in the session variable """
+    """View for updating the XML text in the session variable."""
     if request.method == "POST" and utils.is_ajax(request):
         page_id = request.POST["page_id"]
         request.session[page_id] = [request.POST["xml_text"], request.POST["license_name"]]
@@ -1124,7 +1147,7 @@ def update_session_variables(request):
 
 
 def beautify(request):
-    """ View that handles beautify xml requests """
+    """View that handles beautify XML requests."""
     if request.method=="POST":
         ajaxdict = {}
         try:
@@ -1173,7 +1196,7 @@ def beautify(request):
 
 
 def issue(request):
-    """ View that handles create issue request """
+    """View that handles create issue request."""
     if request.user.is_authenticated:
         if request.method=="POST":
             ajaxdict = {}
@@ -1318,18 +1341,19 @@ def handle_pull_request(request, is_ns):
 
 
 def pull_request(request):
-    """ View that handles pull request """
+    """View that handles pull request."""
     return handle_pull_request(request, is_ns=False)
 
 
 def namespace_pull_request(request):
-    """ View that handles pull request for a license namespace """
+    """View that handles pull request for a license namespace."""
     return handle_pull_request(request, is_ns=True)
 
 
 def loginuser(request):
-    """ View for Login
-    returns login.html template
+    """View for Login.
+
+    Returns login.html template.
     """
     if not request.user.is_authenticated:
         context_dict={}
@@ -1370,8 +1394,9 @@ def loginuser(request):
         return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
 
 def register(request):
-    """ View for register
-    returns register.html template
+    """View for register.
+
+    Returns register.html template.
     """
     if not request.user.is_authenticated:
         context_dict={}
@@ -1403,14 +1428,15 @@ def register(request):
 
 @login_required
 def logoutuser(request):
-    """Flush session and logout user """
+    """Flush session and logout user."""
     request.session.flush()
     logout(request)
     return HttpResponseRedirect(settings.LOGIN_URL)
 
 def profile(request):
-    """ View for profile
-    returns profile.html template
+    """View for profile.
+
+    Returns profile.html template.
     """
     if request.user.is_authenticated:
         context_dict={}
@@ -1477,7 +1503,7 @@ def checkusername(request):
 
 
 def post_to_github(request):
-    """ Api to handle github upload of diff images """
+    """API to handle GitHub upload of diff images."""
     if request.user.is_authenticated:
         data = {}
         if request.method == "POST":

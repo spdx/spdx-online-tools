@@ -1,17 +1,14 @@
 # SPDX-FileCopyrightText: 2017 Rohit Lodha
-# SPDX-FileCopyrightText: 2026 SPDX contributors
+# SPDX-FileCopyrightText: 2026-present SPDX contributors
+# SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Tests for API functionality.
+Tests for Submit License API.
 """
 
-import json
-import os
 from unittest import skipIf
 
-import redis as redis_lib
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.urls import reverse
@@ -25,79 +22,7 @@ from rest_framework.test import APITestCase
 from api.models import SubmitLicenseModel
 from api.oauth import generate_github_access_token, get_user_from_token
 from api.views import generateLicenseXml
-from src.secret import getAuthCode, getGithubKey, getGithubSecret, getRedisHost
-
-
-def getExamplePath(filename):
-    return os.path.join(settings.EXAMPLES_DIR, filename)
-
-
-def isRedisAvailable():
-    try:
-        r = redis_lib.StrictRedis(host=getRedisHost(), port=6379, db=0)
-        r.ping()
-        return True
-    except (redis_lib.exceptions.ConnectionError, Exception):
-        return False
-
-
-@skipIf(not isRedisAvailable(), "Redis is not available")
-class CheckLicenseFileUploadTests(APITestCase):
-
-    def setUp(self):
-        self.username = "checklicenseapitestuser"
-        self.password = "checklicenseapitestpass"
-        self.tearDown()
-        self.credentials = {"username": self.username, "password": self.password}
-        u = User.objects.create_user(**self.credentials)
-        u.is_staff = True
-        u.save()
-        self.license = "AFL-1.1"
-        self.license_file = open(getExamplePath("AFL-1.1.txt"))
-        self.other_file = open(getExamplePath("Other.txt"))
-
-    def tearDown(self):
-        try:
-            u = User.objects.get_by_natural_key(self.username)
-            u.delete()
-        except ObjectDoesNotExist:
-            pass
-
-    def test_checklicense_api(self):
-        """Access get without login"""
-        resp1 = self.client.get(reverse("check_license-api"))
-        self.assertEqual(resp1.status_code, 405)
-        self.client.login(username=self.username, password=self.password)
-        """ Access get after login"""
-        resp2 = self.client.get(reverse("check_license-api"))
-        self.assertEqual(resp2.status_code, 405)
-        """ Valid License File"""
-        resp3 = self.client.post(
-            reverse("check_license-api"),
-            {"file": self.license_file},
-            format="multipart",
-        )
-        self.assertEqual(resp3.status_code, 200)
-        result3 = json.loads(resp3.content)
-        self.assertEqual(result3["matched_license"], self.license)
-        self.assertEqual(result3["match_type"], "Perfect match")
-        self.assertEqual(result3["all_matches"], {self.license: 1.0})
-        """ Other File"""
-        resp4 = self.client.post(
-            reverse("check_license-api"), {"file": self.other_file}, format="multipart"
-        )
-        self.assertEqual(resp4.status_code, 404)
-        result4 = json.loads(resp4.content)
-        self.assertEqual(result4["matched_license"], None)
-        self.assertEqual(result4["match_type"], "No match")
-        self.assertEqual(result4["all_matches"], {})
-
-    def test_checklicense_without_argument(self):
-        self.client.login(username=self.username, password=self.password)
-        resp5 = self.client.post(reverse("check_license-api"), {}, format="multipart")
-        self.assertEqual(resp5.status_code, 400)
-        self.client.logout()
-        self.tearDown()
+from src.secret import getAuthCode, getGithubKey, getGithubSecret
 
 
 class SubmitLicenseModelsTests(APITestCase):
@@ -156,10 +81,10 @@ class SubmitLicenseModelsTests(APITestCase):
         SubmitLicenseModel.objects.all().delete()
 
     def test_submitlicense_api(self):
-        """Access submit license api get request without login"""
+        # Access submit license api get request without login
         resp1 = self.client.get(reverse("submit_license-api"), follow=True, secure=True)
         self.assertEqual(resp1.status_code, 200)
-        """ Access get after login"""
+        # Access get after login
         app = Application.objects.get(name="Owner")
         token = generate_token()
         expires = now() + timedelta(seconds=oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
@@ -175,7 +100,7 @@ class SubmitLicenseModelsTests(APITestCase):
         self.assertEqual(resp2.status_code, 200)
 
     def test_generate_xml(self):
-        """View for generating an xml from license submittal form fields"""
+        # View for generating an XML from license submittal form fields
         xml = generateLicenseXml(
             self.osiApproved,
             self.shortIdentifier,
@@ -189,7 +114,7 @@ class SubmitLicenseModelsTests(APITestCase):
         self.assertEqual(self.xml, xml)
 
     def test_submitlicense_api_with_invalid_code(self):
-        """Post submit license api with empty authentication code"""
+        # Post submit license API with empty authentication code
         resp3 = self.client.post(
             reverse("submit_license-api"),
             {
@@ -205,7 +130,7 @@ class SubmitLicenseModelsTests(APITestCase):
             format="multipart",
         )
         self.assertIn("No authentication code provided.", str(resp3.content))
-        """ Post submit license api with invalid authentication code"""
+        # Post submit license API with invalid authentication code
         resp4 = self.client.post(
             reverse("submit_license-api"),
             {
@@ -227,7 +152,7 @@ class SubmitLicenseModelsTests(APITestCase):
         "You need to set the authentication code in the secret.py file for this test to be executed properly.",
     )
     def test_submitlicense_api_with_valid_fields(self):
-        """Test working of oauth.py file"""
+        # Test working of oauth.py file
         app = Application.objects.get(name="Owner")
         auth_code = getAuthCode()
         github_client_id = getGithubKey()
@@ -261,7 +186,7 @@ class SubmitLicenseModelsTests(APITestCase):
             headers={"Authorization": "token %s" % github_access_token},
         )
         self.assertIn(user.username, resp6.json()["login"])
-        """ Test submit licence with valid auth code and valid fields"""
+        # Test submit licence with valid auth code and valid fields
         self.data.update(
             {"user_id": userID, "code": auth_code, "token": github_access_token}
         )
@@ -276,10 +201,10 @@ class SubmitLicenseModelsTests(APITestCase):
         self.assertEqual(resp7.data["owner"], userID)
 
     def test_submitlicense_api_with_invalid_fields(self):
-        """Test for invalid serializer"""
+        # Test for invalid serializer
         resp8 = self.client.post(reverse("submit_license-api"), {}, format="multipart")
         self.assertEqual(resp8.status_code, 400)
-        """ Test with incorrect osi choice"""
+        # Test with incorrect osi choice
         resp9 = self.client.post(
             reverse("submit_license-api"),
             {"osiApproved": self.incorrectOsiApproved},

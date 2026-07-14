@@ -21,7 +21,7 @@ def previous_and_current(some_iterable):
 
 
 def isBullet(string):
-    """ To check if the line has bullet or not.
+    """To check if the line has bullet or not.
     """
     isLetterBullet = re.search(letterBullets, string)
     isNumberBullet = re.search(numberBullets, string)
@@ -32,7 +32,7 @@ def isBullet(string):
 
 
 def wrapBullets(string, item):
-    """ Wrap bullets around the bullet tags.
+    """Wrap bullets around the bullet tags.
     """
     letterBullet = re.search(letterBullets, string)
     numberBullet = re.search(numberBullets, string)
@@ -45,7 +45,7 @@ def wrapBullets(string, item):
 
 
 def groupLines(lines):
-    """ Creates a list of dictionary of each line containing data, tagType and depth of the line. 
+    """Creates a list of dictionary of each line containing data, tagType and depth of the line. 
     """
     lis = []
     for line in lines:
@@ -65,7 +65,7 @@ def groupLines(lines):
 
 
 def insertOls(lines):
-    """ Insert dictionary of tagType list before the the begining and after the ending of a list.
+    """Insert dictionary of tagType list before the the begining and after the ending of a list.
     """
     depth = -1
     newLines = []
@@ -88,7 +88,7 @@ def insertOls(lines):
 
 
 def getTextElement(points):
-    """ Returns the text element of the license XML.
+    """Returns the text element of the license XML.
     """
     licenseTextElement = ET.Element("text")
     elements = []
@@ -124,8 +124,9 @@ def getTextElement(points):
 
 
 def generateLicenseXml(licenseOsi, licenseIdentifier, licenseName, listVersionAdded, licenseSourceUrls, licenseHeader, licenseNotes, licenseText, isException=False):
-    """ Generate a spdx license xml
-    returns the license xml as a string
+    """Generate an SPDX license XML.
+
+    Returns the license XML as a string
     """
     root = ET.Element("SPDXLicenseCollection", xmlns="http://www.spdx.org/license")
     if licenseOsi=="Approved":

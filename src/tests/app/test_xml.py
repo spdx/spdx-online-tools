@@ -76,7 +76,7 @@ class XMLUploadTestCase(TestCase):
         self.client.logout()
 
     def test_invalid_file_upload(self):
-        """ POST request for uploading non XML file"""
+        # POST request for uploading non-XML file
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         self.tv_file = open(getExamplePath("SPDXTagExample-v2.0.spdx"))
         resp = self.client.post(reverse("xml-upload"),{'file': self.tv_file, 'uploadButton': 'uploadButton', 'page_id': 'asfw2432'},follow=True,secure=True)
@@ -86,7 +86,7 @@ class XMLUploadTestCase(TestCase):
         self.client.logout()
 
     def test_xml_input_textarea(self):
-        """ POST request for xml input using textarea"""
+        # POST request for xml input using textarea
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         self.xml_text = "<spdx></spdx>"
         resp = self.client.post(reverse("xml-upload"),{'xmltext': self.xml_text, 'xmlTextButton': 'xmlTextButton', 'page_id': 'asfw2432'},follow=True,secure=True)
@@ -94,7 +94,7 @@ class XMLUploadTestCase(TestCase):
         self.client.logout()
 
     def test_xml_blank_input_textarea(self):
-        """ POST request for blank xml input using textarea"""
+        # POST request for blank xml input using textarea
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         self.xml_text = ""
         resp = self.client.post(reverse("xml-upload"),{'xmltext': self.xml_text, 'xmlTextButton': 'xmlTextButton', 'page_id': 'asfw2432'},follow=True,secure=True)
@@ -103,7 +103,7 @@ class XMLUploadTestCase(TestCase):
         self.client.logout()
 
     def test_license_name(self):
-        """POST request for xml input using license identifier or full name"""
+        # POST request for xml input using license identifier or full name
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.post(reverse("xml-upload"),{'licenseName': 'Apache-2.0', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
@@ -112,7 +112,7 @@ class XMLUploadTestCase(TestCase):
         self.client.logout()
 
     def test_exception_name(self):
-        """POST request for xml input using exception identifier or full name"""
+        # POST request for xml input using exception identifier or full name
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.post(reverse("xml-upload"),{'licenseName': '389-exception', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
@@ -121,7 +121,7 @@ class XMLUploadTestCase(TestCase):
         self.client.logout()
 
     def test_invalid_license_name(self):
-        """ POST request for xml input using invalid license name"""
+        # POST request for xml input using invalid license name
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.post(reverse("xml-upload"),{'licenseName': 'sampleTestLicense', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,404)
@@ -129,7 +129,7 @@ class XMLUploadTestCase(TestCase):
         self.client.logout()
 
     def test_blank_license_name(self):
-        """ POST request for xml input using invalid license name"""
+        # POST request for xml input using blank license name
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.post(reverse("xml-upload"),{'licenseName': '', 'licenseNameButton': 'licenseNameButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,400)
@@ -137,7 +137,7 @@ class XMLUploadTestCase(TestCase):
         self.client.logout()
 
     def test_xml_new_file(self):
-        """ POST request for making new XML license"""
+        # POST request for making new XML license
         self.client.force_login(User.objects.get_or_create(username='xmltestuser')[0])
         resp = self.client.post(reverse("xml-upload"),{'newButton': 'newButton', 'page_id': 'asfw2432'},follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
@@ -147,7 +147,7 @@ class XMLUploadTestCase(TestCase):
 class ValidateXMLViewsTestCase(TestCase):
 
     def test_validate_xml(self):
-        """GET Request for validate_xml"""
+        # GET Request for validate_xml
         if not settings.ANONYMOUS_LOGIN_ENABLED :
             resp = self.client.get(reverse("validate-xml"),follow=True,secure=True)
             self.assertNotEqual(resp.redirect_chain,[])
@@ -163,7 +163,7 @@ class ValidateXMLViewsTestCase(TestCase):
         self.client.logout()
 
     def test_validate_xml_post_without_login(self):
-        """POST Request for validate xml without login or ANONYMOUS_LOGIN_DISABLED """
+        # POST Request for validate xml without login or ANONYMOUS_LOGIN_DISABLED
         if not settings.ANONYMOUS_LOGIN_ENABLED :
             self.xml_text = open(getExamplePath("Adobe-Glyph.xml")).read()
             resp = self.client.post(reverse("validate-xml"),{'xmlText' : self.xml_text},follow=True,secure=True)
@@ -172,7 +172,7 @@ class ValidateXMLViewsTestCase(TestCase):
             self.assertEqual(resp.status_code,200)
 
     def test_validate_xml_post_without_xmlText(self):
-        """POST Request for validate xml without any xml text"""
+        # POST Request for validate xml without any xml text
         self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
         resp = self.client.post(reverse("validate-xml"),{},follow=True,secure=True)
         self.assertEqual(resp.status_code, 400)
@@ -181,7 +181,7 @@ class ValidateXMLViewsTestCase(TestCase):
         self.client.logout()
 
     def test_valid_xml(self):
-        """POST Request for validating a valid XML text """
+        # POST Request for validating a valid XML text
         self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
         self.xml_text = open(getExamplePath("Adobe-Glyph.xml")).read()
         resp = self.client.post(reverse("validate-xml"),{'xmlText': self.xml_text},follow=True,secure=True)
@@ -190,7 +190,7 @@ class ValidateXMLViewsTestCase(TestCase):
         self.client.logout()
 
     def test_invalid_xml(self):
-        """POST Request for validating an invalid XML text """
+        # POST Request for validating an invalid XML text
         self.client.force_login(User.objects.get_or_create(username='validateXMLtestuser')[0])
         self.xml_text = open(getExamplePath("invalid_license.xml")).read()
         resp = self.client.post(reverse("validate-xml"),{'xmlText' : self.xml_text},follow=True,secure=True)
@@ -210,9 +210,9 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         self.invalidXML = '<?xml version="1.0" encoding="UTF-8"?><SPDXLicenseCollection xmlns="http://www.spdx.org/license"><license></license>'
 
     def test_tree_editor_attributes(self):
-        """ Test for adding, editing and deleting attributes using tree editor """
+        # Test for adding, editing and deleting attributes using tree editor
         driver = self.selenium
-        """ Opening the editor and navigating to tree editor """
+        # Opening the editor and navigating to tree editor
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
@@ -225,12 +225,12 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.active"))
         )
-        """ Adding attribute """
+        # Adding attribute
         WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]"))).click()
         driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("firstAttribute")
         driver.find_element(By.CLASS_NAME, "newAttributeValue").send_keys("firstValue")
         driver.find_element(By.CLASS_NAME, "addNewAttribute").click()
-        """ Adding Invalid attribute """
+        # Adding Invalid attribute
         WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[2]/div/ul/li/ul/li[3]/img[3]"))).click()
         driver.find_element(By.CLASS_NAME, "newAttributeName").send_keys("secondAttribute")
         driver.find_element(By.CLASS_NAME, "addNewAttribute").click()
@@ -241,7 +241,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.find_element(By.CLASS_NAME, "newAttributeValue").send_keys("secondValue")
         driver.find_element(By.CLASS_NAME, "cancel").click()
-        """ Editing attribute """
+        # Editing attribute
         driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].click()
         driver.find_element(By.CSS_SELECTOR, "input.textbox").clear()
         driver.find_element(By.CSS_SELECTOR, "input.textbox").send_keys("Edited Value")
@@ -251,7 +251,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         )
         editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text
         self.assertEqual(editedValue, "Edited Value")
-        """ Delete attribute """
+        # Delete attribute
         driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].click()
         driver.find_element(By.CSS_SELECTOR, "img.removeAttribute").click()
         WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
@@ -268,9 +268,9 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         self.assertEqual(self.initialXML, finalXML)
 
     def test_split_tree_editor_attributes(self):
-        """ Test for adding, editing and deleting attributes using split view tree editor """
+        # Test for adding, editing and deleting attributes using split view tree editor
         driver = self.selenium
-        """ Opening the editor and navigating to split view """
+        # Opening the editor and navigating to split view
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
@@ -286,7 +286,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
         )
-        """ Adding attribute """
+        # Adding attribute
         driver.execute_script("document.getElementsByClassName('addAttribute')[1].click()")
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'firstAttribute'")
         driver.execute_script("document.getElementsByClassName('newAttributeValue')[0].value = 'firstValue'")
@@ -294,7 +294,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         WebDriverWait(driver, 30).until(
             lambda d: len(d.find_elements(By.CSS_SELECTOR, "#splitTreeView span.attributeValue")) > 1
         )
-        """ Adding Invalid attribute """
+        # Adding Invalid attribute
         driver.execute_script("document.getElementsByClassName('addAttribute')[1].click()")
         driver.execute_script("document.getElementsByClassName('newAttributeName')[0].value = 'secondAttribute'")
         driver.execute_script("document.getElementsByClassName('addNewAttribute')[0].click()")
@@ -305,7 +305,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.execute_script("document.getElementsByClassName('newAttributeValue')[0].value = 'secondValue'")
         driver.execute_script("document.getElementsByClassName('cancel')[0].click()")
-        """ Editing attribute """
+        # Editing attribute
         driver.execute_script("document.querySelectorAll('span.attributeValue')[1].click()")
         driver.execute_script("document.querySelector('input.textbox').value = ''")
         driver.execute_script("document.querySelector('input.textbox').value = 'Edited Value'")
@@ -315,7 +315,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         )
         editedValue = driver.find_elements(By.CSS_SELECTOR, "span.attributeValue")[1].text
         self.assertEqual(editedValue, "Edited Value")
-        """ Delete attribute """
+        # Delete attribute
         driver.execute_script("document.querySelectorAll('span.attributeValue')[1].click()")
         driver.execute_script("document.querySelector('img.removeAttribute').click()")
         WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
@@ -332,9 +332,9 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         self.assertEqual(self.initialXML, finalXML)
 
     def test_tree_editor_nodes(self):
-        """ Test for adding and deleting nodes(tags) using tree editor """
+        # Test for adding and deleting nodes(tags) using tree editor
         driver = self.selenium
-        """ Opening the editor and navigating to tree editor """
+        # Opening the editor and navigating to tree editor
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
@@ -347,11 +347,11 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.active"))
         )
-        """ Adding node """
+        # Adding node
         driver.find_element(By.CSS_SELECTOR, "li.addChild.last").click()
         driver.find_element(By.CSS_SELECTOR, "input.textbox").send_keys("newNode")
         driver.find_element(By.CLASS_NAME, "buttonAddChild").click()
-        """ Adding invalid node """
+        # Adding invalid node
         driver.find_element(By.CSS_SELECTOR, "li.addChild.last").click()
         driver.find_element(By.CLASS_NAME, "buttonAddChild").click()
         WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
@@ -360,7 +360,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         driver.find_element(By.CSS_SELECTOR, "div.modal-footer button.btn").click()
         WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.find_element(By.CLASS_NAME, "cancelAddChild").click()
-        """ Delete attribute """
+        # Delete attribute
         driver.find_elements(By.CSS_SELECTOR, "img.deleteNode")[2].click()
         WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
@@ -376,9 +376,9 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         self.assertEqual(self.initialXML, finalXML)
 
     def test_split_tree_editor_nodes(self):
-        """ Test for adding and deleting nodes(tags) using split view tree editor """
+        # Test for adding and deleting nodes(tags) using split view tree editor
         driver = self.selenium
-        """ Opening the editor and navigating to split view """
+        # Opening the editor and navigating to split view
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
@@ -394,11 +394,11 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
         )
-        """ Adding node """
+        # Adding node
         driver.execute_script("document.querySelectorAll('li.addChild.last')[1].click()")
         driver.execute_script("document.querySelector('input.textbox').value = 'newNode'")
         driver.execute_script("document.getElementsByClassName('buttonAddChild')[0].click()")
-        """ Adding invalid node """
+        # Adding invalid node
         driver.execute_script("document.querySelectorAll('li.addChild.last')[1].click()")
         driver.execute_script("document.getElementsByClassName('buttonAddChild')[0].click()")
         WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
@@ -407,7 +407,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         driver.execute_script("document.querySelector('div.modal-footer button.btn').click()")
         WebDriverWait(driver, 30).until(EC.invisibility_of_element_located((By.ID, "myModal")))
         driver.execute_script("document.getElementsByClassName('cancelAddChild')[0].click()")
-        """ Delete attribute """
+        # Delete attribute
         driver.execute_script("document.querySelectorAll('img.deleteNode')[2].click()")
         WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "modal-body")))
         modal_text = driver.find_element(By.ID, "modal-body").text
@@ -423,9 +423,9 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         self.assertEqual(self.initialXML, finalXML)
 
     def test_tree_editor_text(self):
-        """ Test for adding, editing and deleting text inside tags using tree editor """
+        # Test for adding, editing and deleting text inside tags using tree editor
         driver = self.selenium
-        """ Opening the editor and navigating to tree editor """
+        # Opening the editor and navigating to tree editor
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
@@ -438,7 +438,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#tree.active"))
         )
-        """ Adding text """
+        # Adding text
         try:
             empty_text_li = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "li.emptyText"))
@@ -458,7 +458,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         )
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "This is some sample text.")
-        """ Editing text """
+        # Editing text
         driver.find_element(By.CSS_SELECTOR, "li.nodeText").click()
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").clear()
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").send_keys("Edited text.")
@@ -468,7 +468,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         )
         nodeText = driver.find_element(By.CSS_SELECTOR, "li.nodeText").text
         self.assertEqual(nodeText, "Edited text.")
-        """ Delete text """
+        # Delete text
         driver.find_element(By.CSS_SELECTOR, "li.nodeText").click()
         driver.find_element(By.CSS_SELECTOR, "div.treeContainer textarea").clear()
         driver.find_element(By.CLASS_NAME, "editNodeText").click()
@@ -486,9 +486,9 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         self.assertEqual(self.initialXML, finalXML)
 
     def test_split_tree_editor_text(self):
-        """ Test for adding, editing and deleting text inside tags using split view tree editor """
+        # Test for adding, editing and deleting text inside tags using split view tree editor
         driver = self.selenium
-        """ Opening the editor and navigating to split view """
+        # Opening the editor and navigating to split view
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.LINK_TEXT, 'New license XML').click()
         driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "new-button"))
@@ -505,7 +505,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#splitTreeView li.addChild"))
         )
-        """ Adding text """
+        # Adding text
         # Blur the text editor first to ensure all blur/update events are fired and processed
         driver.execute_script("if (typeof splitTextEditor !== 'undefined' && splitTextEditor.getInputField) { splitTextEditor.getInputField().blur(); } document.activeElement.blur();")
         time.sleep(0.3)
@@ -526,7 +526,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         )
         nodeText = driver.find_element(By.CSS_SELECTOR, "#splitTreeView li li li.nodeText").text
         self.assertEqual(nodeText, "This is some sample text.")
-        """ Editing text """
+        # Editing text
         driver.find_element(By.CSS_SELECTOR, "#splitTreeView li li li.nodeText").click()
         textarea = WebDriverWait(driver, 30).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, "#splitTreeView textarea"))
@@ -539,7 +539,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         )
         nodeText = driver.find_element(By.CSS_SELECTOR, "#splitTreeView li li li.nodeText").text
         self.assertEqual(nodeText, "Edited text.")
-        """ Delete text """
+        # Delete text
         driver.find_element(By.CSS_SELECTOR, "#splitTreeView li li li.nodeText").click()
         textarea = WebDriverWait(driver, 30).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, "#splitTreeView textarea"))
@@ -560,9 +560,9 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         self.assertEqual(self.initialXML, finalXML)
 
     def test_tree_editor_invalid_xml(self):
-        """ Test for invalid XML text provided """
+        # Test for invalid XML text provided
         driver = self.selenium
-        """ Opening the editor and navigating to tree editor """
+        # Opening the editor and navigating to tree editor
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.ID, "xmltext").send_keys(self.invalidXML)
         driver.find_element(By.ID, "xmlTextButton").click()
@@ -572,7 +572,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         self.disable_animations()
         tab = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "tabTreeEditor")))
         driver.execute_script("arguments[0].click();", tab)
-        """ Checking for error message """
+        # Checking for error message
         WebDriverWait(driver, 30).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.xmlParsingErrorMessage"))
         )
@@ -582,9 +582,9 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         assert "xml" in error_message.lower() and "error" in error_message.lower()
 
     def test_split_tree_editor_invalid_xml(self):
-        """ Test for invalid XML text provided """
+        # Test for invalid XML text provided
         driver = self.selenium
-        """ Opening the editor and navigating to tree editor """
+        # Opening the editor and navigating to tree editor
         driver.get(self.live_server_url+'/app/xml_upload/')
         driver.find_element(By.ID, "xmltext").send_keys(self.invalidXML)
         driver.find_element(By.ID, "xmlTextButton").click()
@@ -594,7 +594,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
         self.disable_animations()
         tab = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "tabSplitView")))
         driver.execute_script("arguments[0].click();", tab)
-        """ Checking for error message """
+        # Checking for error message
         WebDriverWait(driver, 30).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, "h2.xmlParsingErrorMessage"))
         )
@@ -606,7 +606,7 @@ class LicenseXMLEditorTestCase(BaseSeleniumTestCase):
 
 class EditLicenseXmlViewsTestCase(TestCase):
     def test_edit_license_xml(self):
-        """View for editing the xml of a license, given its id"""
+        # View for editing the XML of a license, given its ID
         license_obj = LicenseRequest.objects.create(fullname="BSD Zero Clause License-00", shortIdentifier="0BSD")
         license_id = license_obj.id
         resp = self.client.get(reverse("license_xml_editor", kwargs={'license_id': license_id}),follow=True,secure=True)
@@ -616,7 +616,7 @@ class EditLicenseXmlViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"edit_license_xml")
 
     def test_error_license_requests_edit_xml(self):
-        """Check if error page is displayed when the license id does not exist"""
+        # Check if error page is displayed when the license id does not exist
         license_id = 0
         resp = self.client.get(reverse("license_xml_editor", kwargs={'license_id': license_id}),follow=True,secure=True)
         self.assertEqual(resp.status_code,404)
@@ -625,7 +625,7 @@ class EditLicenseXmlViewsTestCase(TestCase):
         self.assertEqual(resp.resolver_match.func.__name__,"edit_license_xml")
 
     def test_no_license_id_on_license_requests_edit_xml(self):
-        """Check if the redirect works if no license id is provided in the url"""
+        # Check if the redirect works if no license id is provided in the url
         resp = self.client.get(reverse("license_xml_editor_none"),follow=True,secure=True)
         self.assertEqual(resp.status_code,200)
         self.assertIn("app/license_requests.html",(i.name for i in resp.templates))

@@ -39,7 +39,7 @@ def get_return_code(statusCode):
 
 
 def validate_license_fields(licenseName, licenseIdentifier):
-    """ Validate the licenseName and licenseIdentifier
+    """Validate the licenseName and licenseIdentifier
     when submitting a new license
     """
     no_comma_match = bool(re.compile(r'^((?!,).)*$').match(licenseName))

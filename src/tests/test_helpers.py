@@ -10,7 +10,7 @@ Provides:
   - isRedisAvailable()         skip predicate for Redis-dependent tests
   - github_creds_available()   skip predicate for GitHub-token tests
   - SELENIUM_AVAILABLE         bool; True when a webdriver is found
-  - DRIVER_TYPE / DRIVER_PATH  detected webdriver info
+  - DRIVER_TYPE                detected browser kind ("chrome"/"firefox")
   - BaseSeleniumTestCase       base class for Selenium tests
   - GitHubLoginMixin           logs a test client in via GitHub credentials
 
@@ -29,9 +29,13 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
+try:
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    from selenium.webdriver.firefox.options import Options as FirefoxOptions
+    SELENIUM_IMPORTED = True
+except ImportError:
+    SELENIUM_IMPORTED = False
 from social_django.models import UserSocialAuth
 
 from src.secret import getAccessToken, getGithubUserId, getGithubUserName, getRedisHost
@@ -56,7 +60,7 @@ def isRedisAvailable():
         r = redis_lib.StrictRedis(host=getRedisHost(), port=6379, db=0)
         r.ping()
         return True
-    except (redis_lib.exceptions.ConnectionError, Exception):
+    except redis_lib.exceptions.RedisError:
         return False
 
 
@@ -111,7 +115,7 @@ def _detect_browser():
     return None
 
 
-DRIVER_TYPE = _detect_browser()
+DRIVER_TYPE = _detect_browser() if SELENIUM_IMPORTED else None
 SELENIUM_AVAILABLE = DRIVER_TYPE is not None
 
 
