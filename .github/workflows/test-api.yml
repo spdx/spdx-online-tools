@@ -24,6 +24,7 @@ on:
     paths:
       - ".github/workflows/test-api.yml"
       - "src/api/**"
+      - "src/app/**" # src/api/views.py imports from app.{models,core,generateXml,utils}
       - "src/tests/api/**"
       - "src/tests/test_helpers.py"
       - "src/tests/fixtures/**"
@@ -38,7 +39,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
       matrix:
         python-version: ["3.12"]
 

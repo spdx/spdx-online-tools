@@ -60,7 +60,7 @@ def isRedisAvailable():
         r = redis_lib.StrictRedis(host=getRedisHost(), port=6379, db=0)
         r.ping()
         return True
-    except (redis_lib.exceptions.ConnectionError, Exception):
+    except redis_lib.exceptions.RedisError:
         return False
 
 
