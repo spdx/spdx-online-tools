@@ -125,11 +125,26 @@ in the [wiki][gsoc2017].
 
 ## How to Run Tests
 
-Run all tests in the `api` and `app` directories:
+Tests live under `src/tests/`, split into an `api` package and an `app`
+package (mirrored by CI as two workflows, `test-api.yml` and `test-app.yml`).
+
+Run everything:
 
 ```bash
 python src/manage.py test tests
 ```
+
+Run only the API or only the app tests (as CI does):
+
+```bash
+python src/manage.py test tests.api
+python src/manage.py test tests.app
+```
+
+Some tests are gated and skip automatically when their dependency isn't
+available: Redis-backed API tests need a local Redis server (see step 6
+above), and `@tag("selenium")` app tests need a Firefox or Chrome browser
+on `PATH`.
 
 ## Running with Docker
 
