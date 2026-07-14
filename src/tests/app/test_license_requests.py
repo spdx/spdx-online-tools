@@ -21,7 +21,7 @@ from social_django.models import UserSocialAuth
 
 from app.generateXml import generateLicenseXml
 from app.models import LicenseRequest
-from src.secret import getAccessToken, getGithubUserId, getGithubUserName
+from config.secret import getAccessToken, getGithubUserId, getGithubUserName
 from tests.test_helpers import BaseSeleniumTestCase, SELENIUM_AVAILABLE, GitHubLoginMixin
 
 

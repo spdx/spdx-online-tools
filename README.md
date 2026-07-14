@@ -174,9 +174,9 @@ see the [README-PRODUCTION.md](README-PRODUCTION.md) file.
 
 ## GitHub Developer Sensitive Data
 
-The `src/src/settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is maintained as environment variables. Due to that lack of data, some features of SPDX Online Tools and its API won't be able to run as they require the user credentials in order to access the GitHub API. So, the user is supposed to either maintain a `.env` file in the `src/src/` folder or create environment variables in their OSes with their credentials in order to ensure proper functioning of the tool.
+The `src/config/settings.py` file uses sensitive data to work with the GitHub API. For that reason, sensitive data is maintained as environment variables. Due to that lack of data, some features of SPDX Online Tools and its API won't be able to run as they require the user credentials in order to access the GitHub API. So, the user is supposed to either maintain a `.env` file in the `src/config/` folder or create environment variables in their OSes with their credentials in order to ensure proper functioning of the tool.
 
-The `src/src/secret.py` file contains the following lines along with some methods required to run the tests properly. These include:
+The `src/config/secret.py` file contains the following lines along with some methods required to run the tests properly. These include:
 
 ```python
 def getGithubKey():
@@ -261,7 +261,7 @@ can be found in the [wiki][rest-api].
 
     * Go to admin page and login(if you don't have an admin account then create one using `python src/manage.py createsuperuser`).
     * Create a new application by going to the `Applications` section.
-    * Copy the client ID and client secret of the app and paste it in `src/src/secret.py` file under getOauthToolKitAppID and secret and fill the other details of the app as follows:
+    * Copy the client ID and client secret of the app and paste it in `src/config/secret.py` file under getOauthToolKitAppID and secret and fill the other details of the app as follows:
         * `User`: `<admin you created>`
         * `client type`: `confidential`
         * `authorization grant type`: `resource owner password based`
@@ -270,7 +270,7 @@ can be found in the [wiki][rest-api].
 
    **Authorize OAuth app with GitHub to get code and send a request to the license submittal API**
 
-    * Visit `http://github.com/login/oauth/authorize/?client_id=<github-client-id>` it will then redirect you to a URL, copy the `code` query string present in the URL and send it via curl command if you want to use the API. If you want to run tests and test the API then paste the `code` in the `src/src/secret.py` file in the `getAuthCode` method.
+    * Visit `http://github.com/login/oauth/authorize/?client_id=<github-client-id>` it will then redirect you to a URL, copy the `code` query string present in the URL and send it via curl command if you want to use the API. If you want to run tests and test the API then paste the `code` in the `src/config/secret.py` file in the `getAuthCode` method.
 
         **Note** You can only use your code once. If you want to use the license submittal API again, you can generate a new code by following the above point. The code is valid for 10 minutes only.
 

@@ -22,7 +22,7 @@ from rest_framework.test import APITestCase
 from api.models import SubmitLicenseModel
 from api.oauth import generate_github_access_token, get_user_from_token
 from api.views import generateLicenseXml
-from src.secret import getAuthCode, getGithubKey, getGithubSecret
+from config.secret import getAuthCode, getGithubKey, getGithubSecret
 
 
 class SubmitLicenseModelsTests(APITestCase):

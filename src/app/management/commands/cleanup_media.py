@@ -7,7 +7,7 @@ from argparse import ArgumentTypeError
 
 from django.core.management.base import BaseCommand
 
-from app.scripts.cleanup import clean_media
+from app.utils.cleanup_media import clean_media
 
 
 def _non_negative_int(value):

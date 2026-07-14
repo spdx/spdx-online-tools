@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2026-present SPDX Contributors
+# SPDX-FileType: SOURCE
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
@@ -8,8 +9,8 @@ from typing import TYPE_CHECKING, Any
 
 import redis
 
-from src.secret import getRedisHost
-from src.version import (
+from config.secret import getRedisHost
+from config.version import (
     java_tools_version,
     ntia_conformance_checker_version,
     python_tools_version,
