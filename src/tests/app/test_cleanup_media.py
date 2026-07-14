@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Tests for cron jobs and cleanup scripts.
+Tests for media files cleanup utility and command.
 """
 
 import datetime
@@ -18,7 +18,7 @@ from django.test import TestCase
 from app.utils.cleanup_media import clean_media
 
 
-class CronJobTestCase(TestCase):
+class CleanupMediaTestCase(TestCase):
     def test_clean_media_deletes_only_expired_files(self):
         """Check if the files older than 10 days are getting deleted"""
         test_dir = os.path.join(settings.MEDIA_ROOT, "AnonymousUser")
