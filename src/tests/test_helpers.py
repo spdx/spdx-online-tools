@@ -10,7 +10,7 @@ Provides:
   - isRedisAvailable()         skip predicate for Redis-dependent tests
   - github_creds_available()   skip predicate for GitHub-token tests
   - SELENIUM_AVAILABLE         bool; True when a webdriver is found
-  - DRIVER_TYPE / DRIVER_PATH  detected webdriver info
+  - DRIVER_TYPE                detected browser kind ("chrome"/"firefox")
   - BaseSeleniumTestCase       base class for Selenium tests
   - GitHubLoginMixin           logs a test client in via GitHub credentials
 

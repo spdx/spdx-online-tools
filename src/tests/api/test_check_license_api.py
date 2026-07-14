@@ -10,23 +10,12 @@ Tests for Check License API.
 import json
 from unittest import skipIf
 
-import redis as redis_lib
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from tests.test_helpers import getExamplePath
-from src.secret import getRedisHost
-
-
-def isRedisAvailable():
-    try:
-        r = redis_lib.StrictRedis(host=getRedisHost(), port=6379, db=0)
-        r.ping()
-        return True
-    except redis_lib.exceptions.RedisError:
-        return False
+from tests.test_helpers import getExamplePath, isRedisAvailable
 
 
 @skipIf(not isRedisAvailable(), "Redis is not available")
