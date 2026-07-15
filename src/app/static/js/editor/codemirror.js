@@ -1,14 +1,13 @@
-// SPDX-FileCopyrightText: CodeMirror, copyright (c) by Marijn Haverbeke and others
+// SPDX-FileContributor: Marijn Haverbeke <marijnh@gmail.com>
+// SPDX-FileCopyrightText: 2017 Marijn Haverbeke and others
+// SPDX-FileType: SOURCE
 // SPDX-License-Identifier: MIT
 
-// CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
-
-// This is CodeMirror (http://codemirror.net), a code editor
+// This is CodeMirror (https://codemirror.net), a code editor
 // implemented in JavaScript on top of the browser's DOM.
 //
 // You can find some technical background for some of the code below
-// at http://marijnhaverbeke.nl/blog/#cm-internals .
+// at https://marijnhaverbeke.nl/blog/#cm-internals .
 
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -947,7 +946,7 @@ function getBidiPartAt(order, ch, sticky) {
 }
 
 // Bidirectional ordering algorithm
-// See http://unicode.org/reports/tr9/tr9-13.html for the algorithm
+// See https://unicode.org/reports/tr9/tr9-13.html for the algorithm
 // that this (partially) implements.
 
 // One-char codes used for character types:
@@ -5490,7 +5489,7 @@ function changeLine(doc, handle, changeType, op) {
 // It also indexes by height, and is used to convert between height
 // and line object, and to find the total height of the document.
 //
-// See also http://marijnhaverbeke.nl/blog/codemirror-line-tree.html
+// See also https://marijnhaverbeke.nl/blog/codemirror-line-tree.html
 
 function LeafChunk(lines) {
   var this$1 = this;

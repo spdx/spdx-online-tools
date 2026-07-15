@@ -225,7 +225,7 @@ FIXTURE_DIRS = [
     BASE_DIR / 'tests' / 'fixtures',
 ]
 
-LICENSE_ROOT = '/licenses/current/'
+LICENSE_ROOT = '/_license-list-data/current/'
 print("LICENSE_ROOT:", LICENSE_ROOT)
 
 # Rest API framework
