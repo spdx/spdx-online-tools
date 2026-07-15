@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: MIT
 
 # quick-n-dirty formatter for SPDX licenses in XML format
-# Copyright (c) 2017 Alexios Zavras
 #
 # -----------------------------------------------------------------
 # configuration parameters, self-explanatory :-)

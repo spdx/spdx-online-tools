@@ -1,10 +1,7 @@
 // SPDX-FileContributor: Marijn Haverbeke <marijnh@gmail.com>
-// SPDX-FileCopyrightText: CodeMirror, copyright (c) by Marijn Haverbeke and others
+// SPDX-FileCopyrightText: 2017 Marijn Haverbeke and others
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: MIT
-
-// CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
 
 // This is CodeMirror (http://codemirror.net), a code editor
 // implemented in JavaScript on top of the browser's DOM.
