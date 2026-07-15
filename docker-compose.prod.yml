@@ -52,7 +52,7 @@ services:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONPATH=/spdx/src
       - SPDX_REDIS_HOST=redis
-      - SPDXParser.LocalLicensesDir=/licenses/current
+      - SPDXParser.LocalLicensesDir=/_license-list-data/current
       - SPDXParser.OnlyUseLocalLicenses=true
     depends_on:
       - postgres

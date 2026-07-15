@@ -34,12 +34,12 @@ RUN set -eux; \
     api_url="https://api.github.com/repos/spdx/license-list-data/releases/latest"; \
     tag=$(curl -sSL "$api_url" | python -c "import sys, json; print(json.load(sys.stdin)['tag_name'])"); \
     tarball_url="https://github.com/spdx/license-list-data/archive/refs/tags/${tag}.tar.gz"; \
-    mkdir -p /licenses; cd /licenses; \
+    mkdir -p /_license-list-data; cd /_license-list-data; \
     curl -sSL "$tarball_url" -o license-list-data.tar.gz; \
     mkdir tmp && tar -xzf license-list-data.tar.gz -C tmp --strip-components=1; \
-    mkdir -p /licenses/current; cp tmp/website/*.jsonld /licenses/current || true; \
-    cp tmp/website/licenses.json /licenses/current || true; \
-    cp tmp/website/exceptions.json /licenses/current || true; \
+    mkdir -p /_license-list-data/current; cp tmp/website/*.jsonld /_license-list-data/current || true; \
+    cp tmp/website/licenses.json /_license-list-data/current || true; \
+    cp tmp/website/exceptions.json /_license-list-data/current || true; \
     rm -rf tmp license-list-data.tar.gz
 
 # Remove build-only packages and clean apt caches to reduce image size
@@ -65,7 +65,7 @@ COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy licenses from builder stage
-COPY --from=builder /licenses /licenses
+COPY --from=builder /_license-list-data /_license-list-data
 
 # Copy JDK from jdk stage
 ENV JAVA_HOME=/opt/java/openjdk

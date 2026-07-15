@@ -78,7 +78,7 @@ media/
 src/app/media/
 
 # Downloaded license data and SSL certs used during build
-licenses/
+_license-list-data/
 data/certbot/
 
 # container logs from local runs

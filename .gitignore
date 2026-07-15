@@ -70,8 +70,8 @@ static/
 src/app/media/
 
 # Downloaded license data and SSL certs used during build
+_license-list-data/
 data/certbot/
-licenses/
 
 # container logs from local runs
 container_logs/
