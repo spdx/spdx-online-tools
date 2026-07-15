@@ -1,5 +1,5 @@
 // SPDX-FileContributor: Chas Emerick <cemerick@snowtide.com>
-// SPDX-FileCopyrightText: 2007, Snowtide Informatics Systems, Inc.
+// SPDX-FileCopyrightText: 2007 Snowtide Informatics Systems, Inc.
 // SPDX-FileType: SOURCE
 // SPDX-License-Identifier: BSD-3-Clause
 
