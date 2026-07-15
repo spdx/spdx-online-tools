@@ -1,7 +1,7 @@
 // SPDX-FileContributor: Chas Emerick <cemerick@snowtide.com>
 // SPDX-FileCopyrightText: 2007-2011 Chas Emerick <cemerick@snowtide.com>
 // SPDX-FileType: SOURCE
-// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-License-Identifier: BSD-2-Clause
 
 /*
 This is part of jsdifflib v1.0. <https://github.com/cemerick/jsdifflib>
