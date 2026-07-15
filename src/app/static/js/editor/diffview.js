@@ -1,5 +1,7 @@
-// SPDX-FileCopyrightText: Copyright 2007 - 2011 Chas Emerick <cemerick@snowtide.com>. All rights reserved.
 // SPDX-FileContributor: Chas Emerick <cemerick@snowtide.com>
+// SPDX-FileCopyrightText: Copyright 2007 - 2011 Chas Emerick <cemerick@snowtide.com>. All rights reserved.
+// SPDX-FileType: SOURCE
+// SPDX-License-Identifier: BSD-3-Clause
 
 /*
 This is part of jsdifflib v1.0. <http://github.com/cemerick/jsdifflib>

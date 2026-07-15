@@ -1,4 +1,6 @@
+// SPDX-FileContributor: Marijn Haverbeke <marijnh@gmail.com>
 // SPDX-FileCopyrightText: CodeMirror, copyright (c) by Marijn Haverbeke and others
+// SPDX-FileType: SOURCE
 // SPDX-License-Identifier: MIT
 
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
