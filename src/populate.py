@@ -20,9 +20,8 @@ EXCEPTION_URL = "https://raw.githubusercontent.com/spdx/license-list-data/master
 
 def populate(url, item_type):
     """Fetch license or exception data from URL and populate the database."""
-    from app.models import (  # pylint: disable=import-outside-toplevel
-        LicenseNames,
-    )
+    # pylint: disable=import-outside-toplevel
+    from app.models import LicenseNames
 
     response = requests.get(url, timeout=30)
     data = json.loads(response.text)
@@ -30,19 +29,16 @@ def populate(url, item_type):
     new_count = 0
     for item in data[item_type]:
         total_count += 1
-        created = LicenseNames.objects.get_or_create(  # pylint: disable=no-member
-            name=item["name"]
-        )[1]
+        # pylint: disable=no-member
+        created = LicenseNames.objects.get_or_create(name=item["name"])[1]
         if created:
             new_count += 1
         if item_type == "licenses":
-            LicenseNames.objects.get_or_create(  # pylint: disable=no-member
-                name=item["licenseId"]
-            )
+            # pylint: disable=no-member
+            LicenseNames.objects.get_or_create(name=item["licenseId"])
         else:
-            LicenseNames.objects.get_or_create(  # pylint: disable=no-member
-                name=item["licenseExceptionId"]
-            )
+            # pylint: disable=no-member
+            LicenseNames.objects.get_or_create(name=item["licenseExceptionId"])
     return (total_count, new_count)
 
 
