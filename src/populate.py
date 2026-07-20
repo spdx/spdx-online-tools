@@ -5,38 +5,66 @@
 """Script to populate the database with license and exception names
 from SPDX data."""
 
+import json
 import os
+
 import django
 import requests
-import json
 
-def populate(url, type):
-    data = requests.get(url).text
-    data = json.loads(data)
+# pylint: disable=line-too-long
+LICENSE_URL = (
+    "https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json"
+)
+EXCEPTION_URL = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/exceptions.json"
+
+
+def populate(url, item_type):
+    """Fetch license or exception data from URL and populate the database."""
+    from app.models import (  # pylint: disable=import-outside-toplevel
+        LicenseNames,
+    )
+
+    response = requests.get(url, timeout=30)
+    data = json.loads(response.text)
     total_count = 0
     new_count = 0
-    for i in data[type]:
+    for item in data[item_type]:
         total_count += 1
-        response = LicenseNames.objects.get_or_create(name=i["name"])[1]
-        if(response==True):
+        created = LicenseNames.objects.get_or_create(  # pylint: disable=no-member
+            name=item["name"]
+        )[1]
+        if created:
             new_count += 1
-        if type=="licenses":
-            LicenseNames.objects.get_or_create(name=i["licenseId"])
+        if item_type == "licenses":
+            LicenseNames.objects.get_or_create(  # pylint: disable=no-member
+                name=item["licenseId"]
+            )
         else:
-            LicenseNames.objects.get_or_create(name=i["licenseExceptionId"])
+            LicenseNames.objects.get_or_create(  # pylint: disable=no-member
+                name=item["licenseExceptionId"]
+            )
     return (total_count, new_count)
 
-if __name__ == "__main__":
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+
+def main():
+    """Setup Django environment and run population tasks."""
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
     django.setup()
-    from app.models import LicenseNames
-    license_url = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json"
-    exception_url = "https://raw.githubusercontent.com/spdx/license-list-data/master/json/exceptions.json"
-    
+
     print("Adding License names (this might take some time if running for first time)")
-    total_count, new_count = populate(license_url, "licenses")
-    print(("Total Licenses Found: %d\nNew Licenses added to database: %d"%(total_count, new_count)))
-    
+    licenses_total, licenses_new = populate(LICENSE_URL, "licenses")
+    print(
+        f"Total Licenses Found: {licenses_total}\n"
+        f"New Licenses added to database: {licenses_new}"
+    )
+
     print("Adding Exception names")
-    total_count, new_count = populate(exception_url, "exceptions")
-    print(("Total Exceptions Found: %d\nNew Exceptions added to database: %d"%(total_count, new_count)))
+    exceptions_total, exceptions_new = populate(EXCEPTION_URL, "exceptions")
+    print(
+        f"Total Exceptions Found: {exceptions_total}\n"
+        f"New Exceptions added to database: {exceptions_new}"
+    )
+
+
+if __name__ == "__main__":
+    main()

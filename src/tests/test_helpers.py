@@ -29,17 +29,23 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+
 try:
     from selenium import webdriver
     from selenium.webdriver.chrome.options import Options as ChromeOptions
     from selenium.webdriver.firefox.options import Options as FirefoxOptions
+
     SELENIUM_IMPORTED = True
 except ImportError:
     SELENIUM_IMPORTED = False
 from social_django.models import UserSocialAuth
 
-from config.secret import getAccessToken, getGithubUserId, getGithubUserName, getRedisHost
-
+from config.secret import (
+    getAccessToken,
+    getGithubUserId,
+    getGithubUserName,
+    getRedisHost,
+)
 
 # ---------------------------------------------------------------------------
 # Path helpers
@@ -76,7 +82,14 @@ def github_creds_available():
 
 def _detect_browser():
     # 1. Try resolving via PATH (works on Linux/macOS, and Windows if on PATH)
-    for browser in ["chrome", "google-chrome", "chromium", "chrome.exe", "google-chrome.exe", "chromium.exe"]:
+    for browser in [
+        "chrome",
+        "google-chrome",
+        "chromium",
+        "chrome.exe",
+        "google-chrome.exe",
+        "chromium.exe",
+    ]:
         if shutil.which(browser):
             return "chrome"
     for browser in ["firefox", "firefox.exe"]:
@@ -92,9 +105,13 @@ def _detect_browser():
     # 3. Try standard Windows paths
     if os.name == "nt":
         program_files = os.environ.get("ProgramFiles", "C:\\Program Files")
-        program_files_x86 = os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)")
-        local_app_data = os.environ.get("LocalAppData", os.path.expanduser("~\\AppData\\Local"))
-        
+        program_files_x86 = os.environ.get(
+            "ProgramFiles(x86)", "C:\\Program Files (x86)"
+        )
+        local_app_data = os.environ.get(
+            "LocalAppData", os.path.expanduser("~\\AppData\\Local")
+        )
+
         chrome_paths = [
             os.path.join(program_files, "Google\\Chrome\\Application\\chrome.exe"),
             os.path.join(program_files_x86, "Google\\Chrome\\Application\\chrome.exe"),
@@ -103,7 +120,7 @@ def _detect_browser():
         for path in chrome_paths:
             if os.path.exists(path):
                 return "chrome"
-                
+
         firefox_paths = [
             os.path.join(program_files, "Mozilla Firefox\\firefox.exe"),
             os.path.join(program_files_x86, "Mozilla Firefox\\firefox.exe"),
