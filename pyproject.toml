@@ -1,0 +1,17 @@
+[tool.black]
+target-version = ['py312']
+exclude = '''
+(
+  ^/src/(api|app|com|config|examples)/
+  | ^/src/tests/(app|fixtures)/
+)
+'''
+
+[tool.pylint.main]
+load-plugins = ["pylint_per_file_ignores"]
+
+[tool.pylint."messages control"]
+per-file-ignores = [
+    "src/tests/*:invalid-name,attribute-defined-outside-init,duplicate-code,no-member,missing-module-docstring,missing-class-docstring,missing-function-docstring,unspecified-encoding,consider-using-with,too-many-instance-attributes,super-with-arguments,too-few-public-methods,not-callable,broad-exception-caught,too-many-return-statements,line-too-long,consider-using-f-string,missing-timeout",
+    "src/tests/**/*:invalid-name,attribute-defined-outside-init,duplicate-code,no-member,missing-module-docstring,missing-class-docstring,missing-function-docstring,unspecified-encoding,consider-using-with,too-many-instance-attributes,super-with-arguments,too-few-public-methods,not-callable,broad-exception-caught,too-many-return-statements,line-too-long,consider-using-f-string,missing-timeout",
+]

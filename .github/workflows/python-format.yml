@@ -1,0 +1,40 @@
+name: Python format
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/*.py'
+      - 'src/tests/*.py'
+      - 'src/tests/api/**/*.py'
+      - 'pyproject.toml'
+      - '.github/workflows/python-format.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/*.py'
+      - 'src/tests/*.py'
+      - 'src/tests/api/**/*.py'
+      - 'pyproject.toml'
+      - '.github/workflows/python-format.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  black:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Black Python code formatter
+        uses: psf/black@87928e6d6761a4a6d22250e1fee5601b3998086e  # v26.5.1
+        with:
+          src: "src"

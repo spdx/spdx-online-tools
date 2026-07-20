@@ -29,7 +29,9 @@ class CheckLicenseViewsTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertNotEqual(resp.redirect_chain, [])
             self.assertIn(settings.LOGIN_URL, (i[0] for i in resp.redirect_chain))
-            self.client.force_login(User.objects.get_or_create(username='checklicensetestuser')[0])
+            self.client.force_login(
+                User.objects.get_or_create(username="checklicensetestuser")[0]
+            )
         resp2 = self.client.get(reverse("check-license"), follow=True, secure=True)
         self.assertEqual(resp2.status_code, 200)
         self.assertEqual(resp2.redirect_chain, [])
