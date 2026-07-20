@@ -1,5 +1,11 @@
 [tool.black]
 target-version = ['py312']
+exclude = '''
+(
+  ^/src/(api|app|com|config|examples)/
+  | ^/src/tests/(app|fixtures)/
+)
+'''
 
 [tool.pylint.main]
 load-plugins = ["pylint_per_file_ignores"]
