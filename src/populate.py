@@ -27,17 +27,15 @@ def populate(url, item_type):
     data = json.loads(response.text)
     total_count = 0
     new_count = 0
+    # pylint: disable=no-member
     for item in data[item_type]:
         total_count += 1
-        # pylint: disable=no-member
         created = LicenseNames.objects.get_or_create(name=item["name"])[1]
         if created:
             new_count += 1
         if item_type == "licenses":
-            # pylint: disable=no-member
             LicenseNames.objects.get_or_create(name=item["licenseId"])
         else:
-            # pylint: disable=no-member
             LicenseNames.objects.get_or_create(name=item["licenseExceptionId"])
     return (total_count, new_count)
 
