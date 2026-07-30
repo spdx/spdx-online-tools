@@ -27,6 +27,7 @@ def populate(url, item_type):
     data = json.loads(response.text)
     total_count = 0
     new_count = 0
+    # Django ORM; .objects not visible to static analysis
     # pylint: disable=no-member
     for item in data[item_type]:
         total_count += 1
