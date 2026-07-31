@@ -7,7 +7,6 @@
 Tests for Compare API views and file upload.
 """
 
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
@@ -135,8 +134,10 @@ class CompareLargeFileUploadTests(APITestCase):
         """A large (temp-file) upload must not raise FileNotFoundError."""
 
         self.client.login(username=self.username, password=self.password)
-        with open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf")) as f1, \
-                open(getExamplePath("SPDXRdfExample-v2.3.spdx.rdf")) as f2:
+        with (
+            open(getExamplePath("SPDXRdfExample-v2.2.spdx.rdf")) as f1,
+            open(getExamplePath("SPDXRdfExample-v2.3.spdx.rdf")) as f2,
+        ):
             resp = self.client.post(
                 reverse("compare-api"),
                 {

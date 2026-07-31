@@ -7,7 +7,6 @@
 Tests for Validate API views and file upload.
 """
 
-
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.test import override_settings
