@@ -20,4 +20,4 @@ social-auth-app-django>=5.9.0,<6.0.0
 social-auth-core>=4.9.1,<5.0.0
 spdx-python-model>=0.0.4,<1.0.0
 spdx-tools>=0.8.5,<1.0.0
-https://github.com/spdx/spdx-license-matcher/archive/refs/tags/v2.9.tar.gz#egg=spdx-license-matcher
+https://github.com/spdx/spdx-license-matcher/archive/refs/tags/v2.10.tar.gz#egg=spdx-license-matcher
