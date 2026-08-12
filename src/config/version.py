@@ -39,5 +39,5 @@ spdx_online_tools_version = "1.4.0"  # Update this when releasing new version
 java_tools_version = get_tools_version("tool.jar")
 ntia_conformance_checker_version = version("ntia-conformance-checker")
 python_tools_version = version("spdx-tools")
-spdx_license_matcher_version = version("spdx-license-matcher")
+spdx_license_matcher_version = version("license-matcher")
 spdx_python_model_version = version("spdx-python-model")
