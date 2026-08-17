@@ -31,7 +31,7 @@ def _get_license_metadata() -> dict[str, str]:
         "license_db_last_updated",
     )
     try:
-        r = redis.StrictRedis(host=getRedisHost(), port=6379, db=1)
+        r = redis.StrictRedis(host=getRedisHost(), port=6379, db=1, protocol=2)
         version_val, release_val, synced_val = r.mget(keys)
 
         list_version = version_val.decode() if version_val else "Unknown"
