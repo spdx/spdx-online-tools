@@ -673,8 +673,8 @@ def _ensure_license_db_current(
 def check_spdx_license(licenseText):
     """Check the license text against the SPDX License List.
     """
-    r = redis.StrictRedis(host=getRedisHost(), port=6379, db=0)
-    r_meta = redis.StrictRedis(host=getRedisHost(), port=6379, db=1)
+    r = redis.StrictRedis(host=getRedisHost(), port=6379, db=0, protocol=2)
+    r_meta = redis.StrictRedis(host=getRedisHost(), port=6379, db=1, protocol=2)
     _ensure_license_db_current(r, r_meta)
 
     spdxLicenseIds = list(r.keys())
