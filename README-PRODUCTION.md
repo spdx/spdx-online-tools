@@ -60,7 +60,7 @@ Following are the steps for updating the images:
   - replace `<aws-region>` with the AWS region
   - replace `<version>` with the specific version of the spdx-online-tools-build to be deployed
 - Build the image by running `docker compose -f docker-compose.prod.yml build`
-- Test the image for vulnerability by running `docker scan [image]` where `[image]` is the image name from the docker-compose.prod.yml file
+- Test the image for vulnerability by running `docker scout cves [image]` where `[image]` is the image name from the docker-compose.prod.yml file
   - Update any dependencies as needed based on the vulnerability report
 - Deploy the images on EC2
   - Clone or update this repo on the EC2 instance - a convenient way to copy of the docker-compose files
