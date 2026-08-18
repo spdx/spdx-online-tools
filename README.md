@@ -111,7 +111,7 @@ in the [wiki][gsoc2017].
 
         *The Redis is used to store the license text of license present on the SPDX License List. For the very first time it may take a while to build the license on the Redis server.*
 
-        *SPDX License Matcher matches the license text input by the user(via license submittal form) against the data present on the Redis to find for duplicate and near matches.*
+        *SPDX License Matcher matches the license text input by the user (via license submittal form) against the data present on the Redis to find for duplicate and near matches.*
 
 7. Start the application.
 
@@ -279,6 +279,28 @@ can be found in the [wiki][rest-api].
         ```bash
         curl -X POST http://localhost:8000/api/submit_license/ -F 'fullname=<your-fullname>' -F 'shortIdentifier=<your-identifier>' -F 'licenseAuthorName=<license-author>' -F 'userEmail=<your-email>' -F 'text=<text>' -F 'osiApproved=<osi>' -F 'sourceUrl=<url>' -F 'code=<your-code-here>'
         ```
+
+## Developer notes
+
+### Redis serialization protocol version
+
+All `redis.StrictRedis(...)` connections in this codebase explicitly
+pass `protocol=2` (RESP2) instead of relying on the client's default.
+The Redis server version used in our Docker image does not support RESP3,
+and the mismatch fails silently - the "check license" feature always returns
+"no license found," with no error or warning in the logs.
+
+See [issue #712](https://github.com/spdx/spdx-online-tools/issues/712)
+and the fixes in
+[PR #713](https://github.com/spdx/spdx-online-tools/pull/713) and
+[PR #716](https://github.com/spdx/spdx-online-tools/pull/716).
+
+When adding any new `redis.StrictRedis(...)` call, always include
+`protocol=2` to avoid reintroducing this issue.
+
+More details in [Redis serialization protocol specification][RESP].
+
+[RESP]: https://redis.io/docs/latest/develop/reference/protocol-spec/
 
 ## Dependencies
 
