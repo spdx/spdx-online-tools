@@ -1,0 +1,28 @@
+[MESSAGES CONTROL]
+disable = C0114,C0115,C0116
+
+[FORMAT]
+max-line-length = 120
+
+[TYPECHECK]
+ignored-modules = setuptools
+
+[DESIGN]
+max-args = 6
+max-locals = 15
+max-branches = 12
+max-statements = 50
+max-parents = 7
+max-attributes = 7
+
+[CLASSES]
+defining-attr-methods = **init**,**new**,setUp
+valid-metaclass-classmethod-first-arg = True
+
+[IMPORTS]
+ignore = cv2,numpy
+
+[SIMILARITIES]
+min-similarity-lines = 10
+ignore-comments = yes
+ignore-docstrings = yes
