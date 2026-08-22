@@ -84,7 +84,7 @@ VERSION = '1.0'
 import argparse
 import logging
 import re
-import xml.etree.ElementTree as et
+import defusedxml.ElementTree as et
 
 NL = '\n'
 XML_PROLOG = """<?xml version="1.0" encoding="UTF-8"?>"""
