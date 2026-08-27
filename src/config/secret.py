@@ -64,9 +64,11 @@ def getAuthCode():
     return os.environ.get(key="AUTH_CODE")
 
 def getValkeyHost():
-    host = os.environ.get(key="SPDX_VALKEY_HOST") or os.environ.get(key="SPDX_REDIS_HOST")
-    return "localhost" if not host else host
+    host = os.environ.get(key="SPDX_VALKEY_HOST") or os.environ.get(key="SPDX_REDIS_HOST") or "localhost"
+    os.environ.setdefault("SPDX_REDIS_HOST", host)
+    return host
 
 
 def getRedisHost():
     return getValkeyHost()
+

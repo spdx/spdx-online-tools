@@ -284,7 +284,7 @@ can be found in the [wiki][rest-api].
 
 ## Developer notes
 
-### Valkey serialization protocol version
+### Redis serialization protocol version
 
 All `valkey.StrictRedis(...)` connections in this codebase explicitly
 pass `protocol=2` (RESP2) instead of relying on the client's default.
@@ -300,7 +300,7 @@ and the fixes in
 When adding any new `valkey.StrictRedis(...)` call, always include
 `protocol=2` to avoid reintroducing this issue.
 
-More details in [Valkey / Redis serialization protocol specification][RESP].
+More details at [serialization protocol specification][RESP].
 
 [RESP]: https://valkey.io/topics/protocol/
 

@@ -64,7 +64,7 @@ def getExamplePath(filename):
 
 def isValkeyAvailable():
     try:
-        r = valkey_lib.StrictRedis(host=getValkeyHost(), port=6379, db=0)
+        r = valkey_lib.StrictRedis(host=getValkeyHost(), port=6379, db=0, protocol=2)
         r.ping()
         return True
     except (valkey_lib.exceptions.ValkeyError, ConnectionError, OSError):
