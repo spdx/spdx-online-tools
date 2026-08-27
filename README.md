@@ -68,50 +68,52 @@ in the [wiki][gsoc2017].
     ```
 
 6. (Optional) If you want to use the license submittal feature or check license feature, follow the below step(s):
-    * Install Redis server on your local machine.
+    * Install Valkey server on your local machine.
 
         **For Linux users**
 
-        * Use the command `sudo apt-get install redis-server` to install the Redis server.
+        * Use the command `sudo apt-get install valkey-server` to install the Valkey server.
 
         **For Mac users**
 
-        * Install the Redis by running the command
+        * Install Valkey by running the command
 
             ```bash
-            brew install redis
+            brew install valkey
             ```
 
-        * If you want to run Redis whenever your computer starts, run
+        * If you want to run Valkey whenever your computer starts, run
 
             ```bash
-            brew services start redis
+            brew services start valkey
             ```
 
-        * To test if the Redis is working, run
+        * To test if Valkey is working, run
 
             ```bash
-            redis-cli ping
+            valkey-cli ping
             ```
 
             If it returns `PONG` then you are good to go.
 
-        * To stop the Redis server, run
+        * To stop the Valkey server, run
 
             ```bash
-            brew services stop redis
+            brew services stop valkey
             ```
 
         **For Windows users**
 
-        * Download the Redis server from
-          <https://github.com/microsoftarchive/redis/releases> and install it.
+        * Valkey is not officially supported natively on Windows, but can be run using [Windows Subsystem for Linux (WSL)](https://valkey.io/topics/installation/#windows):
+            * Install WSL2 (e.g., `wsl --install`) with a Linux distribution such as Ubuntu.
+            * In the WSL terminal, install Valkey using the package manager (e.g., `sudo apt-get install valkey-server`) or from source following the [Valkey installation guide](https://valkey.io/topics/installation/#windows).
+            * Start the Valkey service in WSL and test with `valkey-cli ping`.
 
-    * Make sure Redis server is running and keep it running until you are done using the license submittal or check license feature.
+    * Make sure Valkey server is running and keep it running until you are done using the license submittal or check license feature.
 
-        *The Redis is used to store the license text of license present on the SPDX License List. For the very first time it may take a while to build the license on the Redis server.*
+        *Valkey is used to store the license text of licenses present on the SPDX License List. For the very first time it may take a while to build the license on the Valkey server.*
 
-        *SPDX License Matcher matches the license text input by the user (via license submittal form) against the data present on the Redis to find for duplicate and near matches.*
+        *SPDX License Matcher matches the license text input by the user (via license submittal form) against the data present in Valkey to check for duplicate and near matches.*
 
 7. Start the application.
 
@@ -142,7 +144,7 @@ python src/manage.py test tests.app
 ```
 
 Some tests are gated and skip automatically when their dependency isn't
-available: Redis-backed API tests need a local Redis server (see step 6
+available: Valkey-backed API tests need a local Valkey server (see step 6
 above), and `@tag("selenium")` app tests need a Firefox or Chrome browser
 on `PATH`.
 
@@ -282,12 +284,12 @@ can be found in the [wiki][rest-api].
 
 ## Developer notes
 
-### Redis serialization protocol version
+### Valkey serialization protocol version
 
-All `redis.StrictRedis(...)` connections in this codebase explicitly
+All `valkey.StrictRedis(...)` connections in this codebase explicitly
 pass `protocol=2` (RESP2) instead of relying on the client's default.
-The Redis server version used in our Docker image does not support RESP3,
-and the mismatch fails silently - the "check license" feature always returns
+The serialization protocol version ensures consistent behavior across servers,
+as mismatches can fail silently with features like "check license" returning
 "no license found," with no error or warning in the logs.
 
 See [issue #712](https://github.com/spdx/spdx-online-tools/issues/712)
@@ -295,12 +297,12 @@ and the fixes in
 [PR #713](https://github.com/spdx/spdx-online-tools/pull/713) and
 [PR #716](https://github.com/spdx/spdx-online-tools/pull/716).
 
-When adding any new `redis.StrictRedis(...)` call, always include
+When adding any new `valkey.StrictRedis(...)` call, always include
 `protocol=2` to avoid reintroducing this issue.
 
-More details in [Redis serialization protocol specification][RESP].
+More details in [Valkey / Redis serialization protocol specification][RESP].
 
-[RESP]: https://redis.io/docs/latest/develop/reference/protocol-spec/
+[RESP]: https://valkey.io/topics/protocol/
 
 ## Dependencies
 

@@ -7,9 +7,9 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, Any
 
-import redis
+import valkey
 
-from config.secret import getRedisHost
+from config.secret import getValkeyHost
 from config.version import (
     java_tools_version,
     ntia_conformance_checker_version,
@@ -24,14 +24,14 @@ if TYPE_CHECKING:
 
 
 def _get_license_metadata() -> dict[str, str]:
-    """Fetch all license metadata keys in one Redis connection."""
+    """Fetch all license metadata keys in one Valkey connection."""
     keys = (
         "license_list_version",
         "license_list_release_date",
         "license_db_last_updated",
     )
     try:
-        r = redis.StrictRedis(host=getRedisHost(), port=6379, db=1, protocol=2)
+        r = valkey.StrictRedis(host=getValkeyHost(), port=6379, db=1, protocol=2)
         version_val, release_val, synced_val = r.mget(keys)
 
         list_version = version_val.decode() if version_val else "Unknown"

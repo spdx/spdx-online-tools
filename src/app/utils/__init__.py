@@ -10,7 +10,7 @@ import logging
 import re
 import xml.etree.cElementTree as ET
 
-import redis
+import valkey
 import requests
 from django.conf import settings
 from spdx_license_matcher.build_licenses import build_spdx_licenses
@@ -20,7 +20,7 @@ from spdx_license_matcher.computation import (checkTextStandardLicense,
 
 from app.models import User, UserID, LicenseRequest
 
-from config.secret import getRedisHost
+from config.secret import getValkeyHost
 
 NORMAL = "normal"
 TESTS = "tests"
@@ -614,7 +614,7 @@ def _parse_version(v: str) -> tuple[int, ...]:
 
 
 def _write_license_db_metadata(
-    r_meta: "redis.StrictRedis[bytes]", version: str, release_date: str
+    r_meta: "valkey.StrictRedis[bytes]", version: str, release_date: str
 ) -> None:
     """Writes license list metadata to the database to track data freshness."""
     r_meta.set(
@@ -628,7 +628,7 @@ def _write_license_db_metadata(
 
 
 def _ensure_license_db_current(
-    r: "redis.StrictRedis[bytes]", r_meta: "redis.StrictRedis[bytes]"
+    r: "valkey.StrictRedis[bytes]", r_meta: "valkey.StrictRedis[bytes]"
 ) -> None:
     """Rebuild the license db when needed and keep metadata in sync."""
     metadata_complete = (
@@ -673,8 +673,8 @@ def _ensure_license_db_current(
 def check_spdx_license(licenseText):
     """Check the license text against the SPDX License List.
     """
-    r = redis.StrictRedis(host=getRedisHost(), port=6379, db=0, protocol=2)
-    r_meta = redis.StrictRedis(host=getRedisHost(), port=6379, db=1, protocol=2)
+    r = valkey.StrictRedis(host=getValkeyHost(), port=6379, db=0, protocol=2)
+    r_meta = valkey.StrictRedis(host=getValkeyHost(), port=6379, db=1, protocol=2)
     _ensure_license_db_current(r, r_meta)
 
     spdxLicenseIds = list(r.keys())

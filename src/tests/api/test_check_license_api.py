@@ -15,10 +15,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from tests.test_helpers import getExamplePath, isRedisAvailable
+from tests.test_helpers import getExamplePath, isValkeyAvailable
 
 
-@skipIf(not isRedisAvailable(), "Redis is not available")
+@skipIf(not isValkeyAvailable(), "Valkey is not available")
 class CheckLicenseFileUploadTests(APITestCase):
 
     def setUp(self):

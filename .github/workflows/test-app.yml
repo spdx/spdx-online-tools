@@ -45,8 +45,8 @@ jobs:
         python-version: ["3.12"]
 
     services:
-      redis:
-        image: redis
+      valkey:
+        image: valkey/valkey:8-alpine
         ports:
           - 6379:6379
 

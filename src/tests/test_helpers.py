@@ -7,7 +7,8 @@ Shared test infrastructure for app and API test suites.
 
 Provides:
   - getExamplePath()           path helper for example SPDX files
-  - isRedisAvailable()         skip predicate for Redis-dependent tests
+  - isValkeyAvailable()        skip predicate for Valkey-dependent tests
+  - isRedisAvailable()         backward-compatibility alias for isValkeyAvailable
   - github_creds_available()   skip predicate for GitHub-token tests
   - SELENIUM_AVAILABLE         bool; True when a webdriver is found
   - DRIVER_TYPE                detected browser kind ("chrome"/"firefox")
@@ -24,7 +25,7 @@ Import pattern (mirrors config.secret):
 import os
 import shutil
 
-import redis as redis_lib
+import valkey as valkey_lib
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -44,7 +45,7 @@ from config.secret import (
     getAccessToken,
     getGithubUserId,
     getGithubUserName,
-    getRedisHost,
+    getValkeyHost,
 )
 
 # ---------------------------------------------------------------------------
@@ -61,13 +62,16 @@ def getExamplePath(filename):
 # ---------------------------------------------------------------------------
 
 
-def isRedisAvailable():
+def isValkeyAvailable():
     try:
-        r = redis_lib.StrictRedis(host=getRedisHost(), port=6379, db=0)
+        r = valkey_lib.StrictRedis(host=getValkeyHost(), port=6379, db=0)
         r.ping()
         return True
-    except redis_lib.exceptions.RedisError:
+    except (valkey_lib.exceptions.ValkeyError, ConnectionError, OSError):
         return False
+
+
+isRedisAvailable = isValkeyAvailable
 
 
 def github_creds_available():

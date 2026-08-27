@@ -63,6 +63,10 @@ def getOauthToolKitAppSecret():
 def getAuthCode():
     return os.environ.get(key="AUTH_CODE")
 
+def getValkeyHost():
+    host = os.environ.get(key="SPDX_VALKEY_HOST") or os.environ.get(key="SPDX_REDIS_HOST")
+    return "localhost" if not host else host
+
+
 def getRedisHost():
-    return "localhost" if os.environ.get(key="SPDX_REDIS_HOST") == "" \
-        else os.environ.get(key="SPDX_REDIS_HOST", default="localhost")
+    return getValkeyHost()

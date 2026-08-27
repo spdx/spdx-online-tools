@@ -1,6 +1,6 @@
 # Deployment Environment
 
-The deployment environment is Docker running on an AWS EC2 server serving the Django application and Redis server. Amazon RDS SQLServer is used for the database.
+The deployment environment is Docker running on an AWS EC2 server serving the Django application and Valkey server. Amazon RDS SQLServer is used for the database.
 
 Docker images are stored in Amazon ECR.
 

@@ -51,17 +51,18 @@ services:
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONPATH=/spdx/src
-      - SPDX_REDIS_HOST=redis
+      - SPDX_VALKEY_HOST=valkey
+      - SPDX_REDIS_HOST=valkey
       - SPDXParser.LocalLicensesDir=/_license-list-data/current
       - SPDXParser.OnlyUseLocalLicenses=true
     depends_on:
       - postgres
-      - redis
+      - valkey
     restart: always
 
-  redis:
-    image: redis:5.0-alpine
-    container_name: redis
+  valkey:
+    image: valkey/valkey:8-alpine
+    container_name: valkey
     restart: always
     volumes:
       - data-volume:/data
