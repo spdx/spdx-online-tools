@@ -288,6 +288,7 @@ can be found in the [wiki][rest-api].
 
 All `valkey.StrictRedis(...)` connections in this codebase explicitly
 pass `protocol=2` (RESP2) instead of relying on the client's default.
+RESP2 is chosen for backward compatibility.
 The serialization protocol version ensures consistent behavior across servers,
 as mismatches can fail silently with features like "check license" returning
 "no license found," with no error or warning in the logs.
