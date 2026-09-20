@@ -92,11 +92,24 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     }
 
     # Making a fork
+    #
+    # A user's fork is not guaranteed to be named after the upstream repo:
+    # GitHub itself renames it (appending "-1", "-2", ...) whenever the
+    # default name already exists in that user's account, and a user can
+    # rename it manually afterwards. Every subsequent call below addresses
+    # "repos/{username}/{fork_repo_name}/...", so fork_repo_name MUST come
+    # from the fork's actual "name" as reported by the GitHub API, never
+    # from settings.NAMESPACE_REPO_NAME/LICENSE_REPO_NAME (those only name
+    # the upstream repo). See https://github.com/spdx/spdx-online-tools/issues/430
     fork_url = "{0}/forks".format(TYPE_TO_URL_NAMESPACE[NORMAL] if is_ns else TYPE_TO_URL_LICENSE[NORMAL])
     response = requests.get(fork_url, headers=headers)
     data = json.loads(response.text)
-    forks = [fork["owner"]["login"] for fork in data]
-    if username not in forks:
+    fork_repo_name = None
+    for fork in data:
+        if fork["owner"]["login"] == username:
+            fork_repo_name = fork["name"]
+            break
+    if fork_repo_name is None:
         # If user has not forked the repo
         response = requests.post(fork_url, headers=headers)
         if response.status_code != 202:
@@ -105,6 +118,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
                 "type":"error",
                 "message":"Error occured while creating a fork of the repo. Please try again later or contact the SPDX Team."
             }
+        fork_repo_name = json.loads(response.text)["name"]
     else:
         if(updateUpstream=="true"):
             # If user wants to update the forked repo with upstream main
@@ -116,7 +130,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
                 "sha":sha,
                 "force": True
             }
-            update_url = "{0}repos/{1}/{2}/git/refs/heads/main".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
+            update_url = "{0}repos/{1}/{2}/git/refs/heads/main".format(url, username, fork_repo_name)
             response = requests.patch(update_url, headers=headers, data=json.dumps(body))
             if response.status_code!=200:
                 logger.error("[Pull Request] Error occured while updating fork, for {0} user. {1}".format(username, response.text))
@@ -127,7 +141,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
 
 
     # Getting ref of main branch
-    ref_url = "{0}repos/{1}/{2}/git/refs/heads/main".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
+    ref_url = "{0}repos/{1}/{2}/git/refs/heads/main".format(url, username, fork_repo_name)
     response = requests.get(ref_url, headers=headers)
     if response.status_code != 200:
         logger.error("[Pull Request] Error occured while getting ref of main branch, for {0} user. {1}".format(username, response.text))
@@ -139,7 +153,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
     sha = str(data["object"]["sha"])
 
     # Getting names of all branches
-    branch_url = url + "repos/{0}/{1}/branches".format(username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
+    branch_url = url + "repos/{0}/{1}/branches".format(username, fork_repo_name)
     response = requests.get(branch_url, headers=headers)
     if response.status_code != 200:
         logger.error("[Pull Request] Error occured while getting branch names, for {0} user. {1}".format(username, response.text))
@@ -159,7 +173,7 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
             else:
                 branchName = branchName+str(count)
                 break
-    create_branch_url = "{0}repos/{1}/{2}/git/refs".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME)
+    create_branch_url = "{0}repos/{1}/{2}/git/refs".format(url, username, fork_repo_name)
     body = {
         "ref":"refs/heads/{0}".format(branchName),
         "sha":sha,
@@ -184,10 +198,10 @@ def makePullRequest(username, token, branchName, updateUpstream, fileName, commi
         textFileName = fileName + ".txt"
         fileName += ".xml"
     if isException:
-        commit_url = "{0}repos/{1}/{2}/contents/src/exceptions/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)
+        commit_url = "{0}repos/{1}/{2}/contents/src/exceptions/{3}".format(url, username, fork_repo_name, fileName)
     else:
-        commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, fileName)        
-    text_commit_url = "{0}repos/{1}/{2}/contents/test/simpleTestForGenerator/{3}".format(url, username, settings.NAMESPACE_REPO_NAME if is_ns else settings.LICENSE_REPO_NAME, textFileName)
+        commit_url = "{0}repos/{1}/{2}/contents/src/{3}".format(url, username, fork_repo_name, fileName)
+    text_commit_url = "{0}repos/{1}/{2}/contents/test/simpleTestForGenerator/{3}".format(url, username, fork_repo_name, textFileName)
     xmlText = xmlText.encode('utf-8')
     fileContent = base64.b64encode(xmlText).decode()
     plainText = plainText.encode('utf-8')
