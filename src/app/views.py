@@ -1206,6 +1206,20 @@ def issue(request):
                 try:
                     github_login = user.social_auth.get(provider='github')
                     token = github_login.extra_data["access_token"]
+                    required_fields = [
+                        'licenseAuthorName', 'licenseName', 'licenseIdentifier',
+                        'licenseOsi', 'licenseHeader', 'comments', 'inputLicenseText',
+                        'licenseNotes', 'listVersionAdded', 'matchIds', 'diffUrl',
+                    ]
+                    missing_fields = [f for f in required_fields if f not in request.POST]
+                    if missing_fields:
+                        message = "Missing required field(s): " + ", ".join(missing_fields)
+                        if (utils.is_ajax(request)):
+                            ajaxdict["type"] = "error"
+                            ajaxdict["data"] = message
+                            response = dumps(ajaxdict)
+                            return HttpResponse(response, status=400)
+                        return HttpResponse(message, status=400)
                     licenseAuthorName = request.POST['licenseAuthorName']
                     licenseName = request.POST['licenseName']
                     licenseIdentifier = request.POST['licenseIdentifier']
