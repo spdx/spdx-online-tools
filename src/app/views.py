@@ -1218,7 +1218,7 @@ def issue(request):
                             ajaxdict["type"] = "error"
                             ajaxdict["data"] = message
                             response = dumps(ajaxdict)
-                            return HttpResponse(response, status=400)
+                            return HttpResponse(response, status=400, content_type="application/json")
                         return HttpResponse(message, status=400)
                     licenseAuthorName = request.POST['licenseAuthorName']
                     licenseName = request.POST['licenseName']

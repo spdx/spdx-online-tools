@@ -56,7 +56,7 @@ class IssueMissingFieldTestCase(TestCase):
         payload = self._full_payload()
         del payload["licenseAuthorName"]
 
-        resp = self.client.post(reverse("issue"), payload, follow=True, secure=True)
+        resp = self.client.post(reverse("issue"), payload, secure=True)
 
         body = resp.content.decode(errors="replace")
         self.assertEqual(
@@ -73,5 +73,5 @@ class IssueMissingFieldTestCase(TestCase):
         new validation block (it will then fail trying to reach the real
         GitHub API with a fake token, which is expected and out of scope
         here -- it must NOT fail as a 400 'missing field' response)."""
-        resp = self.client.post(reverse("issue"), self._full_payload(), follow=True, secure=True)
+        resp = self.client.post(reverse("issue"), self._full_payload(), secure=True)
         self.assertNotEqual(resp.status_code, 400)
