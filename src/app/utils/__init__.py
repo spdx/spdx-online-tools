@@ -13,6 +13,7 @@ import xml.etree.cElementTree as ET
 import valkey
 import requests
 from django.conf import settings
+from django.core.cache import cache
 from spdx_license_matcher.build_licenses import build_spdx_licenses
 from spdx_license_matcher.computation import (checkTextStandardLicense,
                                               get_close_matches,
@@ -684,6 +685,39 @@ def _ensure_license_db_current(
                 _write_license_db_metadata(r_meta, remote_version, remote_release_date)
 
 
+def _license_id_string(license_id):
+    """Return a case-insensitive idstring, or None for invalid syntax."""
+    if isinstance(license_id, bytes):
+        try:
+            license_id = license_id.decode("ascii")
+        except UnicodeDecodeError:
+            return None
+    if not isinstance(license_id, str) or not re.fullmatch(r"[A-Za-z0-9.-]+", license_id):
+        return None
+    return license_id.lower()
+
+
+def _listed_license_ids():
+    """Use the current SPDX list, independently of the matcher database.
+
+    Refresh at least hourly. Retrieval failures propagate: an unavailable list
+    must not be confused with a successful check that found no matching license.
+    """
+    cache_key = "spdx_listed_license_ids"
+    license_ids = cache.get(cache_key)
+    if license_ids is not None:
+        return license_ids
+    response = requests.get("https://spdx.org/licenses/licenses.json", timeout=30)
+    response.raise_for_status()
+    license_ids = frozenset(
+        license["licenseId"].lower() for license in response.json()["licenses"]
+    )
+    if not license_ids:
+        raise ValueError("The SPDX License List is empty")
+    cache.set(cache_key, license_ids, timeout=3600)
+    return license_ids
+
+
 def check_spdx_license(licenseText):
     """Check the license text against the SPDX License List.
     """
@@ -694,7 +728,24 @@ def check_spdx_license(licenseText):
     spdxLicenseIds = list(r.keys())
     spdxLicenseTexts = r.mget(spdxLicenseIds)
     licenseData = dict(zip(spdxLicenseIds, spdxLicenseTexts))
+    licenseData = {
+        license_id: text for license_id, text in licenseData.items()
+        if _license_id_string(license_id) is not None
+    }
+    if not licenseData:
+        return None, 'No match', {}
+    listed_ids = _listed_license_ids()
+    # Filter before scoring: an invalid perfect match would otherwise suppress
+    # valid close matches in get_close_matches.
+    licenseData = {
+        license_id: text for license_id, text in licenseData.items()
+        if _license_id_string(license_id) in listed_ids
+    }
     matches = get_close_matches(licenseText, licenseData)
+    matches = {
+        license_id: score for license_id, score in matches.items()
+        if _license_id_string(license_id) in listed_ids
+    }
     if not matches:
         matchedLicenseIds = None
         matchType = 'No match'
