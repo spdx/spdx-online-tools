@@ -84,7 +84,11 @@ VERSION = '1.0'
 import argparse
 import logging
 import re
-import xml.etree.ElementTree as et
+# defusedxml is intentionally NOT used: the project targets Python 3.12, whose bundled
+# expat (>=2.4.0) enables billion-laughs / entity-expansion protection by default, and
+# ElementTree does not resolve external entities (no XXE). defusedxml was deprecated /
+# unrecommended by the Python docs in Jan 2026. See PR #720 discussion.
+import xml.etree.ElementTree as et  # nosec B405
 
 NL = '\n'
 XML_PROLOG = """<?xml version="1.0" encoding="UTF-8"?>"""
@@ -93,7 +97,7 @@ logging.basicConfig(filename="error.log", format="%(levelname)s : %(asctime)s : 
 logger = logging.getLogger()
 
 def process(fname):
-    tree = et.parse(fname)
+    tree = et.parse(fname)  # nosec B314 - trusted-by-3.12-stdlib; see import note above
     root = tree.getroot()
     if root.tag == 'spdx':
         root.tag = 'SPDX'
