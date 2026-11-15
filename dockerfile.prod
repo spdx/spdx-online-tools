@@ -24,7 +24,6 @@ ENV PATH="${VENV_PATH}/bin:$PATH"
 COPY requirements.txt ./
 COPY requirements-prod.txt ./
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir -r requirements-prod.txt \
     && rm -rf /root/.cache/pip
 
