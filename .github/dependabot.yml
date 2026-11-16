@@ -2,9 +2,11 @@ version: 2
 updates:
 - package-ecosystem: pip
   directory: "/"
+  cooldown:
+      default-days: 7
   open-pull-requests-limit: 99
   schedule:
-    interval: "monthly"
+    interval: "weekly"
   groups:
     dependencies:
       applies-to: version-updates
@@ -15,8 +17,10 @@ updates:
         - "patch"
 - package-ecosystem: docker
   directory: "/"
+  cooldown:
+    default-days: 7
   schedule:
-    interval: "monthly"
+    interval: "weekly"
 - package-ecosystem: docker-compose
   directory: "/"
   schedule:
