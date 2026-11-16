@@ -1,7 +1,7 @@
 # Development Dockerfile
 
 # Stage 1: JDK stage (provide JDK files to copy into final image)
-FROM eclipse-temurin:17-jre AS jdk
+FROM eclipse-temurin:24-jre AS jdk
 
 # Stage 2: Builder stage - install build deps and wheel the application
 FROM python:3.15-slim AS builder
