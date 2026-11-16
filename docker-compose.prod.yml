@@ -61,7 +61,7 @@ services:
     restart: always
 
   valkey:
-    image: valkey/valkey:8-alpine
+    image: valkey/valkey:9-alpine
     container_name: valkey
     restart: always
     volumes:
