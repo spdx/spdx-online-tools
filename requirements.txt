@@ -20,5 +20,5 @@ social-auth-app-django>=5.9.0,<6.0.0
 social-auth-core>=4.9.1,<5.0.0
 spdx-python-model>=0.0.4,<1.0.0
 spdx-tools>=0.8.5,<1.0.0
-valkey>=6.0.0,<7.0.0
+valkey>=6.2.0,<7.0.0
 
