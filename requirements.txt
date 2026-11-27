@@ -14,7 +14,7 @@ requests>=2.34.2,<3.0.0
 # Pinned <6.0.0: social-auth-app-django 6.0.0 requires social-auth-core>=5.0.0,
 # which removed GooglePlusAuth, but drf-social-oauth2 3.4.1 still imports it.
 # 5.9.0 runs fine on Django 6.0. Revisit when drf-social-oauth2 drops the import.
-social-auth-app-django>=5.9.0,<6.0.0
+social-auth-app-django>=8.1.0,<9.0.0
 # Pinned <5.0.0: social-auth-core 5.0 removed GooglePlusAuth, which
 # drf-social-oauth2 3.4.1 still imports at module load. See note above.
 social-auth-core>=4.9.1,<5.0.0
